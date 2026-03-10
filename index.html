@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>De Invisible a Soberana — Test gratuito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wine-deep: #3D0C11;
+    --wine-primary: #6B1A2A;
+    --wine-medium: #8B2D3F;
+    --wine-light: #A84455;
+    --wine-pale: #C97080;
+    --gold-deep: #7A5C1E;
+    --gold-primary: #B8892A;
+    --gold-medium: #D4A843;
+    --gold-light: #E8C870;
+    --forest-primary: #1A3D2B;
+    --charcoal-deep: #1E1218;
+    --charcoal: #2A1C21;
+    --charcoal-soft: #3A2830;
+    --text-light: #F0E6EA;
+    --text-muted: #C4A8B0;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', sans-serif;
+    --font-elegant: 'Cormorant Garamond', Georgia, serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    background: var(--charcoal-deep);
+    color: var(--text-light);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.3;
+  }
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── INTRO ───────────────────────────────── */
+  #s-intro {
+    background: radial-gradient(ellipse at 75% 0%, rgba(140,40,60,0.45) 0%, var(--charcoal-deep) 62%);
+    align-items: center; justify-content: center; padding: 52px 24px;
+  }
+  .intro-box { width: 100%; max-width: 500px; animation: fadeUp .7s ease both; }
+  .eyebrow {
+    font-size: 10px; font-weight: 600; letter-spacing: 3px;
+    color: var(--wine-pale); text-transform: uppercase;
+    margin-bottom: 20px; display: block;
+  }
+  .intro-title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 7.5vw, 48px);
+    font-weight: 900; line-height: 1.08; margin-bottom: 16px;
+  }
+  .intro-title em { font-style: italic; color: var(--gold-light); display: block; }
+  .intro-sub {
+    font-family: var(--font-elegant);
+    font-size: clamp(16px, 3.5vw, 19px); font-style: italic;
+    color: var(--text-muted); line-height: 1.6; margin-bottom: 36px;
+  }
+  .stats-row { display: flex; gap: 20px; margin-bottom: 36px; align-items: stretch; }
+  .stat { display: flex; flex-direction: column; gap: 3px; }
+  .stat-n { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--gold-medium); }
+  .stat-l { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+  .vline { width: 1px; background: rgba(255,255,255,0.07); align-self: stretch; }
+  .btn-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--wine-primary), var(--wine-medium));
+    color: var(--text-light); border: none; border-radius: 12px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all .25s;
+    box-shadow: 0 6px 24px rgba(107,26,42,.45); letter-spacing: .3px;
+  }
+  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(107,26,42,.55); }
+  .intro-note { margin-top: 14px; font-size: 11px; color: rgba(196,168,176,.38); font-weight: 300; }
+
+  /* PANTALLA 1 */
+  .intro-title-big {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 8vw, 54px);
+    font-weight: 900; line-height: 1.08; margin-bottom: 24px;
+    color: var(--text-light);
+  }
+  .intro-title-big em { font-style: italic; color: var(--gold-light); display: block; margin-top: 4px; }
+  .intro-sub-small {
+    font-family: var(--font-elegant);
+    font-size: clamp(15px, 3.5vw, 18px); font-style: italic;
+    color: var(--text-muted); line-height: 1.65; margin-bottom: 36px;
+  }
+
+  /* PANTALLA 2 */
+  .qualify-box {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+  }
+  .qualify-box .intro-for { text-align: left; width: 100%; }
+  .qualify-box .qualify-not { text-align: left; width: 100%; }
+  .qualify-box .intro-discovers { text-align: left; width: 100%; }
+  .qualify-box .btn-cta { align-self: flex-start; }
+
+    /* PANTALLA 2 */
+  .qualify-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 7vw, 38px);
+    font-weight: 700; line-height: 1.2; margin-bottom: 24px;
+  }
+  .qualify-title em { font-style: italic; color: var(--gold-light); }
+  .qualify-not {
+    background: rgba(61,12,17,.35); border: 1px solid rgba(168,68,85,.18);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+  }
+  .qualify-not-lbl {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    color: var(--wine-pale); text-transform: uppercase; margin-bottom: 12px; display: block;
+  }
+  .qualify-not-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: rgba(240,230,234,.55); font-weight: 300;
+    margin-bottom: 8px; line-height: 1.4;
+  }
+  .qualify-not-item:last-child { margin-bottom: 0; }
+  .qualify-not-x { color: var(--wine-pale); font-size: 12px; flex-shrink: 0; }
+
+  /* SHARED */
+  .intro-for { margin-bottom: 20px; }
+  .intro-for-line {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-family: var(--font-elegant); font-size: 17px; font-style: italic;
+    color: rgba(240,230,234,.78); line-height: 1.55; margin-bottom: 10px;
+  }
+  .intro-for-line:last-child { margin-bottom: 0; }
+  .intro-for-dot { color: var(--gold-primary); font-style: normal; flex-shrink: 0; margin-top: 1px; }
+  .intro-discovers {
+    background: rgba(70,40,50,.45); border: 1px solid rgba(184,137,42,.12);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 28px;
+  }
+  .intro-discovers-lbl {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    color: var(--gold-primary); text-transform: uppercase; margin-bottom: 12px; display: block;
+  }
+  .intro-discovers-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: rgba(240,230,234,.72); font-weight: 300;
+    margin-bottom: 8px; line-height: 1.45;
+  }
+  .intro-discovers-item:last-child { margin-bottom: 0; }
+  .intro-discovers-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-primary); flex-shrink: 0; margin-top: 5px; }
+  .intro-for {
+    margin-bottom: 28px;
+  }
+  .intro-for-line {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-family: var(--font-elegant); font-size: 17px; font-style: italic;
+    color: rgba(240,230,234,.72); line-height: 1.55; margin-bottom: 8px;
+  }
+  .intro-for-line:last-child { margin-bottom: 0; }
+  .intro-for-dot { color: var(--gold-primary); font-style: normal; flex-shrink: 0; margin-top: 2px; }
+  .intro-discovers {
+    background: rgba(70,40,50,.45); border: 1px solid rgba(184,137,42,.12);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 28px;
+  }
+  .intro-discovers-lbl {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    color: var(--gold-primary); text-transform: uppercase; margin-bottom: 12px; display: block;
+  }
+  .intro-discovers-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: rgba(240,230,234,.72); font-weight: 300;
+    margin-bottom: 8px; line-height: 1.45;
+  }
+  .intro-discovers-item:last-child { margin-bottom: 0; }
+  .intro-discovers-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-primary); flex-shrink: 0; margin-top: 5px; }
+
+  /* ── QUIZ ────────────────────────────────── */
+  #s-quiz { background: var(--charcoal-deep); position: relative; }
+  .quiz-bg {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 55%, rgba(107,26,42,.16) 0%, transparent 52%),
+      radial-gradient(ellipse at 82% 18%, rgba(26,61,43,.09) 0%, transparent 44%);
+    pointer-events: none;
+  }
+  .quiz-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 18px 24px 14px;
+    background: rgba(15,10,11,.9); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+  .prog-row { display: flex; align-items: center; gap: 12px; max-width: 580px; margin: 0 auto; }
+  .prog-lbl { font-size: 11px; font-weight: 500; color: var(--text-muted); white-space: nowrap; letter-spacing: .5px; min-width: 32px; text-align: center; }
+  .btn-back, .btn-restart {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 6px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color .2s, background .2s; flex-shrink: 0;
+  }
+  .btn-back:hover { color: var(--text-light); background: rgba(255,255,255,.06); }
+  .btn-restart:hover { color: var(--wine-pale); background: rgba(255,255,255,.06); }
+  .btn-back { opacity: 0; pointer-events: none; transition: opacity .25s, color .2s, background .2s; }
+  .btn-back.visible { opacity: 1; pointer-events: all; }
+  .prog-track { flex: 1; height: 3px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wine-medium), var(--gold-primary));
+    border-radius: 99px; transition: width .55s cubic-bezier(.4,0,.2,1);
+  }
+  .quiz-body {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 112px 24px 64px; position: relative; z-index: 10;
+  }
+  .q-wrap { width: 100%; max-width: 580px; }
+  .q-num { font-size: 10px; font-weight: 600; letter-spacing: 3px; color: var(--wine-light); text-transform: uppercase; margin-bottom: 18px; display: block; }
+  .q-text { font-family: var(--font-display); font-size: clamp(21px,5vw,31px); font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+  .q-text em { font-style: italic; color: var(--gold-light); }
+  .q-sub { font-family: var(--font-elegant); font-size: 15px; font-style: italic; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; }
+  .opts { display: flex; flex-direction: column; gap: 11px; }
+  .opt {
+    padding: 17px 22px;
+    background: rgba(70,40,50,.55); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; cursor: pointer; transition: all .2s ease;
+    position: relative; overflow: hidden;
+  }
+  .opt::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--wine-primary); transform: scaleY(0);
+    transition: transform .2s ease; border-radius: 0 2px 2px 0;
+  }
+  .opt:hover { border-color: rgba(184,137,42,.2); background: rgba(107,26,42,.18); transform: translateX(4px); }
+  .opt:hover::before { transform: scaleY(1); }
+  .opt.on { border-color: rgba(184,137,42,.45); background: rgba(107,26,42,.3); transform: translateX(6px); }
+  .opt.on::before { transform: scaleY(1); background: var(--gold-primary); }
+  .opt-ltr { font-size: 9px; font-weight: 600; letter-spacing: 2px; color: var(--wine-pale); text-transform: uppercase; margin-bottom: 4px; display: block; transition: color .2s; }
+  .opt.on .opt-ltr { color: var(--gold-medium); }
+  .opt-txt { font-size: 14px; font-weight: 400; line-height: 1.45; color: rgba(240,230,234,.82); transition: color .2s; }
+  .opt.on .opt-txt { color: var(--text-light); }
+  .btn-next {
+    margin-top: 28px; padding: 15px 34px;
+    background: linear-gradient(135deg, var(--wine-primary), var(--wine-medium));
+    color: var(--text-light); border: none; border-radius: 10px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 600;
+    cursor: pointer; opacity: 0; pointer-events: none; transition: all .3s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(107,26,42,.4);
+  }
+  .btn-next.show { opacity: 1; pointer-events: all; animation: fadeUp .3s ease both; }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(107,26,42,.5); }
+  .btn-next svg { transition: transform .2s; }
+  .btn-next:hover svg { transform: translateX(3px); }
+  .q-wrap.qin  { animation: qIn  .38s cubic-bezier(.4,0,.2,1) both; }
+  .q-wrap.qout { animation: qOut .26s cubic-bezier(.4,0,.2,1) both; }
+
+  /* ── GATE ────────────────────────────────── */
+  #s-gate {
+    background: radial-gradient(ellipse at 50% 5%, rgba(140,40,60,.48) 0%, var(--charcoal-deep) 58%);
+    align-items: center; justify-content: center; padding: 52px 24px;
+  }
+  .gate-box { width: 100%; max-width: 440px; animation: fadeUp .6s ease both; }
+  .gate-icon {
+    width: 58px; height: 58px;
+    background: linear-gradient(135deg, rgba(107,26,42,.6), rgba(61,12,17,.85));
+    border: 1px solid rgba(184,137,42,.24); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin: 0 auto 26px;
+    animation: glow 3s ease infinite;
+  }
+  .gate-title { font-family: var(--font-display); font-size: clamp(24px,6vw,34px); font-weight: 700; line-height: 1.2; text-align: center; margin-bottom: 10px; }
+  .gate-title em { font-style: italic; color: var(--gold-light); }
+  .gate-sub { font-family: var(--font-elegant); font-size: 16px; font-style: italic; color: var(--text-muted); text-align: center; margin-bottom: 28px; line-height: 1.55; }
+  .gate-receives {
+    background: rgba(45,31,35,.5); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 22px;
+  }
+  .gate-receives-lbl { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 12px; display: block; }
+  .gate-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(240,230,234,.72); font-weight: 300; margin-bottom: 8px; line-height: 1.4; }
+  .gate-item:last-child { margin-bottom: 0; }
+  .gate-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold-primary); flex-shrink: 0; }
+  .gate-form { display: flex; flex-direction: column; gap: 11px; }
+  .g-input {
+    width: 100%; padding: 14px 18px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(184,137,42,.17);
+    border-radius: 10px; color: var(--text-light);
+    font-family: var(--font-body); font-size: 14px; outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  .g-input::placeholder { color: rgba(196,168,176,.44); }
+  .g-input:focus { border-color: rgba(184,137,42,.44); background: rgba(255,255,255,.07); }
+  .g-input.err { border-color: rgba(168,68,85,.6); }
+  .btn-unlock {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary));
+    color: var(--charcoal-deep); border: none; border-radius: 10px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all .25s;
+    box-shadow: 0 4px 20px rgba(184,137,42,.3);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-unlock:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(184,137,42,.4); }
+  .gate-privacy { text-align: center; font-size: 11px; color: rgba(196,168,176,.32); font-weight: 300; margin-top: 2px; }
+
+  /* ── RESULT ──────────────────────────────── */
+  #s-result { background: var(--charcoal-deep); }
+  .r-hero {
+    background: linear-gradient(160deg, #5A1020 0%, #3A0E18 52%, var(--charcoal-deep) 100%);
+    padding: 72px 24px 68px; text-align: center; position: relative; overflow: hidden;
+  }
+  .r-hero::after {
+    content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 60px;
+    background: linear-gradient(transparent, var(--charcoal-deep));
+  }
+  .r-ornament {
+    width: 58px; height: 58px; background: rgba(184,137,42,.09);
+    border: 1px solid rgba(184,137,42,.26); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+    margin: 0 auto 20px; animation: glow 3s ease infinite;
+  }
+  .r-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 3px; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 10px; animation: fadeUp .5s .1s both; }
+  .r-greeting { font-family: var(--font-display); font-size: clamp(24px,6vw,40px); font-weight: 900; line-height: 1.1; margin-bottom: 8px; animation: fadeUp .5s .2s both; }
+  .r-greeting .hi { color: var(--gold-light); font-style: italic; }
+  .r-type { font-family: var(--font-display); font-size: clamp(16px,3.8vw,22px); font-weight: 400; font-style: italic; color: var(--wine-pale); margin-bottom: 18px; animation: fadeUp .5s .3s both; }
+  .r-desc { font-family: var(--font-elegant); font-size: clamp(16px,3.5vw,19px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.76); max-width: 520px; margin: 0 auto; animation: fadeUp .5s .4s both; }
+  .r-body { max-width: 600px; margin: 0 auto; padding: 56px 24px 80px; }
+  .sec-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 3px; color: var(--gold-primary);
+    text-transform: uppercase; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(184,137,42,.24), transparent); }
+  .mov-title-main { font-family: var(--font-display); font-size: clamp(21px,5vw,30px); font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+  .mov-pain { font-family: var(--font-elegant); font-size: 16px; font-style: italic; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+  .mc { margin-bottom: 14px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); animation: fadeUp .5s both; }
+  .mc:nth-child(1) { animation-delay: .1s; }
+  .mc:nth-child(2) { animation-delay: .2s; }
+  .mc:nth-child(3) { animation-delay: .3s; }
+  .mc-head {
+    padding: 19px 22px 17px; display: flex; align-items: flex-start; gap: 16px;
+    cursor: pointer; background: rgba(70,40,50,.55); transition: background .2s; user-select: none;
+  }
+  .mc-head:hover { background: rgba(130,35,55,.3); }
+  .mc.open .mc-head { background: rgba(130,35,55,.38); }
+  .mc-num { font-family: var(--font-display); font-size: 32px; font-weight: 900; line-height: 1; color: rgba(184,137,42,.16); transition: color .25s; flex-shrink: 0; width: 28px; margin-top: 2px; }
+  .mc.open .mc-num { color: var(--gold-primary); }
+  .mc-info { flex: 1; }
+  .mc-tag { font-size: 9px; font-weight: 600; letter-spacing: 2px; color: var(--wine-pale); text-transform: uppercase; margin-bottom: 4px; display: block; }
+  .mc-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; line-height: 1.25; color: var(--text-light); }
+  .mc-chev { color: var(--text-muted); transition: transform .3s ease, color .2s; flex-shrink: 0; margin-top: 4px; font-size: 20px; line-height: 1; }
+  .mc.open .mc-chev { transform: rotate(180deg); color: var(--gold-primary); }
+  .mc-body { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1); background: rgba(61,12,17,.18); border-top: 1px solid rgba(255,255,255,.04); }
+  .mc.open .mc-body { max-height: 500px; }
+  .mc-content { padding: 18px 22px 22px 66px; }
+  .mc-content p { font-size: 14px; line-height: 1.7; color: rgba(240,230,234,.7); margin-bottom: 12px; font-weight: 300; }
+  .mc-content p:last-child { margin-bottom: 0; }
+  .mc-content strong { color: var(--gold-light); font-weight: 500; }
+  .mc-ex { background: rgba(184,137,42,.07); border-left: 2px solid var(--gold-primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px; font-family: var(--font-elegant); font-style: italic; font-size: 14px; color: rgba(240,230,234,.66); line-height: 1.55; }
+
+  /* email badge */
+  .email-badge {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(26,61,43,.28); border: 1px solid rgba(61,122,90,.22);
+    border-radius: 10px; padding: 13px 17px; margin-bottom: 44px;
+    animation: fadeUp .5s .55s both;
+  }
+  .email-badge span { font-size: 17px; flex-shrink: 0; }
+  .email-badge p { font-size: 13px; color: rgba(240,230,234,.62); font-weight: 300; line-height: 1.4; }
+  .email-badge p strong { color: #7BC48A; font-weight: 500; }
+
+  /* bridge */
+  .bridge {
+    margin-top: 52px; padding: 38px;
+    background: linear-gradient(145deg, rgba(140,40,60,.35), rgba(90,16,32,.55));
+    border: 1px solid rgba(184,137,42,.16); border-radius: 20px; text-align: center;
+    position: relative; overflow: hidden; animation: fadeUp .6s .65s both;
+  }
+  .bridge::before {
+    content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 56px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+  }
+  .bridge-ey { font-size: 9px; font-weight: 600; letter-spacing: 3px; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 14px; }
+  .bridge-h { font-family: var(--font-display); font-size: clamp(22px,5vw,30px); font-weight: 700; line-height: 1.2; margin-bottom: 12px; }
+  .bridge-h em { font-style: italic; color: var(--gold-light); }
+  .bridge-p { font-family: var(--font-elegant); font-size: 18px; font-style: italic; line-height: 1.6; color: var(--text-muted); max-width: 400px; margin: 0 auto 24px; }
+  .btn-vsl {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary));
+    color: var(--charcoal-deep); border: none; border-radius: 12px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 700;
+    cursor: pointer; text-decoration: none; transition: all .25s;
+    box-shadow: 0 6px 24px rgba(184,137,42,.32); letter-spacing: .3px;
+  }
+  .btn-vsl:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(184,137,42,.42); }
+  .bridge-note { margin-top: 11px; font-size: 13px; color: rgba(196,168,176,.55); font-weight: 400; letter-spacing: .5px; }
+
+  /* quote */
+  .final-q { margin-top: 48px; padding: 26px 0; border-top: 1px solid rgba(255,255,255,.05); text-align: center; animation: fadeUp .5s .9s both; }
+  .final-q blockquote { font-family: var(--font-elegant); font-size: clamp(15px,3.5vw,18px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.42); max-width: 360px; margin: 0 auto 12px; }
+  .final-q cite { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--gold-deep); text-transform: uppercase; font-style: normal; }
+
+  /* ── KEYFRAMES ───────────────────────────── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes qIn   { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes qOut  { to   { opacity: 0; transform: translateX(-32px); } }
+  @keyframes glow  { 0%,100% { box-shadow: 0 0 16px rgba(184,137,42,.1); } 50% { box-shadow: 0 0 34px rgba(184,137,42,.26); } }
+
+  @media (max-width: 480px) {
+    .mc-content { padding: 16px 18px 20px; }
+    .bridge { padding: 26px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ──────────── INTRO ──────────── -->
+<!-- ──────────── PANTALLA 1: GOLPE ──────────── -->
+<div id="s-intro" class="screen active">
+  <div class="intro-box">
+    <h1 class="intro-title-big">
+      Tienes tu vida resuelta.
+      <em>¿Por qué tu relación es lo único que no puedes arreglar?</em>
+    </h1>
+    <p class="intro-sub-small">
+      Haz este test de 5 preguntas y descubre lo que está bloqueando tu relación — y qué hacer esta misma semana para ver cambios en tu pareja.
+    </p>
+    <button class="btn-cta" onclick="show('s-qualify')">
+      Empezar el test
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <p class="intro-note">Es una herramienta. No un anuncio.</p>
+  </div>
+</div>
+
+<!-- ──────────── PANTALLA 2: CALIFICA ──────────── -->
+<div id="s-qualify" class="screen">
+  <div class="intro-box qualify-box" style="animation: fadeUp .6s ease both;">
+    <span class="eyebrow">Antes de empezar</span>
+    <h2 class="qualify-title">Este test es para ti <em>si...</em></h2>
+
+    <div class="intro-for">
+      <div class="intro-for-line">
+        <span class="intro-for-dot">✓</span>
+        Eres fuerte en todo — menos en esto.
+      </div>
+      <div class="intro-for-line">
+        <span class="intro-for-dot">✓</span>
+        Todavía crees que se puede hacer algo, pero no sabes cómo cambiar lo que vives.
+      </div>
+      <div class="intro-for-line">
+        <span class="intro-for-dot">✓</span>
+        No quieres abandonarlo todo — quieres recuperar tu lugar.
+      </div>
+    </div>
+
+    <div class="qualify-not">
+      <span class="qualify-not-lbl">No es para ti si</span>
+      <div class="qualify-not-item">
+        <span class="qualify-not-x">✗</span>
+        Ya decidiste que quieres separarte
+      </div>
+      <div class="qualify-not-item">
+        <span class="qualify-not-x">✗</span>
+        Buscas que alguien te diga que él tiene toda la culpa
+      </div>
+    </div>
+
+    <div class="intro-discovers">
+      <span class="intro-discovers-lbl">Vas a descubrir</span>
+      <div class="intro-discovers-item">
+        <div class="intro-discovers-dot"></div>
+        Por qué pasa lo que pasa — sin culparte ni culparlo a él
+      </div>
+      <div class="intro-discovers-item">
+        <div class="intro-discovers-dot"></div>
+        Qué patrón exacto está bloqueando tu relación
+      </div>
+      <div class="intro-discovers-item">
+        <div class="intro-discovers-dot"></div>
+        3 movimientos concretos que puedes aplicar esta semana
+      </div>
+    </div>
+
+    <button class="btn-cta" onclick="show('s-quiz'); renderQ(0)">
+      Empecemos
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ──────────── QUIZ ──────────── -->
+<div id="s-quiz" class="screen">
+  <div class="quiz-bg"></div>
+  <div class="quiz-header">
+    <div class="prog-row">
+      <button class="btn-back" id="btn-back" onclick="prevQ()" title="Pregunta anterior">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="prog-lbl" id="p-lbl">1 / 5</span>
+      <div class="prog-track"><div class="prog-fill" id="p-fill" style="width:20%"></div></div>
+      <button class="btn-restart" onclick="restartQuiz()" title="Empezar de nuevo">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="q-wrap" id="q-wrap"></div>
+  </div>
+</div>
+
+<!-- ──────────── GATE ──────────── -->
+<div id="s-gate" class="screen">
+  <div class="gate-box">
+    <div class="gate-icon">✦</div>
+    <h2 class="gate-title">Tu resultado<br>está <em>listo</em></h2>
+    <p class="gate-sub">Ingresa tu nombre y correo para verlo — y para recibir una copia en tu email cuando lo necesites.</p>
+    <div class="gate-receives">
+      <span class="gate-receives-lbl">Vas a recibir</span>
+      <div class="gate-item"><div class="gate-dot"></div>Tu perfil relacional exacto</div>
+      <div class="gate-item"><div class="gate-dot"></div>3 movimientos concretos para esta semana</div>
+      <div class="gate-item"><div class="gate-dot"></div>Una copia en tu correo para releer cuando lo necesites</div>
+    </div>
+    <div class="gate-form">
+      <input type="text"  class="g-input" id="g-name"  placeholder="Tu nombre" autocomplete="given-name">
+      <input type="email" class="g-input" id="g-email" placeholder="Tu correo electrónico" autocomplete="email">
+      <button class="btn-unlock" onclick="unlock()">
+        Ver mi resultado
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="gate-privacy">Sin spam · Puedes darte de baja cuando quieras</p>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── RESULT ──────────── -->
+<div id="s-result" class="screen"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────
+const QS = [
+  { id:1,
+    t:"Son las 9 de la noche. Llegas agotada de un día que exigió todo. Él está en el sofá, en el teléfono. ¿Qué pasa primero en ti?",
+    s:"No hay respuesta correcta — solo honesta.",
+    opts:[
+      { l:"A", t:"Algo se apaga. Esperas una señal que no llega. Después ya no sabes cómo empezar.", v:{S:2,P:0,D:1} },
+      { l:"B", t:"Sientes una irritación que conoces bien. Piensas: otra vez. Y decides no decir nada.", v:{S:0,P:1,D:2} },
+      { l:"C", t:"Buscas conexión. Hablas, propones. Él responde con monosílabos. Y tú buscas más.", v:{S:1,P:2,D:0} },
+    ]
+  },
+  { id:2,
+    t:"En tu trabajo eres <em>clara, decidida, respetada</em>. En tu relación...",
+    s:"Elige lo que más se parece a lo que vives.",
+    opts:[
+      { l:"A", t:"Siento que tengo que bajar el volumen de quién soy para no amenazarlo.", v:{S:2,P:0,D:1} },
+      { l:"B", t:"Me pongo en modo ejecutiva y eso termina mal — él dice que lo controlo.", v:{S:0,P:2,D:1} },
+      { l:"C", t:"Soy otra persona. Una que no reconozco y que no me gusta.", v:{S:1,P:1,D:2} },
+    ]
+  },
+  { id:3,
+    t:"Cuando hay un conflicto importante, ¿qué haces?",
+    s:"Lo que realmente haces — no lo que crees que deberías.",
+    opts:[
+      { l:"A", t:"Busco resolverlo de inmediato. No tolero la tensión. Hablo, insisto, persigo.", v:{S:0,P:2,D:1} },
+      { l:"B", t:"Me callo para no empeorar. Guardo. Y después eso sale en el momento equivocado.", v:{S:1,P:0,D:2} },
+      { l:"C", t:"Intento hablar pero no sé pedir lo que necesito sin que suene a queja.", v:{S:2,P:1,D:0} },
+    ]
+  },
+  { id:4,
+    t:"Ya trabajaste en ti — terapia, libros, cursos. ¿Qué sientes con todo eso?",
+    s:"Esta pregunta define qué tipo de herramienta necesitas.",
+    opts:[
+      { l:"A", t:"Me hizo más consciente. Pero en el momento real del conflicto, todo lo que sé desaparece.", v:{S:2,P:1,D:0} },
+      { l:"B", t:"Siento que mientras más crezco, más nos alejamos. Mi crecimiento nos está separando.", v:{S:0,P:0,D:2} },
+      { l:"C", t:"Sé lo que debería hacer. El problema es que él no hace su parte.", v:{S:0,P:2,D:1} },
+    ]
+  },
+  { id:5,
+    t:"¿Cuál de estas frases duele más porque la reconoces como tuya?",
+    s:"Elige la que más resuena, aunque ninguna sea perfecta.",
+    opts:[
+      { l:"A", t:"\"Soy fuerte en todo menos en esto. Y no entiendo por qué.\"", v:{S:2,P:1,D:0} },
+      { l:"B", t:"\"No quiero elegir entre seguir creciendo y estar con él.\"", v:{S:0,P:0,D:2} },
+      { l:"C", t:"\"Ya hice demasiado. Necesito que él también haga algo.\"", v:{S:0,P:2,D:1} },
+    ]
+  }
+];
+
+const PROFILES = {
+  S:{
+    emoji:"✦", label:"Tu perfil relacional",
+    type:"La Soberana en Silencio",
+    desc:"Eres una mujer que se conoce. Has leído, has ido a terapia, has trabajado en ti misma. Tienes claridad sobre quién eres y lo que mereces. En tu trabajo, en tu negocio, en tu vida afuera — eres la que resuelve, la que dirige, la que no se quiebra. Pero llega un conflicto con él. Una discusión, un silencio, una frase que duele. Y en ese momento algo ocurre que no puedes controlar: te bloqueas. La mujer capaz desaparece. Y en su lugar aparece una versión tuya que no reconoces — una que llora sin poder parar, que se queda paralizada, que empieza a escuchar una voz interna que le dice que él no te ama, que estás sola, que no importas. Te refugias en ese lugar oscuro y desde ahí ya no puedes pensar con claridad, no puedes hablar con calma, no puedes aplicar nada de lo que sabes. Solo sientes. Y ese sentir te desborda.",
+    pain:"Eso no es debilidad — es lo que le pasa al cerebro cuando se siente amenazado emocionalmente. En ese momento dejas de operar desde tu parte racional y caes a tu mente más primitiva, la que solo conoce el miedo y el dolor. El problema no es que seas vulnerable — es que no tienes un puente entre quien eres afuera y quien eres en ese momento de crisis adentro de tu relación. Has trabajado mucho tu mundo interior. Pero nadie te enseñó a mantenerte conectada contigo misma cuando él activa ese lugar. Eso es lo que cambia con lo que viene.",
+    movs:[
+      { tag:"Movimiento 1 · Lo que piensas", title:"Di lo que necesitas. Una vez. Con calma.",
+        body:`<p>Cuando algo no funciona, <strong>no lo repitas</strong> — dilo una vez, con claridad, sin acusación. Eso no es debilidad. Es precisión.</p>
+        <p>El cerebro humano, cuando recibe una queja repetida, la clasifica como ruido de fondo y deja de procesarla.</p>
+        <div class="mc-ex">"Esta semana necesito que cuando llegues a casa, antes del teléfono, me dediques diez minutos."</div>` },
+      { tag:"Movimiento 2 · Lo que sientes", title:"Haz una pausa antes de responder.",
+        body:`<p>Cuando algo se active en ti, <strong>dite internamente: esto es una reacción, no una respuesta.</strong> Treinta segundos. Eso es todo.</p>
+        <p>No para suprimir lo que sientes — sino para darle a tus emociones el espacio de ser reconocidas sin que dirijan una conversación que después tendrás que reparar.</p>
+        <div class="mc-ex">Él llega distante. Respiras. Terminas lo que estás haciendo. Desde ese lugar — no desde el miedo — decides si hay algo que decir.</div>` },
+      { tag:"Movimiento 3 · Lo que comunicas", title:"Pide desde lo que quieres, no desde lo que te falta.",
+        body:`<p>Hay una diferencia entre <strong>"necesito que me escuches"</strong> y <strong>"nunca me escuchas"</strong>. La primera abre. La segunda cierra.</p>
+        <p>Cuando pides desde la carencia, él recibe un ataque. Cuando pides desde la claridad, él recibe una invitación.</p>
+        <div class="mc-ex">"Hoy necesito hablar quince minutos contigo sin teléfono. ¿Podemos hacerlo después de cenar?"</div>` }
+    ]
+  },
+  P:{
+    emoji:"◈", label:"Tu perfil relacional",
+    type:"La que Busca Conexión",
+    desc:"Cuando sientes que él se aleja, no te quedas quieta. Propones planes. Organizas salidas. Le preguntas qué le pasa. Le escribes. Le hablas. Haces cosas por él. Y si nada de eso funciona, llegas más lejos — cambias tu físico, empiezas una dieta, te exiges en el gym, te arreglas más, todo para que te vea, para que te desee, para que note que estás ahí. Pero él no lo nota. O lo nota y no dice nada. Y entonces la frustración se convierte en reclamo. Le preguntas si no ve el esfuerzo. Le exiges conexión. Le pides que te ame como necesitas. Y él, en lugar de acercarse, huye más. Se cierra más. Y tú te quedas sola con la pregunta más dolorosa de todas: ¿qué más tengo que hacer para que esto funcione?",
+    pain:"Lo que estás viviendo tiene un nombre: ciclo de persecución y distanciamiento. Y la trampa cruel de este ciclo es que todo lo que haces para buscar conexión — los planes, el esfuerzo físico, los reclamos, las preguntas — produce exactamente lo contrario de lo que quieres. No porque estés haciendo las cosas mal. Sino porque estás usando el lenguaje equivocado para lo que necesitas decir. Él no huye de ti — huye de la presión. Y tú no lo persigues porque seas insegura — lo persigues porque en el fondo sientes que si dejas de hacerlo, todo se cae. Esa creencia es la que hay que cambiar. Y eso es exactamente lo que viene.",
+    movs:[
+      { tag:"Movimiento 1 · El ciclo", title:"Cuando él se cierre, no lo persigas.",
+        body:`<p>Esto va en contra de todo lo que sientes en el momento. Pero <strong>cada vez que persigues, refuerzas su necesidad de espacio</strong> — y ese espacio refuerza tu necesidad de perseguir.</p>
+        <p>La salida no es alejarte con frialdad. Es retirarte con calma, con presencia propia, sin drama y sin castigo.</p>
+        <div class="mc-ex">Él llega cerrado. No preguntas. No propones. Haces algo que te nutra. Una hora después, sin tensión: "¿Cómo estuvo tu día?"</div>` },
+      { tag:"Movimiento 2 · Tu estabilidad", title:"Construye un anclaje que no dependa de él.",
+        body:`<p>La persecución ocurre porque <strong>la conexión con él se convirtió en tu fuente principal de estabilidad</strong>. Cuando esa fuente falla, el sistema de alarma se activa.</p>
+        <p>No es culpa tuya — es un patrón aprendido. Pero sí puedes cambiarlo esta semana.</p>
+        <div class="mc-ex">Identifica una actividad o espacio que te estabilice sin que él esté involucrado. Úsala antes de buscar conexión con él.</div>` },
+      { tag:"Movimiento 3 · Tu comunicación", title:"Pide lo que necesitas — no lo que te falta.",
+        body:`<p>La queja señala lo que falta. La petición clara señala lo que se necesita. <strong>Son dos conversaciones completamente distintas</strong> y producen resultados completamente distintos.</p>
+        <p>La Soberana pide lo que necesita. No lo que le duele que le falte.</p>
+        <div class="mc-ex">"Hoy necesito hablar quince minutos contigo sin teléfono. ¿Podemos hacerlo después de cenar?"</div>` }
+    ]
+  },
+  D:{
+    emoji:"◇", label:"Tu perfil relacional",
+    type:"La que Creció y se Quedó Sola",
+    desc:"Creciste. No de casualidad — con esfuerzo, con decisiones difíciles, con trabajo real. Tu carrera, tu negocio, tu forma de pensar, tu independencia — todo eso lo construiste tú. Y en algún momento empezaste a notar algo que duele más de lo que quisieras admitir: él no creció contigo. Tú tienes metas, visión, proyectos. Él tiene su zona de confort y no quiere salir de ahí. Y cuando tú avanzas, en lugar de que eso los una, lo que ves es que él se siente oprimido. Incómodo. Pequeño. Como si tu crecimiento fuera una amenaza para él, no un motivo de orgullo. Entonces te encuentras en una situación absurda: frenando lo que eres para que él no se sienta menos. O cargando sola con todo — la visión, el dinero, las decisiones, el futuro — mientras él simplemente sigue su vida cómoda como si nada. Y lo que más duele no es el cansancio. Es la soledad de no tener a alguien a tu lado que quiera ir al mismo lugar que tú.",
+    pain:"Lo que sientes no es egoísmo ni soberbia — es la frustración legítima de una mujer que quiere un compañero, no un pasajero. El problema real no es que él sea menos que tú. Es que los dos están operando desde lugares completamente distintos y nadie ha sabido cómo cerrar esa brecha. Tú quieres crecer juntos. Él siente que crecer juntos significa que tiene que cambiar quien es. Y esa tensión, sin las herramientas correctas, solo se agranda con el tiempo. Hay una forma de traerlo contigo sin presionarlo, sin frenarte tú, y sin tener que cargar sola. Eso es exactamente lo que viene.",
+    movs:[
+      { tag:"Movimiento 1 · La paradoja", title:"Tu independencia y tu necesidad de conexión no se contradicen.",
+        body:`<p>La dependencia emocional y la independencia económica pueden coexistir. <strong>No hay nada roto en ti por necesitar que él te vea</strong> — aunque no lo necesites para sobrevivir.</p>
+        <p>El problema no es que seas demasiado. Es que nadie te enseñó a pedir conexión sin sentir que eso cuestiona tu autonomía.</p>
+        <div class="mc-ex">"Hoy cerré algo importante. No necesito que lo celebres — pero sí me importa que lo sepas."</div>` },
+      { tag:"Movimiento 2 · El lenguaje", title:"Baja la guardia sin ceder el poder.",
+        body:`<p>En tu trabajo siempre estás "encendida". <strong>Eso crea una barrera que él interpreta como distancia</strong> — aunque tú estés buscando lo contrario.</p>
+        <p>La vulnerabilidad no es debilidad. Es el lenguaje que produce conexión. Puedes ser vulnerable sin perder quién eres.</p>
+        <div class="mc-ex">Esta semana dile cómo te sentiste — no qué hiciste. No "tuve una reunión difícil". Sino "hoy me sentí sola manejando algo pesado".</div>` },
+      { tag:"Movimiento 3 · Tu decisión", title:"No tienes que elegir entre crecer y estar con él.",
+        body:`<p>Esa creencia — que tu crecimiento los separa — <strong>produce exactamente lo que temes</strong>. Te hace frenar o alejarte emocionalmente para proteger la relación.</p>
+        <p>La Soberana no frena su crecimiento. Aprende a traer a su pareja dentro de su mundo — no para que apruebe, sino para que comparta.</p>
+        <div class="mc-ex">Esta semana cuéntale algo de tu trabajo o negocio — no para que se emocione, sino porque quieres que conozca esa parte de ti.</div>` }
+    ]
+  }
+};
+
+// ── STATE ─────────────────────────────────────────────────
+let curQ = 0, ans = [], sc = {S:0,P:0,D:0}, uName = '', uEmail = '';
+
+// ── HELPERS ───────────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── QUIZ ──────────────────────────────────────────────────
+function renderQ(idx) {
+  const q = QS[idx];
+  document.getElementById('p-fill').style.width = ((idx+1)/QS.length*100)+'%';
+  document.getElementById('p-lbl').textContent = `${idx+1} / ${QS.length}`;
+
+  const w = document.getElementById('q-wrap');
+  w.className = 'q-wrap';
+  w.innerHTML = `
+    <span class="q-num">Pregunta ${q.id} de ${QS.length}</span>
+    <h2 class="q-text">${q.t}</h2>
+    <p class="q-sub">${q.s}</p>
+    <div class="opts">
+      ${q.opts.map((o,i)=>`
+        <div class="opt" onclick="pick(${i})" data-i="${i}">
+          <span class="opt-ltr">— ${o.l}</span>
+          <p class="opt-txt">${o.t}</p>
+        </div>`).join('')}
+    </div>
+`;
+  requestAnimationFrame(() => w.classList.add('qin'));
+}
+
+function updateNavBtns() {
+  const back = document.getElementById('btn-back');
+  if (back) {
+    curQ > 0 ? back.classList.add('visible') : back.classList.remove('visible');
+  }
+}
+
+function pick(i) {
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
+  document.querySelectorAll('.opt')[i].classList.add('on');
+  ans[curQ] = i;
+  // Auto-advance after short delay so she sees her selection highlighted
+  setTimeout(() => nextQ(), 480);
+}
+
+function nextQ() {
+  if (ans[curQ] === undefined) return;
+  const sel = QS[curQ].opts[ans[curQ]];
+  // Recalculate scores from scratch to avoid double-counting on back/forward
+  sc = {S:0,P:0,D:0};
+  ans.forEach((a, qi) => {
+    if (a !== undefined && QS[qi]) {
+      Object.entries(QS[qi].opts[a].v).forEach(([k,v]) => sc[k] += v);
+    }
+  });
+
+  if (curQ < QS.length-1) {
+    const w = document.getElementById('q-wrap');
+    w.classList.remove('qin'); w.classList.add('qout');
+    setTimeout(()=>{ curQ++; renderQ(curQ); updateNavBtns(); }, 260);
+  } else {
+    show('s-gate');
+  }
+}
+
+function prevQ() {
+  if (curQ === 0) return;
+  const w = document.getElementById('q-wrap');
+  w.classList.remove('qin'); w.classList.add('qout');
+  setTimeout(()=>{ curQ--; renderQ(curQ); updateNavBtns(); }, 260);
+}
+
+function restartQuiz() {
+  curQ = 0; ans = []; sc = {S:0,P:0,D:0};
+  show('s-intro');
+  updateNavBtns();
+}
+
+// ── GATE ──────────────────────────────────────────────────
+function unlock() {
+  const n = document.getElementById('g-name').value.trim();
+  const e = document.getElementById('g-email').value.trim();
+  const ni = document.getElementById('g-name');
+  const ei = document.getElementById('g-email');
+  ni.classList.remove('err'); ei.classList.remove('err');
+
+  if (!n) { ni.classList.add('err'); ni.focus(); return; }
+  if (!e || !e.includes('@')) { ei.classList.add('err'); ei.focus(); return; }
+
+  uName = n; uEmail = e;
+  localStorage.setItem('cs_registered', e);
+  localStorage.setItem('cs_user_name', n);
+
+  const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
+
+  fetch('/api/register', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email:e, firstName:n, lastName:'', profile:top })
+  }).catch(()=>{});
+
+  showResult(top);
+}
+
+// ── RESULT ────────────────────────────────────────────────
+function showResult(top) {
+  const p = PROFILES[top];
+  document.getElementById('s-result').innerHTML = `
+    <div class="r-hero">
+      <div class="r-ornament">${p.emoji}</div>
+      <p class="r-eyebrow">${p.label}</p>
+      <h2 class="r-greeting"><span class="hi">${uName},</span> eres</h2>
+      <p class="r-type">${p.type}</p>
+      <p class="r-desc">${p.desc}</p>
+    </div>
+    <div class="r-body">
+      ${uEmail ? `<div class="email-badge">
+        <span>✉️</span>
+        <p>Te enviamos este resultado a <strong>${uEmail}</strong> para que lo tengas siempre a mano.</p>
+      </div>` : ''}
+      <div class="sec-label">Los 3 Movimientos para ti</div>
+      <h3 class="mov-title-main">Lo que puedes hacer esta semana</h3>
+      <p class="mov-pain">${p.pain}</p>
+      ${p.movs.map((m,i)=>`
+        <div class="mc" id="mc${i}" onclick="togMov(${i})">
+          <div class="mc-head">
+            <span class="mc-num">${i+1}</span>
+            <div class="mc-info">
+              <span class="mc-tag">${m.tag}</span>
+              <h4 class="mc-title">${m.title}</h4>
+            </div>
+            <span class="mc-chev">⌄</span>
+          </div>
+          <div class="mc-body"><div class="mc-content">${m.body}</div></div>
+        </div>`).join('')}
+      <div class="bridge">
+        <p class="bridge-ey">El siguiente paso</p>
+        <h3 class="bridge-h">
+          Hay algo más que<br><em>necesitas saber</em>
+        </h3>
+        <p class="bridge-p">
+          Lo que encontré después de 15 años dentro de mi matrimonio va a cambiar la forma en que ves todo lo que estás viviendo con tu pareja hasta hoy.
+        </p>
+        <a href="vsl.html" class="btn-vsl">
+          Quiero saberlo →
+        </a>
+        <p class="bridge-note">Continúa aquí</p>
+      </div>
+      <div class="final-q">
+        <blockquote>"No siempre es culpa de tu pareja. Si trabajas en ti, tu relación madura."</blockquote>
+        <cite>Josué Calderón</cite>
+      </div>
+    </div>`;
+  show('s-result');
+  setTimeout(()=>togMov(0), 700);
+}
+
+function togMov(i) {
+  const c = document.getElementById('mc'+i);
+  const was = c.classList.contains('open');
+  document.querySelectorAll('.mc').forEach(m=>m.classList.remove('open'));
+  if (!was) c.classList.add('open');
+}
+
+// Leer perfil desde URL — para el link del email
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const p = params.get('p');
+  if (p && ['S','P','D'].includes(p.toUpperCase())) {
+    uName = params.get('name') || '';
+    uEmail = '';
+    showResult(p.toUpperCase());
+    show('s-result');
+  }
+});
+</script>
+</body>
+</html>

@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     const SYSTEME_KEY = 'pbaarbsupaf1zie1goimopy59e0uherhe2p2gu4sjh0goqru3rzpiw9o594kg6dy';
-    const RESEND_KEY  = 're_Lx1pr7yy_KaCozcEXfrcTGs89Kj4D5guK';
+    const BREVO_KEY   = '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';
     const TAG_ID = 1901135;
 
     // 1. Crear contacto en Systeme.io
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3. Enviar email via Resend
+    // 3. Enviar email via Brevo
     const vslUrl    = 'https://codigosoberana.josuecalderon.lat';
     const resultUrl = `https://invisible-a-soberana.josuecalderon.lat?p=${profile}&name=${encodeURIComponent(firstName)}`;
 
@@ -82,28 +82,28 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
   </div>
 </div></body></html>`;
 
-    const emailRes = await fetch('https://api.resend.com/emails', {
+    const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_KEY}`
+        'api-key': BREVO_KEY
       },
       body: JSON.stringify({
-        from: 'Josué Calderón <onboarding@resend.dev>',
-        to: email,
+        sender: { name: 'Josué Calderón', email: 'josue@josuecalderon.lat' },
+        to: [{ email, name: firstName }],
         subject: `${firstName}, tu resultado está aquí`,
-        html: emailHtml
+        htmlContent: emailHtml
       })
     });
 
     const emailData = await emailRes.json();
-    console.log('Resend response:', JSON.stringify(emailData));
+    console.log('Brevo response:', JSON.stringify(emailData));
 
     return res.status(200).json({
       success: true,
       contactId,
       profile,
-      emailId: emailData.id
+      messageId: emailData.messageId
     });
 
   } catch (err) {

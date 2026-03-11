@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     const SYSTEME_KEY = 'pbaarbsupaf1zie1goimopy59e0uherhe2p2gu4sjh0goqru3rzpiw9o594kg6dy';
-    const BREVO_KEY   = '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';
+    const BREVO_KEY   = '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';
     const TAG_ID = 1901135;
 
     // 1. Crear contacto en Systeme.io
@@ -25,6 +25,7 @@ export default async function handler(req, res) {
     });
     const contactData = await contactRes.json();
     const contactId = contactData.id;
+    console.log('Systeme response:', JSON.stringify(contactData));
 
     // 2. Asignar etiqueta
     if (contactId) {

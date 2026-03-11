@@ -89,7 +89,7 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
         'Authorization': `Bearer ${RESEND_KEY}`
       },
       body: JSON.stringify({
-        from: 'Josué Calderón <josue@josuecalderon.lat>',
+        from: 'Josué Calderón <onboarding@resend.dev>',
         to: email,
         subject: `${firstName}, tu resultado está aquí`,
         html: emailHtml

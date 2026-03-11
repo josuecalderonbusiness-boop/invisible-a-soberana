@@ -770,7 +770,7 @@ function unlock() {
 
   const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
 
-  fetch('/.netlify/functions/register', {
+  fetch('/api/register', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ email:e, firstName:n, lastName:'', profile:top })

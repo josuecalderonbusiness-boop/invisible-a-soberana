@@ -10,33 +10,32 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing fields' });
     }
 
-    const SYSTEME_KEY = process.env.SYSTEME_KEY;
-    const BREVO_KEY   = process.env.BREVO_KEY;
-    const TAG_ID = 1901135;
+    const BREVO_KEY = process.env.BREVO_KEY;
+    const BREVO_LIST_ID = 2;
 
-    // 1. Crear contacto en Systeme.io
-    const contactRes = await fetch('https://api.systeme.io/api/contacts', {
+    // 1. Crear/actualizar contacto en Brevo y agregarlo a la lista
+    const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': SYSTEME_KEY },
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': BREVO_KEY
+      },
       body: JSON.stringify({
-        email, firstName, lastName: lastName || '',
-        fields: [{ slug: 'quiz_profile', value: profile || '' }]
+        email,
+        attributes: {
+          FIRSTNAME: firstName,
+          LASTNAME: lastName || '',
+          QUIZ_PROFILE: profile || ''
+        },
+        listIds: [BREVO_LIST_ID],
+        updateEnabled: true
       })
     });
+
     const contactData = await contactRes.json();
-    const contactId = contactData.id;
-    console.log('Systeme response:', JSON.stringify(contactData));
+    console.log('Brevo contact response:', JSON.stringify(contactData));
 
-    // 2. Asignar etiqueta
-    if (contactId) {
-      await fetch(`https://api.systeme.io/api/contacts/${contactId}/tags`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': SYSTEME_KEY },
-        body: JSON.stringify({ tagId: TAG_ID })
-      });
-    }
-
-    // 3. Enviar email via Brevo
+    // 2. Enviar email de resultado via Brevo
     const vslUrl    = 'https://codigosoberana.josuecalderon.lat';
     const resultUrl = `https://invisible-a-soberana.josuecalderon.lat?p=${profile}&name=${encodeURIComponent(firstName)}`;
 
@@ -98,11 +97,10 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     });
 
     const emailData = await emailRes.json();
-    console.log('Brevo response:', JSON.stringify(emailData));
+    console.log('Brevo email response:', JSON.stringify(emailData));
 
     return res.status(200).json({
       success: true,
-      contactId,
       profile,
       messageId: emailData.messageId
     });

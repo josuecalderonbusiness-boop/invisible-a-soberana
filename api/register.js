@@ -12,16 +12,15 @@ export default async function handler(req, res) {
 
     const BREVO_KEY = process.env.BREVO_KEY;
 
-    // Lista según perfil del quiz
     const PROFILE_LISTS = {
       S: 7,
       P: 8,
       D: 9
     };
 
-    const listId = PROFILE_LISTS[profile] || 7; // si no hay perfil, va a S por defecto
+    const listId = PROFILE_LISTS[profile] || 7;
 
-    // 1. Crear/actualizar contacto en Brevo y agregarlo a su lista según perfil
+    // 1. Crear/actualizar contacto en Brevo
     const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -64,6 +63,7 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
 .div{height:1px;background:rgba(184,137,42,0.3);margin:32px 0;}
 .sig{padding:0 40px 44px;}
 .sig p{font-size:14px;line-height:1.8;color:#6B4050;margin:0;}
+.pd{font-size:13px;color:#6B4050;font-style:italic;}
 .foot{background:#1C1114;padding:20px 32px;text-align:center;}
 .foot p{font-size:11px;color:#3A2030;margin:0;}
 </style></head>
@@ -84,7 +84,7 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
   </div>
   <div class="sig">
     <p>— <strong>Josué Calderón</strong></p>
-    <p><em>P.D. Cuesta $27. Un precio intencional — la puerta de entrada no debería ser una barrera.</em></p>
+    <p class="pd">P.D. Cuesta $577 pesos. Un precio intencional — la puerta de entrada no debería ser una barrera.</p>
   </div>
   <div class="foot">
     <p>© 2026 Josué Calderón · Código Soberana · josue@josuecalderon.lat</p>

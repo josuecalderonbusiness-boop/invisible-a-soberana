@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const BREVO_KEY = process.env.BREVO_KEY;
     const BREVO_LIST_ID = 2;
 
-    // 1. Crear/actualizar contacto en Brevo y agregarlo a la lista
+    // 1. Crear/actualizar contacto en Brevo
     const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -23,8 +23,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         email,
         attributes: {
-          FIRSTNAME: firstName,
-          LASTNAME: lastName || '',
+          NOMBRE: firstName,
+          APELLIDOS: lastName || '',
           QUIZ_PROFILE: profile || ''
         },
         listIds: [BREVO_LIST_ID],

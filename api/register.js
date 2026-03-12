@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const BREVO_KEY = process.env.BREVO_KEY;
     const BREVO_LIST_ID = 2;
 
-    // 1. Crear/actualizar contacto en Brevo
+    // 1. Crear/actualizar contacto en Brevo y agregarlo a la lista
     const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -66,16 +66,17 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
   </div>
   <div class="body">
     <p>Hola <strong>${firstName}</strong>,</p>
-    <p>Hiciste el test. Y eso ya dice algo de ti — las mujeres que evitan conocerse no llegan hasta el final.</p>
-    <p>Aquí está tu resultado completo:</p>
+    <p>Hiciste el test. Y eso ya dice algo de ti.</p>
+    <p>Aquí está tu resultado:</p>
     <div class="btn-wrap"><a href="${resultUrl}" class="btn">→ Ver mi resultado</a></div>
     <div class="div"></div>
-    <p>Y hay algo más que necesitas ver.</p>
-    <p>Lo que encontré después de 15 años dentro de mi matrimonio va a cambiar la forma en que ves todo lo que estás viviendo con tu pareja hasta hoy.</p>
-    <div class="btn-wrap"><a href="${vslUrl}" class="btn-sec">→ Quiero verlo</a></div>
+    <p>La respuesta no es que estás haciendo algo mal. Es que nadie te ha explicado cómo funciona la dinámica que se armó entre los dos — y cómo puedes moverla desde tu lugar, sin esperar que él cambie primero.</p>
+    <p>Eso es lo que encontrarás aquí:</p>
+    <div class="btn-wrap"><a href="${vslUrl}" class="btn-sec">→ Quiero ver cómo funciona</a></div>
   </div>
   <div class="sig">
-    <p>— <strong>Josué Calderón</strong><br><em>15 años de matrimonio. Sé lo que es estar del otro lado.</em></p>
+    <p>— <strong>Josué Calderón</strong></p>
+    <p><em>P.D. Cuesta $27. Un precio intencional — la puerta de entrada no debería ser una barrera.</em></p>
   </div>
   <div class="foot">
     <p>© 2026 Josué Calderón · Código Soberana · josue@josuecalderon.lat</p>

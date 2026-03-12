@@ -11,9 +11,17 @@ export default async function handler(req, res) {
     }
 
     const BREVO_KEY = process.env.BREVO_KEY;
-    const BREVO_LIST_ID = 2;
 
-    // 1. Crear/actualizar contacto en Brevo y agregarlo a la lista
+    // Lista según perfil del quiz
+    const PROFILE_LISTS = {
+      S: 7,
+      P: 8,
+      D: 9
+    };
+
+    const listId = PROFILE_LISTS[profile] || 7; // si no hay perfil, va a S por defecto
+
+    // 1. Crear/actualizar contacto en Brevo y agregarlo a su lista según perfil
     const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -27,7 +35,7 @@ export default async function handler(req, res) {
           APELLIDOS: lastName || '',
           QUIZ_PROFILE: profile || ''
         },
-        listIds: [BREVO_LIST_ID],
+        listIds: [listId],
         updateEnabled: true
       })
     });

@@ -1,0 +1,21 @@
+name: Renovar Token WhatsApp
+
+on:
+  schedule:
+    - cron: '0 10 1 * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar endpoint de renovación
+        run: |
+          curl -X GET \
+            "https://invisible-a-soberana.josuecalderon.lat/api/refresh-token?secret=soberana2026cron" \
+            -H "x-cron-secret: soberana2026cron"
+```
+
+En el nombre del archivo arriba escribe:
+```
+refresh-token.yml

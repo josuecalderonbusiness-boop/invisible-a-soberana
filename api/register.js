@@ -108,6 +108,33 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     const emailData = await emailRes.json();
     console.log('Brevo email response:', JSON.stringify(emailData));
 
+    // 3. Guardar lead en Google Sheets (hoja Leads)
+    // — No falla la respuesta si Sheets falla —
+    try {
+      const SHEETS_URL = process.env.SHEETS_WEBHOOK_URL;
+      if (SHEETS_URL) {
+        const ahoraCol = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+        await fetch(SHEETS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            accion:   'nuevo_lead',
+            fecha:    ahoraCol,
+            nombre:   firstName,
+            email:    email,
+            whatsapp: '',
+            perfil:   profile || '',
+            lista:    String(listId),
+            mensaje:  'Lead desde quiz'
+          })
+        });
+        console.log('Sheets lead guardado:', email);
+      }
+    } catch (sheetsErr) {
+      // Sheets falla silenciosamente — no afecta el quiz
+      console.error('Sheets error (non-fatal):', sheetsErr.message);
+    }
+
     return res.status(200).json({
       success: true,
       profile,

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Código Soberana — Josué Calderón</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --wine-deep: #3D0C11;
+  --wine-primary: #6B1A2A;
+  --wine-medium: #8B2D3F;
+  --wine-light: #A84455;
+  --wine-pale: #C97080;
+  --gold-deep: #7A5C1E;
+  --gold-primary: #B8892A;
+  --gold-medium: #D4A843;
+  --gold-light: #E8C870;
+  --gold-pale: #F5E4B0;
+  --forest-primary: #1A3D2B;
+  --cream-warm: #F9F3E8;
+  --parchment: #EDE3CE;
+  --charcoal-deep: #0F0A0B;
+  --charcoal: #1C1114;
+  --charcoal-soft: #2D1F23;
+  --text-light: #F0E6EA;
+  --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-elegant: 'Cormorant Garamond', Georgia, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--charcoal-deep);
+  color: var(--cream-warm);
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════
+   PARTÍCULAS FIJAS
+══════════════════════════════ */
+#particles {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0; overflow: hidden;
+}
+.pt {
+  position: absolute; border-radius: 50%;
+  animation: pt-fall linear infinite; opacity: 0;
+}
+@keyframes pt-fall {
+  0%   { transform: translateY(-20px) rotate(0deg) scale(0.8); opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(105vh) rotate(480deg) scale(1.1); opacity: 0; }
+}
+
+/* ══════════════════════════════
+   SECCIÓN 1 — VIDEO + CTA HOLE
+══════════════════════════════ */
+#section-video {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(107,26,42,0.35) 0%, var(--charcoal-deep) 65%);
+  z-index: 1;
+  padding: 40px 24px 60px;
+}
+
+#video-stage {
+  width: 100%;
+  max-width: 560px;
+  background: #000;
+  border: 1px solid rgba(184,137,42,0.15);
+  box-shadow: 0 8px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(107,26,42,0.3);
+}
+
+.video-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: #000;
+}
+
+#main-video {
+  width: 100%; height: 100%;
+  display: block; object-fit: cover;
+}
+
+.video-inner::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none; z-index: 1;
+}
+
+/* Sound overlay */
+#sound-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(15,10,11,0.72);
+  cursor: pointer; z-index: 10;
+  transition: opacity 0.5s ease;
+}
+#sound-overlay.hidden { opacity: 0; pointer-events: none; }
+
+.sound-ring {
+  width: 82px; height: 82px; border-radius: 50%;
+  border: 1.5px solid var(--gold-primary);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px; position: relative;
+  animation: ring-pulse 2.2s ease infinite;
+}
+.sound-ring::before {
+  content: ''; position: absolute; inset: -14px;
+  border-radius: 50%; border: 1px solid rgba(184,137,42,0.22);
+  animation: ring-pulse 2.2s ease infinite 0.45s;
+}
+@keyframes ring-pulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.7; }
+}
+.sound-ring svg { width: 32px; height: 32px; fill: var(--gold-primary); }
+#sound-overlay p {
+  font-family: var(--font-elegant);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 300; letter-spacing: 0.1em;
+  color: var(--cream-warm); text-align: center; line-height: 1.6;
+}
+#sound-overlay p span {
+  display: block; font-size: 0.65rem;
+  font-family: var(--font-body); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gold-primary); margin-top: 6px;
+}
+
+/* Video controls */
+#video-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 16px 14px;
+  background: linear-gradient(to top, rgba(15,10,11,0.88) 0%, transparent 100%);
+  z-index: 10; display: flex; align-items: center; gap: 12px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.video-inner:hover #video-controls { opacity: 1; }
+.vc-btn { background:none; border:none; cursor:pointer; padding:4px; display:flex; align-items:center; }
+.vc-btn svg { width:20px; height:20px; fill:var(--cream-warm); }
+.prog-wrap { flex:1; height:3px; background:rgba(249,243,232,0.18); border-radius:2px; cursor:default; }
+.prog-fill { height:100%; background:linear-gradient(to right,var(--wine-primary),var(--gold-primary)); border-radius:2px; width:0%; transition:width 0.3s linear; }
+.time-disp { font-size:0.68rem; color:rgba(249,243,232,0.45); white-space:nowrap; min-width:68px; }
+.vol-wrap { display:flex; align-items:center; gap:7px; }
+.vol-wrap svg { width:17px; height:17px; fill:var(--cream-warm); cursor:pointer; flex-shrink:0; }
+input[type=range].vol-sl { -webkit-appearance:none; width:62px; height:2px; background:rgba(249,243,232,0.18); border-radius:2px; outline:none; }
+input[type=range].vol-sl::-webkit-slider-thumb { -webkit-appearance:none; width:11px; height:11px; border-radius:50%; background:var(--gold-primary); cursor:pointer; }
+
+/* CTA hole under video */
+#cta-hole {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0 0;
+  text-align: center;
+  position: relative;
+}
+#cta-hole .pre {
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gold-primary); margin-bottom: 14px;
+  display: block;
+}
+#cta-hole h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+  font-weight: 700; line-height: 1.25;
+  color: var(--cream-warm);
+  max-width: 560px; margin: 0 auto 12px;
+}
+#cta-hole h1 em { font-style: italic; color: var(--gold-medium); }
+#cta-hole .sub {
+  font-family: var(--font-elegant);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 300; line-height: 1.7;
+  color: var(--wine-pale);
+  max-width: 520px; margin: 0 auto 28px;
+}
+.scroll-hint {
+  position: absolute; bottom: 22px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  opacity: 0.35;
+  animation: bounce 2.5s ease infinite;
+}
+@keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+.scroll-hint span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary); }
+.scroll-hint svg { width: 18px; height: 18px; stroke: var(--gold-primary); fill: none; stroke-width: 2; }
+
+/* ══════════════════════════════
+   FLOATING CTA
+══════════════════════════════ */
+#cta-float {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  z-index: 500; opacity: 0;
+  transition: transform 0.65s cubic-bezier(0.34,1.56,0.64,1), opacity 0.45s ease;
+  pointer-events: none; text-align: center;
+}
+#cta-float.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: all; }
+
+/* ══════════════════════════════
+   SHARED
+══════════════════════════════ */
+.gold-divider {
+  height: 1px; position: relative; z-index: 1;
+  background: linear-gradient(to right, transparent, rgba(184,137,42,0.4), var(--gold-primary), rgba(184,137,42,0.4), transparent);
+}
+.section-wrap { max-width: 920px; margin: 0 auto; padding: 96px 24px; position: relative; z-index: 1; }
+.section-wrap.narrow { max-width: 780px; }
+
+.eyebrow {
+  display: block; font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gold-primary); margin-bottom: 18px;
+}
+h2.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4.5vw, 3rem);
+  font-weight: 700; line-height: 1.18;
+  color: var(--cream-warm); margin-bottom: 24px;
+}
+h2.section-title em { font-style: italic; color: var(--gold-medium); }
+
+.cta-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--gold-deep) 0%, var(--gold-primary) 50%, var(--gold-medium) 100%);
+  background-size: 200%;
+  color: var(--charcoal-deep);
+  font-family: var(--font-body); font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  text-decoration: none; padding: 18px 44px;
+  border: none; cursor: pointer; position: relative; overflow: hidden;
+  animation: gold-anim 3s ease infinite;
+  box-shadow: 0 4px 32px rgba(184,137,42,0.45), 0 0 0 1px rgba(184,137,42,0.5);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.cta-btn:hover {
+  box-shadow: 0 6px 50px rgba(184,137,42,0.65), 0 0 0 1px rgba(184,137,42,0.9);
+  transform: translateY(-2px);
+}
+.cta-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: shimmer 3s ease infinite 1.2s;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+@keyframes gold-anim { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.cta-note { display:block; margin-top:12px; font-size:0.7rem; color:rgba(200,180,160,0.4); letter-spacing:0.08em; text-align:center; }
+
+/* ══════════════════════════════
+   PANEL STACK
+══════════════════════════════ */
+#panel-stack { background: var(--charcoal); position: relative; z-index: 1; }
+.stack-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 2px; margin: 56px 0 72px;
+}
+.stack-card {
+  background: var(--charcoal-soft); border: 1px solid rgba(107,26,42,0.35);
+  padding: 48px 34px; position: relative;
+  transition: border-color 0.3s, background 0.3s;
+}
+.stack-card:hover { border-color: rgba(184,137,42,0.4); background: #321822; }
+.stack-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, transparent, var(--wine-primary), transparent);
+  transition: background 0.3s;
+}
+.stack-card:hover::before { background: linear-gradient(to right, transparent, var(--gold-primary), transparent); }
+.stack-num { font-family:var(--font-display); font-size:3.2rem; font-weight:900; color:rgba(107,26,42,0.22); line-height:1; margin-bottom:18px; }
+.stack-card h3 { font-family:var(--font-display); font-size:1.15rem; font-weight:600; color:var(--cream-warm); margin-bottom:10px; }
+.stack-card p { font-size:0.86rem; line-height:1.75; color:var(--text-muted); }
+.stack-claim { text-align:center; padding:56px 0 0; }
+.stack-claim .big { font-family:var(--font-display); font-size:clamp(1.5rem,3.5vw,2.2rem); font-weight:700; line-height:1.3; color:var(--cream-warm); max-width:640px; margin:0 auto 36px; }
+.stack-claim .big em { font-style:italic; color:var(--gold-medium); }
+
+/* ══════════════════════════════
+   PANEL AUTORIDAD
+══════════════════════════════ */
+#panel-autoridad { background: linear-gradient(180deg, var(--charcoal) 0%, var(--charcoal-deep) 100%); position:relative; z-index:1; }
+.auto-grid { display:grid; grid-template-columns:1fr 1fr; gap:72px; margin-top:56px; align-items:start; }
+@media(max-width:680px){ .auto-grid{grid-template-columns:1fr;gap:40px;} }
+.auto-story p { font-family:var(--font-elegant); font-size:1.12rem; font-weight:300; line-height:1.9; color:rgba(200,190,180,0.8); margin-bottom:18px; }
+.auto-story p strong { color:var(--cream-warm); font-weight:500; }
+.auto-boxes { display:flex; flex-direction:column; gap:2px; }
+.auto-box { padding:28px 26px; border:1px solid rgba(107,26,42,0.3); background:rgba(107,26,42,0.06); position:relative; }
+.auto-box::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,transparent,var(--wine-primary),transparent); }
+.auto-box h4 { font-family:var(--font-display); font-size:0.95rem; font-weight:600; color:var(--gold-light); margin-bottom:8px; }
+.auto-box p { font-size:0.83rem; line-height:1.7; color:var(--text-muted); }
+
+/* ══════════════════════════════
+   PANEL TESTIMONIOS
+══════════════════════════════ */
+#panel-testi {
+  background: linear-gradient(135deg, var(--charcoal-deep) 0%, var(--wine-deep) 40%, var(--charcoal-deep) 100%);
+  position: relative; z-index: 1;
+}
+.testi-carousel { margin-top: 56px; overflow: hidden; position: relative; }
+.testi-track { display: flex; transition: transform 0.65s cubic-bezier(0.77,0,0.18,1); }
+.testi-slide { min-width: 100%; padding: 0 2px; }
+
+.testi-card {
+  border: 1px solid rgba(184,137,42,0.2);
+  background: rgba(15,10,11,0.55);
+  padding: 52px 48px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 48px;
+  align-items: center;
+}
+@media(max-width:650px){ .testi-card{grid-template-columns:1fr;padding:36px 24px;} }
+
+.testi-img-wrap {
+  width: 180px; flex-shrink: 0;
+  border: 1px solid rgba(107,26,42,0.4);
+  overflow: hidden; position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.testi-img-wrap::after {
+  content: ''; position: absolute; inset: 0;
+  border: 2px solid rgba(184,137,42,0.12);
+  z-index: 1; pointer-events: none;
+}
+.testi-img-wrap img { width:100%; display:block; filter:contrast(1.05) saturate(0.88); }
+@media(max-width:650px){ .testi-img-wrap{width:100%;max-width:280px;margin:0 auto;} }
+
+.testi-text {}
+.testi-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px; margin-bottom: 20px;
+  border: 1px solid rgba(184,137,42,0.3);
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--gold-light); text-transform: uppercase;
+  background: rgba(184,137,42,0.05);
+}
+.testi-card h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem,2.5vw,1.55rem);
+  font-weight: 700; color: var(--cream-warm);
+  line-height: 1.25; margin-bottom: 14px;
+}
+.testi-result {
+  font-family: var(--font-elegant);
+  font-size: 1.08rem; font-weight: 300; font-style: italic;
+  line-height: 1.8; color: rgba(200,190,175,0.7);
+}
+
+.testi-nav {
+  display:flex; align-items:center; justify-content:center; gap:18px; margin-top:36px;
+}
+.testi-btn {
+  width:42px; height:42px; border:1px solid rgba(184,137,42,0.3);
+  background:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background 0.2s, border-color 0.2s;
+}
+.testi-btn:hover { background:rgba(184,137,42,0.1); border-color:var(--gold-primary); }
+.testi-btn svg { width:15px; height:15px; stroke:var(--gold-primary); fill:none; stroke-width:2.5; }
+.testi-dots { display:flex; gap:8px; }
+.testi-dot { width:6px; height:6px; border-radius:50%; background:rgba(107,26,42,0.5); cursor:pointer; transition:background 0.3s,transform 0.3s; }
+.testi-dot.on { background:var(--gold-primary); transform:scale(1.4); }
+
+/* ══════════════════════════════
+   PANEL CALIFICACIÓN
+══════════════════════════════ */
+#panel-califica { background:var(--charcoal); position:relative; z-index:1; }
+.califa-grid { display:grid; grid-template-columns:1fr 1px 1fr; margin-top:56px; }
+@media(max-width:600px){ .califa-grid{grid-template-columns:1fr;} .califa-div{display:none;} }
+.califa-col { padding:0 40px; }
+.califa-col:first-child { padding-left:0; }
+.califa-col:last-child { padding-right:0; }
+.califa-div { background:rgba(107,26,42,0.25); }
+.califa-label { font-family:var(--font-display); font-size:1.1rem; font-weight:700; padding-bottom:16px; margin-bottom:28px; border-bottom:1px solid rgba(184,137,42,0.18); }
+.califa-label.yes { color:var(--gold-light); }
+.califa-label.no { color:rgba(200,160,176,0.3); }
+.califa-item { display:flex; gap:13px; align-items:flex-start; margin-bottom:18px; }
+.califa-item .ico { flex-shrink:0; margin-top:3px; font-size:0.8rem; color:var(--gold-primary); }
+.califa-item p { font-family:var(--font-elegant); font-size:1.05rem; font-weight:300; line-height:1.65; color:rgba(200,190,175,0.75); }
+
+/* ══════════════════════════════
+   PANEL FAQ
+══════════════════════════════ */
+#panel-faq { background:var(--charcoal-deep); position:relative; z-index:1; }
+.faq-list { margin-top:56px; }
+.faq-item { border-bottom:1px solid rgba(107,26,42,0.3); }
+.faq-q { width:100%; background:none; border:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:26px 0; gap:18px; text-align:left; }
+.faq-q span { font-family:var(--font-display); font-size:1rem; font-weight:500; color:var(--cream-warm); line-height:1.4; }
+.faq-icon { flex-shrink:0; width:24px; height:24px; border:1px solid rgba(184,137,42,0.3); display:flex; align-items:center; justify-content:center; transition:background 0.3s; }
+.faq-icon svg { width:12px; height:12px; stroke:var(--gold-primary); fill:none; stroke-width:2.5; transition:transform 0.3s; }
+.faq-item.open .faq-icon { background:rgba(107,26,42,0.3); }
+.faq-item.open .faq-icon svg { transform:rotate(45deg); }
+.faq-ans { max-height:0; overflow:hidden; transition:max-height 0.4s ease,padding 0.3s; }
+.faq-item.open .faq-ans { max-height:280px; padding-bottom:26px; }
+.faq-ans p { font-family:var(--font-elegant); font-size:1.05rem; font-weight:300; line-height:1.8; color:rgba(200,190,175,0.65); }
+
+/* ══════════════════════════════
+   PANEL GARANTÍA
+══════════════════════════════ */
+#panel-garantia { background:linear-gradient(135deg,var(--charcoal-deep) 0%,var(--wine-deep) 50%,var(--charcoal-deep) 100%); position:relative; z-index:1; }
+.garantia-box { margin-top:56px; border:1px solid rgba(184,137,42,0.25); padding:68px 56px; position:relative; text-align:center; background:rgba(15,10,11,0.5); }
+.garantia-box::before,.garantia-box::after { content:''; position:absolute; width:36px; height:36px; border-color:var(--gold-primary); border-style:solid; }
+.garantia-box::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+.garantia-box::after { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+.garantia-num { font-family:var(--font-display); font-size:6.5rem; font-weight:900; line-height:1; color:var(--wine-primary); margin-bottom:4px; }
+.garantia-label { font-size:0.68rem; font-weight:700; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold-primary); margin-bottom:36px; display:block; }
+.garantia-box p { font-family:var(--font-elegant); font-size:1.2rem; font-weight:300; line-height:1.85; color:rgba(200,190,175,0.8); max-width:500px; margin:0 auto; }
+@media(max-width:600px){ .garantia-box{padding:48px 28px;} }
+
+/* ══════════════════════════════
+   PANEL CTA FINAL
+══════════════════════════════ */
+#panel-cta { background:linear-gradient(180deg,var(--charcoal-deep) 0%,var(--wine-deep) 40%,var(--charcoal-deep) 100%); position:relative; overflow:hidden; z-index:1; }
+#panel-cta::before { content:''; position:absolute; top:-150px; left:50%; transform:translateX(-50%); width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(107,26,42,0.2) 0%,transparent 70%); pointer-events:none; }
+.cta-final-inner { text-align:center; position:relative; z-index:1; }
+.confrontation { font-family:var(--font-display); font-size:clamp(1.5rem,4vw,2.5rem); font-weight:700; line-height:1.25; color:var(--cream-warm); margin-bottom:28px; }
+.confrontation em { font-style:italic; color:var(--gold-medium); }
+.body-copy { font-family:var(--font-elegant); font-size:1.18rem; font-weight:300; line-height:1.9; color:rgba(200,180,160,0.7); max-width:560px; margin:0 auto 56px; }
+.price-block { margin-bottom:32px; }
+.price-block .amount { font-family:var(--font-display); font-size:4.5rem; font-weight:900; color:var(--cream-warm); line-height:1; }
+.price-block .curr { font-size:2rem; color:var(--gold-light); vertical-align:super; font-weight:400; }
+.price-block .lbl { display:block; font-size:0.68rem; letter-spacing:0.22em; text-transform:uppercase; color:rgba(200,160,170,0.4); margin-top:8px; }
+.pd-note { margin-top:64px; padding-top:44px; border-top:1px solid rgba(107,26,42,0.3); font-family:var(--font-elegant); font-size:1rem; font-weight:300; font-style:italic; line-height:1.85; color:rgba(200,180,160,0.4); max-width:500px; margin-left:auto; margin-right:auto; }
+
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+footer { background:var(--charcoal-deep); border-top:1px solid rgba(107,26,42,0.25); padding:44px 24px; text-align:center; position:relative; z-index:1; }
+.footer-logo { font-family:var(--font-display); font-size:1rem; font-weight:700; letter-spacing:0.15em; color:var(--gold-primary); text-transform:uppercase; margin-bottom:18px; }
+.footer-links { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; margin-bottom:16px; }
+.footer-links a { font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:rgba(200,160,170,0.22); text-decoration:none; transition:color 0.2s; }
+.footer-links a:hover { color:var(--gold-primary); }
+.copyright { font-size:0.68rem; color:rgba(200,160,170,0.14); line-height:1.8; }
+
+/* ══════════════════════════════
+   REVEAL ON SCROLL
+══════════════════════════════ */
+.rv {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.rv.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Stagger delays */
+.rv-d1 { transition-delay: 0.1s; }
+.rv-d2 { transition-delay: 0.2s; }
+.rv-d3 { transition-delay: 0.3s; }
+.rv-d4 { transition-delay: 0.4s; }
+</style>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-60269X4BEN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-60269X4BEN');
+</script>
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1209108340676480');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"/></noscript>
+</head>
+<body>
+
+<!-- PARTÍCULAS -->
+<div id="particles"></div>
+
+<!-- ═══ SECCIÓN 1: VIDEO + CTA ═══ -->
+<div id="section-video">
+  <div id="video-stage">
+    <div class="video-inner">
+      <video id="main-video" playsinline muted>
+        <source src="video-codigo-soberana.mp4" type="video/mp4">
+      </video>
+      <div id="sound-overlay">
+        <div class="sound-ring">
+          <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="#B8892A" stroke-width="1.5" fill="none"/></svg>
+        </div>
+        <p>El video ya empezó<span>Haz clic aquí para escucharlo</span></p>
+      </div>
+      <div id="video-controls">
+        <button class="vc-btn" id="btn-pp">
+          <svg id="ic-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="ic-play" viewBox="0 0 24 24" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+        </button>
+        <button class="vc-btn" id="btn-rw">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.61"/></svg>
+        </button>
+        <div class="prog-wrap"><div class="prog-fill" id="prog"></div></div>
+        <div class="time-disp" id="tdisp">0:00 / 7:00</div>
+        <div class="vol-wrap">
+          <svg viewBox="0 0 24 24" onclick="toggleMute()" id="vol-ico">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          </svg>
+          <input type="range" class="vol-sl" id="vol-sl" min="0" max="1" step="0.05" value="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cta-hole">
+    <span class="pre rv">Para la mujer que lo da todo</span>
+    <h1 class="rv rv-d1">Cómo cambiar la dinámica de tu relación...<br><em>aunque él siga siendo el mismo</em></h1>
+    <p class="sub rv rv-d2">Sin terapia de pareja. Sin rogarle que cambie. Sin depender de que él "por fin entienda".</p>
+    <div class="rv rv-d3">
+      <a href="#panel-cta" class="cta-btn">Sí, Quiero Activar Mi Código Soberana</a>
+      <span class="cta-note">Acceso inmediato · $27 USD · Garantía 7 días</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- FLOATING CTA -->
+<div id="cta-float">
+  <a href="#panel-cta" class="cta-btn">Sí, Quiero Activar Mi Código Soberana</a>
+  <span class="cta-note">Acceso inmediato · $27 USD · Garantía 7 días</span>
+</div>
+
+<!-- ═══ STACK ═══ -->
+<div id="panel-stack">
+  <div class="section-wrap">
+    <span class="eyebrow rv">Lo que recibes</span>
+    <h2 class="section-title rv rv-d1">¿Lista para activar tu <em>Código Soberana?</em></h2>
+    <div class="stack-grid">
+      <div class="stack-card rv rv-d1">
+        <div class="stack-num">01</div>
+        <h3>Workshop Código Soberana</h3>
+        <p>90 minutos de entrenamiento directo. El sistema completo para cambiar la dinámica de tu relación desde tu posición.</p>
+      </div>
+      <div class="stack-card rv rv-d2">
+        <div class="stack-num">02</div>
+        <h3>Workbook "De Invisible a Soberana"</h3>
+        <p>PDF descargable. Tu guía de trabajo para aplicar el Protocolo de Posición paso a paso, a tu ritmo.</p>
+      </div>
+      <div class="stack-card rv rv-d3">
+        <div class="stack-num">03</div>
+        <h3>Grupo Privado de WhatsApp</h3>
+        <p>Acceso exclusivo a la comunidad. Mujeres que aplican el sistema. Acompañamiento directo.</p>
+      </div>
+    </div>
+    <div class="stack-claim rv">
+      <p class="big">Esto no es terapia. No es "trabaja tu autoestima".<br><em>Es un código.</em> Y cuando lo activas, algo en él cambia.</p>
+      <a href="#panel-cta" class="cta-btn">Sí, Quiero Activar Mi Código Soberana</a>
+      <span class="cta-note">Acceso inmediato por $27 USD</span>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ AUTORIDAD ═══ -->
+<div id="panel-autoridad">
+  <div class="section-wrap">
+    <span class="eyebrow rv">Por qué puedes confiar en este sistema</span>
+    <h2 class="section-title rv rv-d1">No soy psicólogo.<br><em>Tengo algo mejor.</em></h2>
+    <div class="auto-grid">
+      <div class="auto-story rv rv-d1">
+        <p>Me llamo <strong>Josué Calderón</strong>. Llevo <strong>15 años casado</strong>. Tengo dos hijos. Perdí una hija a los 6 meses de embarazo.</p>
+        <p>Viví quiebras económicas, depresión, ataques de ansiedad. Fui pastor evangélico por <strong>10 años</strong> acompañando parejas en crisis.</p>
+        <p>Primero como soltero observando. Luego como casado viviendo.</p>
+        <p>No soy psicólogo. Pero tengo un matrimonio real, con hijos reales, con crisis reales — <strong>que sigue de pie.</strong></p>
+      </div>
+      <div class="auto-boxes">
+        <div class="auto-box rv rv-d1"><h4>Experiencia vivida</h4><p>15 años de matrimonio + 10 años acompañando parejas. Crisis reales, no teoría académica.</p></div>
+        <div class="auto-box rv rv-d2"><h4>Perspectiva masculina</h4><p>Soy el hombre que estuvo del otro lado. Te explico cómo piensan ellos desde adentro.</p></div>
+        <div class="auto-box rv rv-d3"><h4>Sistema probado</h4><p>Primeras señales en 48-72 horas. No necesita terapia de pareja. No depende de él.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ TESTIMONIOS ═══ -->
+<div id="panel-testi">
+  <div class="section-wrap">
+    <span class="eyebrow rv">Mujeres reales</span>
+    <h2 class="section-title rv rv-d1">Resultados <em>reales.</em></h2>
+    <div class="testi-carousel rv rv-d2">
+      <div class="testi-track" id="t-track">
+
+        <div class="testi-slide">
+          <div class="testi-card">
+            <div class="testi-img-wrap">
+              <img src="testi_1.jpg" alt="Testimonio">
+            </div>
+            <div class="testi-text">
+              <span class="testi-badge">⚡ 2 semanas</span>
+              <h3>"El Ancla Emocional es oro puro"</h3>
+              <p class="testi-result">En solo 2 semanas su esposo empezó a buscarla de nuevo. Aplicó el sistema sola, sin decirle nada.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testi-slide">
+          <div class="testi-card">
+            <div class="testi-img-wrap">
+              <img src="testi_2.jpg" alt="Testimonio">
+            </div>
+            <div class="testi-text">
+              <span class="testi-badge">💍 Matrimonio de 7 años</span>
+              <h3>"Salvaste mi matrimonio"</h3>
+              <p class="testi-result">Estaba a punto de divorciarse. Aplicó todo lo que enseñaste y todo cambió. Las cosas están mejor que nunca.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="testi-slide">
+          <div class="testi-card">
+            <div class="testi-img-wrap">
+              <img src="testi_3.jpg" alt="Testimonio">
+            </div>
+            <div class="testi-text">
+              <span class="testi-badge">🤫 Será nuestro secreto</span>
+              <h3>"Ya no me siento sola"</h3>
+              <p class="testi-result">Fue una reacción en cadena. Se convirtió en una mujer distinta, él lo sintió, y empezó a tratarla diferente.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="testi-nav">
+        <button class="testi-btn" id="t-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="testi-dots">
+          <div class="testi-dot on" data-i="0"></div>
+          <div class="testi-dot" data-i="1"></div>
+          <div class="testi-dot" data-i="2"></div>
+        </div>
+        <button class="testi-btn" id="t-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ CALIFICACIÓN ═══ -->
+<div id="panel-califica">
+  <div class="section-wrap">
+    <span class="eyebrow rv">¿Esto es para ti?</span>
+    <h2 class="section-title rv rv-d1">Sé honesta <em>contigo.</em></h2>
+    <div class="califa-grid rv rv-d2">
+      <div class="califa-col">
+        <div class="califa-label yes">✓ Es para ti si...</div>
+        <div class="califa-item"><span class="ico">✦</span><p>Sientes que persigues la conexión y él se aleja.</p></div>
+        <div class="califa-item"><span class="ico">✦</span><p>Haces todo bien pero la distancia crece.</p></div>
+        <div class="califa-item"><span class="ico">✦</span><p>Te comunicas, te esfuerzas, das amor... y nada cambia.</p></div>
+        <div class="califa-item"><span class="ico">✦</span><p>Quieres cambiar la dinámica sin depender de él.</p></div>
+        <div class="califa-item"><span class="ico">✦</span><p>Estás lista para recuperar tu lugar.</p></div>
+      </div>
+      <div class="califa-div"></div>
+      <div class="califa-col">
+        <div class="califa-label no">✗ No es para ti si...</div>
+        <div class="califa-item"><span class="ico" style="color:rgba(200,160,176,0.2)">—</span><p style="color:rgba(200,190,175,0.28)">Buscas tácticas de manipulación.</p></div>
+        <div class="califa-item"><span class="ico" style="color:rgba(200,160,176,0.2)">—</span><p style="color:rgba(200,190,175,0.28)">Quieres "arreglar" a tu pareja.</p></div>
+        <div class="califa-item"><span class="ico" style="color:rgba(200,160,176,0.2)">—</span><p style="color:rgba(200,190,175,0.28)">No estás dispuesta a ver tu parte en la dinámica.</p></div>
+        <div class="califa-item"><span class="ico" style="color:rgba(200,160,176,0.2)">—</span><p style="color:rgba(200,190,175,0.28)">Buscas justificaciones para separarte.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ FAQ ═══ -->
+<div id="panel-faq">
+  <div class="section-wrap narrow">
+    <span class="eyebrow rv">Preguntas frecuentes</span>
+    <h2 class="section-title rv rv-d1">Lo que necesitas <em>saber.</em></h2>
+    <div class="faq-list rv rv-d2">
+      <div class="faq-item"><button class="faq-q"><span>¿Funciona si él no participa?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>Sí. Este sistema cambia la DINÁMICA, no a tu pareja. Tú mueves tu posición. La dinámica se reconfigura. Él reacciona sin saber qué pasó.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Cuánto tarda en verse resultados?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>Las primeras señales aparecen en 48-72 horas si aplicas el Protocolo de Posición correctamente.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Esto es manipulación?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>No. Manipulación es intentar controlar al otro. Esto es RECONFIGURAR TU POSICIÓN. Dejas de perseguir, dejas de rogar. Eso no es manipulación. Es dignidad.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Qué pasa si ya intenté de todo?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>Probablemente intentaste cambiar a ÉL. No intentaste cambiar tu POSICIÓN en la dinámica. Esa diferencia lo cambia todo.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Hay garantía?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>Sí. 7 días de garantía 100%. Si sientes que no es para ti, te devolvemos cada centavo. Sin preguntas. Sin drama.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Cuánto dura el acceso?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>De por vida. Pago único de $27 USD. Sin suscripciones, sin renovaciones.</p></div></div>
+      <div class="faq-item"><button class="faq-q"><span>¿Es contenido religioso?</span><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></button><div class="faq-ans"><p>No. Aunque tengo formación pastoral, este sistema es práctico y aplicable para cualquier mujer, con o sin fe.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ GARANTÍA ═══ -->
+<div id="panel-garantia">
+  <div class="section-wrap narrow" style="text-align:center">
+    <span class="eyebrow rv">Sin riesgo</span>
+    <h2 class="section-title rv rv-d1">Entra con <em>tranquilidad.</em></h2>
+    <div class="garantia-box rv rv-d2">
+      <div class="garantia-num">7</div>
+      <span class="garantia-label">Días de garantía total</span>
+      <p>No quiero que sientas presión. Quiero que pruebes el sistema con tranquilidad. Si en los primeros 7 días sientes que no es para ti, escríbeme y te devuelvo cada centavo. Sin drama. Sin preguntas. Sin trucos.</p>
+    </div>
+  </div>
+</div>
+
+<div class="gold-divider"></div>
+
+<!-- ═══ CTA FINAL ═══ -->
+<div id="panel-cta">
+  <div class="section-wrap narrow cta-final-inner">
+    <span class="eyebrow rv">El siguiente paso</span>
+    <p class="confrontation rv rv-d1">La pregunta real no es si esto funciona.<br>La pregunta es: <em>¿Cuánto tiempo más vas a esperar que él cambie primero?</em></p>
+    <p class="body-copy rv rv-d2">Porque mientras esperas, la distancia crece. Los días se acumulan. Los meses pasan. Y un día miras atrás y te preguntas: ¿cuándo fue la última vez que me sentí vista?</p>
+    <div class="price-block rv rv-d3">
+      <span class="amount"><span class="curr">$</span>27</span>
+      <span class="lbl">USD · Acceso de por vida · Pago único</span>
+    </div>
+    <div class="rv rv-d4">
+      <a href="#" class="cta-btn">Sí, Activo Mi Código Soberana Ahora</a>
+      <span class="cta-note">Acceso inmediato · Garantía de 7 días sin preguntas</span>
+    </div>
+    <p class="pd-note rv">P.D. Él no necesita saber que estás haciendo esto. No tienes que decírselo. Solo cambias tu posición. Y la dinámica se reconfigura sola.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Código Soberana · Josué Calderón</div>
+  <div class="footer-links">
+    <a href="#">Política de Privacidad</a>
+    <a href="#">Términos y Condiciones</a>
+    <a href="#">Política de Reembolso</a>
+  </div>
+  <p class="copyright">© 2026 Código Soberana | Josué Calderón. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+// ── PARTÍCULAS ──────────────────────────
+(function(){
+  const c = document.getElementById('particles');
+  const colors = [
+    'rgba(184,137,42,0.55)',
+    'rgba(212,168,67,0.45)',
+    'rgba(232,200,112,0.35)',
+    'rgba(107,26,42,0.4)',
+    'rgba(184,137,42,0.3)',
+    'rgba(245,228,176,0.5)'
+  ];
+  for(let i = 0; i < 38; i++){
+    const p = document.createElement('div');
+    p.className = 'pt';
+    const s = Math.random() * 3.5 + 0.8;
+    const isSquare = Math.random() > 0.7;
+    p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${isSquare ? '1px' : '50%'};
+      animation-duration:${Math.random()*18+10}s;
+      animation-delay:${Math.random()*16}s;
+      ${isSquare ? `transform:rotate(${Math.random()*45}deg);` : ''}
+    `;
+    c.appendChild(p);
+  }
+})();
+
+// ── VIDEO ──────────────────────────
+const video = document.getElementById('main-video');
+const sovl  = document.getElementById('sound-overlay');
+const ctaF  = document.getElementById('cta-float');
+const prog  = document.getElementById('prog');
+const tdisp = document.getElementById('tdisp');
+const icPause = document.getElementById('ic-pause');
+const icPlay  = document.getElementById('ic-play');
+const TRIGGER = 230; // 3:50
+let ctaOn = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+  video.muted = true;
+  video.play().catch(()=>{});
+});
+
+sovl.addEventListener('click', () => {
+  video.muted = false;
+  video.currentTime = 0;
+  video.play();
+  sovl.classList.add('hidden');
+  document.getElementById('vol-sl').value = 1;
+});
+
+video.addEventListener('timeupdate', () => {
+  const c = video.currentTime, d = video.duration || 420;
+  prog.style.width = (c/d*100) + '%';
+  const cm = Math.floor(c/60), cs = String(Math.floor(c%60)).padStart(2,'0');
+  const dm = Math.floor(d/60), ds = String(Math.floor(d%60)).padStart(2,'0');
+  tdisp.textContent = `${cm}:${cs} / ${dm}:${ds}`;
+  if(c >= TRIGGER && !ctaOn){ ctaOn = true; ctaF.classList.add('show'); }
+});
+
+document.getElementById('btn-pp').addEventListener('click', () => {
+  if(video.paused){ video.play(); icPause.style.display='block'; icPlay.style.display='none'; }
+  else{ video.pause(); icPause.style.display='none'; icPlay.style.display='block'; }
+});
+document.getElementById('btn-rw').addEventListener('click', () => { video.currentTime = Math.max(0, video.currentTime-10); });
+
+const volSl = document.getElementById('vol-sl');
+volSl.addEventListener('input', () => { video.volume = parseFloat(volSl.value); video.muted = video.volume===0; });
+window.toggleMute = function(){ video.muted = !video.muted; volSl.value = video.muted ? 0 : video.volume; };
+
+// ── CAROUSEL ──────────────────────────
+let cur = 0;
+const track = document.getElementById('t-track');
+const dots  = document.querySelectorAll('.testi-dot');
+let auto = setInterval(() => go(cur+1), 8000);
+function go(i){ cur=(i+3)%3; track.style.transform=`translateX(-${cur*100}%)`; dots.forEach((d,j)=>d.classList.toggle('on',j===cur)); }
+function ra(){ clearInterval(auto); auto=setInterval(()=>go(cur+1),8000); }
+document.getElementById('t-prev').addEventListener('click', ()=>{ go(cur-1); ra(); });
+document.getElementById('t-next').addEventListener('click', ()=>{ go(cur+1); ra(); });
+dots.forEach(d => d.addEventListener('click', ()=>{ go(parseInt(d.dataset.i)); ra(); }));
+
+// ── FAQ ──────────────────────────
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const it = btn.parentElement, was = it.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(x=>x.classList.remove('open'));
+    if(!was) it.classList.add('open');
+  });
+});
+
+// ── REVEAL ON SCROLL ──────────────────────────
+// Usar IntersectionObserver que resetea al salir del viewport
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('in');
+    } else {
+      // Resetear cuando sale del viewport para que vuelva a animar al entrar
+      e.target.classList.remove('in');
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+
+// ── CTA FLOAT — ocultar en panel final ──────────────────────────
+const fp = document.getElementById('panel-cta');
+const fo = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) ctaF.classList.remove('show');
+    else if(ctaOn) ctaF.classList.add('show');
+  });
+}, { threshold: 0.2 });
+if(fp) fo.observe(fp);
+</script>
+</body>
+</html>

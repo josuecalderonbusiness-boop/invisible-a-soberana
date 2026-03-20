@@ -1799,6 +1799,8 @@ function initSticky(){
   const bar = document.getElementById('sticky-bar');
   const stack = document.getElementById('panel-stack');
   if(!bar || !stack) return;
+  // Threshold bajo para funcionar en móvil donde el panel es más largo
+  const isMobile = window.innerWidth < 768;
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if(e.isIntersecting){
@@ -1806,8 +1808,19 @@ function initSticky(){
         obs.disconnect();
       }
     });
-  }, { threshold: 0.5 });
+  }, { threshold: isMobile ? 0.1 : 0.5 });
   obs.observe(stack);
+  // Fallback: scroll listener para móvil
+  if(isMobile){
+    function checkScroll(){
+      const rect = stack.getBoundingClientRect();
+      if(rect.top < window.innerHeight * 0.8){
+        bar.classList.add('show');
+        window.removeEventListener('scroll', checkScroll);
+      }
+    }
+    window.addEventListener('scroll', checkScroll, {passive:true});
+  }
 }
 
 function initCarousel(){

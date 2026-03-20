@@ -24,6 +24,10 @@
       "dest": "/public/vsl$1"
     },
     {
+      "src": "/bienvenida(.*)",
+      "dest": "/public/bienvenida$1"
+    },
+    {
       "src": "/",
       "dest": "/index.html"
     }

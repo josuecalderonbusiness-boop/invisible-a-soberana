@@ -1,35 +1,14 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    }
+    {"src": "api/**/*.js", "use": "@vercel/node"},
+    {"src": "public/**", "use": "@vercel/static"},
+    {"src": "*.html", "use": "@vercel/static"}
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/vsl(.*)",
-      "dest": "/public/vsl$1"
-    },
-    {
-      "src": "/bienvenida(.*)",
-      "dest": "/public/bienvenida$1"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
-    }
+    {"src": "/api/(.*)", "dest": "/api/$1"},
+    {"src": "/vsl(.*)", "dest": "/public/vsl$1"},
+    {"src": "/bienvenida(.*)", "dest": "/public/bienvenida$1"},
+    {"src": "/", "dest": "/index.html"}
   ]
 }

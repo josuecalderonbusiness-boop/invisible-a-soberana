@@ -1,9 +1,14 @@
 {
   "version": 2,
-  "rewrites": [
-    {"source": "/api/:path*", "destination": "/api/:path*"},
-    {"source": "/bienvenida/:path*", "destination": "/public/bienvenida/:path*"},
-    {"source": "/vsl/:path*", "destination": "/public/vsl/:path*"},
-    {"source": "/", "destination": "/index.html"}
+  "builds": [
+    {"src": "api/**/*.js", "use": "@vercel/node"},
+    {"src": "public/**", "use": "@vercel/static"},
+    {"src": "*.html", "use": "@vercel/static"}
+  ],
+  "routes": [
+    {"src": "/api/(.*)", "dest": "/api/$1"},
+    {"src": "/vsl(.*)", "dest": "/public/vsl$1"},
+    {"src": "/bienvenida(.*)", "dest": "/public/bienvenida$1"},
+    {"src": "/", "dest": "/index.html"}
   ]
 }

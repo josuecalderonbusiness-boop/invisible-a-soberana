@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       let found  = false;
 
       if (contacto) {
-        nombre = contacto.attributes?.FIRSTNAME || contacto.attributes?.VORNAME || '';
+        nombre = contacto.attributes?.NOMBRE || contacto.attributes?.FIRSTNAME || contacto.attributes?.VORNAME || '';
         email  = contacto.email;
         found  = true;
         console.log(`Compradora encontrada (${matchTipo}): ${email} (${nombre})`);

@@ -98,9 +98,8 @@ export default async function handler(req, res) {
         mensaje:  `match:${matchTipo} | ${text.substring(0, 80)}`
       });
 
-      // PASO 4: Enviar plantilla de bienvenida con su nombre
-      const nombreFinal = nombre || 'amiga';
-      await sendTemplate(phone, nombreFinal);
+      // PASO 4: Enviar plantilla de bienvenida
+      await sendTemplate(phone);
 
       return res.status(200).json({ ok: true, email, phone });
 
@@ -116,11 +115,8 @@ export default async function handler(req, res) {
 // ── Manejar respuesta a botones de plantilla ─────────────────────
 async function manejarRespuestaBoton(phone, boton) {
   if (!boton) return;
-
   const textoBoton = boton.toLowerCase();
-
   if (textoBoton.includes('ya pude entrar') || textoBoton.includes('sí')) {
-    // Ella pudo acceder — enviar herramienta
     await sendWhatsApp(phone,
       `Perfecto. 🎯\n\n` +
       `Aquí tienes tu herramienta de trabajo. Es donde vas a aplicar cada palanca del Workshop a tu ritmo:\n\n` +
@@ -128,19 +124,18 @@ async function manejarRespuestaBoton(phone, boton) {
       `Descárgala e instálala antes de empezar el Workshop.`
     );
   } else if (textoBoton.includes('no he podido') || textoBoton.includes('no')) {
-    // Ella no pudo acceder — ayudar
     await sendWhatsApp(phone,
       `Tranquila. 🙏\n\n` +
       `Revisa estas tres cosas:\n\n` +
       `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n` +
       `2️⃣ El correo viene de noreply@hotmart.com\n` +
-      `3️⃣ Si no aparece, respóndeme con tu correo y te reenvío el acceso manually`
+      `3️⃣ Si no aparece, respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
     );
   }
 }
 
 // ── Enviar plantilla aprobada por Meta ───────────────────────────
-async function sendTemplate(to, nombre) {
+async function sendTemplate(to) {
   const number = to.replace(/[^0-9]/g, '');
   try {
     const res = await fetch(
@@ -158,14 +153,7 @@ async function sendTemplate(to, nombre) {
           template: {
             name: 'bienvenida_pacto_soberana',
             language: { code: 'es_MX' },
-            components: [
-              {
-                type: 'body',
-                parameters: [
-                  { type: 'text', text: nombre }
-                ]
-              }
-            ]
+            components: []
           }
         })
       }
@@ -184,9 +172,7 @@ async function sendTemplate(to, nombre) {
 async function buscarPorHotmartPhone(phone) {
   try {
     const url = `https://api.brevo.com/v3/contacts?limit=50&listId=11&sort=desc`;
-    const res = await fetch(url, {
-      headers: { 'api-key': process.env.BREVO_KEY }
-    });
+    const res = await fetch(url, { headers: { 'api-key': process.env.BREVO_KEY } });
     const raw = await res.text();
     if (!res.ok) { console.error('Error Brevo:', raw); return null; }
     const data      = JSON.parse(raw);

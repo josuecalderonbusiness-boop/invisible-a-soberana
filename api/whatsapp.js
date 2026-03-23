@@ -1,12 +1,12 @@
+// api/whatsapp.js — Versión Unificada y Corregida
 export default async function handler(req, res) {
 
-  // 1. Verificación del Webhook (GET) - Esto resuelve el error 403
+  // 1. Verificación Webhook (GET)
   if (req.method === 'GET') {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
-    // Asegúrate de que WHATSAPP_VERIFY_TOKEN en Vercel sea IGUAL al que pusiste en Meta
     if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
       return res.status(200).send(challenge);
     }
@@ -16,7 +16,9 @@ export default async function handler(req, res) {
   // 2. Recepción de Mensajes (POST)
   if (req.method === 'POST') {
     try {
-      const value = req.body.entry?.[0]?.changes?.[0]?.value;
+      const entry = req.body.entry?.[0];
+      const changes = entry?.changes?.[0];
+      const value = changes?.value;
       const messages = value?.messages;
 
       if (!messages || messages.length === 0) {
@@ -32,35 +34,34 @@ export default async function handler(req, res) {
                            text.toLowerCase().includes('soberana');
 
       if (esBienvenida) {
-        // Búsqueda en Brevo
+        // Estas funciones ahora SÍ están definidas abajo
         let contacto = await buscarPorHotmartPhone(phone);
         if (!contacto) contacto = await buscarCompradoraSinSMS();
 
         const nombreReal = contacto?.attributes?.FIRSTNAME || contacto?.attributes?.VORNAME || "Soberana";
         const email = contacto?.email || 'sin-match@soberana';
 
-        // ENVÍO DE PLANTILLA (Tag: firstname)
-        await sendWhatsAppTemplate(phone, "bienvenida_pacto_soberana", nombreReal);
+        // Envío de plantilla con idioma 'es' (más compatible)
+        const enviado = await sendWhatsAppTemplate(phone, "bienvenida_pacto_soberana", nombreReal);
 
-        // Registro en Sheets
         await guardarEnSheets({
           fecha: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
           nombre: nombreReal,
           email: email,
           whatsapp: phone,
-          mensaje: `Plantilla Enviada | ${text.substring(0, 30)}`
+          mensaje: enviado ? "Plantilla Enviada ✅" : "Error al enviar Plantilla ❌"
         });
       }
 
       return res.status(200).json({ ok: true });
     } catch (err) {
-      console.error('Error:', err.message);
+      console.error('Error General:', err.message);
       return res.status(200).json({ ok: true });
     }
   }
 }
 
-// Función de envío mejorada
+// --- FUNCIÓN DE ENVÍO DE PLANTILLA ---
 async function sendWhatsAppTemplate(to, templateName, nameValue) {
   const cleanNumber = to.replace(/\D/g, ''); 
   try {
@@ -83,7 +84,6 @@ async function sendWhatsAppTemplate(to, templateName, nameValue) {
               type: 'body',
               parameters: [{
                 type: 'text',
-                parameter_name: 'firstname', // Tag corregido
                 text: nameValue
               }]
             }]
@@ -92,11 +92,50 @@ async function sendWhatsAppTemplate(to, templateName, nameValue) {
       }
     );
     const data = await res.json();
-    console.log('Respuesta Meta:', JSON.stringify(data));
+    console.log(`Respuesta Meta (${cleanNumber}):`, JSON.stringify(data));
     return !!data.messages;
   } catch (err) {
+    console.error('Error sendWhatsAppTemplate:', err.message);
     return false;
   }
 }
 
-// --- MANTÉN TUS FUNCIONES ORIGINALES AQUÍ ABAJO (buscarPorHotmartPhone, etc.) ---
+// --- FUNCIONES DE APOYO (BREVO Y SHEETS) ---
+
+async function buscarPorHotmartPhone(phone) {
+  try {
+    const url = `https://api.brevo.com/v3/contacts?limit=50&listId=11&sort=desc`;
+    const res = await fetch(url, { headers: { 'api-key': process.env.BREVO_KEY } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const phoneNorm = (phone || '').replace(/[^\d]/g, '').slice(-10);
+    return (data.contacts || []).find(c => {
+      const hp = (c.attributes?.HOTMART_PHONE || '').replace(/[^\d]/g, '').slice(-10);
+      const sms = (c.attributes?.SMS || '').replace(/[^\d]/g, '').slice(-10);
+      return (hp && hp === phoneNorm) || (sms && sms === phoneNorm);
+    }) || null;
+  } catch (err) { return null; }
+}
+
+async function buscarCompradoraSinSMS() {
+  try {
+    const url = `https://api.brevo.com/v3/contacts?limit=50&listId=11&sort=desc`;
+    const res = await fetch(url, { headers: { 'api-key': process.env.BREVO_KEY } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.contacts || []).find(c => !c.attributes?.SMS) || null;
+  } catch (err) { return null; }
+}
+
+async function guardarEnSheets(data) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return res.ok;
+  } catch (err) { return false; }
+}

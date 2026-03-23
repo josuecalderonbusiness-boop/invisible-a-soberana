@@ -13,49 +13,52 @@ export default async function handler(req, res) {
   // 2. Recepción de Mensajes (POST)
   if (req.method === 'POST' && req.body?.object === 'whatsapp_business_account') {
     try {
-      const messages = req.body.entry?.[0]?.changes?.[0]?.value?.messages;
+      const entry = req.body.entry?.[0];
+      const changes = entry?.changes?.[0];
+      const value = changes?.value;
+      const messages = value?.messages;
+
       if (!messages?.length) return res.status(200).json({ ok: true });
 
       const msg   = messages[0];
       const phone = msg.from; 
       const text  = msg.text?.body || '';
 
-      // Filtro para disparar la bienvenida
+      // LOGICA DE RESPUESTA A BOTONES O TEXTO
       const esBienvenida = text.toLowerCase().includes('acabo de comprar') || 
                            text.toLowerCase().includes('comunidad vip') ||
                            text.toLowerCase().includes('soberana');
 
       if (esBienvenida) {
-        // BUSCAMOS EL NOMBRE EN BREVO (Mantiene tu lógica de FIRSTNAME/VORNAME)
+        // BUSQUEDA EN BREVO (Tus funciones originales)
         let contacto = await buscarPorHotmartPhone(phone);
         if (!contacto) contacto = await buscarCompradoraSinSMS();
 
         const nombreReal = contacto?.attributes?.FIRSTNAME || contacto?.attributes?.VORNAME || "Soberana";
         const email = contacto?.email || 'sin-match@soberana';
         
-        // ENVIAR PLANTILLA DE META
-        // El parameter_name 'firstname' ahora coincide con tu corrección
+        // ENVIAR LA PLANTILLA APROBADA
         await sendWhatsAppTemplate(phone, "bienvenida_pacto_soberana", nombreReal);
 
-        // GUARDAR EN SHEETS (Mantiene tu historial intacto)
+        // REGISTRAR EN SHEETS
         await guardarEnSheets({
           fecha: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
           nombre: nombreReal,
           email: email,
           whatsapp: phone,
-          mensaje: `Plantilla Pacto Enviada | ${text.substring(0, 50)}`
+          mensaje: `Plantilla Enviada: ${text.substring(0, 30)}`
         });
       }
 
       return res.status(200).json({ ok: true });
     } catch (err) {
-      console.error('Error en el proceso:', err.message);
+      console.error('Error:', err.message);
       return res.status(200).json({ ok: true });
     }
   }
 }
 
-// FUNCIÓN DE ENVÍO DE PLANTILLA
+// FUNCIÓN PARA ENVIAR LA PLANTILLA CON VARIABLE 'firstname'
 async function sendWhatsAppTemplate(to, templateName, nameValue) {
   try {
     const res = await fetch(
@@ -72,12 +75,12 @@ async function sendWhatsAppTemplate(to, templateName, nameValue) {
           type: 'template',
           template: {
             name: templateName,
-            language: { code: 'es' },
+            language: { code: 'es_MX' }, // El idioma que seleccionaste en Meta
             components: [{
               type: 'body',
               parameters: [{
                 type: 'text',
-                parameter_name: 'firstname', // Tag corregido según tu imagen
+                parameter_name: 'firstname', // El nombre que corregiste
                 text: nameValue
               }]
             }]
@@ -86,10 +89,12 @@ async function sendWhatsAppTemplate(to, templateName, nameValue) {
       }
     );
     const data = await res.json();
+    console.log(`Resultado Envío:`, data);
     return !!data.messages;
   } catch (err) {
+    console.error('Error sendWhatsAppTemplate:', err);
     return false;
   }
 }
 
-// --- PEGA AQUÍ TUS FUNCIONES DE BÚSQUEDA ORIGINALES (buscarPorHotmartPhone, buscarCompradoraSinSMS, etc.) ---
+// --- ABAJO PEGA TUS FUNCIONES: buscarPorHotmartPhone, buscarCompradoraSinSMS, guardarEnSheets, etc. ---

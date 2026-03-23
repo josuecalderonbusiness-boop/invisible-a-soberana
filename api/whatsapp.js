@@ -98,8 +98,9 @@ export default async function handler(req, res) {
         mensaje:  `match:${matchTipo} | ${text.substring(0, 80)}`
       });
 
-      // PASO 4: Enviar plantilla de bienvenida
-      await sendTemplate(phone);
+      // PASO 4: Enviar plantilla de bienvenida con nombre
+      const nombreFinal = nombre || 'amiga';
+      await sendTemplate(phone, nombreFinal);
 
       return res.status(200).json({ ok: true, email, phone });
 
@@ -135,7 +136,7 @@ async function manejarRespuestaBoton(phone, boton) {
 }
 
 // ── Enviar plantilla aprobada por Meta ───────────────────────────
-async function sendTemplate(to) {
+async function sendTemplate(to, nombre) {
   const number = to.replace(/[^0-9]/g, '');
   try {
     const res = await fetch(
@@ -153,7 +154,18 @@ async function sendTemplate(to) {
           template: {
             name: 'bienvenida_pacto_soberana',
             language: { code: 'es_MX' },
-            components: []
+            components: [
+              {
+                type: 'body',
+                parameters: [
+                  {
+                    type: 'text',
+                    parameter_name: 'firstname',
+                    text: nombre
+                  }
+                ]
+              }
+            ]
           }
         })
       }

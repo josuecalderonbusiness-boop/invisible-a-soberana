@@ -44,17 +44,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // Responder 200 inmediato a Meta
-    res.status(200).json({ ok: true });
-
-    // Procesar después de responder
-    try {
-      await procesarMensaje(msg);
-    } catch (err) {
-      console.error('Error procesando:', err.message);
-    }
-
-    return;
+    await procesarMensaje(msg);
+    return res.status(200).json({ ok: true });
   }
 
   return res.status(200).json({ ok: true });

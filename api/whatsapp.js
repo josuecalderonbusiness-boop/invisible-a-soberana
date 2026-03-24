@@ -1,4 +1,9 @@
-// api/whatsapp.js — Runtime normal, sin Edge
+// api/whatsapp.js — Con día 2 integrado
+
+// Media IDs de audios subidos a Meta
+// REEMPLAZAR cuando tengas los audios grabados y subidos
+const AUDIO_DIA2_TERMINO = '1620415032329794'; // Audio "Ya lo terminé"
+const AUDIO_DIA2_NO_VIO  = '2362093030941177';  // Audio "Aún no lo veo"
 
 export default async function handler(req, res) {
 
@@ -13,9 +18,9 @@ export default async function handler(req, res) {
 
   // ── POST: trigger programado desde Apps Script ───────────────────
   if (req.method === 'POST' && req.body?.trigger === true) {
-    const { phone, paso } = req.body;
+    const { phone, paso, nombre } = req.body;
     console.log(`Trigger: phone=${phone} paso=${paso}`);
-    await ejecutarPaso(phone, paso);
+    await ejecutarPaso(phone, paso, nombre || '');
     return res.status(200).json({ ok: true });
   }
 
@@ -31,13 +36,11 @@ export default async function handler(req, res) {
     const messages = entry?.messages;
     if (!messages?.length) return res.status(200).json({ ok: true });
 
-    const msg      = messages[0];
-    const msgId    = msg.id || '';
-    const msgTime  = parseInt(msg.timestamp || '0');
+    const msg   = messages[0];
+    const msgId = msg.id || '';
 
-    // Anti-duplicado: verificar en Apps Script ANTES de procesar
     if (msgId) {
-      const duplicado = await verificarYMarcar(msgId, msgTime);
+      const duplicado = await verificarYMarcar(msgId);
       if (duplicado) {
         console.log(`Duplicado ignorado: ${msgId}`);
         return res.status(200).json({ ok: true });
@@ -52,27 +55,26 @@ export default async function handler(req, res) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// ANTI-DUPLICADO — rápido, solo verifica el ID
+// ANTI-DUPLICADO
 // ════════════════════════════════════════════════════════════════
 
-async function verificarYMarcar(msgId, msgTime) {
+async function verificarYMarcar(msgId) {
   const url = process.env.SHEETS_WEBHOOK_URL;
   if (!url) return false;
   try {
     const controller = new AbortController();
-    const timeout    = setTimeout(() => controller.abort(), 2000); // 2s máximo
+    const timeout    = setTimeout(() => controller.abort(), 2000);
     const res  = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ accion: 'verificar_mensaje', msgId, msgTime }),
+      body:    JSON.stringify({ accion: 'verificar_mensaje', msgId }),
       signal:  controller.signal
     });
     clearTimeout(timeout);
     const data = await res.json();
     return data.duplicado === true;
   } catch (err) {
-    // Si falla o tarda — asumir que NO es duplicado para no perder mensajes
-    console.log('verificarYMarcar timeout/error — procesando igual');
+    console.log('verificarYMarcar timeout — procesando igual');
     return false;
   }
 }
@@ -88,7 +90,6 @@ async function procesarMensaje(msg) {
 
   console.log(`=== Mensaje WA de ${phone} [${tipo}]: "${text}" ===`);
 
-  // ── BOTONES INTERACTIVOS ─────────────────────────────────────────
   if (tipo === 'interactive') {
     const btnId = msg.interactive?.button_reply?.id || '';
     console.log(`Botón interactivo: id=${btnId}`);
@@ -96,7 +97,6 @@ async function procesarMensaje(msg) {
     return;
   }
 
-  // ── BOTONES DE PLANTILLA ─────────────────────────────────────────
   if (tipo === 'button') {
     const btnTx = msg.button?.text || '';
     console.log(`Botón plantilla: "${btnTx}"`);
@@ -104,22 +104,45 @@ async function procesarMensaje(msg) {
     return;
   }
 
-  // ── MENSAJE DE BIENVENIDA ────────────────────────────────────────
+  // Detectar si ella escribió después de ver el workshop
+  // (mensaje libre después del día 0)
+  const esRespuestaWorkshop =
+    text.includes('lo vi') ||
+    text.includes('lo termine') ||
+    text.includes('lo terminé') ||
+    text.includes('ya lo vi') ||
+    text.includes('listo') ||
+    text.includes('increíble') ||
+    text.includes('increible') ||
+    text.includes('wow') ||
+    text.includes('impresionante');
+
+  if (esRespuestaWorkshop) {
+    console.log('→ Ella terminó el workshop y escribió');
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || '';
+    // Cancelar trigger día 2 versión B y enviar versión A inmediato
+    await cancelarTrigger(phone, 'dia2_no_vio');
+    await ejecutarPaso(phone, 'dia2_termino', nombre);
+    return;
+  }
+
+  // Mensaje de bienvenida
   const esBienvenida =
     text.includes('acabo de comprar') ||
     text.includes('comunidad vip') ||
     text.includes('soberana');
 
-  if (!esBienvenida) {
-    console.log('Mensaje no reconocido, ignorando');
+  if (esBienvenida) {
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || 'amiga';
+    const email    = contacto?.email  || 'sin-match@soberana';
+    console.log(`Contacto: ${email} (${nombre})`);
+    await sendTemplate(phone, nombre);
     return;
   }
 
-  const contacto = await buscarEnSheetsPorTelefono(phone);
-  const nombre   = contacto?.nombre || 'amiga';
-  const email    = contacto?.email  || 'sin-match@soberana';
-  console.log(`Contacto: ${email} (${nombre})`);
-  await sendTemplate(phone, nombre);
+  console.log('Mensaje no reconocido, ignorando');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -131,52 +154,31 @@ async function manejarBotonPlantilla(phone, boton) {
   console.log(`Procesando botón plantilla: "${b}"`);
 
   if (b.includes('pude') || b.includes('si')) {
-    console.log('→ Flujo A: herramienta + comunidad');
-
     await sendUrlButton(phone,
-      `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
-      `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
-      `👇 Descárgala antes de empezar.`,
-      'Ver herramienta',
-      'https://soberana-app.josuecalderon.lat'
+      `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
     );
-    console.log('→ Herramienta enviada');
-
     await sendUrlButton(phone,
-      `Únete también a la comunidad privada.\n\n` +
-      `Ahí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\n` +
-      `Solo para compradoras. 👇`,
-      'Unirme ahora',
-      'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+      `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
+      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
     );
-    console.log('→ Comunidad enviada');
-
-    await programarTrigger(phone, 'confirmacion_comunidad', 3);
-    console.log('→ Trigger programado');
+    await programarTrigger(phone, 'confirmacion_comunidad', 1, ''); // PRUEBA: 1 min (producción: 3)
   }
 
   else if (b.includes('podido') || b.includes('no he')) {
     await sendWhatsApp(phone,
-      `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
-      `Revisa estas tres cosas:\n\n` +
-      `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n` +
-      `2️⃣ El correo viene de noreply@hotmart.com\n\n` +
-      `3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
+      `Tranquila. Lo resolvemos ahora. 🙏\n\n1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n2️⃣ El correo viene de noreply@hotmart.com\n\n3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
     );
-  }
-
-  else {
-    console.log(`Botón no reconocido: "${b}"`);
   }
 }
 
 async function manejarBotonInteractivo(phone, btnId) {
+  const contacto = await buscarEnSheetsPorTelefono(phone);
+  const nombre   = contacto?.nombre || '';
+
   if (btnId === 'comunidad_si') {
     await sendButtons(phone,
-      `Ya tienes todo lo que necesitas. 🎯\n\n` +
-      `Ahora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\n` +
-      `Hay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n` +
-      `¿Cuándo vas a verlo?`,
+      `Ya tienes todo lo que necesitas. 🎯\n\nAhora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\nHay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n¿Cuándo vas a verlo?`,
       [
         { id: 'workshop_hoy',    title: '🔥 Hoy mismo' },
         { id: 'workshop_semana', title: '📅 Esta semana' },
@@ -184,30 +186,52 @@ async function manejarBotonInteractivo(phone, btnId) {
       ]
     );
   }
+
   else if (btnId === 'comunidad_no') {
     await sendUrlButton(phone,
-      `Toca el enlace y únete antes de empezar el Workshop.\n\n` +
-      `La comunidad es parte de tu acceso. Lo que publico ahí complementa directamente lo que vas a ver adentro.`,
-      'Unirme ahora',
-      'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+      `Toca el enlace y únete antes de empezar el Workshop.\n\nLa comunidad es parte de tu acceso.`,
+      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
     );
-    await programarTrigger(phone, 'confirmacion_comunidad', 3);
+    await programarTrigger(phone, 'confirmacion_comunidad', 1, nombre); // PRUEBA: 1 min (producción: 3)
   }
+
   else if (btnId === 'workshop_hoy') {
     await sendWhatsApp(phone,
       `Perfecto. 💪\n\nCuando termines — escríbeme aquí. Una sola palabra.\n\nNos vemos adentro.`
     );
+    // Trigger día 2 en 48h — versión A si escribe, B si no
+    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
   }
+
   else if (btnId === 'workshop_semana') {
     await sendWhatsApp(phone, `Bien. Te escribo en unos días. 📅\n\nCuando lo veas — escríbeme.`);
+    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
   }
+
   else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone, `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`);
+    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+  }
+
+  // Botones del día 2 plantilla
+  else if (btnId === 'dia2_termino') {
+    // Ella confirmó que terminó el workshop desde la plantilla
+    await ejecutarPaso(phone, 'dia2_termino', nombre);
+  }
+
+  else if (btnId === 'dia2_no_vio') {
+    // Ella confirmó que aún no lo vio desde la plantilla
+    await ejecutarPaso(phone, 'dia2_no_vio_confirmado', nombre);
   }
 }
 
-async function ejecutarPaso(phone, paso) {
-  console.log(`Ejecutando paso: ${paso} para ${phone}`);
+// ════════════════════════════════════════════════════════════════
+// PASOS PROGRAMADOS
+// ════════════════════════════════════════════════════════════════
+
+async function ejecutarPaso(phone, paso, nombre) {
+  console.log(`Ejecutando paso: ${paso} para ${phone} (${nombre})`);
+
   if (paso === 'confirmacion_comunidad') {
     await sendButtons(phone,
       '¿Lograste unirte a la comunidad?',
@@ -216,12 +240,40 @@ async function ejecutarPaso(phone, paso) {
         { id: 'comunidad_no', title: '⏳ Aún no' }
       ]
     );
-    console.log('→ Confirmación comunidad enviada');
+  }
+
+  else if (paso === 'dia2_termino') {
+    // Ella terminó el workshop
+    const n = nombre || 'amiga';
+    await sendWhatsApp(phone, `Excelente ${n}, entonces escucha esto 👇`);
+    if (AUDIO_DIA2_TERMINO !== 'PENDIENTE_MEDIA_ID_TERMINO') {
+      await sendAudio(phone, AUDIO_DIA2_TERMINO);
+    } else {
+      console.log('Audio día 2 termino pendiente de subir a Meta');
+    }
+  }
+
+  else if (paso === 'dia2_no_vio') {
+    // Trigger automático 48h — ella no escribió
+    // Enviar plantilla día 2 (fuera de ventana)
+    const n = nombre || 'amiga';
+    await sendTemplateDia2(phone, n);
+  }
+
+  else if (paso === 'dia2_no_vio_confirmado') {
+    // Ella presionó "Aún no lo veo" en la plantilla día 2
+    const n = nombre || 'amiga';
+    await sendWhatsApp(phone, `Entonces ${n}, hay algo que debes escuchar 👇`);
+    if (AUDIO_DIA2_NO_VIO !== 'PENDIENTE_MEDIA_ID_NO_VIO') {
+      await sendAudio(phone, AUDIO_DIA2_NO_VIO);
+    } else {
+      console.log('Audio día 2 no vio pendiente de subir a Meta');
+    }
   }
 }
 
 // ════════════════════════════════════════════════════════════════
-// SHEETS Y TRIGGER
+// SHEETS Y TRIGGERS
 // ════════════════════════════════════════════════════════════════
 
 async function buscarEnSheetsPorTelefono(phone) {
@@ -231,15 +283,11 @@ async function buscarEnSheetsPorTelefono(phone) {
     const tel = phone.replace(/[^0-9]/g, '').slice(-10);
     const res = await fetch(`${url}?accion=buscar_por_telefono&telefono=${tel}`);
     const data = await res.json();
-    console.log('Sheets búsqueda:', JSON.stringify(data));
     return data.ok ? data : null;
-  } catch (err) {
-    console.error('buscarEnSheetsPorTelefono error:', err.message);
-    return null;
-  }
+  } catch (err) { return null; }
 }
 
-async function programarTrigger(phone, paso, minutos) {
+async function programarTrigger(phone, paso, minutos, nombre) {
   const url = process.env.SHEETS_WEBHOOK_URL;
   if (!url) return;
   try {
@@ -251,6 +299,7 @@ async function programarTrigger(phone, paso, minutos) {
         phone:   phone,
         paso:    paso,
         minutos: minutos,
+        nombre:  nombre,
         webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
       })
     });
@@ -258,6 +307,25 @@ async function programarTrigger(phone, paso, minutos) {
     console.log(`Trigger (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
   } catch (err) {
     console.error('programarTrigger error:', err.message);
+  }
+}
+
+async function cancelarTrigger(phone, paso) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'cancelar_trigger',
+        phone:  phone,
+        paso:   paso
+      })
+    });
+    console.log(`Trigger cancelado: ${paso} para ${phone}`);
+  } catch (err) {
+    console.error('cancelarTrigger error:', err.message);
   }
 }
 
@@ -284,7 +352,36 @@ async function sendTemplate(to, nombre) {
     })
   });
   const data = await res.json();
-  console.log(`Template → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+  console.log(`Template bienvenida → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia2(to, nombre) {
+  const number = to.replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia2_workshop_cs', language: { code: 'es_MX' },
+        components: [
+          {
+            type: 'body',
+            parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }]
+          },
+          {
+            type: 'button', sub_type: 'quick_reply', index: '0',
+            parameters: [{ type: 'payload', payload: 'dia2_termino' }]
+          },
+          {
+            type: 'button', sub_type: 'quick_reply', index: '1',
+            parameters: [{ type: 'payload', payload: 'dia2_no_vio' }]
+          }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 2 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendWhatsApp(to, message) {
@@ -329,4 +426,17 @@ async function sendUrlButton(to, body, buttonText, url) {
   });
   const data = await res.json();
   console.log(`UrlBtn → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendAudio(to, mediaId) {
+  const number = to.replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'audio',
+      audio: { id: mediaId }
+    })
+  });
+  const data = await res.json();
+  console.log(`Audio → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }

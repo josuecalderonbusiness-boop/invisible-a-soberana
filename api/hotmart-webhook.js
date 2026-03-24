@@ -1,210 +1,434 @@
-// api/hotmart-webhook.js — versión final
-// Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
+// api/whatsapp.js — Búsqueda en Sheets (rápida) en lugar de Brevo
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ── GET: verificación webhook Meta ──────────────────────────────
   if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, service: 'hotmart-webhook' });
+    const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } = req.query;
+    if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+      console.log('Webhook verificado OK');
+      return res.status(200).send(challenge);
+    }
+    return res.status(403).json({ error: 'Forbidden' });
   }
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+
+  // ── POST: trigger programado desde Apps Script ───────────────────
+  if (req.method === 'POST' && req.body?.trigger === true) {
+    const { phone, paso } = req.body;
+    console.log(`Trigger: phone=${phone} paso=${paso}`);
+    await ejecutarPaso(phone, paso);
+    return res.status(200).json({ ok: true });
   }
 
-  try {
-    const body = req.body;
-    console.log('Hotmart webhook received:', JSON.stringify(body).substring(0, 600));
+  // ── POST desde Orbit: envío manual ──────────────────────────────
+  if (req.method === 'POST' && req.body?.to && req.body?.message) {
+    const sent = await sendWhatsApp(req.body.to, req.body.message);
+    return res.status(sent ? 200 : 500).json({ ok: sent });
+  }
 
-    // ── Extraer datos del comprador ──────────────────────────────
-    const email  =
-      body?.data?.buyer?.email ||
-      body?.buyer?.email ||
-      body?.email || null;
+  // ── POST: webhook entrante Meta ──────────────────────────────────
+  if (req.method === 'POST' && req.body?.object === 'whatsapp_business_account') {
 
-    const nombre =
-      body?.data?.buyer?.name ||
-      body?.buyer?.name ||
-      body?.name || '';
+    // Responder 200 a Meta INMEDIATAMENTE
+    res.status(200).json({ ok: true });
 
-    const telefono =
-      body?.data?.buyer?.phone_number ||
-      body?.data?.buyer?.phone ||
-      body?.buyer?.phone_number ||
-      body?.buyer?.phone ||
-      body?.phone || '';
-
-    const productId =
-      body?.data?.product?.id ||
-      body?.product?.id || null;
-
-    if (!email) {
-      console.log('No email found in payload');
-      return res.status(200).json({ received: true, action: 'no_email' });
-    }
-
-    console.log(`Comprador: ${nombre} | ${email} | tel: ${telefono} | producto: ${productId}`);
-
-    const BREVO_KEY             = process.env.BREVO_KEY;
-    const SOBERANA_7D_PRODUCT_ID = '7386435';
-    const isCompra7D            = String(productId) === SOBERANA_7D_PRODUCT_ID;
-    const targetList            = isCompra7D ? 14 : 11;
-    const primerNombre          = nombre.split(' ')[0] || '';
-    const telefonoLimpio        = limpiarTelefono(telefono);
-
-    console.log(`Tipo: ${isCompra7D ? 'Soberana 7D' : 'Workshop'} → Lista #${targetList}`);
-
-    // ── Buscar contacto en Brevo ─────────────────────────────────
-    const searchRes = await fetch(
-      `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
-      { method: 'GET', headers: { 'api-key': BREVO_KEY } }
-    );
-
-    if (!searchRes.ok) {
-      // Contacto no existe — crear con todos los datos
-      console.log('Contacto no existe — creando:', email);
-      await fetch('https://api.brevo.com/v3/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
-        body: JSON.stringify({
-          email,
-          attributes: {
-            FIRSTNAME:     primerNombre,
-            SMS:           telefonoLimpio,
-            HOTMART_PHONE: telefonoLimpio
-          },
-          listIds: [targetList],
-          updateEnabled: true
-        })
+    // Procesar en segundo plano
+    setImmediate(() => {
+      procesarMensaje(req.body).catch(err => {
+        console.error('Error:', err.message);
       });
-
-      await guardarEnSheets({
-        fecha:    now(),
-        nombre:   primerNombre,
-        email:    email,
-        whatsapp: telefonoLimpio,
-        perfil:   isCompra7D ? 'COMPRADORA_7D' : 'COMPRADORA_WORKSHOP',
-        lista:    String(targetList),
-        mensaje:  'Contacto nuevo creado desde Hotmart'
-      });
-
-      return res.status(200).json({
-        received: true, action: 'contact_created', email, list: targetList
-      });
-    }
-
-    // ── Contacto existe — actualizar listas y teléfono ───────────
-    const contact      = await searchRes.json();
-    const currentLists = contact.listIds || [];
-
-    // Listas de las que hay que remover (lógica original)
-    let listsToRemove = [];
-    if (isCompra7D) {
-      listsToRemove = currentLists.filter(id => [13].includes(id));
-    } else {
-      listsToRemove = currentLists.filter(id => [7, 8, 9].includes(id));
-    }
-
-    // Actualizar: listas + teléfono
-    const updateBody = {
-      listIds:       [targetList],
-      unlinkListIds: listsToRemove,
-      attributes:    {}
-    };
-
-    // Guardar teléfono solo si Hotmart lo envió
-    if (telefonoLimpio) {
-      updateBody.attributes.HOTMART_PHONE = telefonoLimpio;
-      // Solo sobreescribir SMS si aún no tiene número confirmado
-      const smsActual = contact.attributes?.SMS || '';
-      if (!smsActual) {
-        updateBody.attributes.SMS = telefonoLimpio;
-        console.log(`SMS asignado desde Hotmart: ${telefonoLimpio}`);
-      } else {
-        console.log(`SMS ya existe (${smsActual}) — no se sobreescribe`);
-      }
-    }
-
-    if (primerNombre && !contact.attributes?.FIRSTNAME) {
-      updateBody.attributes.FIRSTNAME = primerNombre;
-    }
-
-    const updateRes = await fetch(
-      `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
-        body: JSON.stringify(updateBody)
-      }
-    );
-
-    console.log('Brevo update status:', updateRes.status);
-
-    // Guardar en Sheets
-    await guardarEnSheets({
-      fecha:    now(),
-      nombre:   primerNombre || contact.attributes?.FIRSTNAME || '',
-      email:    email,
-      whatsapp: telefonoLimpio || contact.attributes?.SMS || '',
-      perfil:   isCompra7D ? 'COMPRADORA_7D' : 'COMPRADORA_WORKSHOP',
-      lista:    String(targetList),
-      mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
 
-    return res.status(200).json({
-      received:        true,
-      action:          isCompra7D ? 'moved_to_compradoras_7d' : 'moved_to_compradoras_workshop',
-      email,
-      list:            targetList,
-      removedFromLists: listsToRemove,
-      phone:           telefonoLimpio
-    });
+    return;
+  }
 
-  } catch (err) {
-    console.error('Webhook error:', err);
-    return res.status(200).json({ received: true, error: err.message });
+  return res.status(200).json({ ok: true });
+}
+
+// ════════════════════════════════════════════════════════════════
+// PROCESAMIENTO PRINCIPAL
+// ════════════════════════════════════════════════════════════════
+
+async function procesarMensaje(body) {
+  const entry    = body.entry?.[0]?.changes?.[0]?.value;
+  const messages = entry?.messages;
+  if (!messages?.length) return;
+
+  const msg   = messages[0];
+  const phone = '+' + msg.from;
+  const text  = (msg.text?.body || '').toLowerCase().trim();
+  const tipo  = msg.type;
+
+  console.log(`=== Mensaje WA de ${phone} [${tipo}]: "${text}" ===`);
+
+  // ── BOTONES INTERACTIVOS ─────────────────────────────────────────
+  if (tipo === 'interactive') {
+    const btnId = msg.interactive?.button_reply?.id || '';
+    console.log(`Botón interactivo: id=${btnId}`);
+    await manejarBotonInteractivo(phone, btnId);
+    return;
+  }
+
+  // ── BOTONES DE PLANTILLA ─────────────────────────────────────────
+  if (tipo === 'button') {
+    const btnTx = msg.button?.text || '';
+    console.log(`Botón plantilla: "${btnTx}"`);
+    await manejarBotonPlantilla(phone, btnTx);
+    return;
+  }
+
+  // ── MENSAJE DE BIENVENIDA ────────────────────────────────────────
+  const esBienvenida =
+    text.includes('acabo de comprar') ||
+    text.includes('comunidad vip') ||
+    text.includes('soberana');
+
+  if (!esBienvenida) {
+    console.log('Mensaje no reconocido, ignorando');
+    return;
+  }
+
+  // Buscar en Sheets por teléfono (rápido)
+  const contacto = await buscarEnSheetsPorTelefono(phone);
+  const nombre   = contacto?.nombre || 'amiga';
+  const email    = contacto?.email  || 'sin-match@soberana';
+
+  console.log(`Contacto: ${email} (${nombre})`);
+
+  // Actualizar WhatsApp en Sheets si no lo tenía
+  if (contacto?.email && !contacto?.whatsapp) {
+    await actualizarWhatsAppSheets(contacto.email, phone);
+  }
+
+  // Enviar plantilla de bienvenida
+  await sendTemplate(phone, nombre);
+}
+
+// ════════════════════════════════════════════════════════════════
+// LÓGICA DE BOTONES
+// ════════════════════════════════════════════════════════════════
+
+async function manejarBotonPlantilla(phone, boton) {
+  const b = boton.toLowerCase();
+
+  if (b.includes('ya pude entrar') || b.includes('sí')) {
+    // Herramienta y comunidad INMEDIATO
+    await sendUrlButton(phone,
+      `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
+      `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
+      `👇 Descárgala antes de empezar.`,
+      'Ver herramienta',
+      'https://soberana-app.josuecalderon.lat'
+    );
+
+    await sendUrlButton(phone,
+      `Únete también a la comunidad privada.\n\n` +
+      `Ahí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\n` +
+      `Solo para compradoras. 👇`,
+      'Unirme ahora',
+      'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+    );
+
+    // Confirmación comunidad en 3 minutos via Apps Script
+    await programarTrigger(phone, 'confirmacion_comunidad', 3);
+  }
+
+  else if (b.includes('no he podido') || b.includes('no')) {
+    await sendWhatsApp(phone,
+      `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
+      `Revisa estas tres cosas:\n\n` +
+      `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n` +
+      `2️⃣ El correo viene de noreply@hotmart.com\n\n` +
+      `3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
+    );
   }
 }
 
-// ── Limpiar y normalizar teléfono ────────────────────────────────
-function limpiarTelefono(tel) {
-  if (!tel) return '';
-  let limpio = String(tel).replace(/[^\d+]/g, '');
-  if (!limpio) return '';
-  if (!limpio.startsWith('+')) {
-    if (limpio.startsWith('57') && limpio.length >= 12) {
-      limpio = '+' + limpio;
-    } else if (limpio.startsWith('52') && limpio.length >= 12) {
-      limpio = '+' + limpio;
-    } else {
-      limpio = '+57' + limpio; // default Colombia
-    }
+async function manejarBotonInteractivo(phone, btnId) {
+
+  if (btnId === 'comunidad_si') {
+    await sendButtons(phone,
+      `Ya tienes todo lo que necesitas. 🎯\n\n` +
+      `Ahora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\n` +
+      `Hay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n` +
+      `¿Cuándo vas a verlo?`,
+      [
+        { id: 'workshop_hoy',    title: '🔥 Hoy mismo' },
+        { id: 'workshop_semana', title: '📅 Esta semana' },
+        { id: 'workshop_nose',   title: '🤔 Aún no sé' }
+      ]
+    );
   }
-  return limpio;
+
+  else if (btnId === 'comunidad_no') {
+    await sendUrlButton(phone,
+      `Toca el enlace y únete antes de empezar el Workshop.\n\n` +
+      `La comunidad es parte de tu acceso. Lo que publico ahí complementa directamente lo que vas a ver adentro.`,
+      'Unirme ahora',
+      'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+    );
+    await programarTrigger(phone, 'confirmacion_comunidad', 3);
+  }
+
+  else if (btnId === 'workshop_hoy') {
+    await sendWhatsApp(phone,
+      `Perfecto. 💪\n\n` +
+      `Cuando termines — escríbeme aquí. Una sola palabra. Lo que sea que sientas.\n\n` +
+      `Nos vemos adentro.`
+    );
+  }
+
+  else if (btnId === 'workshop_semana') {
+    await sendWhatsApp(phone,
+      `Bien. Te escribo en unos días. 📅\n\n` +
+      `Cuando lo veas — escríbeme.`
+    );
+  }
+
+  else if (btnId === 'workshop_nose') {
+    await sendWhatsApp(phone,
+      `Sin problema. Aquí estaré. 🙏\n\n` +
+      `Cuando estés lista — el Workshop te espera.`
+    );
+  }
 }
 
-// ── Guardar en Google Sheets ─────────────────────────────────────
-async function guardarEnSheets(data) {
+// ════════════════════════════════════════════════════════════════
+// PASOS PROGRAMADOS POR TRIGGERS
+// ════════════════════════════════════════════════════════════════
+
+async function ejecutarPaso(phone, paso) {
+  if (paso === 'confirmacion_comunidad') {
+    await sendButtons(phone,
+      '¿Lograste unirte a la comunidad?',
+      [
+        { id: 'comunidad_si', title: '✅ Sí, ya estoy dentro' },
+        { id: 'comunidad_no', title: '⏳ Aún no' }
+      ]
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// BÚSQUEDA EN SHEETS (rápida, sin Brevo)
+// ════════════════════════════════════════════════════════════════
+
+async function buscarEnSheetsPorTelefono(phone) {
   const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return false; }
+  if (!url) return null;
+  try {
+    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
+    const res = await fetch(
+      `${url}?accion=buscar_por_telefono&telefono=${tel}`,
+      { method: 'GET' }
+    );
+    const data = await res.json();
+    if (data.ok) return data;
+    return null;
+  } catch (err) {
+    console.error('buscarEnSheetsPorTelefono error:', err.message);
+    return null;
+  }
+}
+
+async function actualizarWhatsAppSheets(email, phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion:   'update_wa',
+        email:    email,
+        ultimoMsg: 'bienvenida',
+        msgEnviados: 1
+      })
+    });
+  } catch (err) {
+    console.error('actualizarWhatsAppSheets error:', err.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// PROGRAMAR TRIGGER EN APPS SCRIPT
+// ════════════════════════════════════════════════════════════════
+
+async function programarTrigger(phone, paso, minutos) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        accion:  'programar_trigger',
+        phone:   phone,
+        paso:    paso,
+        minutos: minutos,
+        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
+      })
     });
-    console.log('Sheets:', res.ok ? 'OK' : res.status);
-    return res.ok;
+    console.log(`Trigger programado (${paso} en ${minutos}min):`, res.ok ? 'OK' : res.status);
   } catch (err) {
-    console.error('guardarEnSheets:', err.message);
+    console.error('programarTrigger error:', err.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// FUNCIONES DE ENVÍO
+// ════════════════════════════════════════════════════════════════
+
+async function sendTemplate(to, nombre) {
+  const number = to.replace(/[^0-9]/g, '');
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: number,
+          type: 'template',
+          template: {
+            name: 'bienvenida_pacto_soberana',
+            language: { code: 'es_MX' },
+            components: [
+              {
+                type: 'body',
+                parameters: [
+                  { type: 'text', parameter_name: 'firstname', text: nombre }
+                ]
+              }
+            ]
+          }
+        })
+      }
+    );
+    const data = await res.json();
+    const ok = !!data.messages?.[0]?.id;
+    console.log(`Template → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    return ok;
+  } catch (err) {
+    console.error('sendTemplate error:', err.message);
     return false;
   }
 }
 
-// ── Fecha Colombia ───────────────────────────────────────────────
-function now() {
-  return new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+async function sendWhatsApp(to, message) {
+  const number = to.replace(/[^0-9]/g, '');
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: number,
+          type: 'text',
+          text: { body: message }
+        })
+      }
+    );
+    const data = await res.json();
+    const ok   = !!data.messages?.[0]?.id;
+    console.log(`WA → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    return ok;
+  } catch (err) {
+    console.error('sendWhatsApp error:', err.message);
+    return false;
+  }
+}
+
+async function sendButtons(to, body, buttons) {
+  const number = to.replace(/[^0-9]/g, '');
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: number,
+          type: 'interactive',
+          interactive: {
+            type: 'button',
+            body: { text: body },
+            action: {
+              buttons: buttons.map(b => ({
+                type: 'reply',
+                reply: { id: b.id, title: b.title }
+              }))
+            }
+          }
+        })
+      }
+    );
+    const data = await res.json();
+    const ok   = !!data.messages?.[0]?.id;
+    console.log(`Buttons → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    return ok;
+  } catch (err) {
+    console.error('sendButtons error:', err.message);
+    return false;
+  }
+}
+
+async function sendUrlButton(to, body, buttonText, url) {
+  const number = to.replace(/[^0-9]/g, '');
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: number,
+          type: 'interactive',
+          interactive: {
+            type: 'cta_url',
+            body: { text: body },
+            action: {
+              name: 'cta_url',
+              parameters: {
+                display_text: buttonText,
+                url: url
+              }
+            }
+          }
+        })
+      }
+    );
+    const data = await res.json();
+    const ok   = !!data.messages?.[0]?.id;
+    console.log(`UrlBtn → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    return ok;
+  } catch (err) {
+    console.error('sendUrlButton error:', err.message);
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// UTILIDADES
+// ════════════════════════════════════════════════════════════════
+
+function normalizar(tel) {
+  return (tel || '').replace(/[^\d]/g, '').slice(-10);
 }

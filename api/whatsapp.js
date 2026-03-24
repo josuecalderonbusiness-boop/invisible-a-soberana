@@ -96,7 +96,7 @@ async function procesarMensaje(body) {
 async function manejarBotonPlantilla(phone, boton) {
   const b = boton.toLowerCase();
 
-  if (b.includes('ya pude entrar') || b.includes('sí')) {
+  if (b.includes('ya pude entrar') || b.includes('si') || b.includes('sí') || b.includes('pude')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
       `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
@@ -116,7 +116,7 @@ async function manejarBotonPlantilla(phone, boton) {
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
 
-  else if (b.includes('no he podido') || b.includes('no')) {
+  else if (b.includes('no he podido') || b.includes('no podido') || b.includes('podido')) {
     await sendWhatsApp(phone,
       `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
       `Revisa estas tres cosas:\n\n` +

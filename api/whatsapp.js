@@ -196,7 +196,7 @@ async function flujoA_herramienta(phone) {
     `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
     `Aquí es donde vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
     `👇 Descárgala antes de empezar.`,
-    'DESCARGAR HERRAMIENTA',
+    'Ver herramienta',
     'https://soberana-app.josuecalderon.lat'
   );
 
@@ -211,7 +211,7 @@ async function flujoA_comunidad(phone) {
     `Mientras descargas la herramienta — únete a la comunidad privada.\n\n` +
     `Ahí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\n` +
     `Solo para compradoras. 👇`,
-    'UNIRME A LA COMUNIDAD',
+    'Unirme ahora',
     'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
   );
 

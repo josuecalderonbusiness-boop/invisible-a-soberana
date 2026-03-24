@@ -142,7 +142,12 @@ async function procesarMensaje(msg) {
     return;
   }
 
-  console.log('Mensaje no reconocido, ignorando');
+  console.log('Mensaje no reconocido — enviando respuesta genérica');
+  await sendWhatsApp(phone,
+    `Recibí tu mensaje.\n\n` +
+    `Estoy leyendo todo lo que me escriben — aunque no siempre puedo responder de inmediato.\n\n` +
+    `Sigue pendiente. En los próximos días te escribo con algo que creo que te va a interesar.`
+  );
 }
 
 // ════════════════════════════════════════════════════════════════

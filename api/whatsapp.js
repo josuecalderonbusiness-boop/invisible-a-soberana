@@ -1,7 +1,4 @@
-// api/whatsapp.js — Con anti-duplicados
-
-// Cache de IDs procesados (en memoria)
-const procesados = new Set();
+// api/whatsapp.js — Anti-duplicados via Apps Script
 
 export default async function handler(req, res) {
 
@@ -9,7 +6,6 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } = req.query;
     if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-      console.log('Webhook verificado OK');
       return res.status(200).send(challenge);
     }
     return res.status(403).json({ error: 'Forbidden' });
@@ -31,7 +27,23 @@ export default async function handler(req, res) {
 
   // ── POST: webhook entrante Meta ──────────────────────────────────
   if (req.method === 'POST' && req.body?.object === 'whatsapp_business_account') {
-    await procesarMensaje(req.body);
+    const entry    = req.body.entry?.[0]?.changes?.[0]?.value;
+    const messages = entry?.messages;
+    if (!messages?.length) return res.status(200).json({ ok: true });
+
+    const msg   = messages[0];
+    const msgId = msg.id || '';
+
+    // Anti-duplicado: verificar en Apps Script
+    if (msgId) {
+      const yaProcessado = await verificarYMarcar(msgId);
+      if (yaProcessado) {
+        console.log(`Duplicado ignorado: ${msgId}`);
+        return res.status(200).json({ ok: true });
+      }
+    }
+
+    await procesarMensaje(msg);
     return res.status(200).json({ ok: true });
   }
 
@@ -39,31 +51,41 @@ export default async function handler(req, res) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// ANTI-DUPLICADO VIA APPS SCRIPT
+// ════════════════════════════════════════════════════════════════
+
+async function verificarYMarcar(msgId) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'verificar_mensaje',
+        msgId:  msgId
+      })
+    });
+    const data = await res.json();
+    // Si ok:true → ya fue procesado → es duplicado
+    // Si ok:false → es nuevo → procesar
+    return data.duplicado === true;
+  } catch (err) {
+    console.error('verificarYMarcar error:', err.message);
+    return false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
 // PROCESAMIENTO PRINCIPAL
 // ════════════════════════════════════════════════════════════════
 
-async function procesarMensaje(body) {
-  const entry    = body.entry?.[0]?.changes?.[0]?.value;
-  const messages = entry?.messages;
-  if (!messages?.length) return;
-
-  const msg   = messages[0];
-  const msgId = msg.id || '';
+async function procesarMensaje(msg) {
   const phone = '+' + msg.from;
   const text  = (msg.text?.body || '').toLowerCase().trim();
   const tipo  = msg.type;
 
-  // ── ANTI-DUPLICADO ───────────────────────────────────────────────
-  if (msgId && procesados.has(msgId)) {
-    console.log(`Duplicado ignorado: ${msgId}`);
-    return;
-  }
-  if (msgId) {
-    procesados.add(msgId);
-    if (procesados.size > 200) procesados.clear();
-  }
-
-  console.log(`=== Mensaje WA de ${phone} [${tipo}] id=${msgId}: "${text}" ===`);
+  console.log(`=== Mensaje WA de ${phone} [${tipo}]: "${text}" ===`);
 
   // ── BOTONES INTERACTIVOS ─────────────────────────────────────────
   if (tipo === 'interactive') {
@@ -92,14 +114,11 @@ async function procesarMensaje(body) {
     return;
   }
 
-  // Buscar en Sheets por teléfono
   const contacto = await buscarEnSheetsPorTelefono(phone);
   const nombre   = contacto?.nombre || 'amiga';
   const email    = contacto?.email  || 'sin-match@soberana';
 
   console.log(`Contacto: ${email} (${nombre})`);
-
-  // Enviar plantilla de bienvenida
   await sendTemplate(phone, nombre);
 }
 
@@ -110,7 +129,7 @@ async function procesarMensaje(body) {
 async function manejarBotonPlantilla(phone, boton) {
   const b = boton.toLowerCase();
 
-  if (b.includes('pude') || b.includes('ya pude') || b.includes('si')) {
+  if (b.includes('pude') || b.includes('si')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
       `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
@@ -118,7 +137,6 @@ async function manejarBotonPlantilla(phone, boton) {
       'Ver herramienta',
       'https://soberana-app.josuecalderon.lat'
     );
-
     await sendUrlButton(phone,
       `Únete también a la comunidad privada.\n\n` +
       `Ahí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\n` +
@@ -126,7 +144,6 @@ async function manejarBotonPlantilla(phone, boton) {
       'Unirme ahora',
       'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
     );
-
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
 
@@ -142,7 +159,6 @@ async function manejarBotonPlantilla(phone, boton) {
 }
 
 async function manejarBotonInteractivo(phone, btnId) {
-
   if (btnId === 'comunidad_si') {
     await sendButtons(phone,
       `Ya tienes todo lo que necesitas. 🎯\n\n` +
@@ -156,7 +172,6 @@ async function manejarBotonInteractivo(phone, btnId) {
       ]
     );
   }
-
   else if (btnId === 'comunidad_no') {
     await sendUrlButton(phone,
       `Toca el enlace y únete antes de empezar el Workshop.\n\n` +
@@ -166,33 +181,22 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
-
   else if (btnId === 'workshop_hoy') {
     await sendWhatsApp(phone,
-      `Perfecto. 💪\n\n` +
-      `Cuando termines — escríbeme aquí. Una sola palabra. Lo que sea que sientas.\n\n` +
-      `Nos vemos adentro.`
+      `Perfecto. 💪\n\nCuando termines — escríbeme aquí. Una sola palabra. Lo que sea que sientas.\n\nNos vemos adentro.`
     );
   }
-
   else if (btnId === 'workshop_semana') {
     await sendWhatsApp(phone,
-      `Bien. Te escribo en unos días. 📅\n\n` +
-      `Cuando lo veas — escríbeme.`
+      `Bien. Te escribo en unos días. 📅\n\nCuando lo veas — escríbeme.`
     );
   }
-
   else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone,
-      `Sin problema. Aquí estaré. 🙏\n\n` +
-      `Cuando estés lista — el Workshop te espera.`
+      `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`
     );
   }
 }
-
-// ════════════════════════════════════════════════════════════════
-// PASOS PROGRAMADOS POR TRIGGERS
-// ════════════════════════════════════════════════════════════════
 
 async function ejecutarPaso(phone, paso) {
   if (paso === 'confirmacion_comunidad') {
@@ -212,23 +216,18 @@ async function ejecutarPaso(phone, paso) {
 
 async function buscarEnSheetsPorTelefono(phone) {
   const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return null; }
+  if (!url) return null;
   try {
     const tel = phone.replace(/[^0-9]/g, '').slice(-10);
     const res = await fetch(`${url}?accion=buscar_por_telefono&telefono=${tel}`);
     const data = await res.json();
     console.log('Sheets búsqueda:', JSON.stringify(data));
-    if (data.ok) return data;
-    return null;
+    return data.ok ? data : null;
   } catch (err) {
     console.error('buscarEnSheetsPorTelefono error:', err.message);
     return null;
   }
 }
-
-// ════════════════════════════════════════════════════════════════
-// PROGRAMAR TRIGGER EN APPS SCRIPT
-// ════════════════════════════════════════════════════════════════
 
 async function programarTrigger(phone, paso, minutos) {
   const url = process.env.SHEETS_WEBHOOK_URL;
@@ -262,37 +261,21 @@ async function sendTemplate(to, nombre) {
       `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: number,
-          type: 'template',
+          messaging_product: 'whatsapp', to: number, type: 'template',
           template: {
-            name: 'bienvenida_pacto_soberana',
-            language: { code: 'es_MX' },
-            components: [
-              {
-                type: 'body',
-                parameters: [
-                  { type: 'text', parameter_name: 'firstname', text: nombre }
-                ]
-              }
-            ]
+            name: 'bienvenida_pacto_soberana', language: { code: 'es_MX' },
+            components: [{ type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] }]
           }
         })
       }
     );
     const data = await res.json();
     const ok = !!data.messages?.[0]?.id;
-    console.log(`Template → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    console.log(`Template → ${number}: ${ok ? '✓' : JSON.stringify(data)}`);
     return ok;
-  } catch (err) {
-    console.error('sendTemplate error:', err.message);
-    return false;
-  }
+  } catch (err) { console.error('sendTemplate error:', err.message); return false; }
 }
 
 async function sendWhatsApp(to, message) {
@@ -302,26 +285,15 @@ async function sendWhatsApp(to, message) {
       `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: number,
-          type: 'text',
-          text: { body: message }
-        })
+        headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messaging_product: 'whatsapp', to: number, type: 'text', text: { body: message } })
       }
     );
     const data = await res.json();
-    const ok   = !!data.messages?.[0]?.id;
-    console.log(`WA → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    const ok = !!data.messages?.[0]?.id;
+    console.log(`WA → ${number}: ${ok ? '✓' : JSON.stringify(data)}`);
     return ok;
-  } catch (err) {
-    console.error('sendWhatsApp error:', err.message);
-    return false;
-  }
+  } catch (err) { console.error('sendWhatsApp error:', err.message); return false; }
 }
 
 async function sendButtons(to, body, buttons) {
@@ -331,35 +303,21 @@ async function sendButtons(to, body, buttons) {
       `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: number,
-          type: 'interactive',
+          messaging_product: 'whatsapp', to: number, type: 'interactive',
           interactive: {
-            type: 'button',
-            body: { text: body },
-            action: {
-              buttons: buttons.map(b => ({
-                type: 'reply',
-                reply: { id: b.id, title: b.title }
-              }))
-            }
+            type: 'button', body: { text: body },
+            action: { buttons: buttons.map(b => ({ type: 'reply', reply: { id: b.id, title: b.title } })) }
           }
         })
       }
     );
     const data = await res.json();
-    const ok   = !!data.messages?.[0]?.id;
-    console.log(`Buttons → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    const ok = !!data.messages?.[0]?.id;
+    console.log(`Buttons → ${number}: ${ok ? '✓' : JSON.stringify(data)}`);
     return ok;
-  } catch (err) {
-    console.error('sendButtons error:', err.message);
-    return false;
-  }
+  } catch (err) { console.error('sendButtons error:', err.message); return false; }
 }
 
 async function sendUrlButton(to, body, buttonText, url) {
@@ -369,34 +327,19 @@ async function sendUrlButton(to, body, buttonText, url) {
       `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
       {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: number,
-          type: 'interactive',
+          messaging_product: 'whatsapp', to: number, type: 'interactive',
           interactive: {
-            type: 'cta_url',
-            body: { text: body },
-            action: {
-              name: 'cta_url',
-              parameters: {
-                display_text: buttonText,
-                url: url
-              }
-            }
+            type: 'cta_url', body: { text: body },
+            action: { name: 'cta_url', parameters: { display_text: buttonText, url: url } }
           }
         })
       }
     );
     const data = await res.json();
-    const ok   = !!data.messages?.[0]?.id;
-    console.log(`UrlBtn → ${number}: ${ok ? '✓ enviado' : JSON.stringify(data)}`);
+    const ok = !!data.messages?.[0]?.id;
+    console.log(`UrlBtn → ${number}: ${ok ? '✓' : JSON.stringify(data)}`);
     return ok;
-  } catch (err) {
-    console.error('sendUrlButton error:', err.message);
-    return false;
-  }
+  } catch (err) { console.error('sendUrlButton error:', err.message); return false; }
 }

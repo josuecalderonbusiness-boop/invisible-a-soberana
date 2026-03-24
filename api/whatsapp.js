@@ -212,7 +212,7 @@ async function ejecutarPaso(phone, paso) {
     await sendButtons(phone,
       '¿Lograste unirte a la comunidad?',
       [
-        { id: 'comunidad_si', title: '✅ Sí, ya estoy dentro' },
+        { id: 'comunidad_si', title: '✅ Ya estoy dentro' },
         { id: 'comunidad_no', title: '⏳ Aún no' }
       ]
     );

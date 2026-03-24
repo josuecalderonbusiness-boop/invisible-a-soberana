@@ -1,4 +1,4 @@
-// api/whatsapp.js — Arquitectura correcta: respuesta inmediata + triggers via Apps Script
+// api/whatsapp.js — Procesamiento directo (sin segundo plano)
 
 export default async function handler(req, res) {
 
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   // ── POST: trigger programado desde Apps Script ───────────────────
   if (req.method === 'POST' && req.body?.trigger === true) {
     const { phone, paso } = req.body;
-    console.log(`Trigger recibido: phone=${phone} paso=${paso}`);
+    console.log(`Trigger: phone=${phone} paso=${paso}`);
     await ejecutarPaso(phone, paso);
     return res.status(200).json({ ok: true });
   }
@@ -28,23 +28,15 @@ export default async function handler(req, res) {
 
   // ── POST: webhook entrante Meta ──────────────────────────────────
   if (req.method === 'POST' && req.body?.object === 'whatsapp_business_account') {
-
-    // CRÍTICO: responder 200 a Meta INMEDIATAMENTE para evitar reintentos
-    res.status(200).json({ ok: true });
-
-    // Procesar en segundo plano
-    procesarMensaje(req.body).catch(err => {
-      console.error('Error procesando mensaje:', err.message);
-    });
-
-    return;
+    await procesarMensaje(req.body);
+    return res.status(200).json({ ok: true });
   }
 
   return res.status(200).json({ ok: true });
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROCESAMIENTO PRINCIPAL (en segundo plano)
+// PROCESAMIENTO PRINCIPAL
 // ════════════════════════════════════════════════════════════════
 
 async function procesarMensaje(body) {
@@ -62,8 +54,7 @@ async function procesarMensaje(body) {
   // ── BOTONES INTERACTIVOS ─────────────────────────────────────────
   if (tipo === 'interactive') {
     const btnId = msg.interactive?.button_reply?.id || '';
-    const btnTx = msg.interactive?.button_reply?.title || '';
-    console.log(`Botón interactivo: id=${btnId} title=${btnTx}`);
+    console.log(`Botón interactivo: id=${btnId}`);
     await manejarBotonInteractivo(phone, btnId);
     return;
   }
@@ -82,46 +73,20 @@ async function procesarMensaje(body) {
     text.includes('comunidad vip') ||
     text.includes('soberana');
 
-  if (esBienvenida) {
-    let contacto  = await buscarPorHotmartPhone(phone);
-    let matchTipo = 'hotmart_phone';
-    if (!contacto) {
-      contacto  = await buscarCompradoraSinSMS();
-      matchTipo = 'reciente_sin_sms';
-    }
-
-    let nombre = '';
-    let email  = '';
-    let found  = false;
-
-    if (contacto) {
-      nombre = contacto.attributes?.NOMBRE || contacto.attributes?.FIRSTNAME || '';
-      email  = contacto.email;
-      found  = true;
-      console.log(`Compradora encontrada (${matchTipo}): ${email} (${nombre})`);
-      const hotmartPhone = contacto.attributes?.HOTMART_PHONE || '';
-      if (!contacto.attributes?.SMS || normalizar(hotmartPhone) !== normalizar(phone)) {
-        await actualizarSMS(email, phone);
-      }
-    } else {
-      email = 'sin-match@soberana';
-    }
-
-    await guardarEnSheets({
-      fecha:    now(),
-      nombre:   nombre,
-      email:    email,
-      whatsapp: phone,
-      perfil:   contacto?.attributes?.QUIZ_PROFILE || '',
-      lista:    found ? '11' : 'sin-match',
-      mensaje:  `match:${matchTipo} | bienvenida`
-    });
-
-    await sendTemplate(phone, nombre || 'amiga');
+  if (!esBienvenida) {
+    console.log('Mensaje no reconocido, ignorando');
     return;
   }
 
-  console.log('Mensaje no reconocido, ignorando');
+  // Buscar en Sheets por teléfono
+  const contacto = await buscarEnSheetsPorTelefono(phone);
+  const nombre   = contacto?.nombre || 'amiga';
+  const email    = contacto?.email  || 'sin-match@soberana';
+
+  console.log(`Contacto: ${email} (${nombre})`);
+
+  // Enviar plantilla de bienvenida
+  await sendTemplate(phone, nombre);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -132,7 +97,6 @@ async function manejarBotonPlantilla(phone, boton) {
   const b = boton.toLowerCase();
 
   if (b.includes('ya pude entrar') || b.includes('sí')) {
-    // Enviar herramienta y comunidad INMEDIATAMENTE
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
       `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
@@ -149,23 +113,36 @@ async function manejarBotonPlantilla(phone, boton) {
       'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
     );
 
-    // Programar confirmación comunidad en 3 minutos via Apps Script
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
 
   else if (b.includes('no he podido') || b.includes('no')) {
-    await flujoB_ayuda(phone);
+    await sendWhatsApp(phone,
+      `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
+      `Revisa estas tres cosas:\n\n` +
+      `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n` +
+      `2️⃣ El correo viene de noreply@hotmart.com\n\n` +
+      `3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
+    );
   }
 }
 
 async function manejarBotonInteractivo(phone, btnId) {
 
-  // Confirmación comunidad: Sí ya estoy dentro
   if (btnId === 'comunidad_si') {
-    await flujoA_encargo(phone);
+    await sendButtons(phone,
+      `Ya tienes todo lo que necesitas. 🎯\n\n` +
+      `Ahora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\n` +
+      `Hay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n` +
+      `¿Cuándo vas a verlo?`,
+      [
+        { id: 'workshop_hoy',    title: '🔥 Hoy mismo' },
+        { id: 'workshop_semana', title: '📅 Esta semana' },
+        { id: 'workshop_nose',   title: '🤔 Aún no sé' }
+      ]
+    );
   }
 
-  // Confirmación comunidad: Aún no
   else if (btnId === 'comunidad_no') {
     await sendUrlButton(phone,
       `Toca el enlace y únete antes de empezar el Workshop.\n\n` +
@@ -173,11 +150,9 @@ async function manejarBotonInteractivo(phone, btnId) {
       'Unirme ahora',
       'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
     );
-    // Reintentar confirmación en 3 minutos
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
 
-  // Workshop: Hoy mismo
   else if (btnId === 'workshop_hoy') {
     await sendWhatsApp(phone,
       `Perfecto. 💪\n\n` +
@@ -186,7 +161,6 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
   }
 
-  // Workshop: Esta semana
   else if (btnId === 'workshop_semana') {
     await sendWhatsApp(phone,
       `Bien. Te escribo en unos días. 📅\n\n` +
@@ -194,8 +168,7 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
   }
 
-  // Workshop: Aún no sé
-  else if (btnId === 'workshop_nosé') {
+  else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone,
       `Sin problema. Aquí estaré. 🙏\n\n` +
       `Cuando estés lista — el Workshop te espera.`
@@ -204,7 +177,7 @@ async function manejarBotonInteractivo(phone, btnId) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// PASOS PROGRAMADOS (ejecutados por triggers de Apps Script)
+// PASOS PROGRAMADOS POR TRIGGERS
 // ════════════════════════════════════════════════════════════════
 
 async function ejecutarPaso(phone, paso) {
@@ -220,31 +193,23 @@ async function ejecutarPaso(phone, paso) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// FLUJOS
+// BÚSQUEDA EN SHEETS
 // ════════════════════════════════════════════════════════════════
 
-async function flujoA_encargo(phone) {
-  await sendButtons(phone,
-    `Ya tienes todo lo que necesitas. 🎯\n\n` +
-    `Ahora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\n` +
-    `Hay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n` +
-    `¿Cuándo vas a verlo?`,
-    [
-      { id: 'workshop_hoy',    title: '🔥 Hoy mismo' },
-      { id: 'workshop_semana', title: '📅 Esta semana' },
-      { id: 'workshop_nosé',   title: '🤔 Aún no sé' }
-    ]
-  );
-}
-
-async function flujoB_ayuda(phone) {
-  await sendWhatsApp(phone,
-    `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
-    `Revisa estas tres cosas:\n\n` +
-    `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n` +
-    `2️⃣ El correo viene de noreply@hotmart.com\n\n` +
-    `3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
-  );
+async function buscarEnSheetsPorTelefono(phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return null; }
+  try {
+    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
+    const res = await fetch(`${url}?accion=buscar_por_telefono&telefono=${tel}`);
+    const data = await res.json();
+    console.log('Sheets búsqueda:', JSON.stringify(data));
+    if (data.ok) return data;
+    return null;
+  } catch (err) {
+    console.error('buscarEnSheetsPorTelefono error:', err.message);
+    return null;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -253,20 +218,20 @@ async function flujoB_ayuda(phone) {
 
 async function programarTrigger(phone, paso, minutos) {
   const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return; }
+  if (!url) return;
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        accion:   'programar_trigger',
-        phone:    phone,
-        paso:     paso,
-        minutos:  minutos,
-        webhook:  'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
+        accion:  'programar_trigger',
+        phone:   phone,
+        paso:    paso,
+        minutos: minutos,
+        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
       })
     });
-    console.log(`Trigger programado (${paso} en ${minutos}min):`, res.ok ? 'OK' : res.status);
+    console.log(`Trigger (${paso} en ${minutos}min):`, res.ok ? 'OK' : res.status);
   } catch (err) {
     console.error('programarTrigger error:', err.message);
   }
@@ -420,97 +385,4 @@ async function sendUrlButton(to, body, buttonText, url) {
     console.error('sendUrlButton error:', err.message);
     return false;
   }
-}
-
-// ════════════════════════════════════════════════════════════════
-// BREVO Y SHEETS
-// ════════════════════════════════════════════════════════════════
-
-async function buscarPorHotmartPhone(phone) {
-  try {
-    const res = await fetch(
-      `https://api.brevo.com/v3/contacts?limit=50&listId=11&sort=desc`,
-      { headers: { 'api-key': process.env.BREVO_KEY } }
-    );
-    const raw = await res.text();
-    if (!res.ok) { console.error('Error Brevo:', raw); return null; }
-    const data      = JSON.parse(raw);
-    const contactos = data.contacts || [];
-    const phoneNorm = normalizar(phone);
-    return contactos.find(c => {
-      const hp  = normalizar(c.attributes?.HOTMART_PHONE || '');
-      const sms = normalizar(c.attributes?.SMS || '');
-      return (hp && hp === phoneNorm) || (sms && sms === phoneNorm);
-    }) || null;
-  } catch (err) {
-    console.error('buscarPorHotmartPhone error:', err.message);
-    return null;
-  }
-}
-
-async function buscarCompradoraSinSMS() {
-  try {
-    const res = await fetch(
-      `https://api.brevo.com/v3/contacts?limit=50&listId=11&sort=desc`,
-      { headers: { 'api-key': process.env.BREVO_KEY } }
-    );
-    const raw = await res.text();
-    if (!res.ok) { console.error('Error Brevo:', raw); return null; }
-    const data      = JSON.parse(raw);
-    const contactos = data.contacts || [];
-    return contactos.find(c => {
-      const sms = c.attributes?.SMS;
-      return !sms || sms === '';
-    }) || null;
-  } catch (err) {
-    console.error('buscarCompradoraSinSMS error:', err.message);
-    return null;
-  }
-}
-
-async function actualizarSMS(email, phone) {
-  try {
-    const res = await fetch(
-      `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
-      {
-        method: 'PUT',
-        headers: { 'api-key': process.env.BREVO_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attributes: { SMS: phone } })
-      }
-    );
-    console.log(`PUT Brevo ${email} → status ${res.status}`);
-    return res.status === 204 || res.status === 200;
-  } catch (err) {
-    console.error('actualizarSMS error:', err.message);
-    return false;
-  }
-}
-
-async function guardarEnSheets(data) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return false; }
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    console.log('Sheets:', res.ok ? 'OK' : res.status);
-    return res.ok;
-  } catch (err) {
-    console.error('guardarEnSheets error:', err.message);
-    return false;
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
-// UTILIDADES
-// ════════════════════════════════════════════════════════════════
-
-function normalizar(tel) {
-  return (tel || '').replace(/[^\d]/g, '').slice(-10);
-}
-
-function now() {
-  return new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
 }

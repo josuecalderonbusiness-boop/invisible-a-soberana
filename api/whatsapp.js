@@ -1,4 +1,7 @@
-// api/whatsapp.js — Procesamiento directo (sin segundo plano)
+// api/whatsapp.js — Con anti-duplicados
+
+// Cache de IDs procesados (en memoria)
+const procesados = new Set();
 
 export default async function handler(req, res) {
 
@@ -45,11 +48,22 @@ async function procesarMensaje(body) {
   if (!messages?.length) return;
 
   const msg   = messages[0];
+  const msgId = msg.id || '';
   const phone = '+' + msg.from;
   const text  = (msg.text?.body || '').toLowerCase().trim();
   const tipo  = msg.type;
 
-  console.log(`=== Mensaje WA de ${phone} [${tipo}]: "${text}" ===`);
+  // ── ANTI-DUPLICADO ───────────────────────────────────────────────
+  if (msgId && procesados.has(msgId)) {
+    console.log(`Duplicado ignorado: ${msgId}`);
+    return;
+  }
+  if (msgId) {
+    procesados.add(msgId);
+    if (procesados.size > 200) procesados.clear();
+  }
+
+  console.log(`=== Mensaje WA de ${phone} [${tipo}] id=${msgId}: "${text}" ===`);
 
   // ── BOTONES INTERACTIVOS ─────────────────────────────────────────
   if (tipo === 'interactive') {
@@ -96,7 +110,7 @@ async function procesarMensaje(body) {
 async function manejarBotonPlantilla(phone, boton) {
   const b = boton.toLowerCase();
 
-  if (b.includes('ya pude entrar') || b.includes('si') || b.includes('sí') || b.includes('pude')) {
+  if (b.includes('pude') || b.includes('ya pude') || b.includes('si')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\n` +
       `Aquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n` +
@@ -116,7 +130,7 @@ async function manejarBotonPlantilla(phone, boton) {
     await programarTrigger(phone, 'confirmacion_comunidad', 3);
   }
 
-  else if (b.includes('no he podido') || b.includes('no podido') || b.includes('podido')) {
+  else if (b.includes('podido') || b.includes('no he')) {
     await sendWhatsApp(phone,
       `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
       `Revisa estas tres cosas:\n\n` +

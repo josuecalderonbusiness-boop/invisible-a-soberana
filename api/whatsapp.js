@@ -165,6 +165,19 @@ async function manejarBotonPlantilla(phone, boton) {
     await programarTrigger(phone, 'confirmacion_comunidad', 1, ''); // PRUEBA: 1 min (producción: 3)
   }
 
+  else if (b.includes('ya lo termin') || b.includes('termin')) {
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || '';
+    await cancelarTrigger(phone, 'dia2_no_vio');
+    await ejecutarPaso(phone, 'dia2_termino', nombre);
+  }
+
+  else if (b.includes('aun no') || b.includes('aún no')) {
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || '';
+    await ejecutarPaso(phone, 'dia2_no_vio_confirmado', nombre);
+  }
+
   else if (b.includes('podido') || b.includes('no he')) {
     await sendWhatsApp(phone,
       `Tranquila. Lo resolvemos ahora. 🙏\n\n1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n2️⃣ El correo viene de noreply@hotmart.com\n\n3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`

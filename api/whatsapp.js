@@ -5,6 +5,10 @@
 const AUDIO_DIA2_TERMINO = '1620415032329794'; // Audio "Ya lo terminé"
 const AUDIO_DIA2_NO_VIO  = '2362093030941177';  // Audio "Aún no lo veo"
 
+// Día 4 — Videos respuesta (subir a Meta y reemplazar IDs)
+const VIDEO_DIA4_A = 'PENDIENTE_VIDEO_DIA4_A'; // Video A — para quien contó
+const VIDEO_DIA4_B = 'PENDIENTE_VIDEO_DIA4_B'; // Video B — para quien no contó
+
 export default async function handler(req, res) {
 
   // ── GET: verificación webhook Meta ──────────────────────────────
@@ -101,6 +105,22 @@ async function procesarMensaje(msg) {
     const btnTx = msg.button?.text || '';
     console.log(`Botón plantilla: "${btnTx}"`);
     await manejarBotonPlantilla(phone, btnTx);
+    return;
+  }
+
+  // Detectar si está en estado esperando_dia4
+  const estado = await obtenerEstado(phone);
+  if (estado === 'esperando_dia4') {
+    console.log('→ Ella está contando después del día 4');
+    await borrarEstado(phone);
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || 'amiga';
+    await sendWhatsApp(phone, `Excelente, ${nombre}. Escucha esto 👇`);
+    if (VIDEO_DIA4_A !== 'PENDIENTE_VIDEO_DIA4_A') {
+      await sendVideo(phone, VIDEO_DIA4_A);
+    } else {
+      console.log('Video día 4 A pendiente de subir a Meta');
+    }
     return;
   }
 
@@ -219,6 +239,7 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
     // Trigger día 2 en 48h — versión A si escribe, B si no
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+    await programarTrigger(phone, 'dia4_reflexion', 3, nombre); // PRUEBA: 3 min (producción: 5760 = 4 días)
   }
 
   else if (btnId === 'workshop_semana') {
@@ -229,6 +250,24 @@ async function manejarBotonInteractivo(phone, btnId) {
   else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone, `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`);
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+  }
+
+  // Botones del día 4
+  else if (btnId === 'dia4_si_cuento') {
+    // Ella quiere contar — guardar estado y responder
+    await guardarEstado(phone, 'esperando_dia4');
+    await sendWhatsApp(phone, `Estoy aquí. Te leo 👇`);
+  }
+
+  else if (btnId === 'dia4_otra_ocasion') {
+    // Ella no quiere contar ahora — enviar video B directamente
+    const n = nombre || 'amiga';
+    await sendWhatsApp(phone, `Entiendo, ${n}. Escucha esto 👇`);
+    if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
+      await sendVideo(phone, VIDEO_DIA4_B);
+    } else {
+      console.log('Video día 4 B pendiente de subir a Meta');
+    }
   }
 
   // Botones del día 2 plantilla
@@ -276,6 +315,11 @@ async function ejecutarPaso(phone, paso, nombre) {
     // Enviar plantilla día 2 (fuera de ventana)
     const n = nombre || 'amiga';
     await sendTemplateDia2(phone, n);
+  }
+
+  else if (paso === 'dia4_reflexion') {
+    // Enviar plantilla día 4 con botones
+    await sendTemplateDia4(phone, nombre || 'amiga');
   }
 
   else if (paso === 'dia2_no_vio_confirmado') {
@@ -457,4 +501,108 @@ async function sendAudio(to, mediaId) {
   });
   const data = await res.json();
   console.log(`Audio → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// GESTIÓN DE ESTADOS (para conversaciones en curso)
+// ════════════════════════════════════════════════════════════════
+
+async function guardarEstado(phone, estado) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'guardar_estado',
+        phone:  phone,
+        estado: estado
+      })
+    });
+    console.log(`Estado guardado: ${estado} para ${phone}`);
+  } catch (err) {
+    console.error('guardarEstado error:', err.message);
+  }
+}
+
+async function obtenerEstado(phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return null;
+  try {
+    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
+    const res = await fetch(`${url}?accion=obtener_estado&telefono=${tel}`);
+    const data = await res.json();
+    return data.ok ? data.estado : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function borrarEstado(phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'borrar_estado',
+        phone:  phone
+      })
+    });
+  } catch (err) {
+    console.error('borrarEstado error:', err.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ENVIAR VIDEO
+// ════════════════════════════════════════════════════════════════
+
+async function sendVideo(to, mediaId) {
+  const number = to.replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'video',
+      video: { id: mediaId }
+    })
+  });
+  const data = await res.json();
+  console.log(`Video → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+// ════════════════════════════════════════════════════════════════
+// PLANTILLA DÍA 4
+// ════════════════════════════════════════════════════════════════
+
+async function sendTemplateDia4(to, nombre) {
+  const number = to.replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia4_reflexion_cs', language: { code: 'es_MX' },
+        components: [
+          {
+            type: 'body',
+            parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }]
+          },
+          {
+            type: 'button', sub_type: 'quick_reply', index: '0',
+            parameters: [{ type: 'payload', payload: 'dia4_si_cuento' }]
+          },
+          {
+            type: 'button', sub_type: 'quick_reply', index: '1',
+            parameters: [{ type: 'payload', payload: 'dia4_otra_ocasion' }]
+          }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }

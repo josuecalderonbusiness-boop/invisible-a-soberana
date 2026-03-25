@@ -239,24 +239,26 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
     // Trigger día 2 en 48h — versión A si escribe, B si no
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-    await programarTrigger(phone, 'dia4_reflexion', 3, nombre); // PRUEBA: 3 min (producción: 5760 = 4 días)
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760 = 4 días)
   }
 
   else if (btnId === 'workshop_semana') {
     await sendWhatsApp(phone, `Bien. Te escribo en unos días. 📅\n\nCuando lo veas — escríbeme.`);
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone, `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`);
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   // Botones del día 4
   else if (btnId === 'dia4_si_cuento') {
     // Ella quiere contar — guardar estado y responder
     await guardarEstado(phone, 'esperando_dia4');
-    await sendWhatsApp(phone, `Estoy aquí. Te leo 👇`);
+    await sendWhatsApp(phone, `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`);
   }
 
   else if (btnId === 'dia4_otra_ocasion') {

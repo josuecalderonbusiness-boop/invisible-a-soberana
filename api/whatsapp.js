@@ -585,7 +585,7 @@ async function sendTemplateDia4(to, nombre) {
     body: JSON.stringify({
       messaging_product: 'whatsapp', to: number, type: 'template',
       template: {
-        name: 'dia4_reflexion_cs', language: { code: 'es_MX' },
+        name: 'dia4b_reflexion_cs', language: { code: 'es_MX' },
         components: [
           {
             type: 'body',

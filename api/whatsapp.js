@@ -6,8 +6,8 @@ const AUDIO_DIA2_TERMINO = '1620415032329794'; // Audio "Ya lo terminé"
 const AUDIO_DIA2_NO_VIO  = '2362093030941177';  // Audio "Aún no lo veo"
 
 // Día 4 — Videos respuesta (subir a Meta y reemplazar IDs)
-const VIDEO_DIA4_A = 'PENDIENTE_VIDEO_DIA4_A'; // Video A — para quien contó
-const VIDEO_DIA4_B = 'PENDIENTE_VIDEO_DIA4_B'; // Video B — para quien no contó
+const VIDEO_DIA4_A = '1507744617738426'; // Video A — para quien contó
+const VIDEO_DIA4_B = '976614471691735'; // Video B — para quien no contó
 
 export default async function handler(req, res) {
 

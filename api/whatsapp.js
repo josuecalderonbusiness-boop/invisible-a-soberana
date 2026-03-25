@@ -1,4 +1,4 @@
-// api/whatsapp.js — Con día 2 integrado
+ // api/whatsapp.js — Con día 2 integrado
 
 // Media IDs de audios subidos a Meta
 // REEMPLAZAR cuando tengas los audios grabados y subidos
@@ -131,11 +131,18 @@ async function procesarMensaje(msg) {
     text.includes('lo termine') ||
     text.includes('lo terminé') ||
     text.includes('ya lo vi') ||
+    text.includes('termin') ||
     text.includes('listo') ||
+    text.includes('list') ||
     text.includes('increíble') ||
     text.includes('increible') ||
     text.includes('wow') ||
-    text.includes('impresionante');
+    text.includes('impresionante') ||
+    text.includes('genial') ||
+    text.includes('excelente') ||
+    text.includes('buenísimo') ||
+    text.includes('me gustó') ||
+    text.includes('me gusto');
 
   if (esRespuestaWorkshop) {
     console.log('→ Ella terminó el workshop y escribió');
@@ -164,9 +171,8 @@ async function procesarMensaje(msg) {
 
   console.log('Mensaje no reconocido — enviando respuesta genérica');
   await sendWhatsApp(phone,
-    `Recibí tu mensaje.\n\n` +
-    `Estoy leyendo todo lo que me escriben — aunque no siempre puedo responder de inmediato.\n\n` +
-    `Sigue pendiente. En los próximos días te escribo con algo que creo que te va a interesar.`
+    `Recibí tu mensaje. 🙏\n\n` +
+    `Sigue pendiente — en los próximos días te escribo de nuevo.`
   );
 }
 
@@ -239,19 +245,16 @@ async function manejarBotonInteractivo(phone, btnId) {
     );
     // Trigger día 2 en 48h — versión A si escribe, B si no
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760 = 4 días)
   }
 
   else if (btnId === 'workshop_semana') {
     await sendWhatsApp(phone, `Bien. Te escribo en unos días. 📅\n\nCuando lo veas — escríbeme.`);
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (btnId === 'workshop_nose') {
     await sendWhatsApp(phone, `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`);
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   // Botones del día 4

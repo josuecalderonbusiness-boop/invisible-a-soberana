@@ -108,6 +108,18 @@ async function procesarMensaje(msg) {
     return;
   }
 
+  // Detectar si está esperando correo de soporte
+  const estadoActual = await obtenerEstado(phone);
+  if (estadoActual === 'esperando_correo_soporte') {
+    await borrarEstado(phone);
+    // Notificar a soporte
+    await notificarSoporte(phone, text);
+    await sendWhatsApp(phone,
+      `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nSi en 24 horas no llega — escríbeme de nuevo aquí.`
+    );
+    return;
+  }
+
   // Detectar si está en estado esperando_dia4
   const estado = await obtenerEstado(phone);
   if (estado === 'esperando_dia4') {
@@ -224,7 +236,7 @@ async function manejarBotonPlantilla(phone, boton) {
     const contacto = await buscarEnSheetsPorTelefono(phone);
     const nombre   = contacto?.nombre || '';
     const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `Entiendo, ${n}. Escucha esto 👇`);
+    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
     if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
       await sendVideo(phone, VIDEO_DIA4_B);
     }
@@ -232,8 +244,9 @@ async function manejarBotonPlantilla(phone, boton) {
 
   else if (b.includes('podido') || b.includes('no he')) {
     await sendWhatsApp(phone,
-      `Tranquila. Lo resolvemos ahora. 🙏\n\n1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n2️⃣ El correo viene de noreply@hotmart.com\n\n3️⃣ Si no aparece — respóndeme aquí con tu correo y te reenvío el acceso manualmente.`
+      `Tranquila. Lo resolvemos ahora. 🙏\n\nRevisa estas tres cosas:\n\n1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n2️⃣ El correo viene de noreply@hotmart.com\n\n3️⃣ Si no aparece — escríbeme tu correo aquí mismo y te reenvío el acceso en menos de 24 horas.`
     );
+    await guardarEstado(phone, 'esperando_correo_soporte');
   }
 }
 
@@ -278,12 +291,16 @@ async function manejarBotonInteractivo(phone, btnId) {
   }
 
   else if (btnId === 'workshop_semana') {
-    await sendWhatsApp(phone, `Bien. Te escribo en unos días. 📅\n\nCuando lo veas — escríbeme.`);
+    await sendWhatsApp(phone,
+      `Bien. 📅\n\nCuando lo termines — escríbeme:\n*Ya tengo el código*\n\nTe escribo en unos días.`
+    );
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
   }
 
   else if (btnId === 'workshop_nose') {
-    await sendWhatsApp(phone, `Sin problema. Aquí estaré. 🙏\n\nCuando estés lista — el Workshop te espera.`);
+    await sendWhatsApp(phone,
+      `Sin problema. 🙏\n\nCuando lo termines — escríbeme:\n*Ya tengo el código*\n\nAquí estaré.`
+    );
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
   }
 
@@ -297,7 +314,7 @@ async function manejarBotonInteractivo(phone, btnId) {
   else if (btnId === 'dia4_otra_ocasion') {
     // Ella no quiere contar ahora — enviar video B directamente
     const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `Entiendo, ${n}. Escucha esto 👇`);
+    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
     if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
       await sendVideo(phone, VIDEO_DIA4_B);
     } else {
@@ -643,4 +660,38 @@ async function sendTemplateDia4(to, nombre) {
   });
   const data = await res.json();
   console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// NOTIFICACIÓN DE SOPORTE VIA BREVO
+// ════════════════════════════════════════════════════════════════
+
+async function notificarSoporte(phone, correoCliente) {
+  try {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': process.env.BREVO_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: { name: 'Código Soberana', email: 'soporte@josuecalderon.lat' },
+        to: [{ email: 'soporte@josuecalderon.lat', name: 'Josué Soporte' }],
+        subject: '⚠️ Soporte acceso — compradora necesita ayuda',
+        htmlContent: `
+          <h2>Compradora necesita reenvío de acceso</h2>
+          <p><strong>WhatsApp:</strong> ${phone}</p>
+          <p><strong>Correo que escribió:</strong> ${correoCliente}</p>
+          <p><strong>Acción:</strong> Buscar en Hotmart y reenviar el acceso al Workshop.</p>
+          <hr>
+          <p style="color:#888;font-size:12px">Código Soberana — Sistema automático</p>
+        `
+      })
+    });
+    const data = await res.json();
+    console.log('Notificación soporte:', res.ok ? '✓ enviada' : JSON.stringify(data));
+  } catch (err) {
+    console.error('notificarSoporte error:', err.message);
+  }
 }

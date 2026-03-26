@@ -1,4 +1,4 @@
- // api/whatsapp.js — Con día 2 integrado
+// api/whatsapp.js — Con día 2 integrado
 
 // Media IDs de audios subidos a Meta
 // REEMPLAZAR cuando tengas los audios grabados y subidos
@@ -313,13 +313,16 @@ async function ejecutarPaso(phone, paso, nombre) {
     } else {
       console.log('Audio día 2 termino pendiente de subir a Meta');
     }
+    // Programar día 4 después del día 2
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (paso === 'dia2_no_vio') {
-    // Trigger automático 48h — ella no escribió
-    // Enviar plantilla día 2 (fuera de ventana)
+    // Trigger automático — ella no escribió — enviar plantilla día 2
     const n = nombre || 'amiga';
     await sendTemplateDia2(phone, n);
+    // Programar día 4 después del día 2
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (paso === 'dia4_reflexion') {
@@ -336,6 +339,8 @@ async function ejecutarPaso(phone, paso, nombre) {
     } else {
       console.log('Audio día 2 no vio pendiente de subir a Meta');
     }
+    // Programar día 4 después del día 2
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 }
 

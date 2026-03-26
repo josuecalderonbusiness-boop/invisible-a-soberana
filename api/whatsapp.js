@@ -66,8 +66,8 @@ export default async function handler(req, res) {
       // Responder 200 a Meta primero
       res.status(200).json({ ok: true });
 
-      // Procesar botón
-      await manejarBoton(phone, btnId, btnTx);
+      // Procesar botón — sin await para no bloquear
+      manejarBoton(phone, btnId, btnTx).catch(err => console.error('manejarBoton error:', err.message));
       return;
     }
 
@@ -137,9 +137,10 @@ async function guardarEnSheets(data) {
 // MANEJAR BOTONES — procesamiento inmediato
 // ════════════════════════════════════════════════════════════════
 async function manejarBoton(phone, btnId, btnTx) {
-  const contacto = await buscarContacto(phone);
-  const nombre   = contacto?.nombre || '';
-  const n        = nombre || 'amiga';
+  // No buscamos contacto al inicio — evita delay
+  // El nombre se obtiene solo cuando es necesario
+  const nombre = '';
+  const n      = 'amiga';
 
   // ── DÍA 0 — Botones de bienvenida ───────────────────────────
   if (btnTx.includes('pude') || btnTx.includes('ya pude')) {

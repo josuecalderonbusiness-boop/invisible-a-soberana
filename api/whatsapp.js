@@ -434,21 +434,23 @@ async function buscarEnSheetsPorTelefono(phone) {
 async function programarTrigger(phone, paso, minutos, nombre) {
   const url = process.env.SHEETS_WEBHOOK_URL;
   if (!url) return;
+  // Calcular fecha de ejecución
+  const fechaEjecucion = new Date(Date.now() + minutos * 60 * 1000).toISOString();
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        accion:  'programar_trigger',
-        phone:   phone,
-        paso:    paso,
-        minutos: minutos,
-        nombre:  nombre,
-        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
+        accion:          'guardar_trigger_sheets',
+        phone:           phone,
+        paso:            paso,
+        nombre:          nombre || '',
+        fechaEjecucion:  fechaEjecucion,
+        webhook:         'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
       })
     });
     const data = await res.json();
-    console.log(`Trigger (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
+    console.log(`Trigger guardado en Sheets (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
   } catch (err) {
     console.error('programarTrigger error:', err.message);
   }

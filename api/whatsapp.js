@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString()
       });
 
-      console.log(\`Texto guardado en Sheets: "\${texto.substring(0,30)}"\`);
+      console.log('Texto guardado: ' + texto.substring(0,30));
       return res.status(200).json({ ok: true });
     }
 

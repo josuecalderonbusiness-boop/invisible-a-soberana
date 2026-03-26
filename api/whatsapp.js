@@ -68,19 +68,29 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    // ── TEXTOS → guardar en Sheets para Apps Script ─────────────
+    // ── TEXTOS ───────────────────────────────────────────────────
     if (tipo === 'text') {
       const msgId = msg.id || '';
       const texto = (msg.text?.body || '').trim();
+      const textoL = texto.toLowerCase();
 
-      // Guardar en Sheets
+      // Bienvenida → procesar inmediato en Vercel
+      const esBienvenida = textoL.includes('acabo de comprar') || textoL.includes('comunidad vip') || textoL.includes('soberana');
+      if (esBienvenida) {
+        const contacto = await buscarContacto(phone);
+        const nombre   = contacto?.nombre || 'amiga';
+        await sendTemplate(phone, nombre, 'bienvenida_pacto_soberana');
+        return res.status(200).json({ ok: true });
+      }
+
+      // Resto → guardar en Sheets para Apps Script
       await guardarEnSheets({
         msgId, phone, tipo, texto,
         btnId: '', btnTx: '',
         timestamp: new Date().toISOString()
       });
 
-      console.log(`Texto guardado en Sheets: "${texto.substring(0,30)}"`);
+      console.log(\`Texto guardado en Sheets: "\${texto.substring(0,30)}"\`);
       return res.status(200).json({ ok: true });
     }
 
@@ -134,10 +144,9 @@ async function guardarEnSheets(data) {
 // MANEJAR BOTONES — procesamiento inmediato
 // ════════════════════════════════════════════════════════════════
 async function manejarBoton(phone, btnId, btnTx) {
-  // No buscamos contacto al inicio — evita delay
-  // El nombre se obtiene solo cuando es necesario
-  const nombre = '';
-  const n      = 'amiga';
+  const contacto = await buscarContacto(phone);
+  const nombre   = contacto?.nombre || '';
+  const n        = nombre || '';
 
   // ── DÍA 0 — Botones de bienvenida ───────────────────────────
   if (btnTx.includes('pude') || btnTx.includes('ya pude')) {
@@ -208,19 +217,20 @@ async function manejarBoton(phone, btnId, btnTx) {
   else if (btnId === 'dia2_termino' || btnTx.includes('ya lo termin') || btnTx.includes('termin')) {
     await cancelarTrigger(phone, 'dia2_no_vio');
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
-    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
+    await sendWhatsApp(phone, nombre ? `Muy bien ${n}, te diré algo 👇` : `Muy bien, te diré algo 👇`);
     await sendAudio(phone, AUDIO_DIA2_TERMINO);
   }
 
   else if (btnId === 'dia2_no_vio' || btnTx.includes('aún no') || btnTx.includes('aun no')) {
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
-    await sendWhatsApp(phone, `Entonces ${n}, hay algo que debes escuchar 👇`);
+    await sendWhatsApp(phone, nombre ? `Entonces ${n}, hay algo que debes escuchar 👇` : `Entonces, hay algo que debes escuchar 👇`);
     await sendAudio(phone, AUDIO_DIA2_NO_VIO);
   }
 
   // ── DÍA 4 — Plantilla ────────────────────────────────────────
   else if (btnId === 'dia4_si_cuento' || btnTx.includes('quiero contarte')) {
     await programarTrigger(phone, 'dia6_audio', 5, n);
+    await programarTrigger(phone, 'dia4_video_c', 60, n); // Si no escribe en 1 hora → video C
     await guardarEstadoSheets(phone, 'esperando_dia4');
     await sendWhatsApp(phone,
       `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`
@@ -229,7 +239,7 @@ async function manejarBoton(phone, btnId, btnTx) {
 
   else if (btnId === 'dia4_otra_ocasion' || btnTx.includes('te cuento en otra') || btnTx.includes('otra ocasi')) {
     await programarTrigger(phone, 'dia6_audio', 5, n);
-    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
+    await sendWhatsApp(phone, nombre ? `Entonces quiero que escuches esto 👇 ${n}` : `Entonces quiero que escuches esto 👇`);
     await sendVideo(phone, VIDEO_DIA4_B);
   }
 
@@ -268,9 +278,18 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendTemplateDia4(phone, n);
   }
   else if (paso === 'dia4_video_a') {
-    await sendWhatsApp(phone, `Ok, escúchame esto 👇 ${n}`);
+    await sendWhatsApp(phone, nombre ? `Ok, escúchame esto 👇 ${n}` : `Ok, escúchame esto 👇`);
     await sendVideo(phone, VIDEO_DIA4_A);
   }
+  else if (paso === 'dia4_video_c') {
+    // Solo enviar si ella no respondió (el estado esperando_dia4 ya se borró si respondió)
+    // Apps Script verifica el estado antes de llamar este paso
+    await sendWhatsApp(phone, nombre ? `${n}, aunque no me lo contaste aún —` : `Aunque no me lo contaste aún —`);
+    // VIDEO C — pendiente de subir cuando esté grabado
+    // await sendVideo(phone, 'VIDEO_DIA4_C_ID');
+    console.log('Video C pendiente de grabar y subir');
+  }
+
   else if (paso === 'dia6_audio') {
     await sendTemplateDia6(phone, n);
   }
@@ -286,15 +305,22 @@ async function ejecutarPaso(phone, paso, nombre) {
     // nombre aquí es el correo que escribió
     await sendWhatsApp(phone, `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nSi en 24 horas no llega — escríbeme de nuevo aquí.`);
     await notificarSoporte(phone, nombre, '');
+    await programarTrigger(phone, 'verificar_acceso', 1440, ''); // 24 horas después
+  }
+
+  else if (paso === 'verificar_acceso') {
+    await sendWhatsApp(phone,
+      `Hola. Solo quiero confirmar — ¿pudiste acceder al Workshop?\n\nSi aún tienes problemas escríbeme aquí y lo resolvemos.`
+    );
   }
   else if (paso === 'dia2_termino') {
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
-    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
+    await sendWhatsApp(phone, nombre ? `Muy bien ${n}, te diré algo 👇` : `Muy bien, te diré algo 👇`);
     await sendAudio(phone, AUDIO_DIA2_TERMINO);
   }
   else if (paso === 'dia2_no_vio_confirmado') {
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
-    await sendWhatsApp(phone, `Entonces ${n}, hay algo que debes escuchar 👇`);
+    await sendWhatsApp(phone, nombre ? `Entonces ${n}, hay algo que debes escuchar 👇` : `Entonces, hay algo que debes escuchar 👇`);
     await sendAudio(phone, AUDIO_DIA2_NO_VIO);
   }
 }

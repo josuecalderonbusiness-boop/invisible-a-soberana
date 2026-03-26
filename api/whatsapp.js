@@ -1,16 +1,5 @@
-// api/whatsapp.js — Con día 2 integrado
-
-// Media IDs de audios subidos a Meta
-// REEMPLAZAR cuando tengas los audios grabados y subidos
-const AUDIO_DIA2_TERMINO = '1620415032329794'; // Audio "Ya lo terminé"
-const AUDIO_DIA2_NO_VIO  = '2362093030941177';  // Audio "Aún no lo veo"
-
-// Día 6 — Audio
-const AUDIO_DIA6 = '4265678347083267';
-
-// Día 4 — Videos respuesta (subir a Meta y reemplazar IDs)
-const VIDEO_DIA4_A = '1507744617738426'; // Video A — para quien contó
-const VIDEO_DIA4_B = '976614471691735'; // Video B — para quien no contó
+// api/whatsapp.js — Arquitectura v2
+// Vercel solo recibe y guarda en Sheets. Apps Script procesa todo.
 
 export default async function handler(req, res) {
 
@@ -23,38 +12,48 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  // ── POST: trigger programado desde Apps Script ───────────────────
+  // ── POST: trigger desde Apps Script ─────────────────────────────
   if (req.method === 'POST' && req.body?.trigger === true) {
     const { phone, paso, nombre } = req.body;
-    console.log(`Trigger: phone=${phone} paso=${paso}`);
-    await ejecutarPaso(phone, paso, nombre || '');
+    console.log(`Trigger ejecutado: phone=${phone} paso=${paso}`);
+    await ejecutarPaso(String(phone), paso, nombre || '');
     return res.status(200).json({ ok: true });
-  }
-
-  // ── POST desde Orbit: envío manual ──────────────────────────────
-  if (req.method === 'POST' && req.body?.to && req.body?.message) {
-    const sent = await sendWhatsApp(req.body.to, req.body.message);
-    return res.status(sent ? 200 : 500).json({ ok: sent });
   }
 
   // ── POST: webhook entrante Meta ──────────────────────────────────
   if (req.method === 'POST' && req.body?.object === 'whatsapp_business_account') {
     const entry    = req.body.entry?.[0]?.changes?.[0]?.value;
     const messages = entry?.messages;
+
     if (!messages?.length) return res.status(200).json({ ok: true });
 
     const msg   = messages[0];
     const msgId = msg.id || '';
+    const phone = msg.from || '';
+    const tipo  = msg.type || '';
 
-    if (msgId) {
-      const duplicado = await verificarYMarcar(msgId);
-      if (duplicado) {
-        console.log(`Duplicado ignorado: ${msgId}`);
-        return res.status(200).json({ ok: true });
-      }
+    // Extraer texto o botón
+    let texto = '';
+    let btnId = '';
+    let btnTx = '';
+
+    if (tipo === 'text') {
+      texto = (msg.text?.body || '').trim();
+    } else if (tipo === 'interactive') {
+      btnId = msg.interactive?.button_reply?.id || '';
+      btnTx = msg.interactive?.button_reply?.title || '';
+    } else if (tipo === 'button') {
+      btnTx = msg.button?.text || '';
+      btnId = msg.button?.payload || btnTx;
     }
 
-    await procesarMensaje(msg);
+    // Guardar en Sheets — responder 200 inmediato
+    const saved = await guardarMensajeEnSheets({
+      msgId, phone, tipo, texto, btnId, btnTx,
+      timestamp: new Date().toISOString()
+    });
+
+    console.log(`Mensaje guardado: ${msgId} tipo=${tipo} phone=${phone} saved=${saved}`);
     return res.status(200).json({ ok: true });
   }
 
@@ -62,308 +61,42 @@ export default async function handler(req, res) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// ANTI-DUPLICADO
+// GUARDAR MENSAJE EN SHEETS
 // ════════════════════════════════════════════════════════════════
 
-async function verificarYMarcar(msgId) {
+async function guardarMensajeEnSheets(data) {
   const url = process.env.SHEETS_WEBHOOK_URL;
   if (!url) return false;
   try {
-    const controller = new AbortController();
-    const timeout    = setTimeout(() => controller.abort(), 2000);
-    const res  = await fetch(url, {
-      method:  'POST',
+    const res = await fetch(url, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ accion: 'verificar_mensaje', msgId }),
-      signal:  controller.signal
+      body: JSON.stringify({
+        accion: 'guardar_mensaje_entrante',
+        ...data
+      })
     });
-    clearTimeout(timeout);
-    const data = await res.json();
-    return data.duplicado === true;
+    return res.ok;
   } catch (err) {
-    console.log('verificarYMarcar timeout — procesando igual');
+    console.error('guardarMensajeEnSheets error:', err.message);
     return false;
   }
 }
 
 // ════════════════════════════════════════════════════════════════
-// PROCESAMIENTO PRINCIPAL
-// ════════════════════════════════════════════════════════════════
-
-async function procesarMensaje(msg) {
-  const phone = '+' + msg.from;
-  const text  = (msg.text?.body || '').toLowerCase().trim();
-  const tipo  = msg.type;
-
-  console.log(`=== Mensaje WA de ${phone} [${tipo}]: "${text}" ===`);
-
-  if (tipo === 'interactive') {
-    const btnId = msg.interactive?.button_reply?.id || '';
-    console.log(`Botón interactivo: id=${btnId}`);
-    await manejarBotonInteractivo(phone, btnId);
-    return;
-  }
-
-  if (tipo === 'button') {
-    const btnTx = msg.button?.text || '';
-    console.log(`Botón plantilla: "${btnTx}"`);
-    await manejarBotonPlantilla(phone, btnTx);
-    return;
-  }
-
-  // Detectar si está esperando correo de soporte
-  const estadoActual = await obtenerEstado(phone);
-  if (estadoActual === 'esperando_correo_soporte') {
-    await borrarEstado(phone);
-    // Notificar a soporte
-    const contactoSoporte = await buscarEnSheetsPorTelefono(phone);
-    await notificarSoporte(phone, text, contactoSoporte?.nombre || '');
-    await sendWhatsApp(phone,
-      `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nSi en 24 horas no llega — escríbeme de nuevo aquí.`
-    );
-    return;
-  }
-
-  // Detectar si está en estado esperando_dia4
-  const estado = await obtenerEstado(phone);
-  if (estado === 'esperando_dia4') {
-    console.log('→ Ella está contando después del día 4');
-    await borrarEstado(phone);
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || 'amiga';
-    await sendWhatsApp(phone, `Ok, escúchame esto 👇 ${nombre}`);
-    if (VIDEO_DIA4_A !== 'PENDIENTE_VIDEO_DIA4_A') {
-      await sendVideo(phone, VIDEO_DIA4_A);
-    } else {
-      console.log('Video día 4 A pendiente de subir a Meta');
-    }
-    return;
-  }
-
-  // Detectar si ella escribió después de ver el workshop
-  // (mensaje libre después del día 0)
-  const esRespuestaWorkshop =
-    text.includes('lo vi') ||
-    text.includes('lo termine') ||
-    text.includes('lo terminé') ||
-    text.includes('ya lo vi') ||
-    text.includes('termin') ||
-    text.includes('listo') ||
-    text.includes('list') ||
-    text.includes('increíble') ||
-    text.includes('increible') ||
-    text.includes('wow') ||
-    text.includes('impresionante') ||
-    text.includes('genial') ||
-    text.includes('excelente') ||
-    text.includes('buenísimo') ||
-    text.includes('me gustó') ||
-    text.includes('me gusto') ||
-    text.includes('ya tengo el código') ||
-    text.includes('ya tengo el codigo') ||
-    text.includes('tengo el código') ||
-    text.includes('tengo el codigo');
-
-  if (esRespuestaWorkshop) {
-    console.log('→ Ella terminó el workshop y escribió');
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    // Cancelar trigger día 2 versión B y enviar versión A inmediato
-    await cancelarTrigger(phone, 'dia2_no_vio');
-    await ejecutarPaso(phone, 'dia2_termino', nombre);
-    return;
-  }
-
-  // Mensaje de bienvenida
-  const esBienvenida =
-    text.includes('acabo de comprar') ||
-    text.includes('comunidad vip') ||
-    text.includes('soberana');
-
-  if (esBienvenida) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || 'amiga';
-    const email    = contacto?.email  || 'sin-match@soberana';
-    console.log(`Contacto: ${email} (${nombre})`);
-    await sendTemplate(phone, nombre);
-    return;
-  }
-
-  console.log('Mensaje no reconocido — enviando respuesta genérica');
-  await sendWhatsApp(phone,
-    `Recibí tu mensaje. 🙏\n\n` +
-    `Sigue pendiente — en los próximos días te escribo de nuevo.`
-  );
-}
-
-// ════════════════════════════════════════════════════════════════
-// LÓGICA DE BOTONES
-// ════════════════════════════════════════════════════════════════
-
-async function manejarBotonPlantilla(phone, boton) {
-  const b = boton.toLowerCase();
-  console.log(`Procesando botón plantilla: "${b}"`);
-
-  if (b.includes('pude') || b.includes('ya pude')) {
-    await sendUrlButton(phone,
-      `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
-      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
-    );
-    await sendUrlButton(phone,
-      `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
-      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
-    );
-    await programarTrigger(phone, 'confirmacion_comunidad', 1, ''); // PRUEBA: 1 min (producción: 3)
-  }
-
-  else if (b.includes('ya lo termin') || b.includes('termin')) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    await cancelarTrigger(phone, 'dia2_no_vio');
-    await ejecutarPaso(phone, 'dia2_termino', nombre);
-  }
-
-  else if (b.includes('aun no') || b.includes('aún no')) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    await ejecutarPaso(phone, 'dia2_no_vio_confirmado', nombre);
-  }
-
-  else if (b.includes('quiero contarte') || b.includes('si, quiero') || b.includes('sí, quiero')) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    await guardarEstado(phone, 'esperando_dia4');
-    await sendWhatsApp(phone, `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`);
-  }
-
-  else if (b.includes('te cuento en otra') || b.includes('otra ocasion') || b.includes('otra ocasión')) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    const n = nombre || 'amiga';
-    // Programar día 6 PRIMERO
-    await programarTrigger(phone, 'dia6_audio', 3, nombre); // PRUEBA: 3 min (producción: 2880)
-    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
-    if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
-      await sendVideo(phone, VIDEO_DIA4_B);
-    }
-  }
-
-  else if (b.includes('escuchar mensaje') || b.includes('escuchar')) {
-    const contacto = await buscarEnSheetsPorTelefono(phone);
-    const nombre   = contacto?.nombre || '';
-    const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `${n}, escucha esto 👇`);
-    await sendAudio(phone, AUDIO_DIA6);
-  }
-
-  else if (b.includes('podido') || b.includes('no he')) {
-    await sendWhatsApp(phone,
-      `Tranquila. Lo resolvemos ahora. 🙏\n\nRevisa estas tres cosas:\n\n1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n2️⃣ El correo viene de noreply@hotmart.com\n\n3️⃣ Si no aparece — escríbeme tu correo aquí mismo y te reenvío el acceso en menos de 24 horas.`
-    );
-    await guardarEstado(phone, 'esperando_correo_soporte');
-  }
-}
-
-async function manejarBotonInteractivo(phone, btnId) {
-  const contacto = await buscarEnSheetsPorTelefono(phone);
-  const nombre   = contacto?.nombre || '';
-
-  if (btnId === 'comunidad_si') {
-    await sendButtons(phone,
-      `Ya tienes todo lo que necesitas. 🎯\n\nAhora solo falta una cosa: ver el Workshop completo. Sin saltar partes.\n\nHay un momento en el segundo módulo que lo cambia todo. Cuando llegues ahí — vas a saber exactamente de qué hablo.\n\n¿Cuándo vas a verlo?`,
-      [
-        { id: 'workshop_hoy',    title: '🔥 Hoy mismo' },
-        { id: 'workshop_semana', title: '📅 Esta semana' },
-        { id: 'workshop_nose',   title: '🤔 Aún no sé' }
-      ]
-    );
-  }
-
-  else if (btnId === 'comunidad_no') {
-    await sendUrlButton(phone,
-      `Toca el enlace y únete antes de empezar el Workshop.\n\nLa comunidad es parte de tu acceso.`,
-      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
-    );
-    await programarTrigger(phone, 'confirmacion_comunidad', 1, nombre); // PRUEBA: 1 min (producción: 3)
-  }
-
-  else if (btnId === 'workshop_hoy') {
-    await sendWhatsApp(phone,
-      `Perfecto. 💪\n\nCuando termines — escríbeme:\n*Ya tengo el código*\n\nNos vemos adentro.`
-    );
-    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-  }
-
-  else if (btnId === 'workshop_terminado') {
-    // Ella terminó el workshop — programar día 4 primero
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
-    const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
-    if (AUDIO_DIA2_TERMINO !== 'PENDIENTE_MEDIA_ID_TERMINO') {
-      await sendAudio(phone, AUDIO_DIA2_TERMINO);
-    }
-  }
-
-  else if (btnId === 'workshop_semana') {
-    await sendWhatsApp(phone,
-      `Bien. 📅\n\nCuando lo termines — escríbeme:\n*Ya tengo el código*\n\nTe escribo en unos días.`
-    );
-    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-  }
-
-  else if (btnId === 'workshop_nose') {
-    await sendWhatsApp(phone,
-      `Sin problema. 🙏\n\nCuando lo termines — escríbeme:\n*Ya tengo el código*\n\nAquí estaré.`
-    );
-    await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
-  }
-
-  // Botones del día 4
-  else if (btnId === 'dia4_si_cuento') {
-    // Ella quiere contar — guardar estado y responder
-    await guardarEstado(phone, 'esperando_dia4');
-    await sendWhatsApp(phone, `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`);
-  }
-
-  else if (btnId === 'dia4_otra_ocasion') {
-    const n = nombre || 'amiga';
-    // Programar día 6 PRIMERO
-    await programarTrigger(phone, 'dia6_audio', 3, nombre); // PRUEBA: 3 min (producción: 2880)
-    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
-    if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
-      await sendVideo(phone, VIDEO_DIA4_B);
-    } else {
-      console.log('Video día 4 B pendiente de subir a Meta');
-    }
-  }
-
-  // Botón día 6
-  else if (btnId === 'dia6_escuchar') {
-    const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `${n}, escucha esto 👇`);
-    await sendAudio(phone, AUDIO_DIA6);
-  }
-
-  // Botones del día 2 plantilla
-  else if (btnId === 'dia2_termino') {
-    // Ella confirmó que terminó el workshop desde la plantilla
-    await ejecutarPaso(phone, 'dia2_termino', nombre);
-  }
-
-  else if (btnId === 'dia2_no_vio') {
-    // Ella confirmó que aún no lo vio desde la plantilla
-    await ejecutarPaso(phone, 'dia2_no_vio_confirmado', nombre);
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
-// PASOS PROGRAMADOS
+// EJECUTAR PASO — llamado desde Apps Script via trigger
 // ════════════════════════════════════════════════════════════════
 
 async function ejecutarPaso(phone, paso, nombre) {
   console.log(`Ejecutando paso: ${paso} para ${phone} (${nombre})`);
 
-  if (paso === 'confirmacion_comunidad') {
+  const n = nombre || 'amiga';
+
+  if (paso === 'bienvenida') {
+    await sendTemplate(phone, n, 'bienvenida_pacto_soberana');
+  }
+
+  else if (paso === 'confirmacion_comunidad') {
     await sendButtons(phone,
       '¿Lograste unirte a la comunidad?',
       [
@@ -373,105 +106,88 @@ async function ejecutarPaso(phone, paso, nombre) {
     );
   }
 
-  else if (paso === 'dia2_termino') {
-    // Programar día 4 PRIMERO antes de enviar audio
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
-    // Luego enviar audio
-    const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
-    if (AUDIO_DIA2_TERMINO !== 'PENDIENTE_MEDIA_ID_TERMINO') {
-      await sendAudio(phone, AUDIO_DIA2_TERMINO);
-    } else {
-      console.log('Audio día 2 termino pendiente de subir a Meta');
-    }
-  }
-
   else if (paso === 'dia2_no_vio') {
-    // Programar día 4 PRIMERO
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
-    const n = nombre || 'amiga';
     await sendTemplateDia2(phone, n);
   }
 
-  else if (paso === 'dia4_reflexion') {
-    // Enviar plantilla día 4 con botones
-    await sendTemplateDia4(phone, nombre || 'amiga');
-  }
-
-  else if (paso === 'dia6_audio') {
-    // Enviar plantilla día 6 con botón para escuchar audio
-    await sendTemplateDia6(phone, nombre || 'amiga');
+  else if (paso === 'dia2_termino') {
+    await programarTrigger(phone, 'dia4_reflexion', 5, n);
+    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
+    await sendAudio(phone, '1620415032329794');
   }
 
   else if (paso === 'dia2_no_vio_confirmado') {
-    // Programar día 4 PRIMERO
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
-    const n = nombre || 'amiga';
+    await programarTrigger(phone, 'dia4_reflexion', 5, n);
     await sendWhatsApp(phone, `Entonces ${n}, hay algo que debes escuchar 👇`);
-    if (AUDIO_DIA2_NO_VIO !== 'PENDIENTE_MEDIA_ID_NO_VIO') {
-      await sendAudio(phone, AUDIO_DIA2_NO_VIO);
-    } else {
-      console.log('Audio día 2 no vio pendiente de subir a Meta');
-    }
+    await sendAudio(phone, '2362093030941177');
+  }
+
+  else if (paso === 'dia4_reflexion') {
+    await programarTrigger(phone, 'dia6_audio', 6, n);
+    await sendTemplateDia4(phone, n);
+  }
+
+  else if (paso === 'dia4_video_a') {
+    await programarTrigger(phone, 'dia6_audio', 5, n);
+    await sendWhatsApp(phone, `Ok, escúchame esto 👇 ${n}`);
+    await sendVideo(phone, '1507744617738426');
+  }
+
+  else if (paso === 'dia4_video_b') {
+    await programarTrigger(phone, 'dia6_audio', 5, n);
+    await sendWhatsApp(phone, `Entonces quiero que escuches esto 👇 ${n}`);
+    await sendVideo(phone, '976614471691735');
+  }
+
+  else if (paso === 'dia6_audio') {
+    await sendTemplateDia6(phone, n);
+  }
+
+  else if (paso === 'respuesta_generica') {
+    await sendWhatsApp(phone,
+      `Recibí tu mensaje. 🙏\n\nSigue pendiente — en los próximos días te escribo de nuevo.`
+    );
+  }
+
+  else if (paso === 'soporte_acceso') {
+    await sendWhatsApp(phone,
+      `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
+      `1️⃣ Busca en *spam* o *promociones* un correo de Hotmart\n\n` +
+      `2️⃣ El correo viene de noreply@hotmart.com\n\n` +
+      `3️⃣ Si no aparece — escríbeme tu correo aquí mismo y te reenvío el acceso en menos de 24 horas.`
+    );
+  }
+
+  else if (paso === 'confirmar_correo_soporte') {
+    // nombre aquí viene siendo el correo que escribió
+    await sendWhatsApp(phone, `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nSi en 24 horas no llega — escríbeme de nuevo aquí.`);
+    await notificarSoporte(phone, nombre, '');
   }
 }
 
 // ════════════════════════════════════════════════════════════════
-// SHEETS Y TRIGGERS
+// PROGRAMAR TRIGGER EN SHEETS
 // ════════════════════════════════════════════════════════════════
-
-async function buscarEnSheetsPorTelefono(phone) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return null;
-  try {
-    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
-    const res = await fetch(`${url}?accion=buscar_por_telefono&telefono=${tel}`);
-    const data = await res.json();
-    return data.ok ? data : null;
-  } catch (err) { return null; }
-}
 
 async function programarTrigger(phone, paso, minutos, nombre) {
   const url = process.env.SHEETS_WEBHOOK_URL;
   if (!url) return;
-  // Calcular fecha de ejecución
   const fechaEjecucion = new Date(Date.now() + minutos * 60 * 1000).toISOString();
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        accion:          'guardar_trigger_sheets',
-        phone:           phone,
-        paso:            paso,
-        nombre:          nombre || '',
-        fechaEjecucion:  fechaEjecucion,
-        webhook:         'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
+        accion: 'guardar_trigger_sheets',
+        phone, paso, nombre: nombre || '',
+        fechaEjecucion,
+        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
       })
     });
     const data = await res.json();
-    console.log(`Trigger guardado en Sheets (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
+    console.log(`Trigger (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
   } catch (err) {
     console.error('programarTrigger error:', err.message);
-  }
-}
-
-async function cancelarTrigger(phone, paso) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return;
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: 'cancelar_trigger',
-        phone:  phone,
-        paso:   paso
-      })
-    });
-    console.log(`Trigger cancelado: ${paso} para ${phone}`);
-  } catch (err) {
-    console.error('cancelarTrigger error:', err.message);
   }
 }
 
@@ -485,20 +201,20 @@ const WA_HDR  = () => ({
   'Content-Type':  'application/json'
 });
 
-async function sendTemplate(to, nombre) {
+async function sendTemplate(to, nombre, templateName) {
   const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
       messaging_product: 'whatsapp', to: number, type: 'template',
       template: {
-        name: 'bienvenida_pacto_soberana', language: { code: 'es_MX' },
+        name: templateName, language: { code: 'es_MX' },
         components: [{ type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] }]
       }
     })
   });
   const data = await res.json();
-  console.log(`Template bienvenida → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+  console.log(`Template ${templateName} → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendTemplateDia2(to, nombre) {
@@ -510,24 +226,54 @@ async function sendTemplateDia2(to, nombre) {
       template: {
         name: 'dia2_workshop_cs', language: { code: 'es_MX' },
         components: [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }]
-          },
-          {
-            type: 'button', sub_type: 'quick_reply', index: '0',
-            parameters: [{ type: 'payload', payload: 'dia2_termino' }]
-          },
-          {
-            type: 'button', sub_type: 'quick_reply', index: '1',
-            parameters: [{ type: 'payload', payload: 'dia2_no_vio' }]
-          }
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia2_termino' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia2_no_vio' }] }
         ]
       }
     })
   });
   const data = await res.json();
   console.log(`Template día 2 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia4(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia4b_reflexion_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia4_si_cuento' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia4_otra_ocasion' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia6(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia6_audio_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia6_escuchar' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 6 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendWhatsApp(to, message) {
@@ -587,64 +333,6 @@ async function sendAudio(to, mediaId) {
   console.log(`Audio → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
-
-// ════════════════════════════════════════════════════════════════
-// GESTIÓN DE ESTADOS (para conversaciones en curso)
-// ════════════════════════════════════════════════════════════════
-
-async function guardarEstado(phone, estado) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return;
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: 'guardar_estado',
-        phone:  phone,
-        estado: estado
-      })
-    });
-    console.log(`Estado guardado: ${estado} para ${phone}`);
-  } catch (err) {
-    console.error('guardarEstado error:', err.message);
-  }
-}
-
-async function obtenerEstado(phone) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return null;
-  try {
-    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
-    const res = await fetch(`${url}?accion=obtener_estado&telefono=${tel}`);
-    const data = await res.json();
-    return data.ok ? data.estado : null;
-  } catch (err) {
-    return null;
-  }
-}
-
-async function borrarEstado(phone) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) return;
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: 'borrar_estado',
-        phone:  phone
-      })
-    });
-  } catch (err) {
-    console.error('borrarEstado error:', err.message);
-  }
-}
-
-// ════════════════════════════════════════════════════════════════
-// ENVIAR VIDEO
-// ════════════════════════════════════════════════════════════════
-
 async function sendVideo(to, mediaId) {
   const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
@@ -658,100 +346,26 @@ async function sendVideo(to, mediaId) {
   console.log(`Video → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
-// ════════════════════════════════════════════════════════════════
-// PLANTILLA DÍA 4
-// ════════════════════════════════════════════════════════════════
-
-async function sendTemplateDia4(to, nombre) {
-  const number = String(to).replace(/[^0-9]/g, '');
-  const res = await fetch(WA_BASE(), {
-    method: 'POST', headers: WA_HDR(),
-    body: JSON.stringify({
-      messaging_product: 'whatsapp', to: number, type: 'template',
-      template: {
-        name: 'dia4b_reflexion_cs', language: { code: 'es_MX' },
-        components: [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }]
-          },
-          {
-            type: 'button', sub_type: 'quick_reply', index: '0',
-            parameters: [{ type: 'payload', payload: 'dia4_si_cuento' }]
-          },
-          {
-            type: 'button', sub_type: 'quick_reply', index: '1',
-            parameters: [{ type: 'payload', payload: 'dia4_otra_ocasion' }]
-          }
-        ]
-      }
-    })
-  });
-  const data = await res.json();
-  console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
-}
-
-
-// ════════════════════════════════════════════════════════════════
-// NOTIFICACIÓN DE SOPORTE VIA BREVO
-// ════════════════════════════════════════════════════════════════
-
 async function notificarSoporte(phone, correoCliente, nombre) {
   try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: {
-        'api-key': process.env.BREVO_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'api-key': process.env.BREVO_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sender: { name: 'Código Soberana', email: 'soporte@josuecalderon.lat' },
-        to: [{ email: 'soporte@josuecalderon.lat', name: 'Josué Soporte' }],
+        to: [{ email: 'soporte@josuecalderon.lat' }],
         subject: '⚠️ Soporte acceso — compradora necesita ayuda',
         htmlContent: `
           <h2>Compradora necesita reenvío de acceso</h2>
           <p><strong>Nombre:</strong> ${nombre || 'No disponible'}</p>
-          <p><strong>WhatsApp:</strong> <a href="https://wa.me/${phone.replace(/[^0-9]/g,'')}">Escribirle aquí</a> (${phone})</p>
-          <p><strong>Correo que escribió:</strong> ${correoCliente}</p>
-          <p><strong>Acción:</strong> Buscar en Hotmart y reenviar el acceso al Workshop.</p>
-          <hr>
-          <p style="color:#888;font-size:12px">Código Soberana — Sistema automático</p>
+          <p><strong>WhatsApp:</strong> <a href="https://wa.me/${String(phone).replace(/[^0-9]/g,'')}">Escribirle aquí</a> (${phone})</p>
+          <p><strong>Correo:</strong> ${correoCliente}</p>
+          <p><strong>Acción:</strong> Buscar en Hotmart y reenviar acceso.</p>
         `
       })
     });
-    const data = await res.json();
-    console.log('Notificación soporte:', res.ok ? '✓ enviada' : JSON.stringify(data));
+    console.log('Notificación soporte enviada');
   } catch (err) {
     console.error('notificarSoporte error:', err.message);
   }
-}
-
-
-// ════════════════════════════════════════════════════════════════
-// PLANTILLA DÍA 6
-// ════════════════════════════════════════════════════════════════
-
-async function sendTemplateDia6(to, nombre) {
-  const number = String(to).replace(/[^0-9]/g, '');
-  const res = await fetch(WA_BASE(), {
-    method: 'POST', headers: WA_HDR(),
-    body: JSON.stringify({
-      messaging_product: 'whatsapp', to: number, type: 'template',
-      template: {
-        name: 'dia6_audio_cs', language: { code: 'es_MX' },
-        components: [
-          {
-            type: 'body',
-            parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }]
-          },
-          {
-            type: 'button', sub_type: 'quick_reply', index: '0',
-            parameters: [{ type: 'payload', payload: 'dia6_escuchar' }]
-          }
-        ]
-      }
-    })
-  });
-  const data = await res.json();
-  console.log(`Template día 6 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }

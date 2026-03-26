@@ -63,12 +63,9 @@ export default async function handler(req, res) {
 
       console.log(`Botón: id="${btnId}" tx="${btnTx}"`);
 
-      // Responder 200 a Meta primero
-      res.status(200).json({ ok: true });
-
-      // Procesar botón con await
+      // Procesar botón ANTES de responder
       await manejarBoton(phone, btnId, btnTx);
-      return;
+      return res.status(200).json({ ok: true });
     }
 
     // ── TEXTOS → guardar en Sheets para Apps Script ─────────────

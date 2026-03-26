@@ -243,6 +243,57 @@ async function manejarBoton(phone, btnId, btnTx) {
     await sendVideo(phone, VIDEO_DIA4_B);
   }
 
+  // ── DÍA 9 — Diagnóstico ─────────────────────────────────────────
+  else if (btnId === 'dia9_inicio') {
+    await guardarEstadoSheets(phone, 'dia9_p1');
+    await sendButtons(phone,
+      `Desde que aplicaste el Código Soberana — ¿cómo describes tu situación?`,
+      [
+        { id: 'dia9_p1_a', title: 'Noto cambios reales' },
+        { id: 'dia9_p1_b', title: 'Sigo en el mismo patrón' }
+      ]
+    );
+  }
+
+  else if (btnId === 'dia9_p1_a' || btnId === 'dia9_p1_b') {
+    // Guardar respuesta P1 y enviar P2
+    const r1 = btnId === 'dia9_p1_a' ? 'A' : 'B';
+    await guardarEstadoSheets(phone, 'dia9_p2_' + r1);
+    await sendButtons(phone,
+      `Fuera de tu relación — tu energía, tu claridad, tu enfoque en lo que construyes — ¿cómo lo describes?`,
+      [
+        { id: 'dia9_p2_a', title: 'Todo fluye bien' },
+        { id: 'dia9_p2_b', title: 'Me cuesta sostenerlo' }
+      ]
+    );
+  }
+
+  else if (btnId === 'dia9_p2_a' || btnId === 'dia9_p2_b') {
+    // Recuperar R1 del estado, guardar R2 y enviar P3
+    const r2 = btnId === 'dia9_p2_a' ? 'A' : 'B';
+    // El estado actual tiene 'dia9_p2_X' donde X es R1
+    const estadoActual = await obtenerEstadoSheets(phone);
+    const r1 = estadoActual ? estadoActual.replace('dia9_p2_', '') : 'A';
+    await guardarEstadoSheets(phone, 'dia9_p3_' + r1 + r2);
+    await sendButtons(phone,
+      `¿Hay áreas de tu vida donde sientes que tu crecimiento todavía no llega — trabajo, dinero, propósito, cuerpo?`,
+      [
+        { id: 'dia9_p3_a', title: 'Sí, hay áreas pendientes' },
+        { id: 'dia9_p3_b', title: 'Estoy bien en todo' }
+      ]
+    );
+  }
+
+  else if (btnId === 'dia9_p3_a' || btnId === 'dia9_p3_b') {
+    // Recuperar R1+R2 del estado y enviar resultado
+    const r3 = btnId === 'dia9_p3_a' ? 'A' : 'B';
+    const estadoActual = await obtenerEstadoSheets(phone);
+    const previo = estadoActual ? estadoActual.replace('dia9_p3_', '') : 'AA';
+    const combo = previo + r3;
+    await guardarEstadoSheets(phone, '');
+    await enviarResultadoDia9(phone, combo, nombre);
+  }
+
   // ── DÍA 6 — Plantilla ────────────────────────────────────────
   else if (btnId === 'dia6_escuchar' || btnTx.includes('escuchar mensaje') || btnTx.includes('escuchar')) {
     await sendAudio(phone, AUDIO_DIA6);
@@ -286,12 +337,17 @@ async function ejecutarPaso(phone, paso, nombre) {
     // Apps Script verifica el estado antes de llamar este paso
     await sendWhatsApp(phone, nombre ? `${n}, aunque no me lo contaste aún —` : `Aunque no me lo contaste aún —`);
     // VIDEO C — pendiente de subir cuando esté grabado
-    // await sendVideo(phone, 'VIDEO_DIA4_C_ID');
-    console.log('Video C pendiente de grabar y subir');
+    await sendVideo(phone, '975237675175658'); // Video C
   }
 
   else if (paso === 'dia6_audio') {
     await sendTemplateDia6(phone, n);
+    // Programar día 9
+    await programarTrigger(phone, 'dia9_diagnostico', 3, n); // PRUEBA: 3 min (producción: 4320 = 3 días)
+  }
+
+  else if (paso === 'dia9_diagnostico') {
+    await sendTemplateDia9(phone, n);
   }
   else if (paso === 'soporte_acceso') {
     await sendWhatsApp(phone,
@@ -362,6 +418,34 @@ async function cancelarTrigger(phone, paso) {
   } catch (err) {
     console.error('cancelarTrigger error:', err.message);
   }
+}
+
+async function obtenerEstadoSheets(phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return null;
+  try {
+    const tel = phone.replace(/[^0-9]/g, '').slice(-10);
+    const res = await fetch(`${url}?accion=obtener_estado&telefono=${tel}`);
+    const data = await res.json();
+    return data.ok ? data.estado : null;
+  } catch { return null; }
+}
+
+async function enviarResultadoDia9(phone, combo, nombre) {
+  const n = nombre || 'amiga';
+  let mensaje = '';
+
+  if (combo === 'AAA') {
+    mensaje = `${n}, lo que describes tiene un nombre.\n\nEs la mujer que activó el código en su relación — y que empieza a sentir que el sistema quiere expandirse a todas las áreas de su vida.\n\nEso no es casualidad. Es la señal de que estás lista para el siguiente nivel.\n\nMañana te cuento exactamente qué significa eso. Revisa tu correo.`;
+  } else if (combo === 'BBB') {
+    mensaje = `${n}, lo que describes también tiene nombre.\n\nEs la mujer que siente que algo en el sistema no terminó de conectar del todo. No es falla tuya — es que el mapa estaba incompleto.\n\nMañana te explico cuál era la parte que faltaba. Revisa tu correo.`;
+  } else if (combo.startsWith('A')) {
+    mensaje = `${n}, lo que describes es exactamente lo más honesto que puede decir una Soberana en proceso.\n\nCambios reales en algunas áreas. Resistencia en otras. Eso no es incoherencia — es la señal de que hay dimensiones que todavía no han sido tocadas.\n\nMañana hablamos de eso. Revisa tu correo.`;
+  } else {
+    mensaje = `${n}, lo que describes tiene más información de la que parece.\n\nHay algo que el Workshop activó — y hay algo que todavía está esperando ser trabajado. Las dos cosas son verdad al mismo tiempo.\n\nMañana te cuento qué es lo que está esperando. Revisa tu correo.`;
+  }
+
+  await sendWhatsApp(phone, mensaje);
 }
 
 async function guardarEstadoSheets(phone, estado) {
@@ -455,6 +539,25 @@ async function sendTemplateDia4(to, nombre) {
   });
   const data = await res.json();
   console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia9(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia9_diagnostico_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia9_inicio' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 9 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendTemplateDia6(to, nombre) {

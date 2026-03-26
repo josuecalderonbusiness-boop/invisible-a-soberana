@@ -66,8 +66,8 @@ export default async function handler(req, res) {
       // Responder 200 a Meta primero
       res.status(200).json({ ok: true });
 
-      // Procesar botón — sin await para no bloquear
-      manejarBoton(phone, btnId, btnTx).catch(err => console.error('manejarBoton error:', err.message));
+      // Procesar botón con await
+      await manejarBoton(phone, btnId, btnTx);
       return;
     }
 

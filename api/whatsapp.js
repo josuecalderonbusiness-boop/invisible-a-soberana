@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         ? (msg.interactive?.button_reply?.title || '').toLowerCase()
         : (msg.button?.text || '').toLowerCase();
 
-      console.log(`Botón: id="${btnId}" tx="${btnTx}"`);
+      console.log(`Botón: id="${btnId}" tx="${btnTx}" payload="${msg.button?.payload}" text="${msg.button?.text}"`);
 
       // Procesar botón ANTES de responder
       await manejarBoton(phone, btnId, btnTx);

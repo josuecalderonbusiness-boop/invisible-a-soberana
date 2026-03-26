@@ -486,7 +486,7 @@ const WA_HDR  = () => ({
 });
 
 async function sendTemplate(to, nombre) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -502,7 +502,7 @@ async function sendTemplate(to, nombre) {
 }
 
 async function sendTemplateDia2(to, nombre) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -531,7 +531,7 @@ async function sendTemplateDia2(to, nombre) {
 }
 
 async function sendWhatsApp(to, message) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -543,7 +543,7 @@ async function sendWhatsApp(to, message) {
 }
 
 async function sendButtons(to, body, buttons) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -559,7 +559,7 @@ async function sendButtons(to, body, buttons) {
 }
 
 async function sendUrlButton(to, body, buttonText, url) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -575,7 +575,7 @@ async function sendUrlButton(to, body, buttonText, url) {
 }
 
 async function sendAudio(to, mediaId) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -646,7 +646,7 @@ async function borrarEstado(phone) {
 // ════════════════════════════════════════════════════════════════
 
 async function sendVideo(to, mediaId) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -663,7 +663,7 @@ async function sendVideo(to, mediaId) {
 // ════════════════════════════════════════════════════════════════
 
 async function sendTemplateDia4(to, nombre) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({
@@ -732,7 +732,7 @@ async function notificarSoporte(phone, correoCliente, nombre) {
 // ════════════════════════════════════════════════════════════════
 
 async function sendTemplateDia6(to, nombre) {
-  const number = to.replace(/[^0-9]/g, '');
+  const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
     method: 'POST', headers: WA_HDR(),
     body: JSON.stringify({

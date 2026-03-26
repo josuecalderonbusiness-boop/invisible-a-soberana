@@ -115,7 +115,7 @@ async function procesarMensaje(msg) {
     await borrarEstado(phone);
     const contacto = await buscarEnSheetsPorTelefono(phone);
     const nombre   = contacto?.nombre || 'amiga';
-    await sendWhatsApp(phone, `Excelente, ${nombre}. Escucha esto 👇`);
+    await sendWhatsApp(phone, `Ok, escúchame esto 👇 ${nombre}`);
     if (VIDEO_DIA4_A !== 'PENDIENTE_VIDEO_DIA4_A') {
       await sendVideo(phone, VIDEO_DIA4_A);
     } else {
@@ -257,11 +257,25 @@ async function manejarBotonInteractivo(phone, btnId) {
   }
 
   else if (btnId === 'workshop_hoy') {
-    await sendWhatsApp(phone,
-      `Perfecto. 💪\n\nCuando termines — escríbeme aquí. Una sola palabra.\n\nNos vemos adentro.`
+    // Enviar mensaje con botón interactivo
+    await sendButtons(phone,
+      `Perfecto. 💪\n\nCuando termines el Workshop — presiona el botón de abajo.\n\nNos vemos adentro.`,
+      [
+        { id: 'workshop_terminado', title: '✅ Terminé el Workshop' }
+      ]
     );
-    // Trigger día 2 en 48h — versión A si escribe, B si no
+    // Trigger día 2 en 48h — si no presiona el botón
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
+  }
+
+  else if (btnId === 'workshop_terminado') {
+    // Ella terminó el workshop — programar día 4 primero
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
+    const n = nombre || 'amiga';
+    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
+    if (AUDIO_DIA2_TERMINO !== 'PENDIENTE_MEDIA_ID_TERMINO') {
+      await sendAudio(phone, AUDIO_DIA2_TERMINO);
+    }
   }
 
   else if (btnId === 'workshop_semana') {
@@ -322,24 +336,23 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
 
   else if (paso === 'dia2_termino') {
-    // Ella terminó el workshop
+    // Programar día 4 PRIMERO antes de enviar audio
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
+    // Luego enviar audio
     const n = nombre || 'amiga';
-    await sendWhatsApp(phone, `Excelente ${n}, entonces escucha esto 👇`);
+    await sendWhatsApp(phone, `Muy bien ${n}, te diré algo 👇`);
     if (AUDIO_DIA2_TERMINO !== 'PENDIENTE_MEDIA_ID_TERMINO') {
       await sendAudio(phone, AUDIO_DIA2_TERMINO);
     } else {
       console.log('Audio día 2 termino pendiente de subir a Meta');
     }
-    // Programar día 4 después del día 2
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (paso === 'dia2_no_vio') {
-    // Trigger automático — ella no escribió — enviar plantilla día 2
+    // Programar día 4 PRIMERO
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
     const n = nombre || 'amiga';
     await sendTemplateDia2(phone, n);
-    // Programar día 4 después del día 2
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 
   else if (paso === 'dia4_reflexion') {
@@ -348,7 +361,8 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
 
   else if (paso === 'dia2_no_vio_confirmado') {
-    // Ella presionó "Aún no lo veo" en la plantilla día 2
+    // Programar día 4 PRIMERO
+    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
     const n = nombre || 'amiga';
     await sendWhatsApp(phone, `Entonces ${n}, hay algo que debes escuchar 👇`);
     if (AUDIO_DIA2_NO_VIO !== 'PENDIENTE_MEDIA_ID_NO_VIO') {
@@ -356,8 +370,6 @@ async function ejecutarPaso(phone, paso, nombre) {
     } else {
       console.log('Audio día 2 no vio pendiente de subir a Meta');
     }
-    // Programar día 4 después del día 2
-    await programarTrigger(phone, 'dia4_reflexion', 5, nombre); // PRUEBA: 5 min (producción: 5760)
   }
 }
 

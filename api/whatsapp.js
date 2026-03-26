@@ -184,7 +184,7 @@ async function manejarBotonPlantilla(phone, boton) {
   const b = boton.toLowerCase();
   console.log(`Procesando botón plantilla: "${b}"`);
 
-  if (b.includes('pude') || b.includes('si')) {
+  if (b.includes('pude') || b.includes('ya pude')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
       'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
@@ -207,6 +207,23 @@ async function manejarBotonPlantilla(phone, boton) {
     const contacto = await buscarEnSheetsPorTelefono(phone);
     const nombre   = contacto?.nombre || '';
     await ejecutarPaso(phone, 'dia2_no_vio_confirmado', nombre);
+  }
+
+  else if (b.includes('quiero contarte') || b.includes('si, quiero') || b.includes('sí, quiero')) {
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || '';
+    await guardarEstado(phone, 'esperando_dia4');
+    await sendWhatsApp(phone, `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`);
+  }
+
+  else if (b.includes('te cuento en otra') || b.includes('otra ocasion') || b.includes('otra ocasión')) {
+    const contacto = await buscarEnSheetsPorTelefono(phone);
+    const nombre   = contacto?.nombre || '';
+    const n = nombre || 'amiga';
+    await sendWhatsApp(phone, `Entiendo, ${n}. Escucha esto 👇`);
+    if (VIDEO_DIA4_B !== 'PENDIENTE_VIDEO_DIA4_B') {
+      await sendVideo(phone, VIDEO_DIA4_B);
+    }
   }
 
   else if (b.includes('podido') || b.includes('no he')) {

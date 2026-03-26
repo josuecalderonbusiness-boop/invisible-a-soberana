@@ -142,7 +142,11 @@ async function procesarMensaje(msg) {
     text.includes('excelente') ||
     text.includes('buenísimo') ||
     text.includes('me gustó') ||
-    text.includes('me gusto');
+    text.includes('me gusto') ||
+    text.includes('ya tengo el código') ||
+    text.includes('ya tengo el codigo') ||
+    text.includes('tengo el código') ||
+    text.includes('tengo el codigo');
 
   if (esRespuestaWorkshop) {
     console.log('→ Ella terminó el workshop y escribió');
@@ -257,14 +261,9 @@ async function manejarBotonInteractivo(phone, btnId) {
   }
 
   else if (btnId === 'workshop_hoy') {
-    // Enviar mensaje con botón interactivo
-    await sendButtons(phone,
-      `Perfecto. 💪\n\nCuando termines el Workshop — presiona el botón de abajo.\n\nNos vemos adentro.`,
-      [
-        { id: 'workshop_terminado', title: '✅ Terminé el Workshop' }
-      ]
+    await sendWhatsApp(phone,
+      `Perfecto. 💪\n\nCuando termines — escríbeme:\n*Ya tengo el código*\n\nNos vemos adentro.`
     );
-    // Trigger día 2 en 48h — si no presiona el botón
     await programarTrigger(phone, 'dia2_no_vio', 2, nombre); // PRUEBA: 2 min (producción: 2880)
   }
 

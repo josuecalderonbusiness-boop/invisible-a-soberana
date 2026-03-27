@@ -230,7 +230,7 @@ async function manejarBoton(phone, btnId, btnTx) {
   // ── DÍA 4 — Plantilla ────────────────────────────────────────
   else if (btnId === 'dia4_si_cuento' || btnTx.includes('quiero contarte')) {
     await programarTrigger(phone, 'dia6_audio', 5, n);
-    await programarTrigger(phone, 'dia4_video_c', 60, n); // Si no escribe en 1 hora → video C
+    await programarTrigger(phone, 'dia4_video_c', 2, n); // PRUEBA: 2 min (producción: 60 min)
     await guardarEstadoSheets(phone, 'esperando_dia4');
     await sendWhatsApp(phone,
       `Estoy aquí.\n\nCuando quieras — escríbeme lo que notaste. No hay prisa. 👇`
@@ -250,7 +250,7 @@ async function manejarBoton(phone, btnId, btnTx) {
       `Desde que aplicaste el Código Soberana — ¿cómo describes tu situación?`,
       [
         { id: 'dia9_p1_a', title: 'Noto cambios reales' },
-        { id: 'dia9_p1_b', title: 'Sigo en el mismo patrón' }
+        { id: 'dia9_p1_b', title: 'El patrón persiste' }
       ]
     );
   }
@@ -278,7 +278,7 @@ async function manejarBoton(phone, btnId, btnTx) {
     await sendButtons(phone,
       `¿Hay áreas de tu vida donde sientes que tu crecimiento todavía no llega — trabajo, dinero, propósito, cuerpo?`,
       [
-        { id: 'dia9_p3_a', title: 'Sí, hay áreas pendientes' },
+        { id: 'dia9_p3_a', title: 'Sí, hay áreas' },
         { id: 'dia9_p3_b', title: 'Estoy bien en todo' }
       ]
     );
@@ -329,6 +329,8 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendTemplateDia4(phone, n);
   }
   else if (paso === 'dia4_video_a') {
+    // Marcar que ella respondió — cancela el video C
+    await guardarEstadoSheets(phone, 'dia4_respondio');
     await sendWhatsApp(phone, nombre ? `Ok, escúchame esto 👇 ${n}` : `Ok, escúchame esto 👇`);
     await sendVideo(phone, VIDEO_DIA4_A);
   }

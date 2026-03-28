@@ -4,6 +4,25 @@
 // Triggers: siempre via Sheets
 
 // ════════════════════════════════════════════════════════════════
+// COHORTES — automático según fecha actual
+// ════════════════════════════════════════════════════════════════
+const COHORTES = [
+  { cierre: '27 de abril',  cierreDate: '2026-04-27', inicio: '28 de abril'  },
+  { cierre: '25 de mayo',   cierreDate: '2026-05-25', inicio: '26 de mayo'   },
+  { cierre: '29 de junio',  cierreDate: '2026-06-29', inicio: '30 de junio'  },
+  { cierre: '27 de julio',  cierreDate: '2026-07-27', inicio: '28 de julio'  }
+];
+
+function getCohorteActual() {
+  const hoy = new Date();
+  for (const c of COHORTES) {
+    const cierre = new Date(c.cierreDate + 'T23:59:59');
+    if (hoy <= cierre) return c;
+  }
+  return COHORTES[COHORTES.length - 1];
+}
+
+// ════════════════════════════════════════════════════════════════
 // MEDIA IDs
 // ════════════════════════════════════════════════════════════════
 const AUDIO_DIA2_TERMINO = '1620415032329794';
@@ -11,6 +30,7 @@ const AUDIO_DIA2_NO_VIO  = '2362093030941177';
 const VIDEO_DIA4_A       = '1507744617738426';
 const VIDEO_DIA4_B       = '976614471691735';
 const AUDIO_DIA6         = '4265678347083267';
+const VIDEO_DIA13        = 'PENDIENTE_VIDEO_DIA13'; // Grabar y subir a Meta
 
 export default async function handler(req, res) {
 
@@ -243,6 +263,45 @@ async function manejarBoton(phone, btnId, btnTx) {
     await sendVideo(phone, VIDEO_DIA4_B);
   }
 
+  // ── SOPORTE — Verificar acceso ───────────────────────────────────
+  else if (btnId === 'acceso_confirmado' || btnTx.includes('ya pude entrar') || btnTx.includes('sí, ya')) {
+    // Ella confirmó que ya pudo entrar — iniciar flujo normal
+    await cancelarTrigger(phone, 'flujo_bienvenida_directo');
+    await sendUrlButton(phone,
+      `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
+    );
+    await sendUrlButton(phone,
+      `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
+      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+    );
+    await programarTrigger(phone, 'confirmacion_comunidad', 1, n);
+  }
+
+  // ── DÍA 13 — Video ──────────────────────────────────────────────
+  else if (btnId === 'dia13_ver' || btnTx.includes('ver mensaje')) {
+    await ejecutarPaso(phone, 'dia13_video', nombre);
+  }
+
+  // ── DÍA 15 — Pregunta directa ──────────────────────────────────
+  else if (btnId === 'dia15_si') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `Bien. 🙏\n\nAquí está el enlace para asegurar tu lugar:\n\nhttps://pay.hotmart.com/W97386435C\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nCualquier duda — escríbeme aquí mismo.`
+    );
+  }
+  else if (btnId === 'dia15_pregunta') {
+    await guardarEstadoSheets(phone, 'esperando_pregunta_7d');
+    await sendWhatsApp(phone,
+      `Claro. ¿Qué quieres saber? 👇\n\nEscríbeme tu pregunta aquí mismo.`
+    );
+  }
+  else if (btnId === 'dia15_no') {
+    await sendWhatsApp(phone,
+      `Está bien. Sin presión.\n\nSi en algún momento cambias de opinión — sabes dónde encontrarme.`
+    );
+  }
+
   // ── DÍA 9 — Diagnóstico ─────────────────────────────────────────
   else if (btnId === 'dia9_inicio') {
     await guardarEstadoSheets(phone, 'dia9_p1');
@@ -351,6 +410,52 @@ async function ejecutarPaso(phone, paso, nombre) {
   else if (paso === 'dia9_diagnostico') {
     await sendTemplateDia9(phone, n);
   }
+
+  else if (paso === 'dia13_texto_video') {
+    // Enviar plantilla día 13
+    await sendTemplateDia13(phone, n);
+    // Programar día 15
+    await programarTrigger(phone, 'dia15_pregunta_directa', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
+  }
+
+  else if (paso === 'dia13_video') {
+    // Ella presionó "Ver mensaje" — enviar texto con fechas + video
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `Las inscripciones cierran el *${cohorte.cierre}*.\n` +
+      `El entrenamiento inicia el *${cohorte.inicio}*.\n\n` +
+      `Quiero que veas esto antes de decidir. 👇`
+    );
+    if (VIDEO_DIA13 !== 'PENDIENTE_VIDEO_DIA13') {
+      await sendVideo(phone, VIDEO_DIA13);
+    } else {
+      console.log('Video día 13 pendiente de grabar y subir');
+    }
+  }
+
+  else if (paso === 'dia15_pregunta_directa') {
+    await sendTemplateDia15(phone, n);
+  }
+
+  else if (paso === 'verificar_acceso') {
+    // Plantilla que pregunta si ya pudo entrar
+    const contacto = await buscarContacto(phone);
+    const nombreReal = contacto?.nombre || n;
+    await sendTemplateVerificarAcceso(phone, nombreReal);
+  }
+
+  else if (paso === 'flujo_bienvenida_directo') {
+    // Si no respondió la verificación — iniciar flujo directo
+    await sendUrlButton(phone,
+      `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
+    );
+    await sendUrlButton(phone,
+      `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
+      'Unirme ahora', 'https://chat.whatsapp.com/BqxkKzCjlFj5RdX7MYOJi2'
+    );
+    await programarTrigger(phone, 'confirmacion_comunidad', 1, n);
+  }
   else if (paso === 'soporte_acceso') {
     await sendWhatsApp(phone,
       `Tranquila. Lo resolvemos ahora. 🙏\n\n` +
@@ -361,9 +466,38 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
   else if (paso === 'confirmar_correo_soporte') {
     // nombre aquí es el correo que escribió
-    await sendWhatsApp(phone, `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nSi en 24 horas no llega — escríbeme de nuevo aquí.`);
-    await notificarSoporte(phone, nombre, '');
-    await programarTrigger(phone, 'verificar_acceso', 1440, ''); // 24 horas después
+    const contactoSop = await buscarContacto(phone);
+    const nombreSop   = contactoSop?.nombre || '';
+    await sendWhatsApp(phone, `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nEn cuanto lo tengas — te llegará un mensaje de confirmación aquí.`);
+    await notificarSoporte(phone, nombre, nombreSop);
+    await programarTrigger(phone, 'verificar_acceso', 2, nombreSop); // PRUEBA: 2 min (producción: 120 = 2 horas)
+    await programarTrigger(phone, 'flujo_bienvenida_directo', 3, nombreSop); // PRUEBA: 3 min (producción: 240 = 4 horas)
+  }
+
+  else if (paso === 'dia13_texto_video') {
+    // Enviar plantilla día 13
+    await sendTemplateDia13(phone, n);
+    // Programar día 15
+    await programarTrigger(phone, 'dia15_pregunta_directa', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
+  }
+
+  else if (paso === 'dia13_video') {
+    // Ella presionó "Ver mensaje" — enviar texto con fechas + video
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `Las inscripciones cierran el *${cohorte.cierre}*.\n` +
+      `El entrenamiento inicia el *${cohorte.inicio}*.\n\n` +
+      `Quiero que veas esto antes de decidir. 👇`
+    );
+    if (VIDEO_DIA13 !== 'PENDIENTE_VIDEO_DIA13') {
+      await sendVideo(phone, VIDEO_DIA13);
+    } else {
+      console.log('Video día 13 pendiente de grabar y subir');
+    }
+  }
+
+  else if (paso === 'dia15_pregunta_directa') {
+    await sendTemplateDia15(phone, n);
   }
 
   else if (paso === 'verificar_acceso') {
@@ -448,6 +582,8 @@ async function enviarResultadoDia9(phone, combo, nombre) {
   }
 
   await sendWhatsApp(phone, mensaje);
+  // Programar día 13
+  await programarTrigger(phone, 'dia13_texto_video', 4, nombre || ''); // PRUEBA: 4 min (producción: 5760 = 4 días)
 }
 
 async function guardarEstadoSheets(phone, estado) {
@@ -541,6 +677,65 @@ async function sendTemplateDia4(to, nombre) {
   });
   const data = await res.json();
   console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia13(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia13_7d_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 13 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia15(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia15_decision_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia15_si' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia15_pregunta' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '2', parameters: [{ type: 'payload', payload: 'dia15_no' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 15 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateVerificarAcceso(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'verificar_acceso_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'acceso_confirmado' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template verificar_acceso → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendTemplateDia9(to, nombre) {

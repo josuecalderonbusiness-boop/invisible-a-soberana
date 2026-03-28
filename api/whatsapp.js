@@ -500,11 +500,6 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendTemplateDia15(phone, n);
   }
 
-  else if (paso === 'verificar_acceso') {
-    await sendWhatsApp(phone,
-      `Hola. Solo quiero confirmar — ¿pudiste acceder al Workshop?\n\nSi aún tienes problemas escríbeme aquí y lo resolvemos.`
-    );
-  }
   else if (paso === 'dia2_termino') {
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
     await sendWhatsApp(phone, nombre ? `Muy bien ${n}, te diré algo 👇` : `Muy bien, te diré algo 👇`);

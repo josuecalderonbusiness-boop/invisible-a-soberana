@@ -30,7 +30,11 @@ const AUDIO_DIA2_NO_VIO  = '2362093030941177';
 const VIDEO_DIA4_A       = '1507744617738426';
 const VIDEO_DIA4_B       = '976614471691735';
 const AUDIO_DIA6         = '4265678347083267';
-const VIDEO_DIA13        = 'PENDIENTE_VIDEO_DIA13'; // Grabar y subir a Meta
+const VIDEO_DIA13        = 'PENDIENTE_VIDEO_DIA13';
+const VIDEO_DIA17        = 'PENDIENTE_VIDEO_DIA17'; // ***VIDEO PENDIENTE*** día 17
+const AUDIO_DIA20        = 'PENDIENTE_AUDIO_DIA20'; // ***AUDIO PENDIENTE*** día 20
+const VIDEO_DIA25        = 'PENDIENTE_VIDEO_DIA25'; // ***AUDIO PENDIENTE*** día 25 — historia
+const VIDEO_DIA29        = 'PENDIENTE_VIDEO_DIA29'; // Video primera sesión día 29 // Grabar y subir a Meta
 
 export default async function handler(req, res) {
 
@@ -74,11 +78,16 @@ export default async function handler(req, res) {
         }
       }
 
+      const isListReply   = msg.interactive?.type === 'list_reply';
       const btnId = tipo === 'interactive'
-        ? (msg.interactive?.button_reply?.id || '').toLowerCase()
+        ? (isListReply
+            ? (msg.interactive?.list_reply?.id || '')
+            : (msg.interactive?.button_reply?.id || '')).toLowerCase()
         : (msg.button?.payload || msg.button?.text || '').toLowerCase();
       const btnTx = tipo === 'interactive'
-        ? (msg.interactive?.button_reply?.title || '').toLowerCase()
+        ? (isListReply
+            ? (msg.interactive?.list_reply?.title || '')
+            : (msg.interactive?.button_reply?.title || '')).toLowerCase()
         : (msg.button?.text || '').toLowerCase();
 
       console.log(`Botón: id="${btnId}" tx="${btnTx}" payload="${msg.button?.payload}" text="${msg.button?.text}"`);
@@ -267,6 +276,7 @@ async function manejarBoton(phone, btnId, btnTx) {
   else if (btnId === 'acceso_confirmado' || btnTx.includes('ya pude entrar') || btnTx.includes('sí, ya')) {
     // Ella confirmó que ya pudo entrar — iniciar flujo normal
     await cancelarTrigger(phone, 'flujo_bienvenida_directo');
+    await guardarEstadoSheets(phone, 'acceso_confirmado');
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
       'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
@@ -283,6 +293,101 @@ async function manejarBoton(phone, btnId, btnTx) {
     await ejecutarPaso(phone, 'dia13_video', nombre);
   }
 
+  // ── DÍA 17 ───────────────────────────────────────────────────────
+  else if (btnId === 'dia17_ver' || btnTx.includes('ver mensaje')) {
+    await ejecutarPaso(phone, 'dia17_video', nombre);
+  }
+
+  // ── DÍA 20 ───────────────────────────────────────────────────────
+  else if (btnId === 'dia20_escuchar' || btnTx.includes('escuchar')) {
+    await ejecutarPaso(phone, 'dia20_audio', nombre);
+  }
+
+  // ── DÍA 25 ───────────────────────────────────────────────────────
+  else if (btnId === 'dia25_si') {
+    await ejecutarPaso(phone, 'dia25_audio', nombre);
+  }
+
+  // ── DÍA 27 ───────────────────────────────────────────────────────
+  else if (btnId === 'dia27_decide') {
+    await cancelarTrigger(phone, 'dia27_tarde');
+    await cancelarTrigger(phone, 'dia27_noche');
+    await ejecutarPaso(phone, 'dia27_secuencia', nombre);
+  }
+
+  else if (btnId === 'dia27_tarde_escuchar') {
+    await cancelarTrigger(phone, 'dia27_noche');
+    // Enviar audio día 27 tarde
+    const AUDIO_DIA27_TARDE = 'PENDIENTE_AUDIO_DIA27_TARDE'; // ***AUDIO PENDIENTE*** dolor anticipado
+    if (AUDIO_DIA27_TARDE !== 'PENDIENTE_AUDIO_DIA27_TARDE') {
+      await sendAudio(phone, AUDIO_DIA27_TARDE);
+    } else {
+      await sendWhatsApp(phone, '***AUDIO PENDIENTE*** día 27 tarde — dolor anticipado');
+    }
+    await sendWhatsApp(phone,
+      `→ https://pay.hotmart.com/W97386435C\n\nQuedan 6 horas.\nGarantía de 7 días.\n— Josué`
+    );
+  }
+
+  else if (btnId === 'dia27_compre') {
+    await cancelarTrigger(phone, 'dia27_tarde');
+    await cancelarTrigger(phone, 'dia27_noche');
+    await sendWhatsApp(phone, `Bien.\n\nNos vemos adentro.\n\n— Josué`);
+  }
+
+  else if (btnId === 'dia27_duda') {
+    await sendList(phone,
+      `${n}, dime qué es lo que te detiene.`,
+      'Ver opciones',
+      [{
+        title: '¿Qué te frena?',
+        rows: [
+          { id: 'obj_pensar',   title: 'Necesito pensarlo más',    description: 'Aún no me decido' },
+          { id: 'obj_dinero',   title: 'No sé si tengo el dinero', description: 'Los $197 me generan duda' },
+          { id: 'obj_tiempo',   title: 'No sé si tengo el tiempo', description: 'Mi agenda está muy llena' },
+          { id: 'obj_caso',     title: 'No sé si es para mi caso', description: 'Mi situación es diferente' },
+          { id: 'obj_programa', title: 'Tengo dudas del programa', description: 'Quiero saber más detalles' }
+        ]
+      }]
+    );
+  }
+
+  // ── OBJECIONES 7D ──────────────────────────────────────────────
+  else if (btnId === 'obj_pensar') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\nLlevas tiempo pensando.\n\nPensaste cuando algo no funcionó en tu relación. Pensaste cuando viste el Workshop. Pensaste cuando recibiste el diagnóstico.\n\nEl pensamiento no es el problema.\nEl problema es que pensar sin decidir es otra forma de quedarse igual.\n\nLa mujer que entra al 7D no llega porque ya tiene todo claro.\nLlega porque entiende que la claridad no aparece antes de la decisión.\nAparece después.\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (btnId === 'obj_dinero') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\n$197 no es lo que cuesta el 7D.\nEs lo que cuesta una semana de decisiones tomadas desde el mismo lugar de siempre.\n\nLa mujer que dice que no tiene $197 para invertir en el sistema que gobierna su vida — tiene un problema en su dimensión económica.\n\nY eso también lo trabajamos en el 7D.\n\nNo te digo esto para presionarte.\nTe lo digo porque el espejo no miente.\n\n¿Qué dice el tuyo?\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (btnId === 'obj_tiempo') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\nUna sesión por semana.\nCuatro semanas.\nEso es todo el tiempo que necesitas.\n\nPero hay algo más importante que el tiempo: en qué lo estás usando.\n\nSi tienes tiempo para todo menos para trabajarte a ti misma — eso no es falta de tiempo.\nEs una jerarquía de valores que todavía no te pone a ti primero.\n\nEso también lo trabajamos en el 7D.\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (btnId === 'obj_caso') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\nSi tu caso fuera demasiado específico para trabajarlo — no estarías aquí.\n\nLas mujeres que llegan al 7D no llegan porque todo está igual.\nLlegan porque algo cambió cuando tomaron el Workshop — y entienden que ese cambio merece una base más sólida.\n\nEsa eres tú.\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (btnId === 'obj_programa') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}, el Soberana 7D es esto:\n\n→ 4 semanas en vivo con Josué\n→ 1 sesión por semana — si no puedes en vivo queda grabada\n→ Las 7 dimensiones de tu vida — no solo la relación\n→ Comunidad privada de mujeres en el mismo proceso\n→ Workbook semana a semana\n→ App Soberana — una pregunta diaria rotando por tus 7 dimensiones\n→ Acceso de por vida en Kajabi\n→ $197 USD · Garantía 7 días\n\nSolo para mujeres que tomaron Código Soberana.\n\nLas inscripciones cierran el *${cohorte.cierre}*.\n\nhttps://pay.hotmart.com/W97386435C\n\n¿Alguna duda específica? 👇`
+    );
+  }
+
   // ── DÍA 15 — Pregunta directa ──────────────────────────────────
   else if (btnId === 'dia15_si') {
     const cohorte = getCohorteActual();
@@ -291,15 +396,26 @@ async function manejarBoton(phone, btnId, btnTx) {
     );
   }
   else if (btnId === 'dia15_pregunta') {
-    await guardarEstadoSheets(phone, 'esperando_pregunta_7d');
-    await sendWhatsApp(phone,
-      `Claro. ¿Qué quieres saber? 👇\n\nEscríbeme tu pregunta aquí mismo.`
+    await sendList(phone,
+      `${n}, dime qué es lo que te detiene.`,
+      'Ver opciones',
+      [{
+        title: '¿Qué te frena?',
+        rows: [
+          { id: 'obj_pensar',   title: 'Necesito pensarlo más',      description: 'Aún no me decido' },
+          { id: 'obj_dinero',   title: 'No sé si tengo el dinero',   description: 'Los $197 me generan duda' },
+          { id: 'obj_tiempo',   title: 'No sé si tengo el tiempo',   description: 'Mi agenda está muy llena' },
+          { id: 'obj_caso',     title: 'No sé si es para mi caso',   description: 'Mi situación es diferente' },
+          { id: 'obj_programa', title: 'Tengo dudas del programa',   description: 'Quiero saber más detalles' }
+        ]
+      }]
     );
   }
   else if (btnId === 'dia15_no') {
     await sendWhatsApp(phone,
       `Está bien. Sin presión.\n\nSi en algún momento cambias de opinión — sabes dónde encontrarme.`
     );
+    await programarTrigger(phone, 'dia17_despues', 4, nombre); // PRUEBA: 4 min (producción: 2880 = 2 días)
   }
 
   // ── DÍA 9 — Diagnóstico ─────────────────────────────────────────
@@ -411,6 +527,109 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendTemplateDia9(phone, n);
   }
 
+  else if (paso === 'dia17_despues') {
+    await sendTemplateDia17(phone, n);
+    await programarTrigger(phone, 'dia20_urgencia', 3, n); // PRUEBA: 3 min (producción: 4320 = 3 días)
+  }
+
+  else if (paso === 'dia17_video') {
+    const cohorte = getCohorteActual();
+    if (VIDEO_DIA17 !== 'PENDIENTE_VIDEO_DIA17') {
+      await sendVideo(phone, VIDEO_DIA17);
+    } else {
+      await sendWhatsApp(phone, `***VIDEO PENDIENTE*** día 17 — El después no existe`);
+    }
+    await sendWhatsApp(phone,
+      `El Soberana 7D cierra sus puertas el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (paso === 'dia20_urgencia') {
+    await sendTemplateDia20(phone, n);
+    await programarTrigger(phone, 'dia25_calentamiento', 3, n); // PRUEBA: 3 min (producción: 7200 = 5 días)
+  }
+
+  else if (paso === 'dia20_audio') {
+    const cohorte = getCohorteActual();
+    if (AUDIO_DIA20 !== 'PENDIENTE_AUDIO_DIA20') {
+      await sendAudio(phone, AUDIO_DIA20);
+    } else {
+      await sendWhatsApp(phone, `***AUDIO PENDIENTE*** día 20 — Urgencia`);
+    }
+    await sendWhatsApp(phone,
+      `Las inscripciones cierran el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
+    );
+  }
+
+  else if (paso === 'dia25_calentamiento') {
+    await sendTemplateDia25(phone, n);
+    await programarTrigger(phone, 'dia27_cierre', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
+  }
+
+  else if (paso === 'dia25_audio') {
+    if (VIDEO_DIA25 !== 'PENDIENTE_VIDEO_DIA25') {
+      await sendAudio(phone, VIDEO_DIA25);
+    } else {
+      console.log('Audio día 25 pendiente');
+    }
+  }
+
+  else if (paso === 'dia27_cierre') {
+    await sendTemplateDia27(phone, n);
+    // Programar tarde y noche para las que no abran
+    await programarTrigger(phone, 'dia27_tarde', 3, n);  // PRUEBA: 3 min (producción: 540 = 9 horas → 6 PM)
+    await programarTrigger(phone, 'dia27_noche', 6, n);  // PRUEBA: 6 min (producción: 780 = 13 horas → 10 PM)
+  }
+
+  else if (paso === 'dia27_tarde') {
+    // Solo enviar si no compró
+    await sendTemplateDia27Tarde(phone, n);
+  }
+
+  else if (paso === 'dia27_noche') {
+    // Solo enviar si no compró
+    await sendTemplateDia27Noche(phone, n);
+  }
+
+  else if (paso === 'dia27_secuencia') {
+    // Ella presionó "La mía también decide" — secuencia completa
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `Bien.\n\nAquí está tu lugar:\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.\n\nLas inscripciones cierran hoy a las 11:59 PM.\n\n— Josué`
+    );
+    // Programar seguimiento 3 horas después
+    await programarTrigger(phone, 'dia27_followup', 3, n); // PRUEBA: 3 min (producción: 180 = 3 horas)
+  }
+
+  else if (paso === 'dia27_followup') {
+    await sendWhatsApp(phone,
+      `${n}.\n\nHace un momento tomaste una decisión.\n\n¿Ya aseguraste tu lugar?`
+    );
+    await sendButtons(phone,
+      ``,
+      [
+        { id: 'dia27_compre',  title: 'Ya entré al 7D' },
+        { id: 'dia27_duda',    title: 'Tengo una duda' }
+      ]
+    );
+  }
+
+  else if (paso === 'dia27_urgencia') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\nQuedan pocas horas.\n\nNo para presionarte — para recordarte que la mujer que quieres ser no aparece esperando el momento perfecto.\n\nAparece decidiendo en momentos como este.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (paso === 'dia27_final') {
+    await sendWhatsApp(phone,
+      `${n}.\n\nUna hora.\n\nDespués de esto — el Soberana 7D cierra sus puertas.\n\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
+    );
+  }
+
+  // Día 29 — Solo email (campaña manual Brevo)
+  // No hay mensaje WA el día 29
+
   else if (paso === 'dia13_texto_video') {
     // Enviar plantilla día 13
     await sendTemplateDia13(phone, n);
@@ -473,6 +692,109 @@ async function ejecutarPaso(phone, paso, nombre) {
     await programarTrigger(phone, 'verificar_acceso', 2, nombreSop); // PRUEBA: 2 min (producción: 120 = 2 horas)
     await programarTrigger(phone, 'flujo_bienvenida_directo', 3, nombreSop); // PRUEBA: 3 min (producción: 240 = 4 horas)
   }
+
+  else if (paso === 'dia17_despues') {
+    await sendTemplateDia17(phone, n);
+    await programarTrigger(phone, 'dia20_urgencia', 3, n); // PRUEBA: 3 min (producción: 4320 = 3 días)
+  }
+
+  else if (paso === 'dia17_video') {
+    const cohorte = getCohorteActual();
+    if (VIDEO_DIA17 !== 'PENDIENTE_VIDEO_DIA17') {
+      await sendVideo(phone, VIDEO_DIA17);
+    } else {
+      await sendWhatsApp(phone, `***VIDEO PENDIENTE*** día 17 — El después no existe`);
+    }
+    await sendWhatsApp(phone,
+      `El Soberana 7D cierra sus puertas el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (paso === 'dia20_urgencia') {
+    await sendTemplateDia20(phone, n);
+    await programarTrigger(phone, 'dia25_calentamiento', 3, n); // PRUEBA: 3 min (producción: 7200 = 5 días)
+  }
+
+  else if (paso === 'dia20_audio') {
+    const cohorte = getCohorteActual();
+    if (AUDIO_DIA20 !== 'PENDIENTE_AUDIO_DIA20') {
+      await sendAudio(phone, AUDIO_DIA20);
+    } else {
+      await sendWhatsApp(phone, `***AUDIO PENDIENTE*** día 20 — Urgencia`);
+    }
+    await sendWhatsApp(phone,
+      `Las inscripciones cierran el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
+    );
+  }
+
+  else if (paso === 'dia25_calentamiento') {
+    await sendTemplateDia25(phone, n);
+    await programarTrigger(phone, 'dia27_cierre', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
+  }
+
+  else if (paso === 'dia25_audio') {
+    if (VIDEO_DIA25 !== 'PENDIENTE_VIDEO_DIA25') {
+      await sendAudio(phone, VIDEO_DIA25);
+    } else {
+      console.log('Audio día 25 pendiente');
+    }
+  }
+
+  else if (paso === 'dia27_cierre') {
+    await sendTemplateDia27(phone, n);
+    // Programar tarde y noche para las que no abran
+    await programarTrigger(phone, 'dia27_tarde', 3, n);  // PRUEBA: 3 min (producción: 540 = 9 horas → 6 PM)
+    await programarTrigger(phone, 'dia27_noche', 6, n);  // PRUEBA: 6 min (producción: 780 = 13 horas → 10 PM)
+  }
+
+  else if (paso === 'dia27_tarde') {
+    // Solo enviar si no compró
+    await sendTemplateDia27Tarde(phone, n);
+  }
+
+  else if (paso === 'dia27_noche') {
+    // Solo enviar si no compró
+    await sendTemplateDia27Noche(phone, n);
+  }
+
+  else if (paso === 'dia27_secuencia') {
+    // Ella presionó "La mía también decide" — secuencia completa
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `Bien.\n\nAquí está tu lugar:\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.\n\nLas inscripciones cierran hoy a las 11:59 PM.\n\n— Josué`
+    );
+    // Programar seguimiento 3 horas después
+    await programarTrigger(phone, 'dia27_followup', 3, n); // PRUEBA: 3 min (producción: 180 = 3 horas)
+  }
+
+  else if (paso === 'dia27_followup') {
+    await sendWhatsApp(phone,
+      `${n}.\n\nHace un momento tomaste una decisión.\n\n¿Ya aseguraste tu lugar?`
+    );
+    await sendButtons(phone,
+      ``,
+      [
+        { id: 'dia27_compre',  title: 'Ya entré al 7D' },
+        { id: 'dia27_duda',    title: 'Tengo una duda' }
+      ]
+    );
+  }
+
+  else if (paso === 'dia27_urgencia') {
+    const cohorte = getCohorteActual();
+    await sendWhatsApp(phone,
+      `${n}.\n\nQuedan pocas horas.\n\nNo para presionarte — para recordarte que la mujer que quieres ser no aparece esperando el momento perfecto.\n\nAparece decidiendo en momentos como este.\n\nhttps://pay.hotmart.com/W97386435C`
+    );
+  }
+
+  else if (paso === 'dia27_final') {
+    await sendWhatsApp(phone,
+      `${n}.\n\nUna hora.\n\nDespués de esto — el Soberana 7D cierra sus puertas.\n\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
+    );
+  }
+
+  // Día 29 — Solo email (campaña manual Brevo)
+  // No hay mensaje WA el día 29
 
   else if (paso === 'dia13_texto_video') {
     // Enviar plantilla día 13
@@ -674,6 +996,119 @@ async function sendTemplateDia4(to, nombre) {
   console.log(`Template día 4 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
+async function sendTemplateDia17(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia17_despues_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia17_ver' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 17 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia20(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia20_urgencia_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia20_escuchar' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 20 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia25(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia25_calentamiento_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia25_si' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 25 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia27Tarde(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia27_tarde_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia27_tarde_escuchar' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 27 tarde → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia27Noche(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia27_noche_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 27 noche → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendTemplateDia27(to, nombre) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: 'dia27_cierre_cs', language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia27_decide' }] }
+        ]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template día 27 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
 async function sendTemplateDia13(to, nombre) {
   const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
@@ -703,8 +1138,8 @@ async function sendTemplateDia15(to, nombre) {
         name: 'dia15_decision_cs', language: { code: 'es_MX' },
         components: [
           { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
-          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia15_si' }] },
-          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia15_pregunta' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia15_pregunta' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia15_si' }] },
           { type: 'button', sub_type: 'quick_reply', index: '2', parameters: [{ type: 'payload', payload: 'dia15_no' }] }
         ]
       }
@@ -769,6 +1204,33 @@ async function sendTemplateDia6(to, nombre) {
   });
   const data = await res.json();
   console.log(`Template día 6 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function sendList(to, body, buttonText, sections) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'interactive',
+      interactive: {
+        type: 'list',
+        body: { text: body },
+        action: {
+          button: buttonText,
+          sections: sections.map(s => ({
+            title: s.title,
+            rows: s.rows.map(r => ({
+              id: r.id,
+              title: r.title,
+              description: r.description || ''
+            }))
+          }))
+        }
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`List → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
 async function sendWhatsApp(to, message) {
@@ -839,6 +1301,24 @@ async function sendVideo(to, mediaId) {
   });
   const data = await res.json();
   console.log(`Video → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+async function moverANoCompradoras7D(phone) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'no_compradora_7d',
+        phone:  phone
+      })
+    });
+    console.log(`Movida a no compradoras 7D: ${phone}`);
+  } catch (err) {
+    console.error('moverANoCompradoras7D error:', err.message);
+  }
 }
 
 async function notificarSoporte(phone, correoCliente, nombre) {

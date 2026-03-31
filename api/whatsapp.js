@@ -106,6 +106,13 @@ export default async function handler(req, res) {
       // Bienvenida → procesar inmediato en Vercel
       const esBienvenida = textoL.includes('acabo de comprar') || textoL.includes('comunidad vip') || textoL.includes('soberana');
       if (esBienvenida) {
+        if (msgId) {
+          const dup = await verificarDuplicado(msgId);
+          if (dup) {
+            console.log(`Duplicado bienvenida ignorado: ${msgId}`);
+            return res.status(200).json({ ok: true });
+          }
+        }
         const contacto = await buscarContacto(phone);
         const nombre   = contacto?.nombre || 'amiga';
         await sendTemplate(phone, nombre, 'bienvenida_pacto_soberana');
@@ -245,12 +252,14 @@ async function manejarBoton(phone, btnId, btnTx) {
   // ── DÍA 2 — Plantilla ────────────────────────────────────────
   else if (btnId === 'dia2_termino' || btnTx.includes('ya lo termin') || btnTx.includes('termin')) {
     await cancelarTrigger(phone, 'dia2_no_vio');
+    await cancelarTrigger(phone, 'dia4_reflexion');
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
     await sendWhatsApp(phone, nombre ? `Muy bien ${n}, te diré algo 👇` : `Muy bien, te diré algo 👇`);
     await sendAudio(phone, AUDIO_DIA2_TERMINO);
   }
 
   else if (btnId === 'dia2_no_vio' || btnTx.includes('aún no') || btnTx.includes('aun no')) {
+    await cancelarTrigger(phone, 'dia4_reflexion');
     await programarTrigger(phone, 'dia4_reflexion', 5, n);
     await sendWhatsApp(phone, nombre ? `Entonces ${n}, hay algo que debes escuchar 👇` : `Entonces, hay algo que debes escuchar 👇`);
     await sendAudio(phone, AUDIO_DIA2_NO_VIO);
@@ -258,6 +267,7 @@ async function manejarBoton(phone, btnId, btnTx) {
 
   // ── DÍA 4 — Plantilla ────────────────────────────────────────
   else if (btnId === 'dia4_si_cuento' || btnTx.includes('quiero contarte')) {
+    await cancelarTrigger(phone, 'dia6_audio');
     await programarTrigger(phone, 'dia6_audio', 5, n);
     await programarTrigger(phone, 'dia4_video_c', 2, n); // PRUEBA: 2 min (producción: 60 min)
     await guardarEstadoSheets(phone, 'esperando_dia4');
@@ -267,6 +277,7 @@ async function manejarBoton(phone, btnId, btnTx) {
   }
 
   else if (btnId === 'dia4_otra_ocasion' || btnTx.includes('te cuento en otra') || btnTx.includes('otra ocasi')) {
+    await cancelarTrigger(phone, 'dia6_audio');
     await programarTrigger(phone, 'dia6_audio', 5, n);
     await sendWhatsApp(phone, nombre ? `Entonces quiero que escuches esto 👇 ${n}` : `Entonces quiero que escuches esto 👇`);
     await sendVideo(phone, VIDEO_DIA4_B);
@@ -289,17 +300,17 @@ async function manejarBoton(phone, btnId, btnTx) {
   }
 
   // ── DÍA 13 — Video ──────────────────────────────────────────────
-  else if (btnId === 'dia13_ver' || btnTx.includes('ver mensaje')) {
+  else if (btnId === 'dia13_ver') {
     await ejecutarPaso(phone, 'dia13_video', nombre);
   }
 
   // ── DÍA 17 ───────────────────────────────────────────────────────
-  else if (btnId === 'dia17_ver' || btnTx.includes('ver mensaje')) {
+  else if (btnId === 'dia17_ver') {
     await ejecutarPaso(phone, 'dia17_video', nombre);
   }
 
   // ── DÍA 20 ───────────────────────────────────────────────────────
-  else if (btnId === 'dia20_escuchar' || btnTx.includes('escuchar')) {
+  else if (btnId === 'dia20_escuchar') {
     await ejecutarPaso(phone, 'dia20_audio', nombre);
   }
 
@@ -691,135 +702,6 @@ async function ejecutarPaso(phone, paso, nombre) {
     await notificarSoporte(phone, nombre, nombreSop);
     await programarTrigger(phone, 'verificar_acceso', 2, nombreSop); // PRUEBA: 2 min (producción: 120 = 2 horas)
     await programarTrigger(phone, 'flujo_bienvenida_directo', 3, nombreSop); // PRUEBA: 3 min (producción: 240 = 4 horas)
-  }
-
-  else if (paso === 'dia17_despues') {
-    await sendTemplateDia17(phone, n);
-    await programarTrigger(phone, 'dia20_urgencia', 3, n); // PRUEBA: 3 min (producción: 4320 = 3 días)
-  }
-
-  else if (paso === 'dia17_video') {
-    const cohorte = getCohorteActual();
-    if (VIDEO_DIA17 !== 'PENDIENTE_VIDEO_DIA17') {
-      await sendVideo(phone, VIDEO_DIA17);
-    } else {
-      await sendWhatsApp(phone, `***VIDEO PENDIENTE*** día 17 — El después no existe`);
-    }
-    await sendWhatsApp(phone,
-      `El Soberana 7D cierra sus puertas el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C`
-    );
-  }
-
-  else if (paso === 'dia20_urgencia') {
-    await sendTemplateDia20(phone, n);
-    await programarTrigger(phone, 'dia25_calentamiento', 3, n); // PRUEBA: 3 min (producción: 7200 = 5 días)
-  }
-
-  else if (paso === 'dia20_audio') {
-    const cohorte = getCohorteActual();
-    if (AUDIO_DIA20 !== 'PENDIENTE_AUDIO_DIA20') {
-      await sendAudio(phone, AUDIO_DIA20);
-    } else {
-      await sendWhatsApp(phone, `***AUDIO PENDIENTE*** día 20 — Urgencia`);
-    }
-    await sendWhatsApp(phone,
-      `Las inscripciones cierran el *${cohorte.cierre}*.\n\n→ https://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
-    );
-  }
-
-  else if (paso === 'dia25_calentamiento') {
-    await sendTemplateDia25(phone, n);
-    await programarTrigger(phone, 'dia27_cierre', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
-  }
-
-  else if (paso === 'dia25_audio') {
-    if (VIDEO_DIA25 !== 'PENDIENTE_VIDEO_DIA25') {
-      await sendAudio(phone, VIDEO_DIA25);
-    } else {
-      console.log('Audio día 25 pendiente');
-    }
-  }
-
-  else if (paso === 'dia27_cierre') {
-    await sendTemplateDia27(phone, n);
-    // Programar tarde y noche para las que no abran
-    await programarTrigger(phone, 'dia27_tarde', 3, n);  // PRUEBA: 3 min (producción: 540 = 9 horas → 6 PM)
-    await programarTrigger(phone, 'dia27_noche', 6, n);  // PRUEBA: 6 min (producción: 780 = 13 horas → 10 PM)
-  }
-
-  else if (paso === 'dia27_tarde') {
-    // Solo enviar si no compró
-    await sendTemplateDia27Tarde(phone, n);
-  }
-
-  else if (paso === 'dia27_noche') {
-    // Solo enviar si no compró
-    await sendTemplateDia27Noche(phone, n);
-  }
-
-  else if (paso === 'dia27_secuencia') {
-    // Ella presionó "La mía también decide" — secuencia completa
-    const cohorte = getCohorteActual();
-    await sendWhatsApp(phone,
-      `Bien.\n\nAquí está tu lugar:\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.\n\nLas inscripciones cierran hoy a las 11:59 PM.\n\n— Josué`
-    );
-    // Programar seguimiento 3 horas después
-    await programarTrigger(phone, 'dia27_followup', 3, n); // PRUEBA: 3 min (producción: 180 = 3 horas)
-  }
-
-  else if (paso === 'dia27_followup') {
-    await sendWhatsApp(phone,
-      `${n}.\n\nHace un momento tomaste una decisión.\n\n¿Ya aseguraste tu lugar?`
-    );
-    await sendButtons(phone,
-      ``,
-      [
-        { id: 'dia27_compre',  title: 'Ya entré al 7D' },
-        { id: 'dia27_duda',    title: 'Tengo una duda' }
-      ]
-    );
-  }
-
-  else if (paso === 'dia27_urgencia') {
-    const cohorte = getCohorteActual();
-    await sendWhatsApp(phone,
-      `${n}.\n\nQuedan pocas horas.\n\nNo para presionarte — para recordarte que la mujer que quieres ser no aparece esperando el momento perfecto.\n\nAparece decidiendo en momentos como este.\n\nhttps://pay.hotmart.com/W97386435C`
-    );
-  }
-
-  else if (paso === 'dia27_final') {
-    await sendWhatsApp(phone,
-      `${n}.\n\nUna hora.\n\nDespués de esto — el Soberana 7D cierra sus puertas.\n\nhttps://pay.hotmart.com/W97386435C\n\nGarantía de 7 días. Sin preguntas.`
-    );
-  }
-
-  // Día 29 — Solo email (campaña manual Brevo)
-  // No hay mensaje WA el día 29
-
-  else if (paso === 'dia13_texto_video') {
-    // Enviar plantilla día 13
-    await sendTemplateDia13(phone, n);
-    // Programar día 15
-    await programarTrigger(phone, 'dia15_pregunta_directa', 3, n); // PRUEBA: 3 min (producción: 2880 = 2 días)
-  }
-
-  else if (paso === 'dia13_video') {
-    // Ella presionó "Ver mensaje" — enviar texto con fechas + video
-    const cohorte = getCohorteActual();
-    await sendWhatsApp(phone,
-      `Las inscripciones cierran el *${cohorte.cierre}*.\n` +
-      `El entrenamiento inicia el *${cohorte.inicio}*.\n\n` +
-      `Quiero que veas esto antes de decidir. 👇`
-    );
-    if (VIDEO_DIA13 !== 'PENDIENTE_VIDEO_DIA13') {
-      await sendVideo(phone, VIDEO_DIA13);
-    } else {
-      console.log('Video día 13 pendiente de grabar y subir');
-    }
-  }
-
-  else if (paso === 'dia15_pregunta_directa') {
-    await sendTemplateDia15(phone, n);
   }
 
   else if (paso === 'dia2_termino') {

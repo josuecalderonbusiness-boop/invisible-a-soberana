@@ -667,8 +667,8 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendTemplateDia15(phone, n);
   }
 
-  else if (paso === 'verificar_acceso') {
-    // Plantilla que pregunta si ya pudo entrar
+  else if (paso === 'verificar_acceso' || paso === 'verificar_acceso_recordatorio') {
+    // Plantilla que pregunta si ya pudo entrar (también usado como recordatorio 24h)
     const contacto = await buscarContacto(phone);
     const nombreReal = contacto?.nombre || n;
     await sendTemplateVerificarAcceso(phone, nombreReal);
@@ -707,7 +707,7 @@ async function ejecutarPaso(phone, paso, nombre) {
     await sendWhatsApp(phone, `Recibí tu correo. ✅\n\nVoy a reenviar tu acceso en las próximas horas.\n\nEn cuanto lo tengas — te llegará un mensaje de confirmación aquí.`);
     await notificarSoporte(phone, nombre, nombreSop);
     await programarTrigger(phone, 'verificar_acceso', 2, nombreSop); // PRUEBA: 2 min (producción: 120 = 2 horas)
-    await programarTrigger(phone, 'flujo_bienvenida_directo', 3, nombreSop); // PRUEBA: 3 min (producción: 240 = 4 horas)
+    await programarTrigger(phone, 'verificar_acceso_recordatorio', 1440, nombreSop); // 24 horas — para las que no respondieron
   }
 
   else if (paso === 'dia2_termino') {

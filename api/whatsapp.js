@@ -642,6 +642,7 @@ async function ejecutarPaso(phone, paso, nombre) {
   // No hay mensaje WA el día 29
 
   else if (paso === 'dia13_texto_video') {
+    console.log('Ejecutando día 13 para: ' + phone);
     // Enviar plantilla día 13
     await sendTemplateDia13(phone, n);
     // Programar día 15

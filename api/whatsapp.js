@@ -675,6 +675,12 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
 
   else if (paso === 'flujo_bienvenida_directo') {
+    // Verificar directamente en Sheets — evita race condition con acceso_confirmado
+    const estadoActual = await obtenerEstadoSheets(phone);
+    if (estadoActual === 'acceso_confirmado') {
+      console.log(`flujo_bienvenida_directo ignorado — acceso ya confirmado: ${phone}`);
+      return;
+    }
     // Si no respondió la verificación — iniciar flujo directo
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,

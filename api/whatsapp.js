@@ -1000,21 +1000,26 @@ async function sendTemplateDia27(to, nombre) {
 
 async function sendTemplateDia13(to, nombre) {
   const number = String(to).replace(/[^0-9]/g, '');
-  const res = await fetch(WA_BASE(), {
-    method: 'POST', headers: WA_HDR(),
-    body: JSON.stringify({
-      messaging_product: 'whatsapp', to: number, type: 'template',
-      template: {
-        name: 'dia13_7d_cs', language: { code: 'es_MX' },
-        components: [
-          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
-          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
-        ]
-      }
-    })
-  });
-  const data = await res.json();
-  console.log(`Template día 13 → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+  console.log('Enviando template día 13 a: ' + number);
+  try {
+    const res = await fetch(WA_BASE(), {
+      method: 'POST', headers: WA_HDR(),
+      body: JSON.stringify({
+        messaging_product: 'whatsapp', to: number, type: 'template',
+        template: {
+          name: 'dia13_7d_cs', language: { code: 'es_MX' },
+          components: [
+            { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+            { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
+          ]
+        }
+      })
+    });
+    const data = await res.json();
+    console.log('Enviando template día 13 a: ' + number + ' — resultado: ' + JSON.stringify(data));
+  } catch (err) {
+    console.error('Error enviando template día 13 a: ' + number + ' — ' + err.message, err);
+  }
 }
 
 async function sendTemplateDia15(to, nombre) {

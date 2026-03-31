@@ -48,10 +48,16 @@ export default async function handler(req, res) {
   }
 
   // ── POST: trigger desde Apps Script ─────────────────────────────
-  if (req.method === 'POST' && req.body?.trigger === true) {
+  // Detectar por 'paso' sin 'object' (Meta nunca envía 'paso')
+  // Evita depender de trigger===true (puede llegar como string por encoding)
+  if (req.method === 'POST' && req.body?.paso && !req.body?.object) {
     const { phone, paso, nombre } = req.body;
-    console.log(`Trigger: phone=${phone} paso=${paso}`);
-    await ejecutarPaso(String(phone), paso, nombre || '');
+    console.log(`Trigger recibido: phone=${phone} paso=${paso} trigger=${JSON.stringify(req.body?.trigger)}`);
+    try {
+      await ejecutarPaso(String(phone), paso, nombre || '');
+    } catch (err) {
+      console.error(`Error ejecutando paso ${paso} para ${phone}: ${err.message}`, err);
+    }
     return res.status(200).json({ ok: true });
   }
 

@@ -45,6 +45,31 @@ export default async function handler(req, res) {
     // ── TEST: disparar paso manualmente ──────────────────────────
     if (test && token === 'soberana2026') {
       if (!phone) return res.status(400).json({ error: 'phone requerido' });
+
+      // test=dia13_raw → llamada directa a Meta y devuelve respuesta cruda
+      if (test === 'dia13_raw') {
+        const number = String(phone).replace(/[^0-9]/g, '');
+        try {
+          const metaRes = await fetch(WA_BASE(), {
+            method: 'POST', headers: WA_HDR(),
+            body: JSON.stringify({
+              messaging_product: 'whatsapp', to: number, type: 'template',
+              template: {
+                name: 'dia13_7d_cs', language: { code: 'es_MX' },
+                components: [
+                  { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: 'Prueba' }] },
+                  { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
+                ]
+              }
+            })
+          });
+          const metaData = await metaRes.json();
+          return res.status(200).json({ meta_status: metaRes.status, meta_response: metaData });
+        } catch (err) {
+          return res.status(500).json({ ok: false, error: err.message });
+        }
+      }
+
       const paso = test;
       console.log(`TEST manual: paso=${paso} phone=${phone}`);
       try {

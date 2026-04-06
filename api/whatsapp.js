@@ -55,10 +55,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               messaging_product: 'whatsapp', to: number, type: 'template',
               template: {
-                name: 'dia13_7d_cs', language: { code: 'es_MX' },
-                components: [
-                  { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
-                ]
+                name: 'dia13_7d_cs', language: { code: 'es_MX' }
               }
             })
           });
@@ -1053,9 +1050,6 @@ async function sendTemplateDia13(to, nombre) {
         messaging_product: 'whatsapp', to: number, type: 'template',
         template: {
           name: 'dia13_7d_cs', language: { code: 'es_MX' },
-          components: [
-            { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia13_ver' }] }
-          ]
         }
       })
     });

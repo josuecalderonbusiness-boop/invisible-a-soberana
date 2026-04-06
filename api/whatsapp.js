@@ -40,7 +40,22 @@ export default async function handler(req, res) {
 
   // ── GET: verificación webhook Meta ──────────────────────────────
   if (req.method === 'GET') {
-    const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } = req.query;
+    const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge, test, phone } = req.query;
+
+    // ── TEST: disparar paso manualmente ──────────────────────────
+    if (test && token === 'soberana2026') {
+      if (!phone) return res.status(400).json({ error: 'phone requerido' });
+      const paso = test;
+      console.log(`TEST manual: paso=${paso} phone=${phone}`);
+      try {
+        await ejecutarPaso(String(phone), paso, '');
+        return res.status(200).json({ ok: true, ejecutado: paso, phone });
+      } catch (err) {
+        console.error(`TEST error: ${err.message}`, err);
+        return res.status(500).json({ ok: false, error: err.message });
+      }
+    }
+
     if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
       return res.status(200).send(challenge);
     }

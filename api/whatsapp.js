@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
   // ── GET: verificación webhook Meta ──────────────────────────────
   if (req.method === 'GET') {
-    const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge, test, phone } = req.query;
+    const { 'hub.mode': mode, 'hub.verify_token': verifyToken, 'hub.challenge': challenge, test, phone, token } = req.query;
 
     // ── TEST: disparar paso manualmente ──────────────────────────
     if (test && token === 'soberana2026') {
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       }
     }
 
-    if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    if (mode === 'subscribe' && verifyToken === process.env.WHATSAPP_VERIFY_TOKEN) {
       return res.status(200).send(challenge);
     }
     return res.status(403).json({ error: 'Forbidden' });

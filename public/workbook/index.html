@@ -2355,21 +2355,18 @@ function buildExerciseBlock(ex, sec) {
   }
 
   else if (ex.field === 'multi-choice') {
-    const savedMC = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : [];
-    bodyHtml += `<div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px">`;
+    let savedMC = [];
+    try { savedMC = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : []; } catch(e) {}
+    bodyHtml += `<div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:8px" id="mc-wrap-${ex.id}">`;
     (ex.items || []).forEach(item => {
       const sel = savedMC.includes(item.id);
-      bodyHtml += `<button onclick="toggleMultiChoice('${ex.id}','${item.id}',this)"
-        style="padding:12px 16px;border-radius:12px;border:1.5px solid ${sel?'var(--burgundy)':'var(--surface-2)'};
-        background:${sel?'rgba(139,26,47,.07)':'white'};font-size:13px;color:var(--text-dark);
-        cursor:pointer;text-align:left;line-height:1.5;font-weight:${sel?'600':'400'};display:flex;align-items:center;gap:10px"
-        data-mc-group="${ex.id}" data-mc-val="${item.id}">
-        <span style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${sel?'var(--burgundy)':'#ccc'};
-          background:${sel?'var(--burgundy)':'white'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">
-          ${sel?'<svg width="10" height="10" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>':''}
-        </span>
-        ${item.label}
-      </button>`;
+      const borderC = sel ? 'var(--burgundy)' : 'var(--surface-2)';
+      const bgC = sel ? 'rgba(139,26,47,.07)' : 'white';
+      const fw = sel ? '600' : '400';
+      const boxBorder = sel ? 'var(--burgundy)' : '#ccc';
+      const boxBg = sel ? 'var(--burgundy)' : 'white';
+      const checkSvg = sel ? '<svg width="10" height="10" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>' : '';
+      bodyHtml += `<button onclick="toggleMultiChoice('${ex.id}','${item.id}',this)" data-mc-group="${ex.id}" data-mc-val="${item.id}" style="padding:12px 16px;border-radius:12px;border:1.5px solid ${borderC};background:${bgC};font-size:13px;color:var(--text-dark);cursor:pointer;text-align:left;line-height:1.5;font-weight:${fw};display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid ${boxBorder};background:${boxBg};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${checkSvg}</span>${item.label}</button>`;
     });
     bodyHtml += `</div>`;
   }
@@ -3051,7 +3048,29 @@ function toggleCambio(opt, el) {
 // ═══════════════════════════════════════════
 // CELEBRACIÓN 10 SECCIONES
 // ═══════════════════════════════════════════
+function playWinSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notas = [523, 659, 784, 1047, 784, 1047, 1319];
+    notas.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+      osc.start(ctx.currentTime + i * 0.15);
+      osc.stop(ctx.currentTime + i * 0.15 + 0.4);
+    });
+  } catch(e) {}
+}
+
 function showCelebrationModal() {
+  playWinSound();
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+
   // Confetti
   const wrap = document.createElement('div');
   wrap.className = 'confetti-wrap';
@@ -3078,7 +3097,7 @@ function showCelebrationModal() {
       <div style="font-size:52px;margin-bottom:8px">🏆</div>
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--burgundy);margin:0 0 12px">¡Lo lograste, Soberana!</h2>
       <p style="font-size:14px;color:var(--text-mid);line-height:1.8;margin:0 0 24px">
-        Completaste las 10 secciones.<br>
+        Completaste las ${SECTIONS.length} secciones.<br>
         Lo que cambió en ti ya no puede deshacerse.
       </p>
       <button onclick="document.getElementById('modal-overlay').removeAttribute('data-locked');document.getElementById('modal-overlay').classList.remove('open')"

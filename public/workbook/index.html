@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Soberana">
 <title>Código Soberana — Workbook</title>
-<link rel="manifest" href="/workbook/manifest.json">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -504,12 +504,9 @@
   ════════════════════════════════════════ */
   #lesson-view {
     display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background: var(--surface);
     flex-direction: column;
     height: 100%;
+    background: var(--surface);
   }
   #lesson-view.open { display: flex; }
 
@@ -1722,31 +1719,58 @@ async function doLogin() {
   if (!name) { showToast('Por favor ingresa tu nombre'); return; }
   if (!email || !email.includes('@')) { showToast('Ingresa un correo válido'); return; }
 
-  // Mostrar estado de carga
   const btn = document.querySelector('.btn-primary');
   btn.textContent = 'Verificando acceso...';
   btn.disabled = true;
 
   try {
-    const res = await fetch(
-      `${SHEETS_URL}?email=${encodeURIComponent(email)}`,
+    // PASO 1 — Verificar si tiene acceso
+    const resVerificar = await fetch(
+      `${SHEETS_URL}?action=verificar&email=${encodeURIComponent(email)}`,
       { method: 'GET' }
     );
-    const json = await res.json();
+    const jsonVerificar = await resVerificar.json();
 
-    if (json.ok) {
-      // Correo autorizado — dejar entrar
-      state.user = { name, email, joinDate: new Date().toISOString() };
-      saveState();
-      initApp();
-    } else {
-      // Correo no autorizado
+    if (!jsonVerificar.ok) {
       btn.textContent = 'Comenzar mi Workbook →';
       btn.disabled = false;
       showAccesoDenegado(email);
+      return;
     }
+
+    // PASO 2 — Cargar sus respuestas desde Sheets
+    btn.textContent = 'Cargando tu progreso...';
+
+    try {
+      const resCargar = await fetch(
+        `${SHEETS_URL}?action=cargar&email=${encodeURIComponent(email)}`,
+        { method: 'GET' }
+      );
+      const jsonCargar = await resCargar.json();
+
+      if (jsonCargar.ok && jsonCargar.respuestas) {
+        // Combinar respuestas de Sheets con las del dispositivo
+        // Sheets tiene prioridad (es la fuente de verdad)
+        const localState = localStorage.getItem('soberana_state');
+        const localAnswers = localState ? JSON.parse(localState).answers || {} : {};
+        
+        state.answers = { ...localAnswers, ...jsonCargar.respuestas };
+        
+        // Recalcular secciones completadas basado en respuestas cargadas
+        state.completedSections = calcularSeccionesCompletadas(state.answers);
+      }
+    } catch(e) {
+      // Si falla la carga, usar lo que hay en local
+      console.warn('No se pudo cargar desde Sheets, usando datos locales');
+    }
+
+    // PASO 3 — Entrar
+    state.user = { name, email, joinDate: new Date().toISOString() };
+    saveState();
+    initApp();
+
   } catch(err) {
-    // Si no hay internet, verificar si ya tenía sesión guardada
+    // Sin internet — usar sesión guardada localmente
     if (loadState() && state.user && state.user.email === email) {
       initApp();
     } else {
@@ -1755,6 +1779,16 @@ async function doLogin() {
       showToast('Sin conexión. Intenta en un momento.');
     }
   }
+}
+
+function calcularSeccionesCompletadas(answers) {
+  return SECTIONS.filter(sec => {
+    const filled = sec.exercises.filter(ex => {
+      const ans = answers[ex.id];
+      return ans && (typeof ans === 'string' ? ans.trim().length > 5 : true);
+    }).length;
+    return filled >= Math.ceil(sec.exercises.length / 2);
+  }).map(sec => sec.id);
 }
 
 function showAccesoDenegado(email) {
@@ -2488,7 +2522,7 @@ async function syncToSheets(secId) {
 // BOOT
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/workbook/sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
 if (loadState() && state.user) {

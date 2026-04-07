@@ -5,7 +5,7 @@
     { "source": "/bienvenida/:path*", "destination": "/public/bienvenida/index.html" },
     { "source": "/bienvenida", "destination": "/public/bienvenida/index.html" },
     { "source": "/workbook", "destination": "/public/workbook/index.html" },
-    { "source": "/workbook/", "destination": "/public/workbook/index.html" },
+    { "source": "/workbook/:path*", "destination": "/public/workbook/:path*" },
     { "source": "/:path*", "destination": "/public/index.html" }
   ]
 }

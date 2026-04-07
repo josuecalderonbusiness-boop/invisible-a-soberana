@@ -1,8 +1,10 @@
-const CACHE_NAME = 'soberana-v1';
+const CACHE_NAME = 'soberana-v2';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/workbook/',
+  '/workbook/index.html',
+  '/workbook/manifest.json',
+  '/workbook/icon-192.png',
+  '/workbook/icon-512.png'
 ];
 
 self.addEventListener('install', event => {

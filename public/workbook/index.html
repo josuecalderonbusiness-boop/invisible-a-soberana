@@ -599,6 +599,86 @@
     font-size: 14px; line-height: 1.7;
     color: rgba(249,244,236,.85);
   }
+  .lesson-intro.verde {
+    background: linear-gradient(135deg, #1a3d28, #2D5A3D);
+  }
+  .lesson-intro.verde .lesson-badge {
+    background: rgba(100,210,140,.15);
+    border-color: rgba(100,210,140,.4);
+    color: #a8e6bc;
+  }
+
+  /* Hero completado */
+  .hero-banner.completed {
+    background: linear-gradient(135deg, #122a1c 0%, #2D5A3D 60%, #1a4030 100%);
+  }
+  .hero-banner.completed .hero-greeting { color: #a8e6bc; }
+
+  /* Bloque promo S10 */
+  .s10-promo {
+    margin: 0 20px 24px;
+    background: #1a3d28;
+    border-radius: 18px;
+    padding: 24px;
+    color: #f0ede6;
+  }
+  .s10-promo p { font-size:14px; line-height:1.8; margin:0 0 16px; color:rgba(240,237,230,.9); }
+  .s10-promo-btn {
+    display:block; width:100%; padding:14px;
+    background: #D4AF6A; color: #1a0a0f;
+    border:none; border-radius:12px;
+    font-size:15px; font-weight:700; cursor:pointer; text-align:center;
+    text-decoration:none;
+  }
+
+  /* Confetti */
+  @keyframes cffall {
+    0%   { transform: translateY(-10px) rotate(0deg);   opacity:1; }
+    100% { transform: translateY(105vh) rotate(800deg); opacity:0; }
+  }
+  .confetti-wrap { position:fixed;inset:0;pointer-events:none;z-index:199;overflow:hidden; }
+  .cf { position:absolute; width:8px; height:8px; border-radius:2px; animation: cffall linear forwards; }
+
+  /* Widgets interactivos */
+  .widget-block {
+    background:#fff; border-radius:18px; overflow:hidden;
+    box-shadow:0 2px 16px rgba(138,26,47,.06); margin-bottom:20px;
+  }
+  .widget-header {
+    background: linear-gradient(135deg, var(--burgundy-dark), var(--burgundy));
+    padding:14px 20px;
+    font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+    color:var(--gold-light); font-weight:600;
+  }
+  .widget-body { padding:20px; }
+  .range-wrap { display:flex; align-items:center; gap:12px; }
+  .range-wrap input[type=range] {
+    flex:1; accent-color:var(--burgundy); height:4px; cursor:pointer;
+  }
+  .range-val {
+    min-width:32px; text-align:center; font-size:20px;
+    font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--burgundy);
+  }
+  .range-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-top:6px; }
+  .palanca-cards-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .palanca-card-sel {
+    border:2px solid var(--surface-2); border-radius:14px; padding:16px 12px;
+    text-align:center; cursor:pointer; transition:all .2s;
+  }
+  .palanca-card-sel.selected { border-color:var(--burgundy); background:rgba(139,26,47,.07); }
+  .palanca-card-sel .pc-icon { font-size:28px; margin-bottom:6px; }
+  .palanca-card-sel .pc-name { font-size:12px; font-weight:600; color:var(--text-mid); }
+  .change-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .change-chip {
+    padding:8px 14px; border:1.5px solid var(--surface-2);
+    border-radius:100px; font-size:13px; cursor:pointer; transition:all .2s;
+    background:transparent; color:var(--text-mid);
+  }
+  .change-chip.selected { border-color:var(--burgundy); background:rgba(139,26,47,.09); color:var(--burgundy); font-weight:600; }
+
+  /* Export modal */
+  .export-section-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--surface-2); font-size:14px; color:var(--text-mid); cursor:pointer; }
+  .export-section-item input[type=checkbox] { accent-color:var(--burgundy); width:16px; height:16px; }
 
   /* Exercise blocks */
   .exercise-block {
@@ -1302,7 +1382,7 @@
           <div class="profile-section-title">Mi workbook</div>
           <div class="profile-cards">
             <div class="profile-card">
-              <div class="profile-item" onclick="exportData()">
+              <div class="profile-item" onclick="showExportModal()">
                 <div class="profile-item-icon">📥</div>
                 <div class="profile-item-text">
                   <div class="profile-item-label">Exportar mis respuestas</div>
@@ -1906,6 +1986,14 @@ function updateProgressUI() {
   document.getElementById('main-progress-bar').style.width = pct + '%';
   document.getElementById('progress-done-label').textContent = `${done} de 10 secciones`;
   document.getElementById('progress-pct-label').textContent = `${pct}% completado`;
+
+  // Hero completado
+  const heroBanner = document.querySelector('.hero-banner');
+  if (heroBanner) heroBanner.classList.toggle('completed', done === 10);
+  if (done === 10) {
+    const greet = document.querySelector('.hero-greeting');
+    if (greet) greet.textContent = '¡Lo lograste, Soberana!';
+  }
   
   // Big ring (progreso tab)
   const bigCirc = 314;
@@ -2010,7 +2098,7 @@ function openLesson(sectionId) {
   
   // Intro block
   const intro = document.createElement('div');
-  intro.className = 'lesson-intro';
+  intro.className = 'lesson-intro' + (sectionId === 's10' ? ' verde' : '');
   intro.setAttribute('data-num', sec.num);
   intro.innerHTML = `
     <div class="lesson-badge">Sección ${sec.num}</div>
@@ -2025,7 +2113,25 @@ function openLesson(sectionId) {
     const block = buildExerciseBlock(ex, sec);
     body.appendChild(block);
   });
-  
+
+  // Widgets interactivos por sección
+  const widget = buildSectionWidget(sectionId);
+  if (widget) body.appendChild(widget);
+
+  // Bloque promo S10
+  if (sectionId === 's10') {
+    const promo = document.createElement('div');
+    promo.className = 's10-promo';
+    promo.innerHTML = `
+      <p>Lo que aprendiste hoy es la punta del iceberg.<br>
+      <strong>Soberana 7D</strong> es la casa completa — 30 días,
+      7 dimensiones, resultados que no se borran.</p>
+      <a class="s10-promo-btn" href="https://soberana7d.josuecalderon.lat" target="_blank">
+        Quiero el programa completo →
+      </a>`;
+    body.appendChild(promo);
+  }
+
   // Save button
   const saveWrap = document.createElement('div');
   saveWrap.className = 'save-btn-wrap';
@@ -2314,6 +2420,11 @@ function saveLesson(secId) {
   showToast('✓ Tus respuestas fueron guardadas');
   renderSectionsList();
   updateProgressUI();
+
+  if (state.completedSections.length === 10 && !localStorage.getItem('soberana_celebrated')) {
+    localStorage.setItem('soberana_celebrated', 'true');
+    setTimeout(() => showCelebrationModal(), 600);
+  }
 }
 
 function closeLesson() {
@@ -2626,6 +2737,292 @@ async function syncToSheets(secId) {
     console.warn('⚠️ No se pudo sincronizar con Sheets (sin conexión):', err);
     // No bloqueamos — el guardado local ya funcionó
   }
+}
+
+// ═══════════════════════════════════════════
+// WIDGETS INTERACTIVOS POR SECCIÓN
+// ═══════════════════════════════════════════
+function buildSectionWidget(secId) {
+  if (secId === 's2') {
+    const div = document.createElement('div');
+    div.className = 'widget-block';
+    const saved = state.answers['s2_slider'] || '5';
+    div.innerHTML = `
+      <div class="widget-header">¿Cuánto control sientes?</div>
+      <div class="widget-body">
+        <p style="font-size:13px;color:var(--text-mid);margin:0 0 14px;line-height:1.6">En este momento, ¿cuánto control sientes que tienes sobre tu dinámica?</p>
+        <div class="range-wrap">
+          <span style="font-size:12px;color:var(--text-muted)">0</span>
+          <input type="range" min="0" max="10" value="${saved}" id="s2-slider"
+            oninput="document.getElementById('s2-val').textContent=this.value;state.answers['s2_slider']=this.value;saveState()">
+          <span style="font-size:12px;color:var(--text-muted)">10</span>
+          <span class="range-val" id="s2-val">${saved}</span>
+        </div>
+        <div class="range-labels"><span>Ninguno</span><span>Total</span></div>
+      </div>`;
+    return div;
+  }
+
+  if (secId === 's4') {
+    const saved = state.answers['s4_palanca'] || '';
+    const opts = [
+      {k:'pensar', icon:'🧠', name:'Lo que Pienso'},
+      {k:'sentir',  icon:'💗', name:'Lo que Siento'},
+      {k:'sostener',icon:'🛡️', name:'Lo que Sostengo'},
+      {k:'comunicar',icon:'💬', name:'Lo que Comunico'},
+    ];
+    const div = document.createElement('div');
+    div.className = 'widget-block';
+    div.innerHTML = `
+      <div class="widget-header">¿Cuál es tu palanca más débil?</div>
+      <div class="widget-body">
+        <div class="palanca-cards-grid">
+          ${opts.map(o => `
+            <div class="palanca-card-sel ${saved===o.k?'selected':''}" onclick="selectPalanca('${o.k}',this)">
+              <div class="pc-icon">${o.icon}</div>
+              <div class="pc-name">${o.name}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    return div;
+  }
+
+  if (secId === 's7') {
+    const saved = state.answers['s7_urgencia'] ? JSON.parse(state.answers['s7_urgencia']) : {};
+    const niveles = ['Nivel 1 — No negociable','Nivel 2 — Negociable con condiciones','Nivel 3 — Flexible'];
+    const keys = ['n1','n2','n3'];
+    const div = document.createElement('div');
+    div.className = 'widget-block';
+    div.innerHTML = `
+      <div class="widget-header">¿Qué tan urgente es trabajar cada nivel?</div>
+      <div class="widget-body">
+        ${niveles.map((n,i) => {
+          const v = saved[keys[i]] || '5';
+          return `<div style="margin-bottom:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:8px">${n}</div>
+            <div class="range-wrap">
+              <input type="range" min="1" max="10" value="${v}" id="s7-${keys[i]}"
+                oninput="document.getElementById('s7v-${keys[i]}').textContent=this.value;updateS7Urgencia()">
+              <span class="range-val" id="s7v-${keys[i]}">${v}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    return div;
+  }
+
+  if (secId === 's9') {
+    const saved = state.answers['s9_cambios'] ? JSON.parse(state.answers['s9_cambios']) : [];
+    const opts = ['Mi forma de pensar','Cómo me veo','Cómo reacciono','Lo que acepto','Mi comunicación'];
+    const div = document.createElement('div');
+    div.className = 'widget-block';
+    div.innerHTML = `
+      <div class="widget-header">¿Qué cambió en ti?</div>
+      <div class="widget-body">
+        <p style="font-size:13px;color:var(--text-mid);margin:0 0 14px">Selecciona todo lo que aplica:</p>
+        <div class="change-chips">
+          ${opts.map(o => `<button class="change-chip ${saved.includes(o)?'selected':''}"
+            onclick="toggleCambio('${o}',this)">${o}</button>`).join('')}
+        </div>
+      </div>`;
+    return div;
+  }
+
+  return null;
+}
+
+function selectPalanca(key, el) {
+  document.querySelectorAll('.palanca-card-sel').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.answers['s4_palanca'] = key;
+  saveState();
+}
+
+function updateS7Urgencia() {
+  const val = {};
+  ['n1','n2','n3'].forEach(k => {
+    const el = document.getElementById('s7-' + k);
+    if (el) val[k] = el.value;
+  });
+  state.answers['s7_urgencia'] = JSON.stringify(val);
+  saveState();
+}
+
+function toggleCambio(opt, el) {
+  let saved = state.answers['s9_cambios'] ? JSON.parse(state.answers['s9_cambios']) : [];
+  if (saved.includes(opt)) {
+    saved = saved.filter(x => x !== opt);
+    el.classList.remove('selected');
+  } else {
+    saved.push(opt);
+    el.classList.add('selected');
+  }
+  state.answers['s9_cambios'] = JSON.stringify(saved);
+  saveState();
+}
+
+// ═══════════════════════════════════════════
+// CELEBRACIÓN 10 SECCIONES
+// ═══════════════════════════════════════════
+function showCelebrationModal() {
+  // Confetti
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti-wrap';
+  const colors = ['#D4AF6A','#8B1A2F','#2D5A3D','#fff','#f0c8c8','#a8e6bc'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'cf';
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${6+Math.random()*8}px; height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      animation-duration:${2.5+Math.random()*3}s;
+      animation-delay:${Math.random()*2}s;
+    `;
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 7000);
+
+  document.getElementById('modal-overlay').setAttribute('data-locked','true');
+  showModal(`
+    <div style="text-align:center;padding:8px 0 4px">
+      <div style="font-size:52px;margin-bottom:8px">🏆</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--burgundy);margin:0 0 12px">¡Lo lograste, Soberana!</h2>
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.8;margin:0 0 24px">
+        Completaste las 10 secciones.<br>
+        Lo que cambió en ti ya no puede deshacerse.
+      </p>
+      <button onclick="document.getElementById('modal-overlay').removeAttribute('data-locked');document.getElementById('modal-overlay').classList.remove('open')"
+        style="width:100%;padding:14px;background:#2D5A3D;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">
+        Ver mi resumen final
+      </button>
+      <a href="https://soberana7d.josuecalderon.lat" target="_blank"
+        style="display:block;width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">
+        Conocer Soberana 7D
+      </a>
+    </div>
+  `);
+}
+
+// ═══════════════════════════════════════════
+// EXPORT MODAL
+// ═══════════════════════════════════════════
+function showExportModal() {
+  const checked = SECTIONS.map(s => `checked`);
+  const sectionsHtml = SECTIONS.map((s,i) => `
+    <label class="export-section-item">
+      <input type="checkbox" id="exp-sec-${s.id}" checked>
+      <span>${s.num}. ${s.title}</span>
+    </label>`).join('');
+
+  showModal(`
+    <div class="modal-title" style="margin-bottom:16px">Exportar mis respuestas</div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-bottom:10px">Secciones a incluir</div>
+      ${sectionsHtml}
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--surface-2);cursor:pointer;font-size:14px;color:var(--text-mid)">
+      <input type="checkbox" id="exp-hilo-only" style="accent-color:var(--burgundy);width:16px;height:16px">
+      Solo preguntas ★ hilo conductor
+    </label>
+    <button onclick="runExport()"
+      style="width:100%;margin-top:16px;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">
+      Descargar selección
+    </button>
+  `);
+}
+
+function runExport() {
+  const hiloOnly = document.getElementById('exp-hilo-only').checked;
+  const { done, pct } = getProgress();
+  const fecha = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const nombre = state.user.name;
+
+  let sectionsHtml = '';
+  SECTIONS.forEach((sec, idx) => {
+    const cb = document.getElementById('exp-sec-' + sec.id);
+    if (cb && !cb.checked) return;
+
+    let exercisesHtml = '';
+    const exList = hiloOnly ? sec.exercises.filter(e => e.type === 'star') : sec.exercises;
+    exList.forEach(ex => {
+      const ans = state.answers[ex.id];
+      const ansText = typeof ans === 'string' ? ans.trim() : (ans ? JSON.stringify(ans) : '');
+      if (!ansText) return;
+      exercisesHtml += `
+        <div style="margin-bottom:18px">
+          <p style="font-size:13px;color:#6b5b5b;font-weight:600;margin:0 0 6px;line-height:1.5">${ex.question || ex.label || ''}</p>
+          <p style="font-size:14px;color:#1a0a0f;margin:0;line-height:1.7;white-space:pre-wrap">${ansText}</p>
+        </div>`;
+    });
+    if (!exercisesHtml) return;
+    sectionsHtml += `
+      <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 2px 12px rgba(139,26,47,.07)">
+        <h2 style="font-family:Georgia,serif;font-size:18px;color:#8B1A2F;margin:0 0 4px;font-weight:700">${sec.num}. ${sec.title}</h2>
+        <p style="font-size:12px;color:#b08a8a;margin:0 0 20px">${sec.desc||''}</p>
+        ${exercisesHtml}
+      </div>
+      <div style="height:2px;background:linear-gradient(90deg,transparent,#D4AF6A,transparent);margin:0 0 20px"></div>`;
+  });
+
+  const cambios = state.answers['s9_cambios'] ? JSON.parse(state.answers['s9_cambios']) : [];
+  const palanca = state.answers['s4_palanca'] || '';
+  const perfilHtml = (cambios.length || palanca) ? `
+    <div style="background:#f5efe8;border-left:4px solid #8B1A2F;border-radius:0 12px 12px 0;padding:20px 24px;margin-bottom:20px">
+      <h3 style="font-family:Georgia,serif;color:#8B1A2F;margin:0 0 10px">Tu perfil Soberana</h3>
+      ${palanca ? `<p style="font-size:13px;color:#555;margin:0 0 8px"><strong>Palanca más débil identificada:</strong> ${palanca}</p>` : ''}
+      ${cambios.length ? `<p style="font-size:13px;color:#555;margin:0"><strong>Cambios que percibiste:</strong> ${cambios.join(', ')}</p>` : ''}
+    </div>` : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<title>Mi Workbook — Código Soberana</title></head>
+<body style="margin:0;padding:0;background:#FDF8F2;font-family:Georgia,serif">
+  <div style="background:#8B1A2F;padding:40px 32px 32px;text-align:center">
+    <p style="font-family:'Helvetica Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#D4AF6A;text-transform:uppercase;margin:0 0 8px">Código Soberana</p>
+    <h1 style="font-size:28px;color:#fff;margin:0 0 8px;font-weight:700">Mi Workbook</h1>
+    <p style="font-size:16px;color:#f0c8c8;margin:0 0 16px">${nombre}</p>
+    <p style="font-size:12px;color:#c9969b;margin:0">${fecha} · ${pct}% completado (${done}/10 secciones)</p>
+  </div>
+  <div style="max-width:680px;margin:0 auto;padding:32px 20px 20px">
+    ${sectionsHtml}
+    ${perfilHtml}
+    <div style="background:#1a3d28;border-radius:16px;padding:28px;margin-bottom:20px;text-align:center">
+      <p style="color:#a8e6bc;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px">El siguiente nivel</p>
+      <h3 style="font-family:Georgia,serif;color:#fff;margin:0 0 12px;font-size:20px">Soberana 7D</h3>
+      <p style="font-size:14px;color:rgba(255,255,255,.8);line-height:1.8;margin:0 0 18px">
+        Lo que viviste hoy es real. <strong>Soberana 7D</strong> lleva ese trabajo a las 7 dimensiones
+        de tu vida — 30 días, acompañamiento real, resultados que no se borran.
+      </p>
+      <a href="https://soberana7d.josuecalderon.lat" style="display:inline-block;padding:14px 28px;background:#D4AF6A;color:#1a0a0f;border-radius:12px;font-weight:700;text-decoration:none;font-size:15px">
+        Quiero el programa completo →
+      </a>
+    </div>
+    <div style="text-align:center;padding:20px 24px 0">
+      <p style="font-style:italic;font-size:15px;color:#8B1A2F;line-height:1.8;margin:0">
+        "La mujer más poderosa no es la que aguanta más.<br>
+        Es la que un día decide que ella también importa."
+      </p>
+    </div>
+  </div>
+  <div style="background:#1a0a0f;text-align:center;padding:24px;font-family:'Helvetica Neue',sans-serif">
+    <p style="font-size:13px;color:#D4AF6A;letter-spacing:2px;text-transform:uppercase;margin:0">Código Soberana</p>
+  </div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `MiWorkbook_Soberana_${nombre.replace(/\s+/g,'_')}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  document.getElementById('modal-overlay').classList.remove('open');
+  showToast('📥 Descargando tu workbook...');
 }
 
 // ═══════════════════════════════════════════

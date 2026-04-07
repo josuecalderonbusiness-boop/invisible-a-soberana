@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#8B1A2F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Soberana">
+<title>Código Soberana — Workbook</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --burgundy: #8B1A2F;
+    --burgundy-dark: #5C1020;
+    --burgundy-deep: #1a0a0f;
+    --gold: #D4AF6A;
+    --gold-light: #E8C97E;
+    --gold-pale: #F5E6C8;
+    --cream: #F9F4EC;
+    --mauve: #A0748A;
+    --mauve-light: #C4A0B2;
+    --nude: #E8D5CC;
+    --text-dark: #1a0a0f;
+    --text-mid: #4a2535;
+    --text-muted: #8a6575;
+    --surface: #FDF8F2;
+    --surface-2: #F4EDE3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Jost', sans-serif;
+    background: var(--burgundy-deep);
+    color: var(--text-dark);
+    overflow: hidden;
+  }
+
+  /* ── APP SHELL ── */
+  #app {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    animation: fadeIn .4s ease;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ════════════════════════════════════════
+     SPLASH / LOGIN SCREEN
+  ════════════════════════════════════════ */
+  #screen-splash {
+    background: var(--burgundy-deep);
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .splash-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, #3a0e1f 0%, #1a0a0f 70%);
+  }
+  .splash-lines {
+    position: absolute; inset: 0;
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(212,175,106,.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(212,175,106,.04) 40px);
+  }
+
+  .splash-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .crown-icon {
+    width: 64px; height: 64px;
+    margin-bottom: 24px;
+  }
+
+  .brand-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .brand-main {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .brand-sub {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 18px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--mauve-light);
+    margin-bottom: 40px;
+  }
+
+  .divider-gold {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 40px;
+  }
+
+  /* Login form */
+  .login-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(212,175,106,.15);
+    border-radius: 20px;
+    padding: 32px 28px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+  }
+
+  .login-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .login-hint {
+    font-size: 13px;
+    color: var(--mauve-light);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .inp {
+    width: 100%;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(212,175,106,.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    margin-bottom: 12px;
+  }
+  .inp::placeholder { color: rgba(196,160,178,.5); }
+  .inp:focus { border-color: var(--gold); background: rgba(212,175,106,.06); }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--burgundy), #B52040);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+    margin-top: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,.1));
+  }
+  .btn-primary:active { transform: scale(.98); }
+
+  .login-footer {
+    font-size: 12px;
+    color: rgba(196,160,178,.5);
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+
+  /* ════════════════════════════════════════
+     MAIN APP LAYOUT
+  ════════════════════════════════════════ */
+  #screen-app {
+    background: var(--surface);
+  }
+
+  /* Top Header */
+  .app-header {
+    background: var(--burgundy-deep);
+    padding: 0 20px;
+    padding-top: env(safe-area-inset-top, 12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60px;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(212,175,106,.1);
+  }
+
+  .header-brand {
+    display: flex;
+    flex-direction: column;
+  }
+  .header-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .header-title-main {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cream);
+    line-height: 1;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .progress-ring-mini {
+    position: relative;
+    width: 40px; height: 40px;
+  }
+  .progress-ring-mini svg { transform: rotate(-90deg); }
+  .progress-ring-mini .ring-bg { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 3; }
+  .progress-ring-mini .ring-fill { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
+  .progress-pct {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--gold);
+  }
+
+  .avatar-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--burgundy), var(--mauve));
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--cream);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Tab Navigation */
+  .tab-nav {
+    background: var(--burgundy-deep);
+    display: flex;
+    border-top: 1px solid rgba(212,175,106,.1);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 4px;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: rgba(196,160,178,.5);
+    cursor: pointer;
+    transition: color .2s;
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .tab-btn.active { color: var(--gold); }
+  .tab-btn svg { width: 20px; height: 20px; }
+
+  /* Main content area */
+  .app-main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* ════════════════════════════════════════
+     TAB: INICIO / DASHBOARD
+  ════════════════════════════════════════ */
+  .tab-content { display: none; padding: 0 0 32px; }
+  .tab-content.active { display: block; }
+
+  .hero-banner {
+    background: linear-gradient(135deg, var(--burgundy-deep) 0%, var(--burgundy-dark) 60%, #3a0e1f 100%);
+    padding: 28px 24px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(212,175,106,.02) 41px);
+  }
+  .hero-greeting {
+    font-size: 12px; letter-spacing: 0.2em; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 6px; font-weight: 500;
+    position: relative;
+  }
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px; font-weight: 600; color: var(--cream);
+    line-height: 1.1; margin-bottom: 16px; position: relative;
+  }
+
+  .progress-bar-container {
+    background: rgba(255,255,255,.08);
+    border-radius: 100px;
+    height: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 100px;
+    transition: width .8s ease;
+    position: relative;
+  }
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute; right: 0; top: -2px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold-light);
+    box-shadow: 0 0 8px var(--gold);
+  }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: rgba(196,160,178,.7);
+  }
+
+  /* Confrontation quote */
+  .confrontation-card {
+    margin: 20px 16px 0;
+    background: linear-gradient(135deg, #fff9f4, #fdf4ec);
+    border-left: 4px solid var(--burgundy);
+    border-radius: 0 16px 16px 0;
+    padding: 20px 20px 20px 24px;
+    position: relative;
+  }
+  .confrontation-card::before {
+    content: '"';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px;
+    color: var(--burgundy);
+    opacity: .1;
+    position: absolute; top: -10px; left: 12px;
+    line-height: 1;
+  }
+  .confrontation-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--burgundy-dark);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .confrontation-attr {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mauve);
+    font-weight: 500;
+  }
+
+  /* Section grid */
+  .section-title {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--mauve); font-weight: 500;
+    padding: 24px 20px 12px;
+  }
+
+  .sections-list {
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    border: 1.5px solid transparent;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(138,26,47,.06);
+  }
+  .section-card:active { transform: scale(.99); }
+  .section-card.completed { border-color: rgba(212,175,106,.3); }
+  .section-card.current { border-color: var(--burgundy); box-shadow: 0 4px 20px rgba(138,26,47,.15); }
+  .section-card.locked { opacity: .55; cursor: default; }
+
+  .section-card.completed::before {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 40px; height: 40px;
+    background: linear-gradient(225deg, rgba(212,175,106,.15), transparent);
+  }
+
+  .section-num {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-num.done { background: linear-gradient(135deg, #f5e6c8, #e8d5a8); color: var(--burgundy-dark); }
+  .section-num.active-num { background: linear-gradient(135deg, var(--burgundy), #B52040); color: var(--cream); }
+  .section-num.pending { background: var(--surface-2); color: var(--text-muted); }
+
+  .section-info { flex: 1; min-width: 0; }
+  .section-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .section-desc {
+    font-size: 12px; color: var(--text-muted); line-height: 1.4;
+  }
+
+  .section-status {
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check-icon { color: var(--gold); }
+  .lock-icon { color: var(--text-muted); opacity: .5; }
+
+  /* Hilo conductor stars */
+  .hilo-banner {
+    margin: 8px 16px 0;
+    background: linear-gradient(135deg, var(--burgundy-dark), var(--burgundy));
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .hilo-icon { font-size: 28px; flex-shrink: 0; }
+  .hilo-text h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 600; color: var(--cream);
+    margin-bottom: 3px;
+  }
+  .hilo-text p { font-size: 12px; color: rgba(196,160,178,.8); line-height: 1.4; }
+
+  /* ════════════════════════════════════════
+     TAB: LECCIÓN (exercise view)
+  ════════════════════════════════════════ */
+  #lesson-view {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    background: var(--surface);
+  }
+  #lesson-view.open { display: flex; }
+
+  .lesson-header {
+    background: white;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(138,26,47,.08);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--burgundy);
+    flex-shrink: 0;
+  }
+  .lesson-header-info { flex: 1; }
+  .lesson-eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mauve); }
+  .lesson-title-h { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--text-dark); }
+
+  .lesson-progress-bar {
+    height: 3px;
+    background: var(--surface-2);
+    flex-shrink: 0;
+  }
+  .lesson-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--burgundy), var(--mauve));
+    transition: width .4s ease;
+  }
+
+  .lesson-scroll {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .lesson-body {
+    padding: 24px 20px 120px;
+  }
+
+  /* Intro block */
+  .lesson-intro {
+    background: linear-gradient(135deg, var(--burgundy-dark), var(--burgundy));
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+  .lesson-intro::after {
+    content: attr(data-num);
+    position: absolute;
+    right: -10px; bottom: -20px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba(255,255,255,.06);
+    line-height: 1;
+  }
+  .lesson-badge {
+    display: inline-block;
+    background: rgba(212,175,106,.2);
+    border: 1px solid rgba(212,175,106,.4);
+    color: var(--gold-light);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .lesson-intro h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 600;
+    line-height: 1.2; margin-bottom: 12px;
+  }
+  .lesson-intro p {
+    font-size: 14px; line-height: 1.7;
+    color: rgba(249,244,236,.85);
+  }
+
+  /* Exercise blocks */
+  .exercise-block {
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(138,26,47,.06);
+  }
+
+  .exercise-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--surface-2);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .exercise-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .exercise-icon.type-reflection { background: #FFF5F5; }
+  .exercise-icon.type-star { background: linear-gradient(135deg, #FFF5EC, #FDEEDD); }
+  .exercise-icon.type-tool { background: #F5F0FF; }
+  .exercise-icon.type-action { background: #F0FFF5; }
+
+  .exercise-meta { flex: 1; }
+  .exercise-type {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 3px;
+  }
+  .exercise-type.reflection { color: var(--burgundy); }
+  .exercise-type.star { color: #B8860B; }
+  .exercise-type.tool { color: #6B4FB0; }
+  .exercise-type.action { color: #2D7A4F; }
+
+  .exercise-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+
+  /* Confrontation callout inside exercise */
+  .callout-confrontation {
+    background: linear-gradient(135deg, #FFF5F5, #FFF0F2);
+    border-left: 3px solid var(--burgundy);
+    margin: 0 20px 16px;
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+  }
+  .callout-confrontation p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-style: italic;
+    color: var(--burgundy-dark);
+    line-height: 1.6;
+  }
+
+  .callout-insight {
+    background: linear-gradient(135deg, #FDFAF0, #FDF7E8);
+    border-left: 3px solid var(--gold);
+    margin: 0 20px 16px;
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+  }
+  .callout-insight p {
+    font-size: 13px; color: #5C4A00; line-height: 1.6;
+  }
+
+  /* Textarea */
+  .textarea-wrap { padding: 0 20px 20px; }
+  .answer-textarea {
+    width: 100%;
+    min-height: 120px;
+    border: 1.5px solid var(--surface-2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-dark);
+    background: var(--surface);
+    outline: none;
+    resize: none;
+    transition: border-color .2s;
+  }
+  .answer-textarea::placeholder { color: var(--text-muted); opacity: .6; }
+  .answer-textarea:focus { border-color: var(--burgundy); }
+  .answer-textarea.star-field {
+    min-height: 180px;
+    border-color: rgba(184,134,11,.3);
+    background: #FFFDF5;
+  }
+  .answer-textarea.star-field:focus { border-color: var(--gold); }
+
+  .char-counter {
+    text-align: right;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* Table exercise */
+  .belief-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 16px;
+    font-size: 13px;
+  }
+  .belief-table th {
+    background: var(--surface-2);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .belief-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--surface-2);
+  }
+  .belief-table input {
+    width: 100%;
+    border: 1px solid var(--surface-2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    background: white;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .belief-table input:focus { border-color: var(--burgundy); }
+
+  .add-row-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--burgundy);
+    font-weight: 500;
+    padding: 10px 20px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* ERES system */
+  .eres-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+  .eres-cell {
+    border-radius: 12px;
+    padding: 14px;
+    border: 1.5px solid var(--surface-2);
+  }
+  .eres-letter {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 700;
+    color: var(--burgundy);
+    line-height: 1; margin-bottom: 2px;
+  }
+  .eres-word {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--mauve);
+    margin-bottom: 8px;
+  }
+  .eres-input {
+    width: 100%;
+    border: 1px solid var(--surface-2);
+    border-radius: 8px;
+    padding: 8px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    min-height: 60px;
+    background: var(--surface);
+    outline: none; resize: none;
+    transition: border-color .2s;
+  }
+  .eres-input:focus { border-color: var(--burgundy); }
+
+  /* 3-levels exercise */
+  .levels-grid {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .level-cell {
+    border-radius: 14px;
+    padding: 16px;
+    border-width: 2px;
+    border-style: solid;
+  }
+  .level-cell.l1 { border-color: var(--burgundy); background: #FFF5F5; }
+  .level-cell.l2 { border-color: var(--gold); background: #FFFBF0; }
+  .level-cell.l3 { border-color: var(--mauve-light); background: #FBF5F8; }
+  .level-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .level-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+  }
+  .level-cell.l1 .level-badge { background: var(--burgundy); color: white; }
+  .level-cell.l2 .level-badge { background: var(--gold); color: var(--burgundy-dark); }
+  .level-cell.l3 .level-badge { background: var(--mauve-light); color: white; }
+  .level-desc { font-size: 12px; color: var(--text-muted); }
+  .level-input {
+    width: 100%;
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    min-height: 70px;
+    background: rgba(255,255,255,.8);
+    outline: none; resize: none;
+    transition: border-color .2s;
+  }
+  .level-input:focus { border-color: var(--burgundy); }
+
+  /* DDS system */
+  .dds-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+  .dds-cell {
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--surface-2);
+    padding: 14px;
+  }
+  .dds-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--burgundy);
+    margin-bottom: 4px;
+  }
+  .dds-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+  .dds-input {
+    width: 100%;
+    border: 1px solid var(--surface-2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    background: white;
+    outline: none; resize: none;
+    min-height: 60px;
+    transition: border-color .2s;
+  }
+  .dds-input:focus { border-color: var(--burgundy); }
+
+  /* Save button floating */
+  .save-btn-wrap {
+    padding: 16px 20px;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, var(--surface) 80%, transparent);
+  }
+  .save-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--burgundy), #B52040);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all .2s;
+    box-shadow: 0 8px 24px rgba(138,26,47,.3);
+  }
+  .save-btn:active { transform: scale(.99); }
+  .save-success {
+    background: linear-gradient(135deg, #1a7a4f, #0f5c38) !important;
+  }
+
+  /* ════════════════════════════════════════
+     TAB: PROGRESO
+  ════════════════════════════════════════ */
+  .progress-tab { padding: 0 0 40px; }
+
+  .progress-hero {
+    background: linear-gradient(135deg, var(--burgundy-deep), var(--burgundy-dark));
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .progress-circle-big {
+    width: 120px; height: 120px;
+    margin: 0 auto 16px;
+    position: relative;
+  }
+  .progress-circle-big svg { transform: rotate(-90deg); }
+  .pcb-bg { fill: none; stroke: rgba(255,255,255,.1); stroke-width: 8; }
+  .pcb-fill { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .pcb-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .pcb-pct {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 700; color: var(--cream);
+    line-height: 1;
+  }
+  .pcb-label { font-size: 10px; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; }
+  .progress-hero h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 400;
+    font-style: italic; color: var(--cream);
+    margin-bottom: 6px;
+  }
+  .progress-hero p { font-size: 13px; color: rgba(196,160,178,.8); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 20px 16px 0;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(138,26,47,.05);
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 700;
+    color: var(--burgundy);
+    line-height: 1;
+  }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* Milestone timeline */
+  .milestone-section { padding: 24px 16px 0; }
+  .milestone-section h4 {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--mauve); font-weight: 500; margin-bottom: 16px;
+  }
+  .milestone {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .milestone-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .milestone-dot.done { background: linear-gradient(135deg, var(--gold-pale), var(--gold)); }
+  .milestone-dot.pending { background: var(--surface-2); }
+  .milestone-info h5 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 2px;
+  }
+  .milestone-info p { font-size: 12px; color: var(--text-muted); }
+
+  /* Hilo conductor section */
+  .hilo-section { padding: 20px 16px 0; }
+  .hilo-section h4 {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--mauve); font-weight: 500; margin-bottom: 14px;
+  }
+  .hilo-q-card {
+    background: white;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(138,26,47,.05);
+  }
+  .hilo-q-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s;
+  }
+  .hilo-q-head.has-answer { border-color: var(--surface-2); }
+  .hilo-star { font-size: 20px; }
+  .hilo-q-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; font-weight: 600;
+    color: var(--text-dark); flex: 1;
+    font-style: italic;
+  }
+  .hilo-q-badge {
+    font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 600;
+    padding: 3px 8px; border-radius: 100px;
+  }
+  .hilo-q-badge.answered { background: #E8F5E8; color: #2D7A4F; }
+  .hilo-q-badge.pending { background: var(--surface-2); color: var(--text-muted); }
+  .hilo-q-answer {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    font-style: italic;
+    background: #FFFDF8;
+  }
+
+  /* ════════════════════════════════════════
+     TAB: PERFIL
+  ════════════════════════════════════════ */
+  .profile-tab { padding: 0 0 40px; }
+  .profile-hero {
+    background: linear-gradient(135deg, var(--burgundy-deep), var(--burgundy-dark));
+    padding: 40px 24px 32px;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--burgundy), var(--mauve));
+    border: 3px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 700;
+    color: var(--cream);
+    margin: 0 auto 16px;
+  }
+  .profile-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 600;
+    color: var(--cream); margin-bottom: 4px;
+  }
+  .profile-email { font-size: 13px; color: rgba(196,160,178,.7); }
+
+  .profile-section-title {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--mauve); font-weight: 500;
+    padding: 24px 20px 12px;
+  }
+  .profile-cards { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+  .profile-card {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(138,26,47,.05);
+  }
+  .profile-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--surface-2);
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .profile-item:last-child { border-bottom: none; }
+  .profile-item:active { background: var(--surface); }
+  .profile-item-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .profile-item-text { flex: 1; }
+  .profile-item-label { font-size: 14px; font-weight: 500; color: var(--text-dark); }
+  .profile-item-sub { font-size: 12px; color: var(--text-muted); }
+  .profile-item-arrow { color: var(--text-muted); }
+
+  .profile-item.danger .profile-item-label { color: #C0392B; }
+  .profile-item.danger .profile-item-icon { background: #FFF0EE; }
+
+  /* Install banner */
+  .install-banner {
+    margin: 0 16px;
+    background: linear-gradient(135deg, #F5F0FF, #EDE8FA);
+    border: 1.5px solid rgba(107,79,176,.2);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .install-banner .ib-icon { font-size: 32px; flex-shrink: 0; }
+  .install-banner .ib-text h4 { font-size: 15px; font-weight: 600; color: #3D2980; margin-bottom: 3px; }
+  .install-banner .ib-text p { font-size: 12px; color: #6B4FB0; line-height: 1.4; }
+  .install-banner .ib-btn {
+    margin-top: 10px;
+    background: #6B4FB0;
+    border: none; border-radius: 8px;
+    padding: 8px 14px;
+    color: white; font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,10,15,.7);
+    z-index: 100;
+    align-items: flex-end;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp .3s ease;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--nude);
+    border-radius: 2px;
+    margin: 12px auto 20px;
+  }
+  .modal-content { padding: 0 24px 24px; }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 16px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text-dark);
+    color: var(--cream);
+    padding: 12px 20px;
+    border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 200;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ SPLASH / LOGIN ══ -->
+  <div id="screen-splash" class="screen active">
+    <div class="splash-bg"></div>
+    <div class="splash-lines"></div>
+    <div class="splash-content">
+      <svg class="crown-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M8 48 L16 24 L32 36 L48 16 L56 24 L56 48 Z" fill="#D4AF6A" opacity=".15"/>
+        <path d="M8 48 L16 24 L32 36 L48 16 L56 24 L56 48" stroke="#D4AF6A" stroke-width="2" fill="none" stroke-linejoin="round"/>
+        <circle cx="16" cy="24" r="3" fill="#D4AF6A"/>
+        <circle cx="32" cy="36" r="3" fill="#D4AF6A"/>
+        <circle cx="48" cy="16" r="3" fill="#D4AF6A"/>
+        <line x1="8" y1="48" x2="56" y2="48" stroke="#D4AF6A" stroke-width="2"/>
+        <line x1="6" y1="52" x2="58" y2="52" stroke="#D4AF6A" stroke-width="1.5" opacity=".5"/>
+      </svg>
+
+      <div class="brand-title">Workshop Interactivo</div>
+      <div class="brand-main">Código</div>
+      <div class="brand-main" style="color:var(--gold)">Soberana</div>
+      <div class="brand-sub">por Josué Calderón</div>
+      <div class="divider-gold"></div>
+
+      <div class="login-card">
+        <label class="login-label">Tu acceso personal</label>
+        <p class="login-hint">Ingresa tu nombre y correo para guardar tu progreso y respuestas de forma permanente.</p>
+        <input type="text" class="inp" id="inp-name" placeholder="Tu nombre" autocomplete="given-name">
+        <input type="email" class="inp" id="inp-email" placeholder="tu@correo.com" autocomplete="email">
+        <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
+      </div>
+      <p class="login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
+    </div>
+  </div>
+
+  <!-- ══ MAIN APP ══ -->
+  <div id="screen-app" class="screen">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="header-brand">
+        <span class="header-eyebrow">Workshop</span>
+        <span class="header-title-main">Código Soberana</span>
+      </div>
+      <div class="header-right">
+        <div class="progress-ring-mini">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle class="ring-bg" cx="20" cy="20" r="16"/>
+            <circle class="ring-fill" id="header-ring" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/>
+          </svg>
+          <div class="progress-pct" id="header-pct">0%</div>
+        </div>
+        <div class="avatar-btn" id="avatar-btn" onclick="switchTab('perfil')">?</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="app-main" id="app-main">
+      <!-- TAB: INICIO -->
+      <div class="tab-content active" id="tab-inicio">
+        <div class="hero-banner">
+          <div class="hero-greeting">Bienvenida de vuelta</div>
+          <div class="hero-name" id="hero-name">Soberana</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="main-progress-bar" style="width:0%"></div>
+          </div>
+          <div class="progress-label">
+            <span id="progress-done-label">0 de 10 secciones</span>
+            <span id="progress-pct-label">0% completado</span>
+          </div>
+        </div>
+
+        <div class="hilo-banner" style="margin:16px 16px 0">
+          <div class="hilo-icon">⭐</div>
+          <div class="hilo-text">
+            <h4>Tres preguntas que lo cambian todo</h4>
+            <p>Las preguntas ★ son el hilo conductor del workshop. No las saltes.</p>
+          </div>
+        </div>
+
+        <div class="confrontation-card" id="daily-quote">
+          <div class="confrontation-text">El problema casi nunca es falta de amor. Es falta de desarrollo personal. Y eso tiene solución.</div>
+          <div class="confrontation-attr">— Código Soberana</div>
+        </div>
+
+        <div class="section-title">Tu recorrido</div>
+        <div class="sections-list" id="sections-list"></div>
+      </div>
+
+      <!-- TAB: PROGRESO -->
+      <div class="tab-content" id="tab-progreso">
+        <div class="progress-tab">
+          <div class="progress-hero">
+            <div class="progress-circle-big">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle class="pcb-bg" cx="60" cy="60" r="50"/>
+                <circle class="pcb-fill" id="big-ring" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+              </svg>
+              <div class="pcb-num">
+                <div class="pcb-pct" id="big-pct">0%</div>
+                <div class="pcb-label">avance</div>
+              </div>
+            </div>
+            <h3 id="progress-phrase">Tu viaje acaba de comenzar</h3>
+            <p id="progress-sub">Cada sección que completas activa una palanca.</p>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Secciones</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-answers">0</div><div class="stat-label">Respuestas</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-hilo">0/3</div><div class="stat-label">Preguntas ★</div></div>
+          </div>
+
+          <div class="hilo-section">
+            <h4>★ Hilo Conductor</h4>
+            <div id="hilo-cards"></div>
+          </div>
+
+          <div class="milestone-section">
+            <h4>Tus palancas</h4>
+            <div id="milestones"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PERFIL -->
+      <div class="tab-content" id="tab-perfil">
+        <div class="profile-tab">
+          <div class="profile-hero">
+            <div class="profile-avatar" id="profile-avatar">?</div>
+            <div class="profile-name" id="profile-name">Mi Perfil</div>
+            <div class="profile-email" id="profile-email"></div>
+          </div>
+
+          <div id="install-section"></div>
+
+          <div class="profile-section-title">Mi workbook</div>
+          <div class="profile-cards">
+            <div class="profile-card">
+              <div class="profile-item" onclick="exportData()">
+                <div class="profile-item-icon">📥</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Exportar mis respuestas</div>
+                  <div class="profile-item-sub">Descarga un resumen de tu progreso</div>
+                </div>
+                <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+
+            <div class="profile-card">
+              <div class="profile-item" onclick="showInstallInstructions()">
+                <div class="profile-item-icon">📱</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Instalar en mi teléfono</div>
+                  <div class="profile-item-sub">Acceso rápido desde tu pantalla de inicio</div>
+                </div>
+                <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div class="profile-item danger" onclick="confirmReset()">
+                <div class="profile-item-icon" style="background:#FFF0EE">🗑️</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Borrar todo mi progreso</div>
+                  <div class="profile-item-sub">Esta acción no se puede deshacer</div>
+                </div>
+                <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-section-title">Acerca del Workshop</div>
+          <div class="profile-cards">
+            <div class="profile-card">
+              <div class="profile-item">
+                <div class="profile-item-icon">👤</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Josué Calderón</div>
+                  <div class="profile-item-sub">Coach de desarrollo en pareja · 15 años de experiencia</div>
+                </div>
+              </div>
+              <div class="profile-item">
+                <div class="profile-item-icon">🔒</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Privacidad total</div>
+                  <div class="profile-item-sub">Tus respuestas viven solo en este dispositivo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Nav -->
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tab-btn-inicio" onclick="switchTab('inicio')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Inicio
+      </button>
+      <button class="tab-btn" id="tab-btn-progreso" onclick="switchTab('progreso')">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Progreso
+      </button>
+      <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Mi Perfil
+      </button>
+    </div>
+  </div>
+
+  <!-- Lesson overlay (full screen) -->
+  <div id="lesson-view">
+    <div class="lesson-header">
+      <button class="back-btn" onclick="closeLesson()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="lesson-header-info">
+        <div class="lesson-eyebrow" id="lesson-eyebrow">Sección</div>
+        <div class="lesson-title-h" id="lesson-title-h">Título</div>
+      </div>
+    </div>
+    <div class="lesson-progress-bar">
+      <div class="lesson-progress-fill" id="lesson-prog-fill" style="width:0%"></div>
+    </div>
+    <div class="lesson-scroll">
+      <div class="lesson-body" id="lesson-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal Sheet -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════
+const SECTIONS = [
+  {
+    id:'s1', num:'01', label:'El Despertar',
+    title:'El Despertar de la Soberana',
+    desc:'Relación vs. Dinámica — la distinción que lo cambia todo',
+    palanca: null,
+    exercises: [
+      {
+        id:'s1_e1', type:'reflection',
+        question:'¿Cuántas veces has sentido que "la relación está mal" sin poder explicar exactamente qué está mal?',
+        confrontation: 'Si no puedes nombrarlo, no puedes moverlo. La claridad es el primer acto de soberanía.',
+        placeholder:'Escribe con honestidad. Nadie más leerá esto...',
+        field:'textarea'
+      },
+      {
+        id:'s1_e2', type:'reflection',
+        question:'¿Qué es lo que más has intentado cambiar en él hasta ahora? ¿Ha funcionado?',
+        confrontation: 'Si hubieras encontrado la forma correcta de cambiarlo, no estarías aquí. Eso no es un fracaso tuyo — es información.',
+        placeholder:'Sé específica. ¿Qué estrategias has usado? ¿Cuánto tiempo?',
+        field:'textarea'
+      },
+      {
+        id:'s1_e3', type:'star', star:1,
+        question:'★ Pregunta 1 — La foto del "antes"',
+        body:'Describe cómo está tu dinámica de pareja ahora mismo. No lo que sientes sobre él — la dinámica. ¿Cómo es el patrón que se repite? ¿Cuál es el ciclo que no para?',
+        confrontation: null,
+        placeholder:'Escribe con el mayor detalle posible. Esta es tu foto del "antes". Cuando termines el workshop, volverás aquí y verás desde dónde empezaste.',
+        field:'star-textarea'
+      }
+    ]
+  },
+  {
+    id:'s2', num:'02', label:'La Trampa',
+    title:'Del Púlpito a la Estrategia',
+    desc:'El problema de depender de resultados externos',
+    palanca: null,
+    exercises: [
+      {
+        id:'s2_e1', type:'reflection',
+        question:'¿En qué áreas de tu relación estás esperando que él haga algo primero para que tú puedas sentirte bien?',
+        confrontation: 'Mientras esperas que él cambie para cambiar tú, el punto de control está en sus manos — no en las tuyas.',
+        placeholder:'Lista esas áreas específicamente...',
+        field:'textarea'
+      },
+      {
+        id:'s2_e2', type:'reflection',
+        question:'¿Cuánto tiempo llevas esperando ese cambio? ¿Qué ha cambiado en ti mientras tanto?',
+        confrontation: 'El tiempo que esperas a que alguien más cambie es tiempo que no estás invirtiendo en la única persona que puedes transformar: tú.',
+        placeholder:'Sé honesta con las fechas y con lo que ha ocurrido en ese tiempo...',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s3', num:'03', label:'Identidad',
+    title:'El Factor James Clear',
+    desc:'Modelo identidad-primero — Reina Dependiente vs. Soberana',
+    palanca: null,
+    exercises: [
+      {
+        id:'s3_e1', type:'reflection',
+        question:'¿Cuál de estas frases has dicho más de tres veces este mes?',
+        confrontation: '"Si él cambiara, yo estaría bien." — Esa frase tiene una identidad instalada. ¿La ves?',
+        placeholder:'Escribe las frases que se repiten en tu cabeza sobre tu relación...',
+        field:'textarea'
+      },
+      {
+        id:'s3_e2', type:'tool',
+        question:'Reina Dependiente vs. Soberana — ¿Desde cuál operas más frecuentemente?',
+        body: 'Marca en cuál te reconoces más hoy. Sin juzgarte — con honestidad.',
+        items:[
+          {left:'Espera que él valide sus decisiones', right:'Decide desde sus propios valores'},
+          {left:'Su estado emocional depende del de él', right:'Regula su estado desde adentro'},
+          {left:'Sus estándares se mueven según el humor de él', right:'Sus estándares son fijos porque son suyos'},
+          {left:'Habla desde el ruego o la queja', right:'Habla desde la influencia y la claridad'}
+        ],
+        field:'identity-check'
+      },
+      {
+        id:'s3_e3', type:'reflection',
+        question:'Escribe una frase que describa quién eres en tu relación — sin usar las palabras "él", "nosotros" ni ningún verbo que dependa de su comportamiento.',
+        confrontation: 'Si no puedes describirte sin nombrarlo, la identidad Dependiente está más presente de lo que crees.',
+        placeholder:'Yo soy una mujer que...',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s4', num:'04', label:'El Punto',
+    title:'El Punto de Influencia y las 4 Palancas',
+    desc:'El termostato, el GPS y el proveedor único',
+    palanca: null,
+    exercises: [
+      {
+        id:'s4_e1', type:'reflection',
+        question:'¿Dónde está tu punto de influencia ahora mismo — en ti o en él?',
+        confrontation: 'No hay una respuesta correcta. Hay solo una respuesta honesta. Y la honestidad es el primer paso para moverlo.',
+        placeholder:'Describe cómo ves esto en tu vida concreta esta semana...',
+        field:'textarea'
+      },
+      {
+        id:'s4_e2', type:'reflection',
+        question:'¿En cuál de las 4 palancas crees que eres más fuerte? ¿En cuál más débil? ¿Por qué?',
+        body:'Las 4 Palancas: (1) Lo que Piensas · (2) Lo que Sientes · (3) Lo que Sostienes · (4) Lo que Comunicas',
+        placeholder:'Sé específica. La autoconciencia es una palanca en sí misma...',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s5', num:'05', label:'Palanca 1',
+    title:'Dimensión Mental',
+    desc:'Las distorsiones como "autocomplete" · Sistema de Actualización de Creencias',
+    palanca:'Palanca 1 — Lo que piensas',
+    exercises: [
+      {
+        id:'s5_e1', type:'tool',
+        question:'Sistema de Actualización de Creencias',
+        body:'Identifica 3 creencias que operan automáticamente cuando hay tensión con él.',
+        insight:'Una creencia que no examinas es una decisión que tomas sin saber que la estás tomando.',
+        field:'belief-table'
+      },
+      {
+        id:'s5_e2', type:'reflection',
+        question:'¿Cuándo fue la última vez que llenaste un silencio de él con una historia negativa en tu cabeza? ¿Qué te dijiste?',
+        confrontation: 'El "autocomplete" mental toma el silencio de él y lo convierte en rechazo, desamor o traición — cuando a veces es solo un hombre cansado.',
+        placeholder:'Descríbelo con detalle. ¿Qué pasó? ¿Qué te dijo tu mente?',
+        field:'textarea'
+      },
+      {
+        id:'s5_e3', type:'star', star:2,
+        question:'★ Pregunta 2 — ¿Qué es lo más difícil de soltar?',
+        body:'Después de explorar la Palanca 1, ¿qué creencia o historia mental es la más difícil de dejar ir? No la que suena peor — la que más te cuesta soltar.',
+        confrontation: null,
+        placeholder:'La respuesta honesta, no la que crees que "deberías" dar...',
+        field:'star-textarea'
+      }
+    ]
+  },
+  {
+    id:'s6', num:'06', label:'Palanca 2',
+    title:'Dimensión Emocional',
+    desc:'La profundidad emocional como ventaja · Sistema ERES',
+    palanca:'Palanca 2 — Lo que sientes',
+    exercises: [
+      {
+        id:'s6_e1', type:'reflection',
+        question:'¿Cuándo fue la última vez que el secuestro emocional tomó el control y dices cosas que después lamentas?',
+        confrontation: 'No se trata de sentir menos. Se trata de que lo que sientes no decida por ti en los momentos donde más te juegas.',
+        placeholder:'Descríbela situación específicamente...',
+        field:'textarea'
+      },
+      {
+        id:'s6_e2', type:'tool',
+        question:'Sistema ERES — Practica con una situación de esta semana',
+        body:'Recuerda un momento de tensión reciente. Aplica el Sistema ERES paso a paso.',
+        field:'eres-system'
+      },
+      {
+        id:'s6_e3', type:'reflection',
+        question:'¿Qué dice de ti el que sientas tan profundo? ¿Ves eso como un defecto o como una capacidad?',
+        confrontation: 'La mujer que siente profundo no es débil — es la que, cuando aprende a gobernarse, tiene más impacto que la que nunca sintió nada.',
+        placeholder:'Reencuadra: ¿cómo sería tu profundidad emocional como una ventaja estratégica?',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s7', num:'07', label:'Palanca 3',
+    title:'Dimensión Relacional',
+    desc:'Expectativas vs. estándares · Sistema de los 3 Niveles',
+    palanca:'Palanca 3 — Lo que sostienes',
+    exercises: [
+      {
+        id:'s7_e1', type:'tool',
+        question:'Sistema de los 3 Niveles — Define los tuyos',
+        body:'Llena cada nivel con las situaciones concretas de tu relación.',
+        field:'three-levels'
+      },
+      {
+        id:'s7_e2', type:'reflection',
+        question:'¿Has cedido en algo del Nivel 1 en los últimos 3 meses? ¿Qué ocurrió después?',
+        confrontation: 'Cada vez que cedes en lo que dijiste que no ibas a ceder, le enseñas a tu propia mente que tus palabras son vacías.',
+        placeholder:'Sé honesta. ¿Qué cediste? ¿Por qué? ¿Qué pasó con tu autoestima después?',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s8', num:'08', label:'Palanca 4',
+    title:'Dimensión del Carácter',
+    desc:'Comunicación con coherencia · Sistema de Comunicación Soberana',
+    palanca:'Palanca 4 — Lo que comunicas',
+    exercises: [
+      {
+        id:'s8_e1', type:'tool',
+        question:'Sistema DDS — Declarar · Dirigir · Ofrecer Espacio',
+        body:'Elige una conversación pendiente que necesitas tener con él. Estructura cada parte.',
+        field:'dds-system'
+      },
+      {
+        id:'s8_e2', type:'reflection',
+        question:'¿Cuál es la diferencia entre cómo hablas con él y cómo hablas con tu jefe o un cliente importante?',
+        confrontation: 'Si das más a tu trabajo que a tu relación en términos de comunicación estratégica, ya sabes dónde está la grieta.',
+        placeholder:'Compara tu nivel de preparación, tono y estructura en ambos casos...',
+        field:'textarea'
+      }
+    ]
+  },
+  {
+    id:'s9', num:'09', label:'Integración',
+    title:'El Punto de Influencia Irreversible',
+    desc:'Integración de las 4 palancas — dos resultados válidos',
+    palanca: null,
+    exercises: [
+      {
+        id:'s9_e1', type:'reflection',
+        question:'¿Qué cambió en ti durante el workshop? No en tu relación todavía — en ti.',
+        confrontation: 'Si buscas el cambio primero afuera, siempre estarás esperando. El cambio irreversible ocurre dentro.',
+        placeholder:'Lista los cambios en tu forma de pensar, verte o actuar...',
+        field:'textarea'
+      },
+      {
+        id:'s9_e2', type:'star', star:3,
+        question:'★ Pregunta 3 — La Soberana que descubriste hoy',
+        body:'Descríbeme a la Soberana que descubriste en este workshop. ¿Cómo actúa cuando hay tensión? ¿Cómo pide lo que necesita? ¿Cómo se habla a sí misma cuando comete un error? ¿Cómo ama?',
+        confrontation: null,
+        placeholder:'Escríbela con detalle. No con la versión perfecta — con la versión real y posible de ti. Antes de escribir, regresa y lee tu ★ Pregunta 1.',
+        field:'star-textarea'
+      }
+    ]
+  },
+  {
+    id:'s10', num:'10', label:'Soberana 7D',
+    title:'Entrenamiento Soberana 7D',
+    desc:'Las 7 dimensiones — el siguiente nivel',
+    palanca: null,
+    exercises: [
+      {
+        id:'s10_e1', type:'reflection',
+        question:'Pon la ★ Pregunta 1 y la ★ Pregunta 3 una al lado de la otra. Lee ambas. ¿Ves la distancia?',
+        confrontation: 'Esa distancia ocurrió en menos de dos horas. Imagina lo que puede ocurrir en 8 semanas de entrenamiento real.',
+        placeholder:'Escribe lo que sientes cuando comparas las dos versiones...',
+        field:'textarea'
+      },
+      {
+        id:'s10_e2', type:'action',
+        question:'¿Cuál de las 3 dimensiones pendientes (Física, Espiritual, Económica) impacta más directamente tu punto de influencia ahora mismo?',
+        confrontation: 'La Soberana que describiste en la Pregunta 3 no es solo la que piensa y se regula. Es la que también tiene energía, propósito y autonomía. Las 7 dimensiones completan el sistema.',
+        placeholder:'Elige una y explica por qué esa es la más urgente para ti...',
+        field:'textarea'
+      }
+    ]
+  }
+];
+
+const CONFRONTATION_QUOTES = [
+  {text: "El problema casi nunca es falta de amor. Es falta de desarrollo personal. Y eso tiene solución.", attr: "Código Soberana"},
+  {text: "Si no tienes el poder de cambiarlo a él, tampoco tienes la responsabilidad de que él cambie. Y si no tienes esa responsabilidad, ¿qué te queda? Tu verdadero poder.", attr: "Josué Calderón"},
+  {text: "Ese estándar no lo sostienes por él. Lo sostienes porque es la forma en que te tratas a ti misma.", attr: "Código Soberana"},
+  {text: "El problema nunca fue que sientes demasiado. El problema fue que nadie te enseñó a convertir lo que sientes en poder.", attr: "Código Soberana"},
+  {text: "No eres una mujer rota que necesita ser arreglada. Eres una mujer que tiene una dinámica que necesita ser reconfigurada.", attr: "Josué Calderón"},
+  {text: "Entre el estímulo y la respuesta existe un espacio. En ese espacio está tu libertad.", attr: "Viktor Frankl"},
+  {text: "Cada vez que cedes en lo que dijiste que no ibas a ceder, le enseñas a tu propia mente que tus palabras son vacías.", attr: "Código Soberana"},
+  {text: "Una mujer que se desarrolla en las 7 dimensiones no persigue que su relación mejore. Su relación mejora porque ella ya no es la misma.", attr: "Josué Calderón"},
+];
+
+// ═══════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════
+let state = {
+  user: null,
+  answers: {},
+  completedSections: [],
+  beliefRows: {},
+  identityChecks: {}
+};
+
+function saveState() {
+  localStorage.setItem('soberana_state', JSON.stringify(state));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('soberana_state');
+  if (raw) {
+    try { state = JSON.parse(raw); return true; } catch(e) {}
+  }
+  return false;
+}
+
+function getProgress() {
+  const done = state.completedSections.length;
+  const pct = Math.round((done / 10) * 100);
+  return { done, pct };
+}
+
+function countAnswers() {
+  return Object.values(state.answers).filter(v => v && v.trim().length > 0).length;
+}
+
+function countHilo() {
+  return ['s1_e3','s5_e3','s9_e2'].filter(id => state.answers[id] && state.answers[id].trim().length > 10).length;
+}
+
+// ═══════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════
+async function doLogin() {
+  const name = document.getElementById('inp-name').value.trim();
+  const email = document.getElementById('inp-email').value.trim().toLowerCase();
+  
+  if (!name) { showToast('Por favor ingresa tu nombre'); return; }
+  if (!email || !email.includes('@')) { showToast('Ingresa un correo válido'); return; }
+
+  // Mostrar estado de carga
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = 'Verificando acceso...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `${SHEETS_URL}?email=${encodeURIComponent(email)}`,
+      { method: 'GET' }
+    );
+    const json = await res.json();
+
+    if (json.ok) {
+      // Correo autorizado — dejar entrar
+      state.user = { name, email, joinDate: new Date().toISOString() };
+      saveState();
+      initApp();
+    } else {
+      // Correo no autorizado
+      btn.textContent = 'Comenzar mi Workbook →';
+      btn.disabled = false;
+      showAccesoDenegado(email);
+    }
+  } catch(err) {
+    // Si no hay internet, verificar si ya tenía sesión guardada
+    if (loadState() && state.user && state.user.email === email) {
+      initApp();
+    } else {
+      btn.textContent = 'Comenzar mi Workbook →';
+      btn.disabled = false;
+      showToast('Sin conexión. Intenta en un momento.');
+    }
+  }
+}
+
+function showAccesoDenegado(email) {
+  const modal = document.getElementById('modal-content');
+  modal.innerHTML = `
+    <div style="text-align:center;padding:10px 0 20px">
+      <div style="font-size:48px;margin-bottom:16px">🔒</div>
+      <div class="modal-title" style="text-align:center">Acceso no autorizado</div>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:20px">
+        El correo <strong>${email}</strong> no tiene acceso al Workbook Código Soberana.
+      </p>
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">
+        Si ya compraste el workshop, escríbenos por WhatsApp con tu correo y te activamos el acceso.
+      </p>
+      <a href="https://wa.me/573XXXXXXXXX?text=Hola,%20quiero%20activar%20mi%20acceso%20al%20Workbook.%20Mi%20correo%20es:%20${encodeURIComponent(email)}" 
+         target="_blank"
+         style="display:block;background:var(--burgundy);color:white;text-decoration:none;padding:14px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:10px">
+        Activar mi acceso por WhatsApp
+      </a>
+      <button onclick="document.getElementById('modal-overlay').classList.remove('open')" 
+        style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
+        Intentar con otro correo
+      </button>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// ═══════════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════════
+function initApp() {
+  document.getElementById('screen-splash').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  
+  const first = state.user.name.split(' ')[0];
+  const initial = first[0].toUpperCase();
+  
+  document.getElementById('hero-name').textContent = first;
+  document.getElementById('avatar-btn').textContent = initial;
+  document.getElementById('profile-avatar').textContent = initial;
+  document.getElementById('profile-name').textContent = state.user.name;
+  document.getElementById('profile-email').textContent = state.user.email;
+  
+  // Random daily quote
+  const q = CONFRONTATION_QUOTES[Math.floor(Math.random() * CONFRONTATION_QUOTES.length)];
+  document.querySelector('#daily-quote .confrontation-text').textContent = q.text;
+  document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
+  
+  renderSectionsList();
+  updateProgressUI();
+  renderInstallSection();
+  setupInstallPrompt();
+}
+
+// ═══════════════════════════════════════════
+// SECTIONS LIST
+// ═══════════════════════════════════════════
+function renderSectionsList() {
+  const list = document.getElementById('sections-list');
+  list.innerHTML = '';
+  
+  SECTIONS.forEach((sec, idx) => {
+    const done = state.completedSections.includes(sec.id);
+    const isCurrent = !done && (idx === 0 || state.completedSections.includes(SECTIONS[idx-1].id));
+    
+    const card = document.createElement('div');
+    card.className = `section-card ${done ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
+    
+    let statusIcon = '';
+    if (done) statusIcon = '<svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    else if (isCurrent) statusIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#8B1A2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    else statusIcon = '<svg class="lock-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    
+    const numClass = done ? 'done' : isCurrent ? 'active-num' : 'pending';
+    
+    card.innerHTML = `
+      <div class="section-num ${numClass}">${sec.num}</div>
+      <div class="section-info">
+        <div class="section-name">${sec.title}</div>
+        <div class="section-desc">${sec.desc}</div>
+      </div>
+      <div class="section-status">${statusIcon}</div>
+    `;
+    
+    card.onclick = () => openLesson(sec.id);
+    list.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════
+// PROGRESS UI
+// ═══════════════════════════════════════════
+function updateProgressUI() {
+  const { done, pct } = getProgress();
+  const circ = 100.5;
+  const offset = circ - (circ * pct / 100);
+  
+  // Header ring
+  const hr = document.getElementById('header-ring');
+  hr.style.strokeDashoffset = offset;
+  document.getElementById('header-pct').textContent = pct + '%';
+  
+  // Main bar
+  document.getElementById('main-progress-bar').style.width = pct + '%';
+  document.getElementById('progress-done-label').textContent = `${done} de 10 secciones`;
+  document.getElementById('progress-pct-label').textContent = `${pct}% completado`;
+  
+  // Big ring (progreso tab)
+  const bigCirc = 314;
+  const bigOffset = bigCirc - (bigCirc * pct / 100);
+  const br = document.getElementById('big-ring');
+  if (br) { br.style.strokeDashoffset = bigOffset; }
+  const bp = document.getElementById('big-pct');
+  if (bp) bp.textContent = pct + '%';
+  
+  // Progress phrases
+  const phrase = document.getElementById('progress-phrase');
+  const sub = document.getElementById('progress-sub');
+  if (phrase) {
+    if (pct === 0) { phrase.textContent = 'Tu viaje acaba de comenzar'; sub.textContent = 'Cada sección que completas activa una palanca.'; }
+    else if (pct < 30) { phrase.textContent = 'Estás despertando'; sub.textContent = 'La claridad es el primer acto de soberanía.'; }
+    else if (pct < 60) { phrase.textContent = 'El sistema toma forma'; sub.textContent = 'Cada palanca que activas mueve el sistema completo.'; }
+    else if (pct < 90) { phrase.textContent = 'La Soberana está emergiendo'; sub.textContent = 'Estás en la recta final. El punto irreversible se acerca.'; }
+    else { phrase.textContent = '¡El Punto de Influencia Irreversible!'; sub.textContent = 'Lo que cambió en ti ya no puede deshacerse.'; }
+  }
+  
+  // Stats
+  const sa = document.getElementById('stat-answers');
+  if (sa) sa.textContent = countAnswers();
+  const sd = document.getElementById('stat-done');
+  if (sd) sd.textContent = done;
+  const sh = document.getElementById('stat-hilo');
+  if (sh) sh.textContent = countHilo() + '/3';
+  
+  renderHiloCards();
+  renderMilestones();
+}
+
+function renderHiloCards() {
+  const container = document.getElementById('hilo-cards');
+  if (!container) return;
+  
+  const hilos = [
+    { id:'s1_e3', q:'La foto del "antes" — ¿Cómo está tu dinámica ahora mismo?' },
+    { id:'s5_e3', q:'¿Qué es lo más difícil de soltar?' },
+    { id:'s9_e2', q:'La Soberana que descubriste en este workshop' }
+  ];
+  
+  container.innerHTML = hilos.map((h,i) => {
+    const ans = state.answers[h.id] || '';
+    const has = ans.trim().length > 10;
+    const preview = has ? ans.substring(0,120) + (ans.length > 120 ? '...' : '') : '';
+    return `
+      <div class="hilo-q-card">
+        <div class="hilo-q-head ${has ? 'has-answer' : ''}">
+          <span class="hilo-star">⭐</span>
+          <span class="hilo-q-text">Pregunta ${i+1}</span>
+          <span class="hilo-q-badge ${has ? 'answered' : 'pending'}">${has ? 'Respondida' : 'Pendiente'}</span>
+        </div>
+        ${has ? `<div class="hilo-q-answer">${preview}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderMilestones() {
+  const container = document.getElementById('milestones');
+  if (!container) return;
+  
+  const ms = [
+    { id:'s5', label:'Palanca Mental activada', icon:'🧠', sec:'s5' },
+    { id:'s6', label:'Palanca Emocional activada', icon:'❤️', sec:'s6' },
+    { id:'s7', label:'Palanca Relacional activada', icon:'🤝', sec:'s7' },
+    { id:'s8', label:'Palanca del Carácter activada', icon:'💬', sec:'s8' },
+    { id:'s9', label:'Punto de Influencia Irreversible', icon:'👑', sec:'s9' }
+  ];
+  
+  container.innerHTML = ms.map(m => {
+    const done = state.completedSections.includes(m.sec);
+    return `
+      <div class="milestone">
+        <div class="milestone-dot ${done ? 'done' : 'pending'}">${done ? m.icon : '○'}</div>
+        <div class="milestone-info">
+          <h5>${m.label}</h5>
+          <p>${done ? 'Completada' : 'Pendiente'}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// LESSON VIEW
+// ═══════════════════════════════════════════
+let currentSectionId = null;
+
+function openLesson(sectionId) {
+  const sec = SECTIONS.find(s => s.id === sectionId);
+  if (!sec) return;
+  currentSectionId = sectionId;
+  
+  document.getElementById('lesson-eyebrow').textContent = sec.palanca || ('Sección ' + sec.num);
+  document.getElementById('lesson-title-h').textContent = sec.title;
+  
+  // Build body
+  const body = document.getElementById('lesson-body');
+  body.innerHTML = '';
+  
+  // Intro block
+  const intro = document.createElement('div');
+  intro.className = 'lesson-intro';
+  intro.setAttribute('data-num', sec.num);
+  intro.innerHTML = `
+    <div class="lesson-badge">Sección ${sec.num}</div>
+    <h2>${sec.title}</h2>
+    <p>${sec.desc}</p>
+    ${sec.palanca ? `<p style="margin-top:10px;font-size:13px;opacity:.8;"><strong>${sec.palanca}</strong></p>` : ''}
+  `;
+  body.appendChild(intro);
+  
+  // Exercises
+  sec.exercises.forEach(ex => {
+    const block = buildExerciseBlock(ex, sec);
+    body.appendChild(block);
+  });
+  
+  // Save button
+  const saveWrap = document.createElement('div');
+  saveWrap.className = 'save-btn-wrap';
+  saveWrap.innerHTML = `
+    <button class="save-btn" id="lesson-save-btn" onclick="saveLesson('${sectionId}')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
+      Guardar mis respuestas
+    </button>
+  `;
+  body.appendChild(saveWrap);
+  
+  // Open lesson view
+  document.getElementById('lesson-view').classList.add('open');
+  document.getElementById('lesson-view').scrollTop = 0;
+  document.querySelector('.lesson-scroll').scrollTop = 0;
+  
+  updateLessonProgress(sectionId);
+}
+
+function buildExerciseBlock(ex, sec) {
+  const block = document.createElement('div');
+  block.className = 'exercise-block';
+  
+  const typeLabels = { reflection:'Reflexión', star:'★ Pregunta Hilo Conductor', tool:'Herramienta', action:'Acción' };
+  const typeIcons = { reflection:'💭', star:'⭐', tool:'🔧', action:'✅' };
+  
+  let headerHtml = `
+    <div class="exercise-header">
+      <div class="exercise-icon type-${ex.type}">${typeIcons[ex.type]}</div>
+      <div class="exercise-meta">
+        <div class="exercise-type ${ex.type}">${typeLabels[ex.type]}</div>
+        <div class="exercise-question">${ex.question}</div>
+      </div>
+    </div>
+  `;
+  
+  let bodyHtml = '';
+  
+  if (ex.confrontation) {
+    bodyHtml += `<div class="callout-confrontation"><p>${ex.confrontation}</p></div>`;
+  }
+  if (ex.insight) {
+    bodyHtml += `<div class="callout-insight"><p>💡 ${ex.insight}</p></div>`;
+  }
+  if (ex.body) {
+    bodyHtml += `<div style="padding:0 20px 14px;font-size:13px;color:var(--text-muted);line-height:1.6;">${ex.body}</div>`;
+  }
+  
+  // Field rendering
+  const saved = state.answers[ex.id] || '';
+  
+  if (ex.field === 'textarea' || ex.field === 'star-textarea') {
+    const cls = ex.field === 'star-textarea' ? 'answer-textarea star-field' : 'answer-textarea';
+    const ph = ex.placeholder || 'Escribe tu respuesta...';
+    const minH = ex.field === 'star-textarea' ? '200px' : '120px';
+    bodyHtml += `
+      <div class="textarea-wrap">
+        <textarea class="${cls}" id="field-${ex.id}" style="min-height:${minH}" placeholder="${ph}" oninput="onFieldInput('${ex.id}',this)">${saved}</textarea>
+        <div class="char-counter" id="cc-${ex.id}">${saved.length} caracteres</div>
+      </div>
+    `;
+  }
+  
+  else if (ex.field === 'belief-table') {
+    const rows = state.beliefRows[ex.id] || [['','','']];
+    let tableHtml = `
+      <div style="padding:0 20px">
+      <table class="belief-table">
+        <thead><tr><th>Creencia actual</th><th>¿De dónde viene?</th><th>Creencia nueva</th></tr></thead>
+        <tbody id="belief-tbody-${ex.id}">
+    `;
+    rows.forEach((row,ri) => {
+      tableHtml += `<tr>
+        <td><input type="text" value="${row[0]||''}" placeholder="Lo que creo..." onchange="updateBeliefRow('${ex.id}',${ri},0,this.value)"></td>
+        <td><input type="text" value="${row[1]||''}" placeholder="Edad, evento..." onchange="updateBeliefRow('${ex.id}',${ri},1,this.value)"></td>
+        <td><input type="text" value="${row[2]||''}" placeholder="Lo que elijo creer..." onchange="updateBeliefRow('${ex.id}',${ri},2,this.value)"></td>
+      </tr>`;
+    });
+    tableHtml += `</tbody></table></div>
+      <button class="add-row-btn" onclick="addBeliefRow('${ex.id}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Agregar otra creencia
+      </button>
+    `;
+    bodyHtml += tableHtml;
+  }
+  
+  else if (ex.field === 'eres-system') {
+    const saved_eres = state.answers[ex.id] ? JSON.parse(state.answers[ex.id] || '{}') : {};
+    bodyHtml += `<div class="eres-grid">
+      ${[['E','Escúchate','¿Qué estás sintiendo exactamente?'],['R','Reconócete','Valida: "Tiene sentido que sienta esto"'],['E','Elige tu momento','¿Ahora es el momento de actuar?'],['S','Sostén tu necesidad','¿Qué necesitas comunicar sin reaccionar?']].map(([l,w,d]) => `
+        <div class="eres-cell">
+          <div class="eres-letter">${l}</div>
+          <div class="eres-word">${w}</div>
+          <textarea class="eres-input" placeholder="${d}" onchange="updateEresField('${ex.id}','${l}',this.value)">${saved_eres[l]||''}</textarea>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+  
+  else if (ex.field === 'three-levels') {
+    const saved3 = state.answers[ex.id] ? JSON.parse(state.answers[ex.id] || '{}') : {};
+    bodyHtml += `<div class="levels-grid">
+      <div class="level-cell l1">
+        <div class="level-head"><span class="level-badge">Nivel 1</span><span class="level-desc">No negociable — Si se cruza, actúo</span></div>
+        <textarea class="level-input" placeholder="Ej: Que me hable con falta de respeto delante de otros..." onchange="updateLevelField('${ex.id}','l1',this.value)">${saved3.l1||''}</textarea>
+      </div>
+      <div class="level-cell l2">
+        <div class="level-head"><span class="level-badge">Nivel 2</span><span class="level-desc">Negociable con condiciones — Cedo si hay reciprocidad</span></div>
+        <textarea class="level-input" placeholder="Ej: Los planes de fin de semana — puedo ser flexible si..." onchange="updateLevelField('${ex.id}','l2',this.value)">${saved3.l2||''}</textarea>
+      </div>
+      <div class="level-cell l3">
+        <div class="level-head"><span class="level-badge">Nivel 3</span><span class="level-desc">Completamente flexible — Sin importancia estratégica</span></div>
+        <textarea class="level-input" placeholder="Ej: Dónde vamos a cenar, cómo ordena el closet..." onchange="updateLevelField('${ex.id}','l3',this.value)">${saved3.l3||''}</textarea>
+      </div>
+    </div>`;
+  }
+  
+  else if (ex.field === 'dds-system') {
+    const saved_dds = state.answers[ex.id] ? JSON.parse(state.answers[ex.id] || '{}') : {};
+    bodyHtml += `<div class="dds-grid">
+      <div class="dds-cell">
+        <div class="dds-label">Declarar</div>
+        <div class="dds-sub">Enuncia con claridad lo que necesitas comunicar. Sin rodeos.</div>
+        <textarea class="dds-input" placeholder="Necesito decirte que..." onchange="updateDDSField('${ex.id}','d',this.value)">${saved_dds.d||''}</textarea>
+      </div>
+      <div class="dds-cell">
+        <div class="dds-label">Dirigir</div>
+        <div class="dds-sub">¿Qué acción o cambio específico estás proponiendo?</div>
+        <textarea class="dds-input" placeholder="Lo que propongo es que..." onchange="updateDDSField('${ex.id}','di',this.value)">${saved_dds.di||''}</textarea>
+      </div>
+      <div class="dds-cell">
+        <div class="dds-label">Ofrecer Espacio</div>
+        <div class="dds-sub">Termina sin perseguir la respuesta. Abre el espacio para que él decida.</div>
+        <textarea class="dds-input" placeholder="Te doy el espacio para que lo pienses..." onchange="updateDDSField('${ex.id}','s',this.value)">${saved_dds.s||''}</textarea>
+      </div>
+    </div>`;
+  }
+  
+  else if (ex.field === 'identity-check') {
+    bodyHtml += `<div style="padding:0 20px 20px">`;
+    ex.items.forEach((item, i) => {
+      const saved_ic = state.identityChecks[ex.id] || {};
+      const val = saved_ic[i] || null;
+      bodyHtml += `
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+          <button onclick="setIdentityCheck('${ex.id}',${i},'left',this)" class="ic-btn ${val==='left'?'ic-selected-dep':''}" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid ${val==='left'?'var(--burgundy)':'var(--surface-2)'};background:${val==='left'?'#FFF5F5':'white'};font-size:12px;color:var(--text-dark);cursor:pointer;text-align:center;line-height:1.4">${item.left}</button>
+          <div style="font-size:11px;color:var(--mauve);flex-shrink:0">vs</div>
+          <button onclick="setIdentityCheck('${ex.id}',${i},'right',this)" class="ic-btn ${val==='right'?'ic-selected-sov':''}" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid ${val==='right'?'#2D7A4F':'var(--surface-2)'};background:${val==='right'?'#F0FFF5':'white'};font-size:12px;color:var(--text-dark);cursor:pointer;text-align:center;line-height:1.4">${item.right}</button>
+        </div>
+      `;
+    });
+    bodyHtml += `</div>`;
+  }
+  
+  block.innerHTML = headerHtml + bodyHtml;
+  return block;
+}
+
+// ═══════════════════════════════════════════
+// FIELD HANDLERS
+// ═══════════════════════════════════════════
+function onFieldInput(id, el) {
+  const cc = document.getElementById('cc-' + id);
+  if (cc) cc.textContent = el.value.length + ' caracteres';
+  updateLessonProgress(currentSectionId);
+}
+
+function updateBeliefRow(exId, ri, col, val) {
+  if (!state.beliefRows[exId]) state.beliefRows[exId] = [['','','']];
+  if (!state.beliefRows[exId][ri]) state.beliefRows[exId][ri] = ['','',''];
+  state.beliefRows[exId][ri][col] = val;
+  // Also save to answers as JSON
+  state.answers[exId] = JSON.stringify(state.beliefRows[exId]);
+  updateLessonProgress(currentSectionId);
+}
+
+function addBeliefRow(exId) {
+  if (!state.beliefRows[exId]) state.beliefRows[exId] = [];
+  state.beliefRows[exId].push(['','','']);
+  const tbody = document.getElementById('belief-tbody-' + exId);
+  const ri = state.beliefRows[exId].length - 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Lo que creo..." onchange="updateBeliefRow('${exId}',${ri},0,this.value)"></td>
+    <td><input type="text" placeholder="Edad, evento..." onchange="updateBeliefRow('${exId}',${ri},1,this.value)"></td>
+    <td><input type="text" placeholder="Lo que elijo creer..." onchange="updateBeliefRow('${exId}',${ri},2,this.value)"></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function updateEresField(exId, letter, val) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[letter] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  updateLessonProgress(currentSectionId);
+}
+
+function updateLevelField(exId, level, val) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[level] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  updateLessonProgress(currentSectionId);
+}
+
+function updateDDSField(exId, key, val) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[key] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  updateLessonProgress(currentSectionId);
+}
+
+function setIdentityCheck(exId, idx, side, btn) {
+  if (!state.identityChecks[exId]) state.identityChecks[exId] = {};
+  state.identityChecks[exId][idx] = side;
+  state.answers[exId] = JSON.stringify(state.identityChecks[exId]);
+  
+  // Update button styles in the row
+  const btns = btn.parentElement.querySelectorAll('button');
+  btns.forEach(b => {
+    b.style.borderColor = 'var(--surface-2)';
+    b.style.background = 'white';
+  });
+  if (side === 'left') {
+    btn.style.borderColor = 'var(--burgundy)';
+    btn.style.background = '#FFF5F5';
+  } else {
+    btn.style.borderColor = '#2D7A4F';
+    btn.style.background = '#F0FFF5';
+  }
+  updateLessonProgress(currentSectionId);
+}
+
+function updateLessonProgress(secId) {
+  const sec = SECTIONS.find(s => s.id === secId);
+  if (!sec) return;
+  const total = sec.exercises.length;
+  const filled = sec.exercises.filter(ex => {
+    const ans = state.answers[ex.id];
+    return ans && ans.trim && ans.trim().length > 5;
+  }).length;
+  const pct = Math.round((filled / total) * 100);
+  document.getElementById('lesson-prog-fill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════
+// SAVE LESSON
+// ═══════════════════════════════════════════
+function saveLesson(secId) {
+  const sec = SECTIONS.find(s => s.id === secId);
+  if (!sec) return;
+  
+  // Collect all textarea values
+  sec.exercises.forEach(ex => {
+    const el = document.getElementById('field-' + ex.id);
+    if (el) {
+      state.answers[ex.id] = el.value;
+    }
+  });
+  
+  // Mark as completed if at least half filled
+  const filled = sec.exercises.filter(ex => {
+    const ans = state.answers[ex.id];
+    return ans && ans.trim && ans.trim().length > 5;
+  }).length;
+  
+  if (filled >= Math.ceil(sec.exercises.length / 2)) {
+    if (!state.completedSections.includes(secId)) {
+      state.completedSections.push(secId);
+    }
+  }
+  
+  saveState();
+  
+  // Sincronizar con Google Sheets (en segundo plano, no bloquea la UI)
+  syncToSheets(secId);
+
+  // Visual feedback
+  const btn = document.getElementById('lesson-save-btn');
+  btn.classList.add('save-success');
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> ¡Guardado correctamente`;
+  setTimeout(() => {
+    btn.classList.remove('save-success');
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg> Guardar mis respuestas`;
+  }, 2500);
+  
+  showToast('✓ Tus respuestas fueron guardadas');
+  renderSectionsList();
+  updateProgressUI();
+}
+
+function closeLesson() {
+  document.getElementById('lesson-view').classList.remove('open');
+  currentSectionId = null;
+  updateProgressUI();
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('tab-btn-' + tab).classList.add('active');
+  
+  if (tab === 'progreso') { updateProgressUI(); }
+}
+
+// ═══════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const { done, pct } = getProgress();
+  let text = `CÓDIGO SOBERANA — Mi Workbook\n`;
+  text += `${state.user.name} · ${state.user.email}\n`;
+  text += `Fecha: ${new Date().toLocaleDateString('es-CO')}\n`;
+  text += `Progreso: ${pct}% (${done}/10 secciones)\n\n`;
+  text += `${'═'.repeat(50)}\n\n`;
+  
+  SECTIONS.forEach(sec => {
+    text += `SECCIÓN ${sec.num}: ${sec.title.toUpperCase()}\n${'-'.repeat(40)}\n`;
+    sec.exercises.forEach(ex => {
+      const ans = state.answers[ex.id];
+      if (ans && ans.trim && ans.trim().length > 0) {
+        text += `\n${ex.question}\n`;
+        text += `${ans}\n`;
+      }
+    });
+    text += '\n';
+  });
+  
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Workbook_Soberana_${state.user.name.replace(/\s/g,'_')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 Descargando tu workbook...');
+}
+
+// ═══════════════════════════════════════════
+// INSTALL PWA
+// ═══════════════════════════════════════════
+let deferredPrompt = null;
+
+function setupInstallPrompt() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    renderInstallSection();
+  });
+}
+
+function renderInstallSection() {
+  const el = document.getElementById('install-section');
+  if (!el) return;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  if (isStandalone) {
+    el.innerHTML = `<div style="margin:16px 16px 0;text-align:center;font-size:13px;color:var(--text-muted);padding:12px">✅ App instalada en tu dispositivo</div>`;
+    return;
+  }
+  if (deferredPrompt) {
+    el.innerHTML = `
+      <div class="install-banner" style="margin:16px 16px 0">
+        <div class="ib-icon">📱</div>
+        <div class="ib-text">
+          <h4>Instala la app</h4>
+          <p>Accede a tu workbook desde la pantalla de inicio, sin internet.</p>
+          <button class="ib-btn" onclick="installApp()">Instalar ahora →</button>
+        </div>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="install-banner" style="margin:16px 16px 0">
+        <div class="ib-icon">📱</div>
+        <div class="ib-text">
+          <h4>Instala en tu teléfono</h4>
+          <p>En Safari: toca el botón compartir y selecciona "Añadir a pantalla de inicio".</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function installApp() {
+  if (!deferredPrompt) { showInstallInstructions(); return; }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') { showToast('✅ App instalada correctamente'); deferredPrompt = null; renderInstallSection(); }
+}
+
+function showInstallInstructions() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  let instructions = '';
+  if (isIOS) {
+    instructions = `<ol style="font-size:14px;line-height:2;padding-left:20px;color:var(--text-mid)">
+      <li>Toca el ícono de <strong>compartir</strong> (□↑) en Safari</li>
+      <li>Desplázate y toca <strong>"Añadir a pantalla de inicio"</strong></li>
+      <li>Toca <strong>Añadir</strong></li>
+    </ol>`;
+  } else if (isAndroid) {
+    instructions = `<ol style="font-size:14px;line-height:2;padding-left:20px;color:var(--text-mid)">
+      <li>Toca el menú <strong>⋮</strong> de Chrome</li>
+      <li>Toca <strong>"Añadir a pantalla de inicio"</strong></li>
+      <li>Confirma tocando <strong>Añadir</strong></li>
+    </ol>`;
+  } else {
+    instructions = `<p style="font-size:14px;color:var(--text-mid);line-height:1.7">En Chrome: haz clic en el ícono de instalación en la barra de direcciones o ve a Menú → "Instalar aplicación".</p>`;
+  }
+  showModal(`<div class="modal-title">Instalar en tu teléfono</div>${instructions}<p style="font-size:12px;color:var(--text-muted);margin-top:16px">Una vez instalada, accedes directamente desde tu pantalla de inicio y funciona sin internet.</p>`);
+}
+
+// ═══════════════════════════════════════════
+// MODAL & TOAST
+// ═══════════════════════════════════════════
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function confirmReset() {
+  showModal(`
+    <div class="modal-title">⚠️ ¿Borrar todo el progreso?</div>
+    <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">Esta acción eliminará todas tus respuestas y progreso. No se puede deshacer.</p>
+    <button onclick="resetAll()" style="width:100%;background:#C0392B;border:none;border-radius:12px;padding:14px;color:white;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px">Sí, borrar todo</button>
+    <button onclick="document.getElementById('modal-overlay').classList.remove('open')" style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">Cancelar</button>
+  `);
+}
+
+function resetAll() {
+  localStorage.removeItem('soberana_state');
+  document.getElementById('modal-overlay').classList.remove('open');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════
+// SINCRONIZACIÓN GOOGLE SHEETS
+// ═══════════════════════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwr3Dtcs7ewrB8PGsdE0JRO7Ianw6FxFdN1KN12WQ_PGrzSseg98aUn0rr7T85uKs1K/exec';
+
+async function syncToSheets(secId) {
+  const sec = SECTIONS.find(s => s.id === secId);
+  if (!sec || !state.user) return;
+
+  // Armar lista de respuestas de esta sección
+  const respuestas = sec.exercises
+    .map(ex => {
+      const ans = state.answers[ex.id];
+      if (!ans || (ans.trim && ans.trim().length === 0)) return null;
+      return {
+        seccionId: sec.id,
+        seccionNombre: sec.title,
+        ejercicioId: ex.id,
+        pregunta: ex.question,
+        respuesta: typeof ans === 'string' ? ans : JSON.stringify(ans)
+      };
+    })
+    .filter(Boolean);
+
+  if (respuestas.length === 0) return;
+
+  const payload = {
+    nombre: state.user.name,
+    email: state.user.email,
+    respuestas
+  };
+
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Apps Script requiere no-cors
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    console.log('✅ Sincronizado con Google Sheets');
+  } catch (err) {
+    console.warn('⚠️ No se pudo sincronizar con Sheets (sin conexión):', err);
+    // No bloqueamos — el guardado local ya funcionó
+  }
+}
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+if (loadState() && state.user) {
+  initApp();
+} else {
+  document.getElementById('screen-splash').classList.add('active');
+}
+</script>
+</body>
+</html>

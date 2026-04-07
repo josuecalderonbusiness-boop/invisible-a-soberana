@@ -1846,6 +1846,12 @@ function initApp() {
   updateProgressUI();
   renderInstallSection();
   setupInstallPrompt();
+
+  // Popup de instalación — una sola vez, 3s después de entrar
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!isStandalone && !localStorage.getItem('soberana_install_shown')) {
+    setTimeout(() => showInstallPopup(), 3000);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -2337,29 +2343,76 @@ function switchTab(tab) {
 // ═══════════════════════════════════════════
 function exportData() {
   const { done, pct } = getProgress();
-  let text = `CÓDIGO SOBERANA — Mi Workbook\n`;
-  text += `${state.user.name} · ${state.user.email}\n`;
-  text += `Fecha: ${new Date().toLocaleDateString('es-CO')}\n`;
-  text += `Progreso: ${pct}% (${done}/10 secciones)\n\n`;
-  text += `${'═'.repeat(50)}\n\n`;
-  
-  SECTIONS.forEach(sec => {
-    text += `SECCIÓN ${sec.num}: ${sec.title.toUpperCase()}\n${'-'.repeat(40)}\n`;
+  const fecha = new Date().toLocaleDateString('es-CO', { year:'numeric', month:'long', day:'numeric' });
+  const nombre = state.user.name;
+
+  let sectionsHtml = '';
+  SECTIONS.forEach((sec, idx) => {
+    let exercisesHtml = '';
     sec.exercises.forEach(ex => {
       const ans = state.answers[ex.id];
-      if (ans && ans.trim && ans.trim().length > 0) {
-        text += `\n${ex.question}\n`;
-        text += `${ans}\n`;
-      }
+      const ansText = typeof ans === 'string' ? ans.trim() : (ans ? JSON.stringify(ans) : '');
+      if (!ansText) return;
+      exercisesHtml += `
+        <div style="margin-bottom:18px">
+          <p style="font-size:13px;color:#6b5b5b;font-weight:600;margin:0 0 6px;line-height:1.5">${ex.question || ex.label || ''}</p>
+          <p style="font-size:14px;color:#1a0a0f;margin:0;line-height:1.7;white-space:pre-wrap">${ansText}</p>
+        </div>`;
     });
-    text += '\n';
+    if (!exercisesHtml) return;
+    const isLast = idx === SECTIONS.length - 1;
+    sectionsHtml += `
+      <div style="background:#fff;border-radius:16px;padding:28px 28px 20px;margin-bottom:20px;box-shadow:0 2px 12px rgba(139,26,47,0.07)">
+        <h2 style="font-family:Georgia,serif;font-size:18px;color:#8B1A2F;margin:0 0 4px;font-weight:700">${sec.num}. ${sec.title}</h2>
+        <p style="font-size:12px;color:#b08a8a;margin:0 0 20px">${sec.desc || ''}</p>
+        ${exercisesHtml}
+      </div>
+      ${!isLast ? '<div style="height:2px;background:linear-gradient(90deg,transparent,#D4AF6A,transparent);margin:0 0 20px"></div>' : ''}`;
   });
-  
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi Workbook — Código Soberana</title>
+</head>
+<body style="margin:0;padding:0;background:#FDF8F2;font-family:Georgia,serif">
+
+  <!-- Header -->
+  <div style="background:#8B1A2F;padding:40px 32px 32px;text-align:center">
+    <p style="font-family:'Helvetica Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#D4AF6A;text-transform:uppercase;margin:0 0 8px">Código Soberana</p>
+    <h1 style="font-size:28px;color:#fff;margin:0 0 8px;font-weight:700">Mi Workbook</h1>
+    <p style="font-size:16px;color:#f0c8c8;margin:0 0 16px">${nombre}</p>
+    <p style="font-size:12px;color:#c9969b;margin:0">${fecha} &nbsp;·&nbsp; ${pct}% completado (${done}/10 secciones)</p>
+  </div>
+
+  <!-- Content -->
+  <div style="max-width:680px;margin:0 auto;padding:32px 20px 60px">
+    ${sectionsHtml}
+
+    <!-- Cita final -->
+    <div style="text-align:center;padding:40px 24px 0">
+      <p style="font-style:italic;font-size:15px;color:#8B1A2F;line-height:1.8;margin:0">
+        "La mujer más poderosa no es la que aguanta más.<br>
+        Es la que un día decide que ella también importa."
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#1a0a0f;text-align:center;padding:24px;font-family:'Helvetica Neue',sans-serif">
+    <p style="font-size:13px;color:#D4AF6A;letter-spacing:2px;text-transform:uppercase;margin:0">Código Soberana</p>
+  </div>
+
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Workbook_Soberana_${state.user.name.replace(/\s/g,'_')}.txt`;
+  a.download = `MiWorkbook_Soberana_${nombre.replace(/\s+/g,'_')}.html`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2371,6 +2424,29 @@ function exportData() {
 // INSTALL PWA
 // ═══════════════════════════════════════════
 let deferredPrompt = null;
+
+function showInstallPopup() {
+  localStorage.setItem('soberana_install_shown', 'true');
+  const html = `
+    <div style="text-align:center;padding:8px 0 4px">
+      <div style="font-size:48px;margin-bottom:12px">📱</div>
+      <div class="modal-title" style="margin-bottom:12px">Instala tu Workbook</div>
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">
+        Para una mejor experiencia, instala el workbook en tu pantalla de inicio.
+        Accede más rápido y sin necesitar internet.
+      </p>
+      <button onclick="installApp();document.getElementById('modal-overlay').classList.remove('open')"
+        style="width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">
+        Instalar ahora
+      </button>
+      <button onclick="document.getElementById('modal-overlay').classList.remove('open')"
+        style="width:100%;padding:12px;background:var(--surface-2,#2a1520);color:var(--text-muted);border:none;border-radius:12px;font-size:14px;cursor:pointer">
+        Ahora no
+      </button>
+    </div>
+  `;
+  showModal(html);
+}
 
 function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', e => {

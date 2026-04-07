@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Soberana">
 <title>Código Soberana — Workbook</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/workbook/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -504,9 +504,12 @@
   ════════════════════════════════════════ */
   #lesson-view {
     display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--surface);
     flex-direction: column;
     height: 100%;
-    background: var(--surface);
   }
   #lesson-view.open { display: flex; }
 
@@ -2522,7 +2525,7 @@ async function syncToSheets(secId) {
 // BOOT
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('/workbook/sw.js').catch(() => {});
 }
 
 if (loadState() && state.user) {

@@ -8,7 +8,7 @@
 // Día 2 → dia2_workshop_cs
 // Día 3 → dia6_audio_cs        [paso: dia3_audio]
 // Día 6 → dia9_diagnostico_cs  [paso: dia6_diagnostico]
-// Día 9 → dia13_7d_cs          [paso: dia9_7d]
+// Día 9 → dia13_7d_cs          [paso: dia9_presentacion]  ← plantilla 7D
 // FASE 3 (Apps Script por fecha):
 //   48h antes cierre → dia15_decision_cs [paso: dia15_decision]
 //   Día cierre → dia27_cierre_cs / dia27_tarde_cs / dia27_noche_cs
@@ -69,8 +69,10 @@ export default async function handler(req, res) {
         }
       }
 
-      const paso = test;
-      console.log(`TEST manual: paso=${paso} phone=${phone}`);
+      // Atajos de prueba
+      const aliases = { dia15: 'dia15_decision', dia27: 'dia27_cierre' };
+      const paso = aliases[test] || test;
+      console.log(`TEST manual: test=${test} paso=${paso} phone=${phone}`);
       try {
         await ejecutarPaso(String(phone), paso, '');
         return res.status(200).json({ ok: true, ejecutado: paso, phone });
@@ -433,7 +435,6 @@ async function manejarBoton(phone, btnId, btnTx) {
     await sendWhatsApp(phone,
       `Está bien. Sin presión.\n\nSi en algún momento cambias de opinión — sabes dónde encontrarme.`
     );
-    await programarTrigger(phone, 'dia17_despues', 4, nombre); // PRUEBA: 4 min (producción: 2880 = 2 días)
   }
 
   // ── DÍA 9 — Diagnóstico ─────────────────────────────────────────
@@ -547,7 +548,7 @@ async function ejecutarPaso(phone, paso, nombre) {
     // Día 6 — diagnóstico (antes día 9)
     await sendTemplateDia9(phone, n);
   }
-  else if (paso === 'dia9_7d') {
+  else if (paso === 'dia9_presentacion') {
     // Día 9 — plantilla 7D (antes día 13)
     console.log('Ejecutando día 9 (7D) para: ' + phone);
     await sendTemplateDia13(phone, n);
@@ -703,7 +704,7 @@ async function enviarResultadoDia9(phone, combo, nombre) {
   }
 
   await sendWhatsApp(phone, mensaje);
-  await programarTrigger(phone, 'dia9_7d', 4, nombre || ''); // PRUEBA: 4 min (producción: 4320 = 3 días)
+  await programarTrigger(phone, 'dia9_presentacion', 4, nombre || ''); // PRUEBA: 4 min (producción: 4320 = 3 días)
 }
 
 async function guardarEstadoSheets(phone, estado) {

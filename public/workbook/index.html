@@ -504,9 +504,12 @@
   ════════════════════════════════════════ */
   #lesson-view {
     display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--surface);
     flex-direction: column;
     height: 100%;
-    background: var(--surface);
   }
   #lesson-view.open { display: flex; }
 

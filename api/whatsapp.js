@@ -866,8 +866,8 @@ async function sendTemplateDia15(to, nombre) {
         name: 'dia15_decision_cs', language: { code: 'es_MX' },
         components: [
           { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
-          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia15_pregunta' }] },
-          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia15_si' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'dia15_si' }] },
+          { type: 'button', sub_type: 'quick_reply', index: '1', parameters: [{ type: 'payload', payload: 'dia15_pregunta' }] },
           { type: 'button', sub_type: 'quick_reply', index: '2', parameters: [{ type: 'payload', payload: 'dia15_no' }] }
         ]
       }

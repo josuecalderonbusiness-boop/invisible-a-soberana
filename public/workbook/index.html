@@ -1756,26 +1756,27 @@ async function doLogin() {
         // Sheets tiene prioridad (es la fuente de verdad)
         const localState = localStorage.getItem('soberana_state');
         const localAnswers = localState ? JSON.parse(localState).answers || {} : {};
-        
         state.answers = { ...localAnswers, ...jsonCargar.respuestas };
-        
-        // Recalcular secciones completadas basado en respuestas cargadas
-        state.completedSections = calcularSeccionesCompletadas(state.answers);
       }
     } catch(e) {
       // Si falla la carga, usar lo que hay en local
       console.warn('No se pudo cargar desde Sheets, usando datos locales');
     }
 
+    // Siempre recalcular completedSections con las respuestas finales
+    state.completedSections = calcularSeccionesCompletadas(state.answers);
+
     // PASO 3 — Entrar
     state.user = { name, email, joinDate: new Date().toISOString() };
     saveState();
-    initApp();
+    // requestAnimationFrame garantiza que el DOM esté listo antes de initApp (necesario en iOS)
+    requestAnimationFrame(() => initApp());
 
   } catch(err) {
     // Sin internet — usar sesión guardada localmente
     if (loadState() && state.user && state.user.email === email) {
-      initApp();
+      state.completedSections = calcularSeccionesCompletadas(state.answers);
+      requestAnimationFrame(() => initApp());
     } else {
       btn.textContent = 'Comenzar mi Workbook →';
       btn.disabled = false;

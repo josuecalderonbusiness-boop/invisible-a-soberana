@@ -523,13 +523,13 @@
     flex-shrink: 0;
   }
   .back-btn {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: var(--surface-2);
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: var(--burgundy);
     border: none;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    color: var(--burgundy);
+    color: #fff;
     flex-shrink: 0;
   }
   .lesson-header-info { flex: 1; }
@@ -706,38 +706,37 @@
   }
 
   /* Table exercise */
-  .belief-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0 0 16px;
-    font-size: 13px;
+  .belief-card {
+    border-left: 3px solid var(--burgundy);
+    background: #fdf5ee;
+    border-radius: 0 12px 12px 0;
+    padding: 16px;
+    margin-bottom: 16px;
   }
-  .belief-table th {
-    background: var(--surface-2);
-    padding: 10px 12px;
-    text-align: left;
+  .belief-field-label {
     font-size: 10px;
+    font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    font-weight: 600;
+    color: var(--burgundy);
+    margin-bottom: 6px;
   }
-  .belief-table td {
-    padding: 8px;
-    border-bottom: 1px solid var(--surface-2);
-  }
-  .belief-table input {
+  .belief-field-ta {
     width: 100%;
-    border: 1px solid var(--surface-2);
+    border: 1px solid #e8d5c4;
     border-radius: 8px;
     padding: 8px 10px;
     font-family: 'Jost', sans-serif;
     font-size: 13px;
-    background: white;
+    background: #fff;
     outline: none;
+    resize: none;
+    min-height: 52px;
     transition: border-color .2s;
+    box-sizing: border-box;
+    margin-bottom: 12px;
   }
-  .belief-table input:focus { border-color: var(--burgundy); }
+  .belief-field-ta:focus { border-color: var(--burgundy); }
 
   .add-row-btn {
     display: flex;
@@ -754,8 +753,8 @@
 
   /* ERES system */
   .eres-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     padding: 0 20px 20px;
   }
@@ -782,7 +781,7 @@
     padding: 8px;
     font-family: 'Jost', sans-serif;
     font-size: 12px;
-    min-height: 60px;
+    min-height: 80px;
     background: var(--surface);
     outline: none; resize: none;
     transition: border-color .2s;
@@ -2092,26 +2091,24 @@ function buildExerciseBlock(ex, sec) {
   
   else if (ex.field === 'belief-table') {
     const rows = state.beliefRows[ex.id] || [['','','']];
-    let tableHtml = `
-      <div style="padding:0 20px">
-      <table class="belief-table">
-        <thead><tr><th>Creencia actual</th><th>¿De dónde viene?</th><th>Creencia nueva</th></tr></thead>
-        <tbody id="belief-tbody-${ex.id}">
-    `;
-    rows.forEach((row,ri) => {
-      tableHtml += `<tr>
-        <td><input type="text" value="${row[0]||''}" placeholder="Lo que creo..." onchange="updateBeliefRow('${ex.id}',${ri},0,this.value)"></td>
-        <td><input type="text" value="${row[1]||''}" placeholder="Edad, evento..." onchange="updateBeliefRow('${ex.id}',${ri},1,this.value)"></td>
-        <td><input type="text" value="${row[2]||''}" placeholder="Lo que elijo creer..." onchange="updateBeliefRow('${ex.id}',${ri},2,this.value)"></td>
-      </tr>`;
+    let cardsHtml = `<div style="padding:0 20px" id="belief-tbody-${ex.id}">`;
+    rows.forEach((row, ri) => {
+      cardsHtml += `
+        <div class="belief-card">
+          <div class="belief-field-label">¿Qué creo?</div>
+          <textarea class="belief-field-ta" placeholder="Lo que creo..." onchange="updateBeliefRow('${ex.id}',${ri},0,this.value)">${row[0]||''}</textarea>
+          <div class="belief-field-label">¿De dónde viene?</div>
+          <textarea class="belief-field-ta" placeholder="Edad, evento, persona..." onchange="updateBeliefRow('${ex.id}',${ri},1,this.value)">${row[1]||''}</textarea>
+          <div class="belief-field-label">¿Qué elijo creer?</div>
+          <textarea class="belief-field-ta" style="margin-bottom:0" placeholder="Lo que elijo creer..." onchange="updateBeliefRow('${ex.id}',${ri},2,this.value)">${row[2]||''}</textarea>
+        </div>`;
     });
-    tableHtml += `</tbody></table></div>
+    cardsHtml += `</div>
       <button class="add-row-btn" onclick="addBeliefRow('${ex.id}')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Agregar otra creencia
-      </button>
-    `;
-    bodyHtml += tableHtml;
+      </button>`;
+    bodyHtml += cardsHtml;
   }
   
   else if (ex.field === 'eres-system') {
@@ -2630,6 +2627,26 @@ async function syncToSheets(secId) {
     // No bloqueamos — el guardado local ya funcionó
   }
 }
+
+// ═══════════════════════════════════════════
+// SWIPE TO CLOSE (edge swipe → closeLesson)
+// ═══════════════════════════════════════════
+(function() {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const lessonView = document.getElementById('lesson-view');
+  lessonView.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  lessonView.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    if (touchStartX <= 30 && dx > 80 && dy < 60) {
+      closeLesson();
+    }
+  }, { passive: true });
+})();
 
 // ═══════════════════════════════════════════
 // BOOT

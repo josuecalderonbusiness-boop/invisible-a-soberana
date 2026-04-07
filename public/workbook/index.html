@@ -1786,13 +1786,12 @@ async function doLogin() {
 }
 
 function calcularSeccionesCompletadas(answers) {
-  return SECTIONS.filter(sec => {
-    const filled = sec.exercises.filter(ex => {
+  return SECTIONS.filter(sec =>
+    sec.exercises.some(ex => {
       const ans = answers[ex.id];
-      return ans && (typeof ans === 'string' ? ans.trim().length > 5 : true);
-    }).length;
-    return filled >= Math.ceil(sec.exercises.length / 2);
-  }).map(sec => sec.id);
+      return ans && (typeof ans === 'string' ? ans.trim().length > 5 : !!ans);
+    })
+  ).map(sec => sec.id);
 }
 
 function showAccesoDenegado(email) {
@@ -1863,7 +1862,9 @@ function renderSectionsList() {
   
   SECTIONS.forEach((sec, idx) => {
     const done = state.completedSections.includes(sec.id);
-    const isCurrent = !done && (idx === 0 || state.completedSections.includes(SECTIONS[idx-1].id));
+    // Cascada: s1 siempre disponible; el resto se desbloquea cuando cualquier anterior está completada
+    const anyPrevDone = idx === 0 || SECTIONS.slice(0, idx).some(s => state.completedSections.includes(s.id));
+    const isCurrent = !done && anyPrevDone;
     
     const card = document.createElement('div');
     card.className = `section-card ${done ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
@@ -2289,16 +2290,14 @@ function saveLesson(secId) {
     }
   });
   
-  // Mark as completed if at least half filled
-  const filled = sec.exercises.filter(ex => {
+  // Mark as completed if at least one answer has more than 5 characters
+  const hasAnswer = sec.exercises.some(ex => {
     const ans = state.answers[ex.id];
     return ans && ans.trim && ans.trim().length > 5;
-  }).length;
-  
-  if (filled >= Math.ceil(sec.exercises.length / 2)) {
-    if (!state.completedSections.includes(secId)) {
-      state.completedSections.push(secId);
-    }
+  });
+
+  if (hasAnswer && !state.completedSections.includes(secId)) {
+    state.completedSections.push(secId);
   }
   
   saveState();
@@ -2427,25 +2426,58 @@ let deferredPrompt = null;
 
 function showInstallPopup() {
   localStorage.setItem('soberana_install_shown', 'true');
+  // Bloquear cierre tocando fuera
+  document.getElementById('modal-overlay').setAttribute('data-locked', 'true');
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+
+  let actionHtml = '';
+  if (deferredPrompt) {
+    // Chrome Android — instalación automática disponible
+    actionHtml = `
+      <button onclick="installApp();closeInstallPopup()"
+        style="width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:20px">
+        Instalar ahora
+      </button>`;
+  } else if (isIOS) {
+    actionHtml = `
+      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:20px;font-size:14px;color:var(--text-mid);line-height:2">
+        <div>1. Toca el botón compartir <strong>(□↑)</strong> abajo</div>
+        <div>2. Selecciona <strong>Añadir a pantalla de inicio</strong></div>
+        <div>3. Toca <strong>Añadir</strong></div>
+      </div>`;
+  } else {
+    actionHtml = `
+      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:20px;font-size:14px;color:var(--text-mid);line-height:2">
+        <div>1. Toca los 3 puntos <strong>(⋮)</strong> arriba a la derecha</div>
+        <div>2. Toca <strong>Instalar aplicación</strong></div>
+        <div>3. Confirma tocando <strong>Instalar</strong></div>
+      </div>`;
+  }
+
   const html = `
     <div style="text-align:center;padding:8px 0 4px">
       <div style="font-size:48px;margin-bottom:12px">📱</div>
       <div class="modal-title" style="margin-bottom:12px">Instala tu Workbook</div>
-      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:20px">
         Para una mejor experiencia, instala el workbook en tu pantalla de inicio.
         Accede más rápido y sin necesitar internet.
       </p>
-      <button onclick="installApp();document.getElementById('modal-overlay').classList.remove('open')"
-        style="width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">
-        Instalar ahora
-      </button>
-      <button onclick="document.getElementById('modal-overlay').classList.remove('open')"
-        style="width:100%;padding:12px;background:var(--surface-2,#2a1520);color:var(--text-muted);border:none;border-radius:12px;font-size:14px;cursor:pointer">
-        Ahora no
-      </button>
+      ${actionHtml}
+      <label style="display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text-mid)">
+        <input type="checkbox" id="install-done-check" onchange="if(this.checked)closeInstallPopup()"
+          style="width:18px;height:18px;accent-color:var(--burgundy);cursor:pointer">
+        Ya la instalé ✓
+      </label>
     </div>
   `;
   showModal(html);
+}
+
+function closeInstallPopup() {
+  document.getElementById('modal-overlay').removeAttribute('data-locked');
+  document.getElementById('modal-overlay').classList.remove('open');
 }
 
 function setupInstallPrompt() {
@@ -2525,8 +2557,9 @@ function showModal(html) {
   document.getElementById('modal-overlay').classList.add('open');
 }
 function closeModal(e) {
-  if (e.target === document.getElementById('modal-overlay')) {
-    document.getElementById('modal-overlay').classList.remove('open');
+  const overlay = document.getElementById('modal-overlay');
+  if (e.target === overlay && !overlay.getAttribute('data-locked')) {
+    overlay.classList.remove('open');
   }
 }
 

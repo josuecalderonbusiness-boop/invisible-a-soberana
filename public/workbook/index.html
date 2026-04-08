@@ -1339,7 +1339,7 @@
           <div class="hilo-icon">⭐</div>
           <div class="hilo-text">
             <h4>Tres preguntas que lo cambian todo</h4>
-            <p>Las preguntas ★ son el hilo conductor del workshop. No las saltes.</p>
+            <p>Cada pregunta es un espejo, y cada espejo tiene su momento. Cuando llegues a uno, detente. Lo que escribas ahí vale más que todo lo demás.</p>
           </div>
         </div>
 
@@ -1367,7 +1367,7 @@
               </div>
             </div>
             <h3 id="progress-phrase">Tu viaje acaba de comenzar</h3>
-            <p id="progress-sub">Cada sección que completas activa una palanca.</p>
+            <p id="progress-sub">Cada sección que completas activa un protocolo.</p>
           </div>
 
           <div class="stats-row">
@@ -1377,12 +1377,12 @@
           </div>
 
           <div class="hilo-section">
-            <h4>★ Hilo Conductor</h4>
+            <h4>★ preguntas espejo</h4>
             <div id="hilo-cards"></div>
           </div>
 
           <div class="milestone-section">
-            <h4>Tus palancas</h4>
+            <h4>Tus protocolos</h4>
             <div id="milestones"></div>
           </div>
         </div>
@@ -1463,7 +1463,7 @@
       </button>
       <button class="tab-btn" id="tab-btn-progreso" onclick="switchTab('progreso')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Progreso
+         Mi Progreso
       </button>
       <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -1526,16 +1526,16 @@ const SECTIONS = [
   {
     id:'s1', num:'01', label:'Bienvenida y Autoridad',
     title:'¿Qué es el Código Soberana?',
-    desc:'Por qué estás aquí y por qué Josué es quien te lo enseña',
+    desc:'Quién eres antes de aprender',
     palanca: null,
     exercises: [
       {
         id:'s1_e1', type:'checkpoint',
-        label:'Tu punto de partida',
+        label:'pregunta espejo 1',
         question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?',
-        body:'Esta es la primera de tres preguntas que van a acompañarte durante todo el workbook. Cuando termines, vas a volver aquí y ver la distancia que recorriste.',
+        body:'Esta es la primera de tres preguntas espejo que van a acompañarte durante todo el workbook. Cuando termines, vas a volver aquí y ver la distancia que recorriste.',
         confrontation: null,
-        placeholder:'No la pienses demasiado. Escribe lo primero que llegue, sin juzgarte.',
+        placeholder:'No lo pienses demasiado. Escribe lo primero que llegue, sin juzgarte.',
         field:'star-textarea'
       }
     ]
@@ -1562,7 +1562,7 @@ const SECTIONS = [
         id:'s2_e2', type:'reflection',
         question:'Recuerda una situación en particular donde quedaste atrapada en la columna izquierda.',
         postNote:'Cuando una mujer se anula para salvar la relación, pierde el único activo que podría moverla: su presencia diferenciada.',
-        placeholder:'No para castigarte. Para reconocer el patrón. El patrón que reconoces es el patrón que puedes cambiar...',
+        placeholder:'No para que te juzgues. Para reconocer el patrón. El patrón que reconoces es el patrón que puedes cambiar...',
         field:'textarea'
       }
     ]
@@ -1570,7 +1570,7 @@ const SECTIONS = [
   {
     id:'s3', num:'03', label:'Identidad Soberana',
     title:'Identidad Soberana',
-    desc:'El Factor James Clear — cómo tu identidad determina tu dinámica',
+    desc:'Cómo tu identidad determina tu relación',
     palanca: null,
     exercises: [
       {
@@ -1583,8 +1583,8 @@ const SECTIONS = [
       {
         id:'s3_e2', type:'reflection',
         question:'¿Qué parte de esta declaración te cuesta más creer hoy?',
-        postNote:'No te enfocas en tener los hábitos de una mujer soberana. Te enfocas en ser la mujer soberana. Los hábitos vienen solos cuando la raíz cambió.',
-        placeholder:'Esa es la parte donde más trabajo hay por hacer. No como castigo — como información...',
+        postNote:'No te enfocas en tener los hábitos de una mujer soberana. Te enfocas en ser la mujer soberana. Los hábitos vienen solos cuando la raíz cambia.',
+        placeholder:'Esa es la parte donde más trabajo hay por hacer. Lo que no puedes ver, no puedes trabajarlo',
         field:'textarea'
       },
       {
@@ -1643,8 +1643,8 @@ const SECTIONS = [
   {
     id:'s5', num:'05', label:'Protocolo 1',
     title:'Protocolo 1',
-    desc:'Lo que Piensas — Dimensión Mental 🧠',
-    palanca:'Protocolo 1 — Lo que Piensas',
+    desc:'Dimensión Mental 🧠',
+    palanca:'Lo que Piensas',
     introQuote:'Las creencias no son la verdad. Son los lentes con los que ves la verdad. Y los lentes se pueden cambiar.',
     exercises: [
       {
@@ -1655,7 +1655,7 @@ const SECTIONS = [
       },
       {
         id:'s5_e3', type:'checkpoint',
-        label:'Tu momento de claridad',
+        label:'pregunta espejo 2',
         question:'Después de explorar el Protocolo 1, ¿qué creencia o historia mental es la más difícil de dejar ir? No la que suena peor — la que más te cuesta soltar.',
         confrontation: null,
         placeholder:'La respuesta honesta, no la que crees que deberías dar...',
@@ -1666,8 +1666,8 @@ const SECTIONS = [
   {
     id:'s6', num:'06', label:'Protocolo 2',
     title:'Protocolo 2',
-    desc:'Lo que Sientes — Dimensión Emocional ❤️',
-    palanca:'Protocolo 2 — Lo que Sientes',
+    desc:'Dimensión Emocional ❤️',
+    palanca:'Lo que Sientes',
     exercises: [
       {
         id:'s6_e1', type:'reflection',
@@ -1694,8 +1694,8 @@ const SECTIONS = [
   {
     id:'s7', num:'07', label:'Protocolo 3',
     title:'Protocolo 3',
-    desc:'Lo que Sostienes — Dimensión del Carácter 🤝',
-    palanca:'Protocolo 3 — Lo que Sostienes',
+    desc:'Dimensión del Carácter 🤝',
+    palanca:'Lo que Sostienes',
     exercises: [
       {
         id:'s7_e1', type:'tool',
@@ -1709,9 +1709,9 @@ const SECTIONS = [
         body:'Mueve el slider para cada uno.',
         field:'triple-slider',
         sliders:[
-          {id:'sl1', label:'Nivel 1 — Lo no negociable', color:'var(--burgundy)'},
-          {id:'sl2', label:'Nivel 2 — Lo negociable con condiciones', color:'var(--gold)'},
-          {id:'sl3', label:'Nivel 3 — Lo flexible', color:'var(--mauve)'}
+          {id:'sl1', label:'1 — Lo no negociable', color:'var(--burgundy)'},
+          {id:'sl2', label:'2 — Lo negociable con condiciones', color:'var(--gold)'},
+          {id:'sl3', label:'3 — Lo flexible', color:'var(--mauve)'}
         ]
       },
       {
@@ -1725,9 +1725,9 @@ const SECTIONS = [
   },
   {
     id:'s8', num:'08', label:'Protocolo 4',
-    title:'Protocolo 4: Lo que Comunicas',
+    title:'Protocolo 4',
     desc:'Comunicación con coherencia — Sistema de Comunicación Soberana (DDS)',
-    palanca:'Protocolo 4 — Lo que Comunicas',
+    palanca:'Lo que Comunicas',
     exercises: [
       {
         id:'s8_e1', type:'tool',
@@ -1766,14 +1766,14 @@ const SECTIONS = [
       },
       {
         id:'s9_e2', type:'reflection',
-        question:'Vuelve a leer tu punto de partida. Léelo con los ojos de quien eres ahora. ¿Qué ves diferente?',
+        question:'Vuelve a leer tu punto de partida (la pregunta espejo 1). Léelo con los ojos de quien eres ahora. ¿Qué ves diferente?',
         confrontation: 'Eso que sientes ahora — esa pequeña distancia entre quien respondió la primera pregunta y quien está leyendo esto — es el punto de influencia activándose. Ese cambio ya ocurrió. Ya no puede deshacerse.',
         placeholder:'Describe la distancia que ves entre el antes y el ahora...',
         field:'textarea'
       },
       {
         id:'s9_e3', type:'checkpoint',
-        label:'La Soberana que descubriste hoy',
+        label:'pregunta espejo 3',
         question:'Descríbeme a la Soberana que descubriste en este workshop. ¿Cómo actúa cuando hay tensión? ¿Cómo pide lo que necesita? ¿Cómo se habla a sí misma cuando comete un error? ¿Cómo ama — desde dónde ama?',
         confrontation: null,
         placeholder:'Escríbela con detalle. No la versión perfecta — la versión real y posible de ti. Antes de escribir, lee tu punto de partida del principio.',
@@ -1798,7 +1798,7 @@ const SECTIONS = [
       {
         id:'s10_e2', type:'tool',
         question:'¿Cuál de las 3 dimensiones pendientes impacta más tu punto de influencia ahora mismo?',
-        body:'Los 4 protocolos que trabajaste hoy viven en las Dimensiones Mental y Emocional. Estas tres no las tocamos hoy — y son las que sostienen todo lo demás.',
+        body:'Los 4 protocolos que trabajaste hoy viven en las Dimensiones Mental y Emocional. Estas otras tres no las tocamos hoy — y son las que sostienen todo lo demás.',
         items:[
           {id:'f', icon:'⚡', label:'Dimensión Física', desc:'Sin energía no hay influencia. Una mujer crónicamente agotada no puede aplicar el Sistema ERES aunque lo sepa de memoria.'},
           {id:'e', icon:'🌿', label:'Dimensión Espiritual', desc:'Sin propósito propio, la relación se convierte en el único lugar donde buscas significado. Eso le pone una carga que ninguna relación puede sostener.'},

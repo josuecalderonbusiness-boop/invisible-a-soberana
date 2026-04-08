@@ -29,6 +29,13 @@
     --text-muted: #8a6575;
     --surface: #FDF8F2;
     --surface-2: #F4EDE3;
+    /* Soberana 7D */
+    --forest-deep: #0D2418;
+    --forest-primary: #1A3D2B;
+    --forest-medium: #2A5C42;
+    --forest-light: #3D7A5A;
+    --gold-primary: #B8892A;
+    --parchment: #EDE3CE;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -308,7 +315,167 @@
     font-weight: 500;
   }
   .tab-btn.active { color: var(--gold); }
+  #tab-btn-7d.active { color: var(--gold-primary); }
   .tab-btn svg { width: 20px; height: 20px; }
+
+  /* ── TAB 7D ── */
+  .tab-7d {
+    background: var(--forest-deep);
+    min-height: 100%;
+    padding-bottom: 32px;
+  }
+  .s7d-header {
+    background: linear-gradient(180deg, #0D2418 0%, #1A3D2B 100%);
+    padding: 32px 20px 28px;
+    text-align: center;
+    border-bottom: 1px solid rgba(184,137,42,.2);
+  }
+  .s7d-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--gold-primary);
+    margin-bottom: 10px;
+  }
+  .s7d-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--parchment);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .s7d-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    color: rgba(237,227,206,.7);
+    margin-bottom: 20px;
+  }
+  .s7d-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+    width: 60%;
+    margin: 0 auto;
+  }
+  .s7d-weeks { padding: 20px 0 4px; }
+  .s7d-week-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(184,137,42,.2);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 16px 12px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .s7d-lock { font-size: 24px; flex-shrink: 0; line-height: 1.3; }
+  .s7d-week-info { flex: 1; min-width: 0; }
+  .s7d-week-badge {
+    display: inline-block;
+    background: rgba(184,137,42,.1);
+    color: var(--gold-primary);
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+  .s7d-week-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--parchment);
+    margin-bottom: 4px;
+  }
+  .s7d-week-desc {
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(237,227,206,.7);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .s7d-week-dims {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    color: rgba(237,227,206,.5);
+  }
+  .s7d-stats {
+    background: rgba(184,137,42,.06);
+    border: 1px solid rgba(184,137,42,.15);
+    border-radius: 14px;
+    margin: 0 16px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 12px;
+  }
+  .s7d-stat { text-align: center; }
+  .s7d-stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--gold-primary);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .s7d-stat-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    color: rgba(237,227,206,.7);
+    line-height: 1.3;
+  }
+  .s7d-cta {
+    display: block;
+    margin: 20px 16px 0;
+    padding: 16px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1A3D2B, #2A5C42);
+    border: 1.5px solid var(--gold-primary);
+    color: #F9F3E8;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  /* Estado activo (tiene acceso) */
+  .s7d-active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    min-height: 300px;
+  }
+  .s7d-active-icon { font-size: 48px; margin-bottom: 16px; }
+  .s7d-active-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--parchment);
+    margin-bottom: 8px;
+  }
+  .s7d-active-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: rgba(237,227,206,.7);
+    margin-bottom: 6px;
+  }
+  .s7d-active-note {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: rgba(237,227,206,.5);
+  }
 
   /* Main content area */
   .app-main {
@@ -1457,6 +1624,99 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB: 7D -->
+      <div class="tab-content" id="tab-7d">
+        <div class="tab-7d">
+
+          <!-- Header -->
+          <div class="s7d-header">
+            <div class="s7d-eyebrow">Entrenamiento</div>
+            <div class="s7d-title">Soberana 7D</div>
+            <div class="s7d-sub">30 días · 4 semanas · Tu caso en vivo</div>
+            <div class="s7d-divider"></div>
+          </div>
+
+          <!-- Contenido bloqueado (default) -->
+          <div id="s7d-locked">
+            <div class="s7d-weeks">
+
+              <div class="s7d-week-card">
+                <div class="s7d-lock">🔒</div>
+                <div class="s7d-week-info">
+                  <div class="s7d-week-badge">Semana 1 · Días 1–7</div>
+                  <div class="s7d-week-name">Arquitecta de Realidad</div>
+                  <div class="s7d-week-desc">Tu cerebro construye lo que tú le das.</div>
+                  <div class="s7d-week-dims">Mental + Emocional</div>
+                </div>
+              </div>
+
+              <div class="s7d-week-card">
+                <div class="s7d-lock">🔒</div>
+                <div class="s7d-week-info">
+                  <div class="s7d-week-badge">Semana 2 · Días 8–14</div>
+                  <div class="s7d-week-name">Gravedad Propia</div>
+                  <div class="s7d-week-desc">Las mujeres que no necesitan validación generan magnetismo.</div>
+                  <div class="s7d-week-dims">Carácter + Relacional</div>
+                </div>
+              </div>
+
+              <div class="s7d-week-card">
+                <div class="s7d-lock">🔒</div>
+                <div class="s7d-week-info">
+                  <div class="s7d-week-badge">Semana 3 · Días 15–21</div>
+                  <div class="s7d-week-name">Biología del Poder</div>
+                  <div class="s7d-week-desc">Tu cuerpo y tu dinero saben cosas que tu mente niega.</div>
+                  <div class="s7d-week-dims">Física + Economía</div>
+                </div>
+              </div>
+
+              <div class="s7d-week-card">
+                <div class="s7d-lock">🔒</div>
+                <div class="s7d-week-info">
+                  <div class="s7d-week-badge">Semana 4 · Días 22–30</div>
+                  <div class="s7d-week-name">El Código Final</div>
+                  <div class="s7d-week-desc">La dimensión que sostiene todo cuando todo lo demás falla.</div>
+                  <div class="s7d-week-dims">Espiritual</div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="s7d-stats">
+              <div class="s7d-stat">
+                <div class="s7d-stat-num">4</div>
+                <div class="s7d-stat-label">Masterclasses grabadas</div>
+              </div>
+              <div class="s7d-stat">
+                <div class="s7d-stat-num">4</div>
+                <div class="s7d-stat-label">Sesiones en vivo</div>
+              </div>
+              <div class="s7d-stat">
+                <div class="s7d-stat-num">31</div>
+                <div class="s7d-stat-label">Días de acompañamiento</div>
+              </div>
+              <div class="s7d-stat">
+                <div class="s7d-stat-num">1</div>
+                <div class="s7d-stat-label">Tu caso analizado en vivo</div>
+              </div>
+            </div>
+
+            <a class="s7d-cta" href="https://soberana7d.josuecalderon.lat">Quiero acceder al entrenamiento completo →</a>
+          </div>
+
+          <!-- Contenido activo (tiene acceso 7D) -->
+          <div id="s7d-active-content" style="display:none">
+            <div class="s7d-active">
+              <div class="s7d-active-icon">👑</div>
+              <div class="s7d-active-title">Acceso Soberana 7D Activo</div>
+              <div class="s7d-active-sub">Tu dashboard completo está en construcción.</div>
+              <div class="s7d-active-note">Mientras tanto, continúa con tu workbook.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <!-- Tab Nav -->
@@ -1472,6 +1732,10 @@
       <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         Mi Perfil
+      </button>
+      <button class="tab-btn" id="tab-btn-7d" onclick="switchTab('7d')">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        7D
       </button>
     </div>
   </div>
@@ -1918,8 +2182,17 @@ async function doLogin() {
     // Siempre recalcular completedSections con las respuestas finales
     state.completedSections = calcularSeccionesCompletadas(state.answers);
 
-    // PASO 3 — Entrar
-    state.user = { name, email, joinDate: new Date().toISOString() };
+    // PASO 3 — Verificar acceso 7D (silencioso, no bloquea el login)
+    try {
+      const res7d = await fetch(
+        `${SHEETS_URL}?action=verificar7d&email=${encodeURIComponent(email)}`
+      );
+      const json7d = await res7d.json();
+      state.user = { name, email, joinDate: new Date().toISOString(), tiene7d: json7d.ok || false };
+    } catch(e) {
+      state.user = { name, email, joinDate: new Date().toISOString(), tiene7d: false };
+    }
+
     saveState();
     // requestAnimationFrame garantiza que el DOM esté listo antes de initApp (necesario en iOS)
     requestAnimationFrame(() => initApp());
@@ -1997,11 +2270,22 @@ function initApp() {
   updateProgressUI();
   renderInstallSection();
   setupInstallPrompt();
+  apply7dAccess();
 
   // Popup de instalación — una sola vez, 3s después de entrar
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (!isStandalone && !localStorage.getItem('soberana_install_shown')) {
     setTimeout(() => showInstallPopup(), 3000);
+  }
+}
+
+function apply7dAccess() {
+  if (state.user && state.user.tiene7d) {
+    document.getElementById('s7d-locked').style.display = 'none';
+    document.getElementById('s7d-active-content').style.display = 'block';
+  } else {
+    document.getElementById('s7d-locked').style.display = 'block';
+    document.getElementById('s7d-active-content').style.display = 'none';
   }
 }
 

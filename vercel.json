@@ -1,6 +1,7 @@
 {
   "version": 2,
   "rewrites": [
+    { "has": [{"type": "host", "value": "soberana7d.josuecalderon.lat"}], "source": "/(.*)", "destination": "/public/soberana7d/index.html" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/bienvenida/:path*", "destination": "/public/bienvenida/index.html" },
     { "source": "/bienvenida", "destination": "/public/bienvenida/index.html" },

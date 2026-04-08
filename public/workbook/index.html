@@ -676,6 +676,26 @@
   }
   .change-chip.selected { border-color:var(--burgundy); background:rgba(139,26,47,.09); color:var(--burgundy); font-weight:600; }
 
+  /* Mirror-check field */
+  .mirror-row { display:flex; gap:8px; margin-bottom:10px; align-items:stretch; }
+  .mirror-btn { flex:1; padding:10px 8px; border-radius:10px; border:1.5px solid var(--surface-2); background:white; font-size:12px; color:var(--text-dark); cursor:pointer; text-align:center; line-height:1.4; transition:all .2s; }
+  .mirror-btn.sel-left { border-color:var(--burgundy); background:#FFF0F2; font-weight:600; }
+  .mirror-btn.sel-right { border-color:#2D7A4F; background:#F0FFF5; font-weight:600; }
+  .mirror-vs { font-size:10px; color:var(--mauve); flex-shrink:0; align-self:center; }
+  /* Declaration field */
+  .declaration-block { margin:0 20px 16px; border:1.5px solid var(--gold); border-radius:14px; padding:20px; background:#FDF8F0; }
+  .declaration-text { font-family:'Cormorant Garamond',serif; font-size:17px; color:var(--burgundy-dark); line-height:1.8; font-style:italic; margin:0 0 16px; }
+  .declaration-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
+  /* Post-note */
+  .post-note { font-style:italic; font-size:13px; color:var(--mauve); text-align:center; padding:0 24px 20px; line-height:1.7; }
+  /* Checkpoint */
+  .checkpoint-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(212,175,106,.15); border:1px solid rgba(212,175,106,.4); color:var(--gold-light); font-size:10px; letter-spacing:.15em; text-transform:uppercase; padding:4px 12px; border-radius:100px; margin-bottom:10px; font-weight:600; }
+  /* Belief-sequence field */
+  .belief-seq-block { margin:0 20px 16px; border-left:3px solid var(--burgundy); background:#fdf5ee; border-radius:0 12px 12px 0; padding:16px; }
+  .belief-seq-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--burgundy); margin-bottom:6px; }
+  .belief-seq-ta { width:100%; border:1px solid #e8d5c4; border-radius:8px; padding:8px 10px; font-family:'Jost',sans-serif; font-size:13px; background:#fff; outline:none; resize:none; min-height:56px; transition:border-color .2s; box-sizing:border-box; margin-bottom:14px; }
+  .belief-seq-ta:focus { border-color:var(--burgundy); }
+  .belief-seq-divider { height:1px; background:linear-gradient(90deg,transparent,#D4AF6A44,transparent); margin:4px 0 16px; }
   /* Export modal */
   .export-section-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--surface-2); font-size:14px; color:var(--text-mid); cursor:pointer; }
   .export-section-item input[type=checkbox] { accent-color:var(--burgundy); width:16px; height:16px; }
@@ -1490,64 +1510,59 @@
 const SECTIONS = [
   {
     id:'s0', num:'00', label:'Introduccion',
-    title:'Lo que este workshop no es, y lo que sí es',
-    desc:'La premisa central — por qué estás aquí',
+    title:'Lo que crees que es',
+    desc:'¿Y por qué estás aquí?',
     palanca: null,
     exercises: [
       {
         id:'s0_e1', type:'reflection',
-        question:'¿Qué esperabas encontrar cuando compraste este workshop?',
-        confrontation: 'El problema no es que seas difícil de amar. El problema es que nadie te dio las herramientas correctas. Eso termina hoy.',
-        placeholder:'Escribe sin filtro lo que esperabas...',
+        question:'¿Qué esperas encontrar en esta formación?',
+        postNote:'El problema no es que seas difícil de amar. El problema es que nadie te dio las herramientas correctas. Eso termina hoy.',
+        placeholder:'Escribe sin filtro lo que esperas...',
         field:'textarea'
       }
     ]
   },
   {
     id:'s1', num:'01', label:'Bienvenida y Autoridad',
-    title:'Bienvenida y Autoridad',
+    title:'¿Qué es el Código Soberana?',
     desc:'Por qué estás aquí y por qué Josué es quien te lo enseña',
     palanca: null,
     exercises: [
       {
-        id:'s1_e1', type:'star', star:1,
-        question:'★ Pregunta 1 — Tu punto de partida',
-        body:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?',
+        id:'s1_e1', type:'checkpoint',
+        label:'Tu punto de partida',
+        question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?',
+        body:'Esta es la primera de tres preguntas que van a acompañarte durante todo el workbook. Cuando termines, vas a volver aquí y ver la distancia que recorriste.',
         confrontation: null,
-        placeholder:'No la pienses demasiado. Escribe lo primero que llegue, sin juzgarte. Esta es la foto del antes — al final del workbook vas a volver aquí y ver la distancia que recorriste.',
+        placeholder:'No la pienses demasiado. Escribe lo primero que llegue, sin juzgarte.',
         field:'star-textarea'
       }
     ]
   },
   {
     id:'s2', num:'02', label:'La Trampa',
-    title:'La Trampa en la que Estás',
+    title:'La Trampa de la Entrega',
     desc:'El ciclo de persecución y distanciamiento — el patrón que nadie te enseñó a ver',
     palanca: null,
     exercises: [
       {
         id:'s2_e1', type:'tool',
-        question:'¿En cuál de estos tres escenarios te reconoces más?',
-        body:'Selecciona el que más se parece a tu realidad cotidiana.',
+        question:'Lo que veo en el espejo',
+        body:'¿En cuál de estas posiciones te reconoces más frecuentemente? Marca con honestidad — no con la respuesta que te gustaría poder dar, sino con la que es verdad.',
         items:[
-          {id:'a', label:'La que está en casa con los hijos — él llega y se desconecta'},
-          {id:'b', label:'La que trabaja fuera — el trabajo de casa cae sobre ti'},
-          {id:'c', label:'La que tiene su negocio — tu trabajo no tiene visibilidad'}
+          {left:'Mi humor depende del suyo', right:'Mi centro no depende de él'},
+          {left:'Hablo desde la herida', right:'Hablo desde la claridad'},
+          {left:'Espero que él cambie', right:'Trabajo en mi código'},
+          {left:'Confundo entrega con anulación', right:'Amo desde la elección'}
         ],
-        field:'single-choice'
+        field:'mirror-check'
       },
       {
-        id:'s2_e2', type:'tool',
-        question:'¿Cuánto control sientes que tienes sobre tu dinámica ahora mismo?',
-        body:'Siendo completamente honesta — del 1 al 10.',
-        field:'slider',
-        min:1, max:10, label:'Control sobre mi dinámica'
-      },
-      {
-        id:'s2_e3', type:'reflection',
-        question:'Cuando él se aleja o se desconecta, ¿cuál es tu primera reacción automática?',
-        confrontation: 'Mientras más persigues, más se aleja. Mientras más se aleja, más persigues. El ciclo no se rompe haciendo más de lo mismo — se rompe cambiando el sistema.',
-        placeholder:'Descríbela con honestidad — no la que crees que deberías tener, sino la que realmente tienes...',
+        id:'s2_e2', type:'reflection',
+        question:'Recuerda una situación en particular donde quedaste atrapada en la columna izquierda.',
+        postNote:'Cuando una mujer se anula para salvar la relación, pierde el único activo que podría moverla: su presencia diferenciada.',
+        placeholder:'No para castigarte. Para reconocer el patrón. El patrón que reconoces es el patrón que puedes cambiar...',
         field:'textarea'
       }
     ]
@@ -1560,6 +1575,20 @@ const SECTIONS = [
     exercises: [
       {
         id:'s3_e1', type:'tool',
+        field:'declaration',
+        declaration:'No soy una mujer rota que necesita ser arreglada. Soy una mujer que tiene una dinámica que necesita ser reconfigurada. Y yo soy quien puede reconfigurarlo. Porque soy Soberana.',
+        fieldLabel:'Mi versión (modifícala si necesitas que suene más tuya):',
+        placeholder:'Escribe la declaración con tus propias palabras...'
+      },
+      {
+        id:'s3_e2', type:'reflection',
+        question:'¿Qué parte de esta declaración te cuesta más creer hoy?',
+        postNote:'No te enfocas en tener los hábitos de una mujer soberana. Te enfocas en ser la mujer soberana. Los hábitos vienen solos cuando la raíz cambió.',
+        placeholder:'Esa es la parte donde más trabajo hay por hacer. No como castigo — como información...',
+        field:'textarea'
+      },
+      {
+        id:'s3_e3', type:'tool',
         question:'¿Desde cuál identidad operas más frecuentemente en tu relación?',
         body:'Selecciona en cuál te reconoces más hoy — sin juzgarte, con honestidad.',
         items:[
@@ -1569,31 +1598,24 @@ const SECTIONS = [
           {left:'Habla desde el ruego o la queja', right:'Habla desde la influencia y la claridad'}
         ],
         field:'identity-check'
-      },
-      {
-        id:'s3_e2', type:'reflection',
-        question:'Escribe una frase que describa quién eres en tu relación — sin usar las palabras "él", "nosotros" ni ningún verbo que dependa de su comportamiento.',
-        confrontation: 'Si no puedes describirte sin nombrarlo, la identidad dependiente está más presente de lo que crees. Eso no es un defecto — es información. Y la información se puede usar.',
-        placeholder:'Yo soy una mujer que...',
-        field:'textarea'
       }
     ]
   },
   {
     id:'s4', num:'04', label:'El Punto de Influencia',
     title:'El Punto de Influencia',
-    desc:'El termostato, el GPS y el proveedor único — las 4 Palancas del Sistema Soberana',
+    desc:'El termostato, el GPS y el proveedor único — los 4 Protocolos del Código Soberana',
     palanca: null,
     exercises: [
       {
         id:'s4_e1', type:'tool',
-        question:'¿Cuál es tu palanca más débil ahora mismo?',
-        body:'Toca la que necesita más trabajo en tu caso específico.',
+        question:'¿Cuál es tu protocolo más débil ahora mismo?',
+        body:'Toca el que necesita más trabajo en tu caso específico.',
         items:[
-          {id:'p1', icon:'🧠', label:'Lo que Piensas', desc:'Las creencias que operan en piloto automático'},
-          {id:'p2', icon:'❤️', label:'Lo que Sientes', desc:'La regulación emocional bajo presión'},
-          {id:'p3', icon:'🤝', label:'Lo que Sostienes', desc:'Los estándares que cedes cuando nadie aplaude'},
-          {id:'p4', icon:'💬', label:'Lo que Comunicas', desc:'Hablar desde influencia, no desde el ruego'}
+          {id:'p1', icon:'🧠', label:'Protocolo Mental', desc:'Lo que Piensas — Las creencias que operan en piloto automático'},
+          {id:'p2', icon:'❤️', label:'Protocolo Emocional', desc:'Lo que Sientes — La regulación emocional bajo presión'},
+          {id:'p3', icon:'🤝', label:'Protocolo del Carácter', desc:'Lo que Sostienes — Los estándares que cedes cuando nadie aplaude'},
+          {id:'p4', icon:'💬', label:'Protocolo de Comunicación', desc:'Lo que Comunicas — Hablar desde influencia, no desde el ruego'}
         ],
         field:'single-choice-cards'
       },
@@ -1603,33 +1625,38 @@ const SECTIONS = [
         confrontation: 'No hay una respuesta correcta. Hay solo una respuesta honesta. Y la honestidad es el primer paso para moverlo.',
         placeholder:'Descríbelo con un ejemplo concreto de esta semana...',
         field:'textarea'
+      },
+      {
+        id:'s4_e3', type:'tool',
+        field:'declaration',
+        declaration:'No soy una mujer rota que necesita ser arreglada. Soy una mujer que tiene una dinámica que necesita ser reconfigurada. Y yo soy quien puede reconfigurarlo. Porque soy Soberana.',
+        fieldLabel:'Mi versión:',
+        placeholder:'Escribe la declaración con tus propias palabras...',
+        followUp:{
+          question:'¿Qué parte te cuesta más creer hoy?',
+          placeholder:'Escribe con honestidad...'
+        },
+        postNote:'El Código Soberana no es un método para cambiarlo a él. Es el conjunto de decisiones internas que cambian la estructura de la relación.'
       }
     ]
   },
   {
-    id:'s5', num:'05', label:'Palanca 1',
-    title:'Palanca 1: Lo que Piensas',
-    desc:'Las distorsiones como "autocomplete" — Sistema de Actualización de Creencias',
-    palanca:'Palanca 1 — Lo que Piensas',
+    id:'s5', num:'05', label:'Protocolo 1',
+    title:'Protocolo 1',
+    desc:'Lo que Piensas — Dimensión Mental 🧠',
+    palanca:'Protocolo 1 — Lo que Piensas',
+    introQuote:'Las creencias no son la verdad. Son los lentes con los que ves la verdad. Y los lentes se pueden cambiar.',
     exercises: [
       {
         id:'s5_e1', type:'tool',
         question:'Sistema de Actualización de Creencias',
-        body:'Identifica 3 creencias que operan automáticamente cuando hay tensión en tu relación. Las creencias instaladas antes de los 15 años que hoy operan sin que tú las elijas.',
-        insight:'Las creencias no son la verdad. Son los lentes con los que ves la verdad. Y los lentes se pueden cambiar.',
-        field:'belief-table'
+        body:'Piensa en la situación que más se repite con tu pareja. La que más te activa. Llena los 4 campos con honestidad.',
+        field:'belief-sequence'
       },
       {
-        id:'s5_e2', type:'reflection',
-        question:'¿Cuándo fue la última vez que llenaste un silencio de él con una historia negativa en tu cabeza? ¿Qué te dijiste exactamente?',
-        confrontation: 'El "autocomplete" mental toma el silencio de él y lo convierte en rechazo, desamor o traición — cuando a veces es solo un hombre cansado. La pregunta que interrumpe eso: ¿esto es un hecho o es una interpretación?',
-        placeholder:'Descríbelo con detalle. ¿Qué pasó? ¿Qué te dijo tu mente? ¿Qué resultó ser real?',
-        field:'textarea'
-      },
-      {
-        id:'s5_e3', type:'star', star:2,
-        question:'★ Pregunta 2 — ¿Qué es lo más difícil de soltar?',
-        body:'Después de explorar la Palanca 1, ¿qué creencia o historia mental es la más difícil de dejar ir? No la que suena peor — la que más te cuesta soltar.',
+        id:'s5_e3', type:'checkpoint',
+        label:'Tu momento de claridad',
+        question:'Después de explorar el Protocolo 1, ¿qué creencia o historia mental es la más difícil de dejar ir? No la que suena peor — la que más te cuesta soltar.',
         confrontation: null,
         placeholder:'La respuesta honesta, no la que crees que deberías dar...',
         field:'star-textarea'
@@ -1637,10 +1664,10 @@ const SECTIONS = [
     ]
   },
   {
-    id:'s6', num:'06', label:'Palanca 2',
-    title:'Palanca 2: Lo que Sientes',
-    desc:'La profundidad emocional como ventaja — Sistema PARA',
-    palanca:'Palanca 2 — Lo que Sientes',
+    id:'s6', num:'06', label:'Protocolo 2',
+    title:'Protocolo 2',
+    desc:'Lo que Sientes — Dimensión Emocional ❤️',
+    palanca:'Protocolo 2 — Lo que Sientes',
     exercises: [
       {
         id:'s6_e1', type:'reflection',
@@ -1651,24 +1678,24 @@ const SECTIONS = [
       },
       {
         id:'s6_e2', type:'tool',
-        question:'Sistema PARA — Practica con una situación de esta semana',
-        body:'Recuerda un momento de tensión reciente. Aplica el Sistema PARA paso a paso: Pausa · Aire · Reconocer · Actuar.',
-        field:'eres-system'
-      },
-      {
-        id:'s6_e3', type:'reflection',
-        question:'¿Qué dice de ti el que sientas tan profundo? ¿Lo ves como un defecto o como una capacidad?',
-        confrontation: 'La mujer que siente profundo no es débil — es la que, cuando aprende a gobernarse, tiene más impacto que la que nunca sintió nada. El problema nunca fue que sientes demasiado. El problema fue que nadie te enseñó a convertir lo que sientes en poder.',
-        placeholder:'Reencuadra: ¿cómo sería tu profundidad emocional como una ventaja estratégica en tu relación?',
-        field:'textarea'
+        question:'Sistema ERES — Practica con una situación de esta semana',
+        body:'Recuerda un momento de tensión reciente. Aplica el Sistema ERES paso a paso.',
+        field:'eres-system',
+        eresItems:[
+          {letter:'E', word:'Escúchate', placeholder:'¿Qué estoy sintiendo exactamente? (Sé específica — no "me siento mal" sino la emoción precisa)'},
+          {letter:'R', word:'Reconócete', placeholder:'Valídala: "Tiene sentido que me sienta así porque..."'},
+          {letter:'E', word:'Elige tu Momento', placeholder:'¿Tengo ahora el recurso interno para expresar esto de forma que construya? ¿Es el momento correcto?'},
+          {letter:'S', word:'Sostén tu Necesidad', placeholder:'¿Qué necesito comunicar, desde mi centro, sin rogar ni amenazar?'}
+        ],
+        postNote:'Si no te validas tú, irás a buscar que él te valide. Y cuando tu bienestar depende de su respuesta, ya perdiste el Punto de Influencia.'
       }
     ]
   },
   {
-    id:'s7', num:'07', label:'Palanca 3',
-    title:'Palanca 3: Lo que Sostienes',
-    desc:'Expectativas vs. estándares — Sistema de los 3 Niveles',
-    palanca:'Palanca 3 — Lo que Sostienes',
+    id:'s7', num:'07', label:'Protocolo 3',
+    title:'Protocolo 3',
+    desc:'Lo que Sostienes — Dimensión del Carácter 🤝',
+    palanca:'Protocolo 3 — Lo que Sostienes',
     exercises: [
       {
         id:'s7_e1', type:'tool',
@@ -1697,10 +1724,10 @@ const SECTIONS = [
     ]
   },
   {
-    id:'s8', num:'08', label:'Palanca 4',
-    title:'Palanca 4: Lo que Comunicas',
+    id:'s8', num:'08', label:'Protocolo 4',
+    title:'Protocolo 4: Lo que Comunicas',
     desc:'Comunicación con coherencia — Sistema de Comunicación Soberana (DDS)',
-    palanca:'Palanca 4 — Lo que Comunicas',
+    palanca:'Protocolo 4 — Lo que Comunicas',
     exercises: [
       {
         id:'s8_e1', type:'tool',
@@ -1720,7 +1747,7 @@ const SECTIONS = [
   {
     id:'s9', num:'09', label:'El Momento en que Todo Cambia',
     title:'El Momento en que Todo Cambia',
-    desc:'El Punto de Influencia Irreversible — las 4 palancas integradas',
+    desc:'El Punto de Influencia Irreversible — los 4 protocolos integrados',
     palanca: null,
     exercises: [
       {
@@ -1739,17 +1766,17 @@ const SECTIONS = [
       },
       {
         id:'s9_e2', type:'reflection',
-        question:'Vuelve a leer tu ★ Pregunta 1. Léela con los ojos de quien eres ahora. ¿Qué ves diferente?',
-        confrontation: 'Eso que sientes ahora — esa pequeña distancia entre quien respondió la Pregunta 1 y quien está leyendo esto — es el punto de influencia activándose. Ese cambio ya ocurrió. Ya no puede deshacerse.',
+        question:'Vuelve a leer tu punto de partida. Léelo con los ojos de quien eres ahora. ¿Qué ves diferente?',
+        confrontation: 'Eso que sientes ahora — esa pequeña distancia entre quien respondió la primera pregunta y quien está leyendo esto — es el punto de influencia activándose. Ese cambio ya ocurrió. Ya no puede deshacerse.',
         placeholder:'Describe la distancia que ves entre el antes y el ahora...',
         field:'textarea'
       },
       {
-        id:'s9_e3', type:'star', star:3,
-        question:'★ Pregunta 3 — La Soberana que descubriste hoy',
-        body:'Descríbeme a la Soberana que descubriste en este workshop. ¿Cómo actúa cuando hay tensión? ¿Cómo pide lo que necesita? ¿Cómo se habla a sí misma cuando comete un error? ¿Cómo ama — desde dónde ama?',
+        id:'s9_e3', type:'checkpoint',
+        label:'La Soberana que descubriste hoy',
+        question:'Descríbeme a la Soberana que descubriste en este workshop. ¿Cómo actúa cuando hay tensión? ¿Cómo pide lo que necesita? ¿Cómo se habla a sí misma cuando comete un error? ¿Cómo ama — desde dónde ama?',
         confrontation: null,
-        placeholder:'Escríbela con detalle. No la versión perfecta — la versión real y posible de ti. Antes de escribir, lee tu ★ Pregunta 1 del principio.',
+        placeholder:'Escríbela con detalle. No la versión perfecta — la versión real y posible de ti. Antes de escribir, lee tu punto de partida del principio.',
         field:'star-textarea'
       }
     ]
@@ -1763,17 +1790,17 @@ const SECTIONS = [
     exercises: [
       {
         id:'s10_e1', type:'reflection',
-        question:'Pon la ★ Pregunta 1 y la ★ Pregunta 3 una al lado de la otra. Lee ambas. ¿Ves la distancia que recorriste en menos de dos horas?',
-        confrontation: 'Lo que aprendiste hoy es real y completo. No te di el 50% de nada. Te di el núcleo — las 4 palancas más urgentes y aplicables. Lo que está debajo del agua es lo que consolida ese cambio y lo hace permanente.',
+        question:'Pon tu punto de partida y la Soberana que descubriste una al lado de la otra. Lee ambas. ¿Ves la distancia que recorriste en menos de dos horas?',
+        confrontation: 'Lo que aprendiste hoy es real y completo. No te di el 50% de nada. Te di el núcleo — los 4 protocolos más urgentes y aplicables. Lo que está debajo del agua es lo que consolida ese cambio y lo hace permanente.',
         placeholder:'Escribe lo que sientes cuando comparas las dos versiones de ti...',
         field:'textarea'
       },
       {
         id:'s10_e2', type:'tool',
         question:'¿Cuál de las 3 dimensiones pendientes impacta más tu punto de influencia ahora mismo?',
-        body:'Las 4 palancas que trabajaste hoy viven en las Dimensiones Mental y Emocional. Estas tres no las tocamos hoy — y son las que sostienen todo lo demás.',
+        body:'Los 4 protocolos que trabajaste hoy viven en las Dimensiones Mental y Emocional. Estas tres no las tocamos hoy — y son las que sostienen todo lo demás.',
         items:[
-          {id:'f', icon:'⚡', label:'Dimensión Física', desc:'Sin energía no hay influencia. Una mujer crónicamente agotada no puede aplicar el Sistema PARA aunque lo sepa de memoria.'},
+          {id:'f', icon:'⚡', label:'Dimensión Física', desc:'Sin energía no hay influencia. Una mujer crónicamente agotada no puede aplicar el Sistema ERES aunque lo sepa de memoria.'},
           {id:'e', icon:'🌿', label:'Dimensión Espiritual', desc:'Sin propósito propio, la relación se convierte en el único lugar donde buscas significado. Eso le pone una carga que ninguna relación puede sostener.'},
           {id:'ec', icon:'💎', label:'Dimensión Económica', desc:'Sin autonomía económica real, cualquier conflicto lleva el peso implícito de la dependencia. Eso distorsiona todo.'}
         ],
@@ -2147,6 +2174,7 @@ function openLesson(sectionId) {
     <h2>${sec.title}</h2>
     <p>${sec.desc}</p>
     ${sec.palanca ? `<p style="margin-top:10px;font-size:13px;opacity:.8;"><strong>${sec.palanca}</strong></p>` : ''}
+    ${sec.introQuote ? `<p style="margin-top:14px;font-style:italic;font-size:13px;color:var(--gold-light);opacity:.9;line-height:1.7">"${sec.introQuote}"</p>` : ''}
   `;
   body.appendChild(intro);
   
@@ -2192,29 +2220,30 @@ function openLesson(sectionId) {
 function buildExerciseBlock(ex, sec) {
   const block = document.createElement('div');
   block.className = 'exercise-block';
-  
-  const typeLabels = { reflection:'Reflexión', star:'★ Pregunta Hilo Conductor', tool:'Herramienta', action:'Acción' };
-  const typeIcons = { reflection:'💭', star:'⭐', tool:'🔧', action:'✅' };
-  
-  let headerHtml = `
-    <div class="exercise-header">
-      <div class="exercise-icon type-${ex.type}">${typeIcons[ex.type]}</div>
-      <div class="exercise-meta">
-        <div class="exercise-type ${ex.type}">${typeLabels[ex.type]}</div>
-        <div class="exercise-question">${ex.question}</div>
-      </div>
-    </div>
-  `;
-  
+
+  // Checkpoint type: compass icon + custom label
+  const isCheckpoint = ex.type === 'checkpoint';
+  const typeLabels = { reflection:'Reflexión', star:'★ Pregunta Hilo Conductor', tool:'Herramienta', action:'Acción', checkpoint:'Tu punto de partida' };
+  const typeIcons  = { reflection:'💭', star:'⭐', tool:'🔧', action:'✅', checkpoint:'🧭' };
+
+  let headerHtml;
+  if (isCheckpoint) {
+    headerHtml = `<div class="exercise-header"><div class="exercise-icon type-star">🧭</div><div class="exercise-meta"><div class="checkpoint-badge">🧭 ${ex.label || 'Tu punto de partida'}</div><div class="exercise-question">${ex.question}</div></div></div>`;
+  } else if (ex.field === 'declaration') {
+    headerHtml = ''; // declaration has no standard header
+  } else {
+    headerHtml = `<div class="exercise-header"><div class="exercise-icon type-${ex.type}">${typeIcons[ex.type]||'📝'}</div><div class="exercise-meta"><div class="exercise-type ${ex.type}">${typeLabels[ex.type]||'Ejercicio'}</div><div class="exercise-question">${ex.question||''}</div></div></div>`;
+  }
+
   let bodyHtml = '';
-  
+
   if (ex.confrontation) {
     bodyHtml += `<div class="callout-confrontation"><p>${ex.confrontation}</p></div>`;
   }
   if (ex.insight) {
     bodyHtml += `<div class="callout-insight"><p>💡 ${ex.insight}</p></div>`;
   }
-  if (ex.body) {
+  if (ex.body && ex.field !== 'declaration') {
     bodyHtml += `<div style="padding:0 20px 14px;font-size:13px;color:var(--text-muted);line-height:1.6;">${ex.body}</div>`;
   }
   
@@ -2225,12 +2254,8 @@ function buildExerciseBlock(ex, sec) {
     const cls = ex.field === 'star-textarea' ? 'answer-textarea star-field' : 'answer-textarea';
     const ph = ex.placeholder || 'Escribe tu respuesta...';
     const minH = ex.field === 'star-textarea' ? '200px' : '120px';
-    bodyHtml += `
-      <div class="textarea-wrap">
-        <textarea class="${cls}" id="field-${ex.id}" style="min-height:${minH}" placeholder="${ph}" oninput="onFieldInput('${ex.id}',this)">${saved}</textarea>
-        <div class="char-counter" id="cc-${ex.id}">${saved.length} caracteres</div>
-      </div>
-    `;
+    bodyHtml += `<div class="textarea-wrap"><textarea class="${cls}" id="field-${ex.id}" style="min-height:${minH}" placeholder="${ph}" oninput="onFieldInput('${ex.id}',this)">${saved}</textarea><div class="char-counter" id="cc-${ex.id}">${saved.length} caracteres</div></div>`;
+    if (ex.postNote) bodyHtml += `<p class="post-note">${ex.postNote}</p>`;
   }
   
   else if (ex.field === 'belief-table') {
@@ -2253,19 +2278,6 @@ function buildExerciseBlock(ex, sec) {
         Agregar otra creencia
       </button>`;
     bodyHtml += cardsHtml;
-  }
-  
-  else if (ex.field === 'eres-system') {
-    const saved_eres = state.answers[ex.id] ? JSON.parse(state.answers[ex.id] || '{}') : {};
-    bodyHtml += `<div class="eres-grid">
-      ${[['E','Escúchate','¿Qué estás sintiendo exactamente?'],['R','Reconócete','Valida: "Tiene sentido que sienta esto"'],['E','Elige tu momento','¿Ahora es el momento de actuar?'],['S','Sostén tu necesidad','¿Qué necesitas comunicar sin reaccionar?']].map(([l,w,d]) => `
-        <div class="eres-cell">
-          <div class="eres-letter">${l}</div>
-          <div class="eres-word">${w}</div>
-          <textarea class="eres-input" placeholder="${d}" onchange="updateEresField('${ex.id}','${l}',this.value)">${saved_eres[l]||''}</textarea>
-        </div>
-      `).join('')}
-    </div>`;
   }
   
   else if (ex.field === 'three-levels') {
@@ -2387,21 +2399,72 @@ function buildExerciseBlock(ex, sec) {
   }
 
   else if (ex.field === 'triple-slider') {
-    const savedTS = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {};
+    let savedTS = {};
+    try { savedTS = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
     bodyHtml += `<div style="padding:0 20px 20px">`;
     (ex.sliders || []).forEach(sl => {
       const v = savedTS[sl.id] || '5';
-      bodyHtml += `<div style="margin-bottom:18px">
-        <div style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:8px">${sl.label}</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <input type="range" min="1" max="10" value="${v}" id="ts-${ex.id}-${sl.id}"
-            style="flex:1;accent-color:${sl.color||'var(--burgundy)'};cursor:pointer"
-            oninput="document.getElementById('tsv-${ex.id}-${sl.id}').textContent=this.value;updateTripleSlider('${ex.id}')">
-          <span id="tsv-${ex.id}-${sl.id}" style="min-width:28px;text-align:center;font-size:20px;font-family:'Cormorant Garamond',serif;font-weight:700;color:${sl.color||'var(--burgundy)'}">${v}</span>
-        </div>
-      </div>`;
+      const c = sl.color || 'var(--burgundy)';
+      bodyHtml += `<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:8px">${sl.label}</div><div style="display:flex;align-items:center;gap:12px"><input type="range" min="1" max="10" value="${v}" id="ts-${ex.id}-${sl.id}" style="flex:1;accent-color:${c};cursor:pointer" oninput="document.getElementById('tsv-${ex.id}-${sl.id}').textContent=this.value;updateTripleSlider('${ex.id}')"><span id="tsv-${ex.id}-${sl.id}" style="min-width:28px;text-align:center;font-size:20px;font-family:'Cormorant Garamond',serif;font-weight:700;color:${c}">${v}</span></div></div>`;
     });
     bodyHtml += `</div>`;
+  }
+
+  else if (ex.field === 'mirror-check') {
+    const savedMR = state.identityChecks[ex.id] || {};
+    bodyHtml += `<div style="padding:0 20px 20px">`;
+    (ex.items || []).forEach((item, i) => {
+      const val = savedMR[i] || null;
+      bodyHtml += `<div class="mirror-row"><button onclick="setIdentityCheck('${ex.id}',${i},'left',this)" class="mirror-btn ${val==='left'?'sel-left':''}" style="border-color:${val==='left'?'var(--burgundy)':'var(--surface-2)'}">${item.left}</button><div class="mirror-vs">o</div><button onclick="setIdentityCheck('${ex.id}',${i},'right',this)" class="mirror-btn ${val==='right'?'sel-right':''}" style="border-color:${val==='right'?'#2D7A4F':'var(--surface-2)'}">${item.right}</button></div>`;
+    });
+    bodyHtml += `</div>`;
+  }
+
+  else if (ex.field === 'declaration') {
+    const savedDecl = state.answers[ex.id + '_decl'] || '';
+    const savedFU = state.answers[ex.id + '_fu'] || '';
+    bodyHtml += `<div class="declaration-block"><p class="declaration-text">"${ex.declaration}"</p><div class="declaration-label">${ex.fieldLabel || 'Mi versión:'}</div><textarea class="answer-textarea" id="field-${ex.id}" placeholder="${ex.placeholder || ''}" oninput="onFieldInput('${ex.id}',this)" style="min-height:80px">${savedDecl}</textarea></div>`;
+    if (ex.followUp) {
+      bodyHtml += `<div style="padding:0 20px 8px;font-size:13px;font-weight:600;color:var(--text-mid)">${ex.followUp.question}</div>`;
+      bodyHtml += `<div class="textarea-wrap" style="padding:0 20px 16px"><textarea class="answer-textarea" id="field-${ex.id}_fu" placeholder="${ex.followUp.placeholder || ''}" oninput="state.answers['${ex.id}_fu']=this.value;saveState()" style="min-height:80px">${savedFU}</textarea></div>`;
+    }
+    if (ex.postNote) bodyHtml += `<p class="post-note">${ex.postNote}</p>`;
+  }
+
+  else if (ex.field === 'belief-sequence') {
+    let savedBS = [];
+    try { savedBS = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : [{}]; } catch(e) { savedBS = [{}]; }
+    if (!savedBS.length) savedBS = [{}];
+    const fields = [
+      {key:'hecho', label:'El hecho', ph:'Piensa en la situación que más se repite con tu pareja. La que más te activa. Escríbela como hecho — sin adjetivos, sin interpretación.'},
+      {key:'historia', label:'Mi historia habitual', ph:'La que tu cerebro produce automáticamente sobre ese hecho...'},
+      {key:'creer', label:'Lo que elijo creer', ph:'Escribe al menos tres interpretaciones alternativas posibles para el mismo hecho...'},
+      {key:'hacer', label:'Lo que haré diferente', ph:'La próxima vez que pase y parta del hecho en lugar de la historia, ¿qué haría diferente?'}
+    ];
+    bodyHtml += `<div id="bs-wrap-${ex.id}">`;
+    savedBS.forEach((entry, bi) => {
+      bodyHtml += `<div class="belief-seq-block" id="bs-entry-${ex.id}-${bi}">`;
+      fields.forEach((f, fi) => {
+        bodyHtml += `<div class="belief-seq-label">${f.label}</div><textarea class="belief-seq-ta" placeholder="${f.ph}" oninput="updateBeliefSeq('${ex.id}',${bi},'${f.key}',this.value)">${entry[f.key]||''}</textarea>`;
+        if (fi < fields.length - 1) bodyHtml += `<div class="belief-seq-divider"></div>`;
+      });
+      bodyHtml += `</div>`;
+      if (bi < savedBS.length - 1) bodyHtml += `<div style="height:12px"></div>`;
+    });
+    bodyHtml += `</div><button class="add-row-btn" onclick="addBeliefSeqEntry('${ex.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Agregar otra situación</button>`;
+  }
+
+  else if (ex.field === 'eres-system') {
+    const savedEres = {};
+    try { Object.assign(savedEres, state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}); } catch(e) {}
+    const items = ex.eresItems || [
+      {letter:'E', word:'Escúchate', placeholder:'¿Qué estás sintiendo exactamente?'},
+      {letter:'R', word:'Reconócete', placeholder:'Valida: "Tiene sentido que sienta esto"'},
+      {letter:'E', word:'Elige tu momento', placeholder:'¿Ahora es el momento de actuar?'},
+      {letter:'S', word:'Sostén tu necesidad', placeholder:'¿Qué necesitas comunicar sin reaccionar?'}
+    ];
+    bodyHtml += `<div class="eres-grid">${items.map(it => `<div class="eres-cell"><div class="eres-letter">${it.letter}</div><div class="eres-word">${it.word}</div><textarea class="eres-input" placeholder="${it.placeholder}" onchange="updateEresField('${ex.id}','${it.letter}',this.value)">${savedEres[it.letter]||''}</textarea></div>`).join('')}</div>`;
+    if (ex.postNote) bodyHtml += `<p class="post-note">${ex.postNote}</p>`;
   }
 
   block.innerHTML = headerHtml + bodyHtml;
@@ -2476,6 +2539,43 @@ function onFieldInput(id, el) {
   const cc = document.getElementById('cc-' + id);
   if (cc) cc.textContent = el.value.length + ' caracteres';
   updateLessonProgress(currentSectionId);
+}
+
+function updateBeliefSeq(exId, bi, key, val) {
+  let arr = [];
+  try { arr = state.answers[exId] ? JSON.parse(state.answers[exId]) : [{}]; } catch(e) { arr = [{}]; }
+  if (!arr[bi]) arr[bi] = {};
+  arr[bi][key] = val;
+  state.answers[exId] = JSON.stringify(arr);
+  saveState();
+  updateLessonProgress(currentSectionId);
+}
+
+function addBeliefSeqEntry(exId) {
+  let arr = [];
+  try { arr = state.answers[exId] ? JSON.parse(state.answers[exId]) : [{}]; } catch(e) { arr = [{}]; }
+  const bi = arr.length;
+  arr.push({});
+  state.answers[exId] = JSON.stringify(arr);
+  saveState();
+  const wrap = document.getElementById('bs-wrap-' + exId);
+  if (!wrap) return;
+  const fields = [
+    {key:'hecho', label:'El hecho', ph:'Piensa en la situación que más se repite con tu pareja...'},
+    {key:'historia', label:'Mi historia habitual', ph:'La que tu cerebro produce automáticamente sobre ese hecho...'},
+    {key:'creer', label:'Lo que elijo creer', ph:'Escribe al menos tres interpretaciones alternativas posibles...'},
+    {key:'hacer', label:'Lo que haré diferente', ph:'La próxima vez que pase, ¿qué haría diferente?'}
+  ];
+  const div = document.createElement('div');
+  div.className = 'belief-seq-block';
+  div.id = `bs-entry-${exId}-${bi}`;
+  let html = '';
+  fields.forEach((f, fi) => {
+    html += `<div class="belief-seq-label">${f.label}</div><textarea class="belief-seq-ta" placeholder="${f.ph}" oninput="updateBeliefSeq('${exId}',${bi},'${f.key}',this.value)"></textarea>`;
+    if (fi < fields.length - 1) html += `<div class="belief-seq-divider"></div>`;
+  });
+  div.innerHTML = html;
+  wrap.appendChild(div);
 }
 
 function updateBeliefRow(exId, ri, col, val) {
@@ -2572,15 +2672,19 @@ function saveLesson(secId) {
   // Collect all textarea values
   sec.exercises.forEach(ex => {
     const el = document.getElementById('field-' + ex.id);
-    if (el) {
-      state.answers[ex.id] = el.value;
-    }
+    if (el) state.answers[ex.id] = el.value;
+    // declaration follow-up
+    const fu = document.getElementById('field-' + ex.id + '_fu');
+    if (fu) state.answers[ex.id + '_fu'] = fu.value;
   });
   
   // Mark as completed if at least one answer has more than 5 characters
   const hasAnswer = sec.exercises.some(ex => {
     const ans = state.answers[ex.id];
-    return ans && ans.trim && ans.trim().length > 5;
+    if (!ans) return false;
+    if (typeof ans === 'string') return ans.trim().length > 5;
+    // JSON fields (multi-choice, belief-sequence, etc.)
+    return ans.length > 5;
   });
 
   if (hasAnswer && !state.completedSections.includes(secId)) {

@@ -235,7 +235,7 @@ async function manejarBoton(phone, btnId, btnTx) {
   if (btnTx.includes('pude') || btnTx.includes('ya pude')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
-      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat/workbook'
     );
     await sendUrlButton(phone,
       `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
@@ -319,7 +319,7 @@ async function manejarBoton(phone, btnId, btnTx) {
     await guardarEstadoSheets(phone, 'acceso_confirmado');
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
-      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat/workbook'
     );
     await sendUrlButton(phone,
       `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,
@@ -610,7 +610,7 @@ async function ejecutarPaso(phone, paso, nombre) {
     }
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
-      'Ver herramienta', 'https://soberana-app.josuecalderon.lat'
+      'Ver herramienta', 'https://soberana-app.josuecalderon.lat/workbook'
     );
     await sendUrlButton(phone,
       `Únete también a la comunidad privada.\n\nAhí publico perspectiva masculina directa, casos reales y cosas que no digo en ningún otro lado.\n\nSolo para compradoras. 👇`,

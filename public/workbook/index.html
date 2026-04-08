@@ -692,8 +692,8 @@
   .checkpoint-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(212,175,106,.15); border:1px solid rgba(212,175,106,.4); color:var(--gold-light); font-size:10px; letter-spacing:.15em; text-transform:uppercase; padding:4px 12px; border-radius:100px; margin-bottom:10px; font-weight:600; }
   /* Belief-sequence field */
   .belief-seq-block { margin:0 20px 16px; border-left:3px solid var(--burgundy); background:#fdf5ee; border-radius:0 12px 12px 0; padding:16px; }
-  .belief-seq-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--burgundy); margin-bottom:6px; }
-  .belief-seq-ta { width:100%; border:1px solid #e8d5c4; border-radius:8px; padding:8px 10px; font-family:'Jost',sans-serif; font-size:13px; background:#fff; outline:none; resize:none; min-height:56px; transition:border-color .2s; box-sizing:border-box; margin-bottom:14px; }
+  .belief-seq-label { font-size:13px; font-weight:600; color:var(--burgundy); margin-bottom:8px; display:block; letter-spacing:0; text-transform:none; }
+  .belief-seq-ta { width:100%; border:1px solid #e8d5c4; border-radius:8px; padding:16px; font-family:'Jost',sans-serif; font-size:15px; line-height:1.8; color:var(--text-dark); background:#fff; outline:none; resize:none; min-height:100px; transition:border-color .2s; box-sizing:border-box; margin-bottom:14px; }
   .belief-seq-ta:focus { border-color:var(--burgundy); }
   .belief-seq-divider { height:1px; background:linear-gradient(90deg,transparent,#D4AF6A44,transparent); margin:4px 0 16px; }
   /* Export modal */
@@ -828,6 +828,7 @@
     padding: 8px 10px;
     font-family: 'Jost', sans-serif;
     font-size: 13px;
+    color: var(--text-dark);
     background: #fff;
     outline: none;
     resize: none;
@@ -881,6 +882,7 @@
     padding: 8px;
     font-family: 'Jost', sans-serif;
     font-size: 12px;
+    color: var(--text-dark);
     min-height: 80px;
     background: var(--surface);
     outline: none; resize: none;
@@ -922,6 +924,7 @@
     padding: 10px 12px;
     font-family: 'Jost', sans-serif;
     font-size: 13px;
+    color: var(--text-dark);
     min-height: 70px;
     background: rgba(255,255,255,.8);
     outline: none; resize: none;
@@ -955,6 +958,7 @@
     padding: 10px 12px;
     font-family: 'Jost', sans-serif;
     font-size: 13px;
+    color: var(--text-dark);
     background: white;
     outline: none; resize: none;
     min-height: 60px;
@@ -1336,10 +1340,10 @@
         </div>
 
         <div class="hilo-banner" style="margin:16px 16px 0">
-          <div class="hilo-icon">⭐</div>
+          <div class="hilo-icon">🧭</div>
           <div class="hilo-text">
             <h4>Tres preguntas que lo cambian todo</h4>
-            <p>Cada pregunta es un espejo, y cada espejo tiene su momento. Cuando llegues a uno, detente. Lo que escribas ahí vale más que todo lo demás.</p>
+            <p>Estas tres preguntas te acompañan durante todo el workbook. No las saltes.</p>
           </div>
         </div>
 
@@ -2112,7 +2116,7 @@ function renderHiloCards() {
     return `
       <div class="hilo-q-card">
         <div class="hilo-q-head ${has ? 'has-answer' : ''}">
-          <span class="hilo-star">⭐</span>
+          <span class="hilo-star">🧭</span>
           <span class="hilo-q-text">Pregunta ${i+1}</span>
           <span class="hilo-q-badge ${has ? 'answered' : 'pending'}">${has ? 'Respondida' : 'Pendiente'}</span>
         </div>
@@ -2224,7 +2228,7 @@ function buildExerciseBlock(ex, sec) {
   // Checkpoint type: compass icon + custom label
   const isCheckpoint = ex.type === 'checkpoint';
   const typeLabels = { reflection:'Reflexión', star:'★ Pregunta Hilo Conductor', tool:'Herramienta', action:'Acción', checkpoint:'Tu punto de partida' };
-  const typeIcons  = { reflection:'💭', star:'⭐', tool:'🔧', action:'✅', checkpoint:'🧭' };
+  const typeIcons  = { reflection:'💭', star:'🧭', tool:'🔧', action:'✅', checkpoint:'🧭' };
 
   let headerHtml;
   if (isCheckpoint) {

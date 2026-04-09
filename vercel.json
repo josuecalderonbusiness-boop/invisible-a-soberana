@@ -1,16 +1,15 @@
 {
   "version": 2,
-  "outputDirectory": "public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/bienvenida/:path*", "destination": "/bienvenida/index.html" },
-    { "source": "/bienvenida", "destination": "/bienvenida/index.html" },
-    { "source": "/workbook", "destination": "/workbook/index.html" },
-    { "source": "/workbook/:path*", "destination": "/workbook/:path*" },
-    { "source": "/soberana7d", "destination": "/soberana7d/index.html" },
-    { "source": "/soberana7d/:path*", "destination": "/soberana7d/:path*" },
-    { "source": "/quiz", "destination": "/quiz/index.html" },
-    { "source": "/quiz/:path*", "destination": "/quiz/:path*" },
-    { "source": "/:path*", "destination": "/quiz/index.html" }
+    { "source": "/bienvenida/:path*", "destination": "/public/bienvenida/index.html" },
+    { "source": "/bienvenida", "destination": "/public/bienvenida/index.html" },
+    { "source": "/workbook", "destination": "/public/workbook/index.html" },
+    { "source": "/workbook/:path*", "destination": "/public/workbook/:path*" },
+    { "source": "/soberana7d", "destination": "/public/soberana7d/index.html" },
+    { "source": "/soberana7d/:path*", "destination": "/public/soberana7d/:path*" },
+    { "source": "/quiz", "destination": "/public/quiz/index.html" },
+    { "source": "/quiz/:path*", "destination": "/public/quiz/:path*" },
+    { "source": "/:path*", "destination": "/public/quiz/index.html" }
   ]
 }

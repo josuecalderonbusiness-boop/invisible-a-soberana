@@ -8,8 +8,6 @@
     { "source": "/workbook/:path*", "destination": "/public/workbook/:path*" },
     { "source": "/soberana7d", "destination": "/public/soberana7d/index.html" },
     { "source": "/soberana7d/:path*", "destination": "/public/soberana7d/:path*" },
-    { "source": "/quiz", "destination": "/public/quiz/index.html" },
-    { "source": "/quiz/:path*", "destination": "/public/quiz/:path*" },
-    { "source": "/:path*", "destination": "/public/quiz/index.html" }
+    { "source": "/:path*", "destination": "/public/index.html" }
   ]
 }

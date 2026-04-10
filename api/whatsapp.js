@@ -70,7 +70,7 @@ export default async function handler(req, res) {
       }
 
       // Atajos de prueba
-      const aliases = { dia15: 'dia15_decision', dia27: 'dia27_cierre' };
+      const aliases = { dia9: 'dia9_diagnostico', dia15: 'dia15_decision', dia27: 'dia27_cierre', dia27tarde: 'dia27_tarde', dia27noche: 'dia27_noche' };
       const paso = aliases[test] || test;
       console.log(`TEST manual: test=${test} paso=${paso} phone=${phone}`);
       try {

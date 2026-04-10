@@ -48,21 +48,32 @@ export default async function handler(req, res) {
 
   // ── POST: eventos entrantes de Instagram ────────────────────────
   if (req.method === 'POST') {
-    // Responde 200 inmediatamente
-    res.status(200).end();
+    console.log('Instagram POST recibido. object:', req.body?.object);
+    console.log('Body completo:', JSON.stringify(req.body, null, 2));
 
     const body = req.body;
-    if (body.object !== 'instagram') return;
+    if (body.object !== 'instagram') {
+      console.log('Ignorado — object no es instagram:', body.object);
+      return res.status(200).json({ ok: true });
+    }
 
     for (const entry of body.entry || []) {
       for (const change of entry.changes || []) {
+        console.log(`Procesando change: field="${change.field}"`, JSON.stringify(change.value));
 
         // EVENTO A — Comentario con palabra clave
         if (change.field === 'comments') {
           const senderId = change.value?.from?.id;
           const text = change.value?.text || '';
-          if (!senderId || !text.toLowerCase().includes('soberana')) continue;
-          if (!canSend(senderId)) continue;
+          console.log(`Comentario de senderId=${senderId}: "${text}"`);
+          if (!senderId || !text.toLowerCase().includes('soberana')) {
+            console.log('Comentario ignorado — sin keyword o sin senderId');
+            continue;
+          }
+          if (!canSend(senderId)) {
+            console.log(`Anti-dup: ya enviado DM a ${senderId} recientemente`);
+            continue;
+          }
 
           await sendMessage(senderId, { text: 'Hola 👋 Vi que comentaste — aquí está lo que pediste.' });
           await sendMessage(senderId, {
@@ -89,8 +100,12 @@ export default async function handler(req, res) {
         // EVENTO B — Nuevo seguidor
         if (change.field === 'follows') {
           const senderId = change.value?.id;
+          console.log(`Nuevo seguidor senderId=${senderId}`);
           if (!senderId) continue;
-          if (!canSend(senderId)) continue;
+          if (!canSend(senderId)) {
+            console.log(`Anti-dup: ya enviado DM a ${senderId} recientemente`);
+            continue;
+          }
 
           await sendMessage(senderId, { text: 'Hola 👋 Gracias por seguirme.' });
           await sendMessage(senderId, {
@@ -116,7 +131,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return;
+    return res.status(200).json({ ok: true });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });

@@ -32,6 +32,9 @@ function canSend(userId) {
 }
 
 export default async function handler(req, res) {
+  console.log('MESSENGER HIT - method:', req.method);
+  console.log('MESSENGER BODY:', JSON.stringify(req.body));
+  console.log('MESSENGER HEADERS:', JSON.stringify(req.headers));
 
   // ── GET: verificación webhook Meta ──────────────────────────────
   if (req.method === 'GET') {

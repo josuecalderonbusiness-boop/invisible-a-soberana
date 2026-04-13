@@ -1544,7 +1544,7 @@
           <div class="stats-row">
             <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Secciones</div></div>
             <div class="stat-card"><div class="stat-num" id="stat-answers">0</div><div class="stat-label">Respuestas</div></div>
-            <div class="stat-card"><div class="stat-num" id="stat-hilo">0/3</div><div class="stat-label">Preguntas ★</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-hilo">0/4</div><div class="stat-label">Preguntas ★</div></div>
           </div>
 
           <div class="hilo-section">
@@ -1553,7 +1553,7 @@
           </div>
 
           <div class="milestone-section">
-            <h4>Tus protocolos</h4>
+            <h4>Tus Protocolos Soberana</h4>
             <div id="milestones"></div>
           </div>
         </div>
@@ -2005,9 +2005,9 @@ const SECTIONS = [
     ]
   },
   {
-    id:'s9', num:'09', label:'El Momento en que Todo Cambia',
-    title:'El Momento en que Todo Cambia',
-    desc:'El Punto de Influencia Irreversible — los 4 protocolos integrados',
+    id:'s9', num:'09', label:'Lo que Construiste y lo que te Espera',
+    title:'Lo que Construiste y lo que te Espera',
+    desc:'Integración final — tu Código Soberana Personal',
     palanca: null,
     exercises: [
       {
@@ -2025,19 +2025,35 @@ const SECTIONS = [
         field:'multi-choice'
       },
       {
-        id:'s9_e2', type:'reflection',
-        question:'Vuelve a leer tu punto de partida (la pregunta espejo 1). Léelo con los ojos de quien eres ahora. ¿Qué ves diferente?',
-        confrontation: 'Eso que sientes ahora — esa pequeña distancia entre quien respondió la primera pregunta y quien está leyendo esto — es el punto de influencia activándose. Ese cambio ya ocurrió. Ya no puede deshacerse.',
-        placeholder:'Describe la distancia que ves entre el antes y el ahora...',
+        id:'s9_e2', type:'tool',
+        question:'¿Desde cuál protocolo has operado con mayor fortaleza — y cuál necesitas profundizar más?',
+        field:'protocol-check'
+      },
+      {
+        id:'s9_e3', type:'reflection',
+        question:'Cosas que he tolerado que no son coherentes con ser Soberana:',
+        placeholder:'Escríbelas sin juzgarte. Reconocerlas es el primer paso para cambiarlas...',
         field:'textarea'
       },
       {
-        id:'s9_e3', type:'checkpoint',
-        label:'pregunta espejo 3',
-        question:'Descríbeme a la Soberana que descubriste en este workshop. ¿Cómo actúa cuando hay tensión? ¿Cómo pide lo que necesita? ¿Cómo se habla a sí misma cuando comete un error? ¿Cómo ama — desde dónde ama?',
-        confrontation: null,
-        placeholder:'Escríbela con detalle. No la versión perfecta — la versión real y posible de ti. Antes de escribir, lee tu punto de partida del principio.',
+        id:'s9_e4', type:'checkpoint',
+        label:'🪞 Espejo 2',
+        question:'¿Desde cuál de los tres protocolos he estado operando con mayor fortaleza — y cuál es el que más necesito profundizar?',
+        placeholder:'Responde con honestidad — no la respuesta que quisieras dar, la que es verdad...',
         field:'star-textarea'
+      },
+      {
+        id:'s9_e5', type:'checkpoint',
+        label:'🪞 Espejo 3',
+        question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambió algo desde la Lección 1?',
+        body:'Antes de responder, lee tu Espejo 1 del principio.',
+        placeholder:'Responde comparando con lo que escribiste al inicio...',
+        field:'star-textarea'
+      },
+      {
+        id:'s9_e6', type:'tool',
+        question:'Mi Código Soberana Personal',
+        field:'codigo-personal'
       }
     ]
   },
@@ -2114,7 +2130,7 @@ function countAnswers() {
   return Object.values(state.answers).filter(v => v && v.trim().length > 0).length;
 }
 
-const HILO_IDS = ['s1_e1', 's5_e3', 's9_e3'];
+const HILO_IDS = ['s1_e1', 's5_e3', 's9_e4', 's9_e5'];
 
 function countHilo() {
   return HILO_IDS.filter(id => state.answers[id] && state.answers[id].trim().length > 10).length;
@@ -2369,7 +2385,7 @@ function updateProgressUI() {
   const sd = document.getElementById('stat-done');
   if (sd) sd.textContent = done;
   const sh = document.getElementById('stat-hilo');
-  if (sh) sh.textContent = countHilo() + '/3';
+  if (sh) sh.textContent = countHilo() + '/4';
   
   renderHiloCards();
   renderMilestones();
@@ -2382,7 +2398,8 @@ function renderHiloCards() {
   const hilos = [
     { id:'s1_e1', q:'¿Estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?' },
     { id:'s5_e3', q:'¿Qué es lo más difícil de soltar?' },
-    { id:'s9_e3', q:'La Soberana que descubriste hoy' }
+    { id:'s9_e4', q:'🪞 Espejo 2 — ¿Desde cuál protocolo has operado con mayor fortaleza?' },
+    { id:'s9_e5', q:'🪞 Espejo 3 — ¿Estás siendo la mujer que quieres ser hoy?' }
   ];
   
   container.innerHTML = hilos.map((h,i) => {
@@ -2405,27 +2422,45 @@ function renderHiloCards() {
 function renderMilestones() {
   const container = document.getElementById('milestones');
   if (!container) return;
-  
-  const ms = [
-    { id:'s5', label:'Palanca Mental activada', icon:'🧠', sec:'s5' },
-    { id:'s6', label:'Palanca Emocional activada', icon:'❤️', sec:'s6' },
-    { id:'s7', label:'Palanca Relacional activada', icon:'🤝', sec:'s7' },
-    { id:'s8', label:'Palanca del Carácter activada', icon:'💬', sec:'s8' },
-    { id:'s9', label:'Punto de Influencia Irreversible', icon:'👑', sec:'s9' }
+
+  const milestones = [
+    { sec:'s5', label:'Protocolo Mental',    sublabel:'Lo que Piensas',   num:'01', roman:'I'   },
+    { sec:'s6', label:'Protocolo Emocional', sublabel:'Lo que Sientes',   num:'02', roman:'II'  },
+    { sec:'s7', label:'Protocolo del Carácter', sublabel:'Lo que Sostienes', num:'03', roman:'III' }
   ];
-  
-  container.innerHTML = ms.map(m => {
-    const done = state.completedSections.includes(m.sec);
-    return `
-      <div class="milestone">
-        <div class="milestone-dot ${done ? 'done' : 'pending'}">${done ? m.icon : '○'}</div>
-        <div class="milestone-info">
-          <h5>${m.label}</h5>
-          <p>${done ? 'Completada' : 'Pendiente'}</p>
-        </div>
-      </div>
-    `;
-  }).join('');
+
+  container.innerHTML = `<div style="display:flex;justify-content:center;gap:20px;padding:8px 0 16px">` +
+    milestones.map(m => {
+      const done = state.completedSections.includes(m.sec);
+      if (done) {
+        return `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 16px rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F9F3E8">${m.roman}</span>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:12px;font-weight:700;color:var(--burgundy);line-height:1.3">${m.label}</div>
+              <div style="font-size:11px;color:var(--mauve);margin-top:2px">${m.sublabel}</div>
+            </div>
+          </div>`;
+      } else {
+        return `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px;position:relative">
+            <div style="position:relative">
+              <div style="width:56px;height:56px;border-radius:50%;background:var(--surface-2);border:1px dashed rgba(160,128,144,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--text-muted);opacity:0.3">${m.roman}</span>
+              </div>
+              <div style="position:absolute;top:-6px;right:-4px;width:18px;height:18px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.1)">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#C4A8B0" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#C4A8B0" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:12px;font-weight:600;color:#ccc;line-height:1.3">${m.label}</div>
+              <div style="font-size:11px;color:#ddd;margin-top:2px">${m.sublabel}</div>
+            </div>
+          </div>`;
+      }
+    }).join('') + `</div>`;
 }
 
 // ═══════════════════════════════════════════
@@ -2696,6 +2731,61 @@ function buildExerciseBlock(ex, sec) {
     (ex.items || []).forEach((item, i) => {
       const val = savedMR[i] || null;
       bodyHtml += `<div class="mirror-row"><button onclick="setIdentityCheck('${ex.id}',${i},'left',this)" class="mirror-btn ${val==='left'?'sel-left':''}" style="border-color:${val==='left'?'var(--burgundy)':'var(--surface-2)'}">${item.left}</button><div class="mirror-vs">o</div><button onclick="setIdentityCheck('${ex.id}',${i},'right',this)" class="mirror-btn ${val==='right'?'sel-right':''}" style="border-color:${val==='right'?'#2D7A4F':'var(--surface-2)'}">${item.right}</button></div>`;
+    });
+    bodyHtml += `</div>`;
+  }
+
+  else if (ex.field === 'protocol-check') {
+    let savedPC = {};
+    try { savedPC = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
+    const protocols = [
+      { id:'p1', roman:'I',   name:'Mental',    sublabel:'Lo que Piensas'   },
+      { id:'p2', roman:'II',  name:'Emocional', sublabel:'Lo que Sientes'   },
+      { id:'p3', roman:'III', name:'Carácter',  sublabel:'Lo que Sostienes' }
+    ];
+    bodyHtml += `<div style="padding:0 20px 20px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">`;
+    protocols.forEach(p => {
+      const isFortaleza = savedPC.fortaleza === p.id;
+      const isPendiente = savedPC.pendiente === p.id;
+      bodyHtml += `<div style="border:1.5px solid var(--surface-2);border-radius:14px;padding:14px 10px;text-align:center;background:white">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#B8892A;margin-bottom:2px">${p.roman}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:2px">${p.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:12px">${p.sublabel}</div>
+        <button onclick="setProtocolCheck('${ex.id}','fortaleza','${p.id}',this)"
+          style="display:block;width:100%;padding:7px 4px;border-radius:9px;border:1.5px solid ${isFortaleza?'#2D7A4F':'#c8dbb0'};background:${isFortaleza?'#E8F5EE':'white'};font-size:11px;font-weight:${isFortaleza?'700':'500'};color:${isFortaleza?'#2D7A4F':'var(--text-muted)'};cursor:pointer;margin-bottom:6px;transition:all .2s"
+          data-pc-group="${ex.id}-fortaleza" data-pc-val="${p.id}">
+          ${isFortaleza?'✓ ':''} Mi fortaleza
+        </button>
+        <button onclick="setProtocolCheck('${ex.id}','pendiente','${p.id}',this)"
+          style="display:block;width:100%;padding:7px 4px;border-radius:9px;border:1.5px solid ${isPendiente?'var(--burgundy)':'#e8c8d0'};background:${isPendiente?'rgba(139,26,47,.08)':'white'};font-size:11px;font-weight:${isPendiente?'700':'500'};color:${isPendiente?'var(--burgundy)':'var(--text-muted)'};cursor:pointer;transition:all .2s"
+          data-pc-group="${ex.id}-pendiente" data-pc-val="${p.id}">
+          ${isPendiente?'✓ ':''} Necesito profundizar
+        </button>
+      </div>`;
+    });
+    bodyHtml += `</div></div>`;
+  }
+
+  else if (ex.field === 'codigo-personal') {
+    let savedCP = {};
+    try { savedCP = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
+    const cpFields = [
+      { key:'identidad',   label:'Mi identidad',                                           ph:'Soy una mujer que...' },
+      { key:'estandar',    label:'Mi estándar más importante hoy',                         ph:'No acepto...' },
+      { key:'conversacion',label:'La conversación que más necesito manejar con soberanía', ph:'Necesito hablar con él sobre...' },
+      { key:'recordar',    label:'Lo que quiero recordar cuando llegue la presión',         ph:'Cuando sienta que quiero reaccionar, voy a recordar que...' }
+    ];
+    bodyHtml += `<div style="padding:0 20px 8px">
+      <p style="font-size:13px;font-style:italic;color:var(--text-muted);line-height:1.6;margin-bottom:16px">Para volver cuando llegue la presión. Para recordar quién eres cuando el sistema antiguo quiera tomar el control.</p>`;
+    cpFields.forEach(f => {
+      bodyHtml += `<div style="background:#1a0a0f;border:1px solid rgba(212,168,67,0.35);border-radius:14px;padding:16px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#D4A843;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">${f.label}</div>
+        <textarea
+          style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(212,168,67,.2);border-radius:10px;padding:10px;font-size:13px;color:#F0E6EA;resize:vertical;min-height:72px;font-family:inherit;box-sizing:border-box;line-height:1.6"
+          placeholder="${f.ph}"
+          oninput="updateCodigoPersonal('${ex.id}','${f.key}',this.value)">${savedCP[f.key]||''}</textarea>
+      </div>`;
     });
     bodyHtml += `</div>`;
   }
@@ -2992,6 +3082,43 @@ function updateDDSField(exId, key, val) {
   try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
   obj[key] = val;
   state.answers[exId] = JSON.stringify(obj);
+  updateLessonProgress(currentSectionId);
+}
+
+function setProtocolCheck(exId, role, val, btn) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[role] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  saveState();
+  updateLessonProgress(currentSectionId);
+
+  const group = `${exId}-${role}`;
+  const isFortaleza = role === 'fortaleza';
+  document.querySelectorAll(`[data-pc-group="${group}"]`).forEach(b => {
+    const sel = b.dataset.pcVal === val;
+    if (isFortaleza) {
+      b.style.borderColor = sel ? '#2D7A4F' : '#c8dbb0';
+      b.style.background = sel ? '#E8F5EE' : 'white';
+      b.style.color = sel ? '#2D7A4F' : 'var(--text-muted)';
+      b.style.fontWeight = sel ? '700' : '500';
+      b.textContent = (sel ? '✓ ' : '') + 'Mi fortaleza';
+    } else {
+      b.style.borderColor = sel ? 'var(--burgundy)' : '#e8c8d0';
+      b.style.background = sel ? 'rgba(139,26,47,.08)' : 'white';
+      b.style.color = sel ? 'var(--burgundy)' : 'var(--text-muted)';
+      b.style.fontWeight = sel ? '700' : '500';
+      b.textContent = (sel ? '✓ ' : '') + 'Necesito profundizar';
+    }
+  });
+}
+
+function updateCodigoPersonal(exId, key, val) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[key] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  saveState();
   updateLessonProgress(currentSectionId);
 }
 

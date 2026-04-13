@@ -2056,34 +2056,9 @@ const SECTIONS = [
       }
     ]
   },
-  {
-    id:'s10', num:'10', label:'¿Qué Sigue Ahora?',
-    title:'¿Qué Sigue Ahora? — Entrenamiento Soberana 7D',
-    desc:'Lo que aprendiste hoy es la punta del iceberg. La casa completa te espera.',
-    palanca: null,
-    color: 'green',
-    exercises: [
-      {
-        id:'s10_e1', type:'reflection',
-        question:'Pon tu punto de partida y la Soberana que descubriste una al lado de la otra. Lee ambas. ¿Ves la distancia que recorriste en menos de dos horas?',
-        confrontation: 'Lo que aprendiste hoy es real y completo. No te di el 50% de nada. Te di el núcleo — los 4 protocolos más urgentes y aplicables. Lo que está debajo del agua es lo que consolida ese cambio y lo hace permanente.',
-        placeholder:'Escribe lo que sientes cuando comparas las dos versiones de ti...',
-        field:'textarea'
-      },
-      {
-        id:'s10_e2', type:'tool',
-        question:'¿Cuál de las 3 dimensiones pendientes impacta más tu punto de influencia ahora mismo?',
-        body:'Los 4 protocolos que trabajaste hoy viven en las Dimensiones Mental y Emocional. Estas otras tres no las tocamos hoy — y son las que sostienen todo lo demás.',
-        items:[
-          {id:'f', icon:'⚡', label:'Dimensión Física', desc:'Sin energía no hay influencia. Una mujer crónicamente agotada no puede aplicar el Sistema ERES aunque lo sepa de memoria.'},
-          {id:'e', icon:'🌿', label:'Dimensión Espiritual', desc:'Sin propósito propio, la relación se convierte en el único lugar donde buscas significado. Eso le pone una carga que ninguna relación puede sostener.'},
-          {id:'ec', icon:'💎', label:'Dimensión Económica', desc:'Sin autonomía económica real, cualquier conflicto lleva el peso implícito de la dependencia. Eso distorsiona todo.'}
-        ],
-        field:'single-choice-cards'
-      }
-    ]
-  }
 ];
+
+const VIDEO_7D_URL = ''; // Cuando tenga valor, poner URL de YouTube/Vimeo
 const CONFRONTATION_QUOTES = [
   {text: "El problema casi nunca es falta de amor. Es falta de desarrollo personal. Y eso tiene solución.", attr: "Código Soberana"},
   {text: "Si no tienes el poder de cambiarlo a él, tampoco tienes la responsabilidad de que él cambie. Y si no tienes esa responsabilidad, ¿qué te queda? Tu verdadero poder.", attr: "Josué Calderón"},
@@ -2302,23 +2277,23 @@ function apply7dAccess() {
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
   list.innerHTML = '';
-  
+
   SECTIONS.forEach((sec, idx) => {
     const done = state.completedSections.includes(sec.id);
     // Cascada: s1 siempre disponible; el resto se desbloquea cuando cualquier anterior está completada
     const anyPrevDone = idx === 0 || SECTIONS.slice(0, idx).some(s => state.completedSections.includes(s.id));
     const isCurrent = !done && anyPrevDone;
-    
+
     const card = document.createElement('div');
     card.className = `section-card ${done ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
-    
+
     let statusIcon = '';
     if (done) statusIcon = '<svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     else if (isCurrent) statusIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#8B1A2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     else statusIcon = '<svg class="lock-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-    
+
     const numClass = done ? 'done' : isCurrent ? 'active-num' : 'pending';
-    
+
     card.innerHTML = `
       <div class="section-num ${numClass}">${sec.num}</div>
       <div class="section-info">
@@ -2327,10 +2302,26 @@ function renderSectionsList() {
       </div>
       <div class="section-status">${statusIcon}</div>
     `;
-    
+
     card.onclick = () => openLesson(sec.id);
     list.appendChild(card);
   });
+
+  // Botón especial "¿Qué sigue ahora?" — solo cuando s9 está completa
+  if (state.completedSections.includes('s9')) {
+    const btn = document.createElement('div');
+    btn.style.cssText = 'margin-top:12px;background:linear-gradient(135deg,#1A3D2B,#2A5C42);border:1.5px solid #B8892A;border-radius:16px;padding:20px 24px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px';
+    btn.innerHTML = `
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#F0E6EA;font-weight:600;margin-bottom:4px">¿Qué sigue ahora?</div>
+        <div style="font-size:12px;color:#B8892A;letter-spacing:.04em">Tu siguiente paso como Soberana →</div>
+      </div>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.4">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>`;
+    btn.onclick = openQueSigneAhora;
+    list.appendChild(btn);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -2500,20 +2491,6 @@ function openLesson(sectionId) {
     const block = buildExerciseBlock(ex, sec);
     body.appendChild(block);
   });
-
-  // Bloque promo S10
-  if (sectionId === 's10') {
-    const promo = document.createElement('div');
-    promo.className = 's10-promo';
-    promo.innerHTML = `
-      <p>Lo que aprendiste hoy es la punta del iceberg.<br>
-      <strong>Soberana 7D</strong> es la casa completa — 30 días,
-      7 dimensiones, resultados que no se borran.</p>
-      <a class="s10-promo-btn" href="https://soberana7d.josuecalderon.lat" target="_blank">
-        Quiero el programa completo →
-      </a>`;
-    body.appendChild(promo);
-  }
 
   // Save button
   const saveWrap = document.createElement('div');
@@ -3314,6 +3291,112 @@ function closeLesson() {
   document.getElementById('lesson-view').classList.remove('open');
   currentSectionId = null;
   updateProgressUI();
+}
+
+function openQueSigneAhora() {
+  currentSectionId = null;
+  document.getElementById('lesson-eyebrow').textContent = 'Tu siguiente paso';
+  document.getElementById('lesson-title-h').textContent = '¿Qué sigue ahora?';
+  document.getElementById('lesson-prog-fill').style.width = '100%';
+
+  const espejo1 = (state.answers['s1_e1'] || '').trim();
+  const espejo3 = (state.answers['s9_e5'] || '').trim();
+
+  const body = document.getElementById('lesson-body');
+  body.innerHTML = '';
+
+  const content = document.createElement('div');
+  content.style.cssText = 'background:#0F0A0B;min-height:100%';
+  content.innerHTML = `
+
+    <!-- SECCIÓN 1: Los dos espejos -->
+    <div style="padding:32px 20px;background:#0F0A0B">
+      <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Lo que recorriste</div>
+
+      <div style="border-left:3px solid #6B1A2A;background:rgba(107,26,42,0.15);border-radius:0 12px 12px 0;padding:20px;margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">🪞 Espejo 1 — Al comenzar</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#F0E6EA;line-height:1.8">${espejo1 || '<span style="color:var(--mauve)">No respondido</span>'}</div>
+      </div>
+
+      <div style="text-align:center;padding:8px 0;font-size:22px;color:#B8892A">↓</div>
+
+      <div style="border-left:3px solid #B8892A;background:rgba(184,137,42,0.1);border-radius:0 12px 12px 0;padding:20px;margin-bottom:24px">
+        <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">🪞 Espejo 3 — La Soberana que descubriste</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#F0E6EA;line-height:1.8">${espejo3 || '<span style="color:var(--mauve)">No respondido</span>'}</div>
+      </div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0E6EA;text-align:center;line-height:1.7;margin-bottom:28px">
+        "Esa distancia la recorriste tú.<br>En 90 minutos. Con tres protocolos."
+      </div>
+
+      <div style="height:1px;background:linear-gradient(90deg,transparent,#B8892A,transparent)"></div>
+    </div>
+
+    <!-- SECCIÓN 2: Mini VSL -->
+    <div style="padding:32px 20px;background:#0F0A0B">
+      <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">El siguiente paso</div>
+
+      ${VIDEO_7D_URL
+        ? `<div style="position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid rgba(184,137,42,0.3)">
+            <iframe src="${VIDEO_7D_URL}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen></iframe>
+           </div>`
+        : `<div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(184,137,42,0.3);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="#B8892A"><path d="M5 3l14 9-14 9V3z"/></svg>
+            <div style="font-size:13px;color:#F0E6EA;font-weight:500">Josué Calderón — Soberana 7D</div>
+           </div>`
+      }
+    </div>
+
+    <!-- SECCIÓN 3: Las 7 dimensiones -->
+    <div style="padding:32px 20px;background:linear-gradient(#0F0A0B,#0D2418)">
+      <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Las 7 Dimensiones</div>
+
+      ${[
+        { n:1, name:'Mental',               tipo:'cs'  },
+        { n:2, name:'Emocional',            tipo:'cs'  },
+        { n:3, name:'Relacional',           tipo:'cs'  },
+        { n:4, name:'Carácter',             tipo:'7d'  },
+        { n:5, name:'Física',               tipo:'7d'  },
+        { n:6, name:'Economía Consciente',  tipo:'7d'  },
+        { n:7, name:'Espiritual',           tipo:'7d'  }
+      ].map(d => `
+        <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#B8892A;min-width:20px">${d.n}</span>
+          <span style="font-size:14px;font-weight:600;color:#F0E6EA;flex:1">${d.name}</span>
+          ${d.tipo === 'cs'
+            ? `<span style="font-size:10px;font-weight:700;background:rgba(107,26,42,0.5);color:#F0E6EA;padding:4px 10px;border-radius:20px;white-space:nowrap">✓ Código Soberana</span>`
+            : `<span style="font-size:10px;font-weight:700;background:rgba(26,61,43,0.6);color:#B8892A;padding:4px 10px;border-radius:20px;white-space:nowrap">Soberana 7D</span>`
+          }
+        </div>`).join('')}
+
+      <p style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#F0E6EA;line-height:1.7;margin-top:20px;text-align:center">
+        Las tres primeras cambiaron tu dinámica.<br>Las cuatro siguientes consolidan quién eres.
+      </p>
+    </div>
+
+    <!-- SECCIÓN 4: CTA final -->
+    <div style="padding:40px 24px;background:linear-gradient(#0D2418,#1A3D2B);text-align:center">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#F0E6EA;line-height:1.7;margin-bottom:28px">
+        "Cuando estés lista —<br>el siguiente paso está aquí."
+      </p>
+
+      <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d"
+        style="display:block;background:linear-gradient(135deg,#1A3D2B,#2A5C42);border:2px solid #B8892A;border-radius:14px;padding:18px 32px;font-size:14px;font-weight:600;color:#F0E6EA;letter-spacing:.06em;text-decoration:none;box-shadow:0 8px 32px rgba(26,61,43,0.5);margin-bottom:12px">
+        Quiero el entrenamiento completo →
+      </a>
+
+      <div style="font-size:11px;color:#B8892A;margin-bottom:28px">30 días · 4 sesiones en vivo · Tu caso analizado</div>
+
+      <button onclick="closeLesson()"
+        style="background:none;border:none;color:var(--mauve);font-size:13px;cursor:pointer;padding:8px">
+        ← Volver a mi workbook
+      </button>
+    </div>
+  `;
+
+  body.appendChild(content);
+  document.getElementById('lesson-view').classList.add('open');
+  document.getElementById('lesson-view').scrollTop = 0;
 }
 
 // ═══════════════════════════════════════════

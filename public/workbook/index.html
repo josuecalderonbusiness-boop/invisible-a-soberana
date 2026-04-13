@@ -1992,23 +1992,15 @@ const SECTIONS = [
     ]
   },
   {
-    id:'s8', num:'08', label:'Protocolo 4',
-    title:'Protocolo 4',
-    desc:'Comunicación con coherencia — Sistema de Comunicación Soberana (DDS)',
-    palanca:'Lo que Comunicas',
+    id:'s8', num:'08', label:'Protocolo 1, 2 y 3 — El Sistema en tu Vida',
+    title:'Protocolo 1, 2 y 3 — El Sistema en tu Vida',
+    desc:'Aquí es donde todo se vuelve real',
+    palanca:'No el caso genérico. El tuyo. Con los detalles reales. Con lo que él diría. Con lo que tú sentirías. Con lo que cambiarías.',
     exercises: [
       {
         id:'s8_e1', type:'tool',
-        question:'Sistema DDS — Declarar · Dirigir · Ofrecer Espacio',
-        body:'Elige una conversación pendiente que necesitas tener con él. Estructúrala con el Sistema DDS. Sin rogar. Sin perseguir. Sin acusar. Con influencia.',
-        field:'dds-system'
-      },
-      {
-        id:'s8_e2', type:'reflection',
-        question:'¿Cuál es la diferencia entre cómo le hablas a él y cómo le hablas a tu jefe, un cliente importante o alguien a quien respetas?',
-        confrontation: 'Si das más cuidado estratégico a tu comunicación en el trabajo que en tu relación, ya sabes dónde está la grieta. La influencia no es lo que dices. Es desde dónde lo dices.',
-        placeholder:'Compara tu nivel de preparación, tono y estructura en ambos casos. ¿Qué diferencias encuentras?',
-        field:'textarea'
+        question:'Elige la situación que más se parece a lo que vives',
+        field:'protocol-selector'
       }
     ]
   },
@@ -2708,6 +2700,92 @@ function buildExerciseBlock(ex, sec) {
     bodyHtml += `</div>`;
   }
 
+  else if (ex.field === 'protocol-selector') {
+    let savedPS = {};
+    try { savedPS = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
+    const situations = [
+      { id:'sit1', icon:'🌫️', label:'Él llega distante y se desconecta', ph1:'Ej: "Se alejó porque hice algo mal", "Ya no le importo", "Esto es el principio del fin"...', ph3:'Ej: "Cuando llegas así y no me dices qué pasa, me cierro. Necesito saber si estás bien."' },
+      { id:'sit2', icon:'🏠', label:'Siento que hago todo sola en casa', ph1:'Ej: "No le importa el hogar", "Siempre me toca a mí", "Soy su empleada, no su pareja"...', ph3:'Ej: "Hay cosas que necesito que hagamos juntos. ¿Podemos hablar de cómo repartirlo?"' },
+      { id:'sit3', icon:'⚡', label:'Me desautorizó frente a los niños', ph1:'Ej: "Me hizo quedar mal a propósito", "No me respeta como madre", "Lo hace siempre"...', ph3:'Ej: "Cuando me contradices frente a ellos, siento que piedo autoridad. Necesito que lo hablemos antes."' },
+      { id:'sit4', icon:'🫥', label:'Llevo días sintiéndome invisible', ph1:'Ej: "Soy transparente para él", "No soy una prioridad", "Nunca voy a ser suficiente"...', ph3:'Ej: "Llevo días necesitando conexión contigo. ¿Puedes estar presente esta noche?"' },
+      { id:'sit5', icon:'💬', label:'Necesito tener una conversación difícil', ph1:'Ej: "Va a explotar", "No va a escuchar", "Siempre termina igual"...', ph3:'Ej: "Hay algo que necesito decirte. No es un ataque — es algo que me importa. ¿Puedes escucharme cinco minutos?"' }
+    ];
+    const selSit = savedPS.situacion || '';
+    const showProtocols = selSit ? 'block' : 'none';
+    const selSitObj = situations.find(s => s.id === selSit);
+
+    bodyHtml += `<div style="padding:0 20px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--burgundy);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Paso 1 — Tu situación</div>
+      <div style="display:flex;flex-direction:column;gap:9px" id="ps-cards-${ex.id}">`;
+    situations.forEach(sit => {
+      const sel = selSit === sit.id;
+      bodyHtml += `<button onclick="selectProtocolSit('${ex.id}','${sit.id}')"
+        id="ps-sit-${ex.id}-${sit.id}"
+        style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;
+          border:2px solid ${sel?'var(--burgundy)':'var(--surface-2)'};
+          background:${sel?'#FDF5F0':'white'};cursor:pointer;text-align:left;
+          transition:all .2s;font-size:13px;color:var(--text-dark);font-weight:${sel?'600':'400'}">
+        <span style="font-size:22px;flex-shrink:0">${sit.icon}</span>
+        <span>${sit.label}</span>
+      </button>`;
+    });
+    bodyHtml += `</div></div>
+
+    <div id="ps-protocols-${ex.id}" style="display:${showProtocols}">
+      <div style="margin:0 20px 14px;border-top:1px solid var(--surface-2)"></div>
+      <div style="padding:0 20px 6px">
+        <div style="font-size:12px;font-weight:700;color:var(--burgundy);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px">Paso 2 — Los 3 Protocolos aplicados</div>
+
+        <!-- Protocolo 1 -->
+        <div style="background:#EEF3FB;border-left:4px solid var(--burgundy);border-radius:12px;padding:16px;margin-bottom:12px">
+          <div style="display:inline-block;background:var(--burgundy);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">🧠 Protocolo 1 · Lo que Piensas</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">En esta situación, ¿qué historia está escribiendo tu mente automáticamente?</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">¿Es un hecho o es una interpretación?</div>
+          <textarea style="width:100%;border:1.5px solid #d0dae8;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
+            id="ps-p1-${ex.id}"
+            placeholder="${selSitObj ? selSitObj.ph1 : 'Escribe la historia que tu mente produce automáticamente...'}"
+            oninput="updateProtocolSel('${ex.id}','protocolo1',this.value)">${savedPS.protocolo1||''}</textarea>
+        </div>
+
+        <!-- Protocolo 2 -->
+        <div style="background:#EEF7F0;border-left:4px solid #B8892A;border-radius:12px;padding:16px;margin-bottom:12px">
+          <div style="display:inline-block;background:#B8892A;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">❤️ Protocolo 2 · Lo que Sientes</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">¿Qué estás sintiendo exactamente? Nómbralo con precisión — no "mal", el nombre exacto.</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">¿Qué necesidad hay debajo de esa emoción?</div>
+          <textarea style="width:100%;border:1.5px solid #c8dbb0;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
+            id="ps-p2-${ex.id}"
+            placeholder="Ej: frustración, soledad, miedo, vergüenza... y debajo: necesito reconocimiento, conexión, seguridad..."
+            oninput="updateProtocolSel('${ex.id}','protocolo2',this.value)">${savedPS.protocolo2||''}</textarea>
+        </div>
+
+        <!-- Protocolo 3 -->
+        <div style="background:#FAF5F0;border-left:4px solid #A08090;border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="display:inline-block;background:#A08090;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">🤝 Protocolo 3 · Lo que Sostienes</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">¿Qué necesitas comunicar desde tu centro, sin rogar ni explotar?</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Escríbelo como si fuera la frase exacta que dirías — una vez, con calma.</div>
+          <textarea style="width:100%;border:1.5px solid #d8c8d0;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
+            id="ps-p3-${ex.id}"
+            placeholder="${selSitObj ? selSitObj.ph3 : 'Escribe la frase exacta que dirías — desde tu centro, con calma...'}"
+            oninput="updateProtocolSel('${ex.id}','protocolo3',this.value)">${savedPS.protocolo3||''}</textarea>
+        </div>
+
+        <!-- Paso 3: Reflexión final -->
+        <div style="background:#3D0C11;border-radius:14px;padding:18px;margin-bottom:4px">
+          <div style="font-size:13px;color:#F0E6EA;line-height:1.6;margin-bottom:10px">
+            Ahora tienes los tres protocolos aplicados a tu situación real. No en teoría — en tu vida.
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#D4A843;margin-bottom:10px">
+            ¿Qué se siente diferente después de escribirlo así?
+          </div>
+          <textarea style="width:100%;border:1.5px solid rgba(212,168,67,.4);border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:70px;font-family:inherit;background:rgba(255,255,255,.95);box-sizing:border-box"
+            id="ps-ref-${ex.id}"
+            placeholder="Escribe lo que notas diferente..."
+            oninput="updateProtocolSel('${ex.id}','reflexion',this.value)">${savedPS.reflexion||''}</textarea>
+        </div>
+      </div>
+    </div>`;
+  }
+
   else if (ex.field === 'declaration') {
     const savedDecl = state.answers[ex.id + '_decl'] || '';
     const savedFU = state.answers[ex.id + '_fu'] || '';
@@ -2914,6 +2992,57 @@ function updateDDSField(exId, key, val) {
   try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
   obj[key] = val;
   state.answers[exId] = JSON.stringify(obj);
+  updateLessonProgress(currentSectionId);
+}
+
+function selectProtocolSit(exId, sitId) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj.situacion = sitId;
+  state.answers[exId] = JSON.stringify(obj);
+  saveState();
+  updateLessonProgress(currentSectionId);
+
+  // Update card styles
+  document.querySelectorAll(`[id^="ps-sit-${exId}-"]`).forEach(btn => {
+    const sel = btn.id === `ps-sit-${exId}-${sitId}`;
+    btn.style.borderColor = sel ? 'var(--burgundy)' : 'var(--surface-2)';
+    btn.style.background = sel ? '#FDF5F0' : 'white';
+    btn.style.fontWeight = sel ? '600' : '400';
+  });
+
+  // Show protocols block with animation
+  const proto = document.getElementById(`ps-protocols-${exId}`);
+  if (proto) {
+    proto.style.display = 'block';
+    proto.style.opacity = '0';
+    proto.style.transition = 'opacity .35s ease';
+    requestAnimationFrame(() => { proto.style.opacity = '1'; });
+  }
+
+  // Update placeholders based on selected situation
+  const phMap = {
+    sit1: { p1:'Ej: "Se alejó porque hice algo mal", "Ya no le importo", "Esto es el principio del fin"...', p3:'Ej: "Cuando llegas así y no me dices qué pasa, me cierro. Necesito saber si estás bien."' },
+    sit2: { p1:'Ej: "No le importa el hogar", "Siempre me toca a mí", "Soy su empleada, no su pareja"...', p3:'Ej: "Hay cosas que necesito que hagamos juntos. ¿Podemos hablar de cómo repartirlo?"' },
+    sit3: { p1:'Ej: "Me hizo quedar mal a propósito", "No me respeta como madre", "Lo hace siempre"...', p3:'Ej: "Cuando me contradices frente a ellos, siento que pierdo autoridad. Necesito que lo hablemos antes."' },
+    sit4: { p1:'Ej: "Soy transparente para él", "No soy una prioridad", "Nunca voy a ser suficiente"...', p3:'Ej: "Llevo días necesitando conexión contigo. ¿Puedes estar presente esta noche?"' },
+    sit5: { p1:'Ej: "Va a explotar", "No va a escuchar", "Siempre termina igual"...', p3:'Ej: "Hay algo que necesito decirte. No es un ataque — es algo que me importa. ¿Puedes escucharme cinco minutos?"' }
+  };
+  const ph = phMap[sitId];
+  if (ph) {
+    const p1 = document.getElementById(`ps-p1-${exId}`);
+    const p3 = document.getElementById(`ps-p3-${exId}`);
+    if (p1) p1.placeholder = ph.p1;
+    if (p3) p3.placeholder = ph.p3;
+  }
+}
+
+function updateProtocolSel(exId, key, val) {
+  let obj = {};
+  try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
+  obj[key] = val;
+  state.answers[exId] = JSON.stringify(obj);
+  saveState();
   updateLessonProgress(currentSectionId);
 }
 

@@ -66,6 +66,11 @@
   }
   .screen.active { display: flex; }
 
+  @keyframes pulse-glow {
+    0%   { box-shadow: 0 0 8px rgba(184,137,42,0.4); }
+    50%  { box-shadow: 0 0 20px rgba(184,137,42,0.8), 0 0 40px rgba(184,137,42,0.3); }
+    100% { box-shadow: 0 0 8px rgba(184,137,42,0.4); }
+  }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -1544,7 +1549,7 @@
           <div class="stats-row">
             <div class="stat-card"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Secciones</div></div>
             <div class="stat-card"><div class="stat-num" id="stat-answers">0</div><div class="stat-label">Respuestas</div></div>
-            <div class="stat-card"><div class="stat-num" id="stat-hilo">0/4</div><div class="stat-label">Preguntas ★</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-hilo">0/3</div><div class="stat-label">Preguntas ★</div></div>
           </div>
 
           <div class="hilo-section">
@@ -2093,9 +2098,12 @@ function loadState() {
   return false;
 }
 
+const TOTAL_PROGRESS = SECTIONS.filter(s => s.id !== 's0' && s.id !== 's10').length;
+
 function getProgress() {
-  const done = state.completedSections.length;
-  const total = SECTIONS.length;
+  const progressSections = SECTIONS.filter(s => s.id !== 's0' && s.id !== 's10');
+  const done = state.completedSections.filter(id => progressSections.some(s => s.id === id)).length;
+  const total = TOTAL_PROGRESS;
   const pct = Math.round((done / total) * 100);
   return { done, pct, total };
 }
@@ -2104,7 +2112,7 @@ function countAnswers() {
   return Object.values(state.answers).filter(v => v && v.trim().length > 0).length;
 }
 
-const HILO_IDS = ['s1_e1', 's5_e3', 's9_e4', 's9_e5'];
+const HILO_IDS = ['s1_e1', 's5_e3', 's9_e5'];
 
 function countHilo() {
   return HILO_IDS.filter(id => state.answers[id] && state.answers[id].trim().length > 10).length;
@@ -2279,12 +2287,35 @@ function renderSectionsList() {
   list.innerHTML = '';
 
   SECTIONS.forEach((sec, idx) => {
+    const card = document.createElement('div');
+
+    // s0 — Punto de arranque: estilo especial, sin número ni progreso
+    if (sec.id === 's0') {
+      card.className = 'section-card';
+      card.style.cssText = 'border-color:rgba(184,137,42,0.25);background:rgba(184,137,42,0.04)';
+      card.innerHTML = `
+        <div style="min-width:36px;height:36px;border-radius:10px;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="section-info">
+          <div style="font-size:9px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Punto de arranque</div>
+          <div class="section-name">${sec.title}</div>
+          <div class="section-desc">${sec.desc}</div>
+        </div>
+        <div class="section-status">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      `;
+      card.onclick = () => openLesson(sec.id);
+      list.appendChild(card);
+      return;
+    }
+
     const done = state.completedSections.includes(sec.id);
     // Cascada: s1 siempre disponible; el resto se desbloquea cuando cualquier anterior está completada
     const anyPrevDone = idx === 0 || SECTIONS.slice(0, idx).some(s => state.completedSections.includes(s.id));
     const isCurrent = !done && anyPrevDone;
 
-    const card = document.createElement('div');
     card.className = `section-card ${done ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
 
     let statusIcon = '';
@@ -2375,7 +2406,7 @@ function updateProgressUI() {
   const sd = document.getElementById('stat-done');
   if (sd) sd.textContent = done;
   const sh = document.getElementById('stat-hilo');
-  if (sh) sh.textContent = countHilo() + '/4';
+  if (sh) sh.textContent = countHilo() + '/3';
   
   renderHiloCards();
   renderMilestones();
@@ -2386,10 +2417,9 @@ function renderHiloCards() {
   if (!container) return;
   
   const hilos = [
-    { id:'s1_e1', q:'¿Estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?' },
-    { id:'s5_e3', q:'¿Qué es lo más difícil de soltar?' },
-    { id:'s9_e4', q:'🪞 Espejo 2 — ¿Desde cuál protocolo has operado con mayor fortaleza?' },
-    { id:'s9_e5', q:'🪞 Espejo 3 — ¿Estás siendo la mujer que quieres ser hoy?' }
+    { id:'s1_e1', q:'🪞 Espejo 1 — ¿Estás siendo la mujer que quieres ser, o la que las circunstancias te han obligado a ser?' },
+    { id:'s5_e3', q:'🪞 Espejo 2 — ¿Qué es lo más difícil de soltar?' },
+    { id:'s9_e5', q:'🪞 Espejo 3 — La Soberana que descubriste' }
   ];
   
   container.innerHTML = hilos.map((h,i) => {
@@ -2428,7 +2458,7 @@ function renderMilestones() {
       if (done) {
         return `
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px">
-            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 18px rgba(184,137,42,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F9F3E8">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 18px rgba(184,137,42,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F9F3E8;animation:pulse-glow 2.5s ease-in-out infinite">
               ${m.svg}
             </div>
             <div style="text-align:center">

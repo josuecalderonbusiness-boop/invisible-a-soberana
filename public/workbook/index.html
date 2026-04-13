@@ -2058,7 +2058,7 @@ const SECTIONS = [
   },
 ];
 
-const VIDEO_7D_URL = ''; // Cuando tenga valor, poner URL de YouTube/Vimeo
+const VIDEO_7D_URL = 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=false&preload=true';
 const CONFRONTATION_QUOTES = [
   {text: "El problema casi nunca es falta de amor. Es falta de desarrollo personal. Y eso tiene solución.", attr: "Código Soberana"},
   {text: "Si no tienes el poder de cambiarlo a él, tampoco tienes la responsabilidad de que él cambie. Y si no tienes esa responsabilidad, ¿qué te queda? Tu verdadero poder.", attr: "Josué Calderón"},
@@ -3337,9 +3337,7 @@ function openQueSigneAhora() {
       <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">El siguiente paso</div>
 
       ${VIDEO_7D_URL
-        ? `<div style="position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;border:1px solid rgba(184,137,42,0.3)">
-            <iframe src="${VIDEO_7D_URL}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen></iframe>
-           </div>`
+        ? `<iframe src="${VIDEO_7D_URL}" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>`
         : `<div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(184,137,42,0.3);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="#B8892A"><path d="M5 3l14 9-14 9V3z"/></svg>
             <div style="font-size:13px;color:#F0E6EA;font-weight:500">Josué Calderón — Soberana 7D</div>

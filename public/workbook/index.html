@@ -2036,18 +2036,17 @@ const SECTIONS = [
         field:'textarea'
       },
       {
-        id:'s9_e4', type:'checkpoint',
-        label:'🪞 Espejo 2',
+        id:'s9_e4', type:'reflection',
         question:'¿Desde cuál de los tres protocolos he estado operando con mayor fortaleza — y cuál es el que más necesito profundizar?',
         placeholder:'Responde con honestidad — no la respuesta que quisieras dar, la que es verdad...',
-        field:'star-textarea'
+        field:'textarea'
       },
       {
         id:'s9_e5', type:'checkpoint',
-        label:'🪞 Espejo 3',
+        label:'Pregunta Espejo 3',
         question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambió algo desde la Lección 1?',
-        body:'Antes de responder, lee tu Espejo 1 del principio.',
         placeholder:'Responde comparando con lo que escribiste al inicio...',
+        espejo1Button: true,
         field:'star-textarea'
       },
       {
@@ -2424,9 +2423,12 @@ function renderMilestones() {
   if (!container) return;
 
   const milestones = [
-    { sec:'s5', label:'Protocolo Mental',    sublabel:'Lo que Piensas',   num:'01', roman:'I'   },
-    { sec:'s6', label:'Protocolo Emocional', sublabel:'Lo que Sientes',   num:'02', roman:'II'  },
-    { sec:'s7', label:'Protocolo del Carácter', sublabel:'Lo que Sostienes', num:'03', roman:'III' }
+    { sec:'s5', label:'Protocolo Mental',       sublabel:'Lo que Piensas',
+      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.04-4.69A2.5 2.5 0 0 1 4 12a2.5 2.5 0 0 1 2-2.45A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.04-4.69A2.5 2.5 0 0 0 20 12a2.5 2.5 0 0 0-2-2.45A2.5 2.5 0 0 0 14.5 2Z"/></svg>` },
+    { sec:'s6', label:'Protocolo Emocional',    sublabel:'Lo que Sientes',
+      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.134 4.397.5 7.5.5c1.97 0 3.623 1.002 4.5 2.315C12.877 1.502 14.53.5 16.5.5 19.603.5 23 3.134 23 6.691c0 4.105-5.37 8.863-11 14.402z" transform="scale(0.85) translate(1.5,1.5)"/></svg>` },
+    { sec:'s7', label:'Protocolo del Carácter', sublabel:'Lo que Sostienes',
+      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 12l2 2 4-4"/><path d="M12 3c-1.2 5.4-5 7-7 9 0 5 3 7 7 9 4-2 7-4 7-9-2-2-5.8-3.6-7-9z"/></svg>` }
   ];
 
   container.innerHTML = `<div style="display:flex;justify-content:center;gap:20px;padding:8px 0 16px">` +
@@ -2435,8 +2437,8 @@ function renderMilestones() {
       if (done) {
         return `
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px">
-            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 16px rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F9F3E8">${m.roman}</span>
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 18px rgba(184,137,42,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F9F3E8">
+              ${m.svg}
             </div>
             <div style="text-align:center">
               <div style="font-size:12px;font-weight:700;color:var(--burgundy);line-height:1.3">${m.label}</div>
@@ -2447,8 +2449,8 @@ function renderMilestones() {
         return `
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px;position:relative">
             <div style="position:relative">
-              <div style="width:56px;height:56px;border-radius:50%;background:var(--surface-2);border:1px dashed rgba(160,128,144,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--text-muted);opacity:0.3">${m.roman}</span>
+              <div style="width:64px;height:64px;border-radius:50%;background:var(--surface-2);border:1px dashed rgba(160,128,144,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#ccc;opacity:0.5">
+                ${m.svg}
               </div>
               <div style="position:absolute;top:-6px;right:-4px;width:18px;height:18px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.1)">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#C4A8B0" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#C4A8B0" stroke-width="2" stroke-linecap="round"/></svg>
@@ -2569,6 +2571,19 @@ function buildExerciseBlock(ex, sec) {
     const cls = ex.field === 'star-textarea' ? 'answer-textarea star-field' : 'answer-textarea';
     const ph = ex.placeholder || 'Escribe tu respuesta...';
     const minH = ex.field === 'star-textarea' ? '200px' : '120px';
+    if (ex.espejo1Button) {
+      bodyHtml += `<div style="padding:0 20px 12px">
+        <button onclick="toggleEspejo1(this)"
+          style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;border:1.5px solid rgba(212,168,67,0.5);background:rgba(212,168,67,0.06);font-size:12px;font-weight:600;color:#B8892A;cursor:pointer;transition:all .2s">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Ver mi Espejo 1 →
+        </button>
+        <div id="espejo1-preview-${ex.id}" style="display:none;margin-top:12px;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;background:#1a0a0f;border:1px solid rgba(212,168,67,0.3);border-radius:12px;padding:20px">
+          <div style="font-size:10px;font-weight:700;color:#D4A843;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">Tu Espejo 1 — Al comenzar</div>
+          <div id="espejo1-text-${ex.id}" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#F0E6EA;line-height:1.8"></div>
+        </div>
+      </div>`;
+    }
     bodyHtml += `<div class="textarea-wrap"><textarea class="${cls}" id="field-${ex.id}" style="min-height:${minH}" placeholder="${ph}" oninput="onFieldInput('${ex.id}',this)">${saved}</textarea><div class="char-counter" id="cc-${ex.id}">${saved.length} caracteres</div></div>`;
     if (ex.postNote) bodyHtml += `<p class="post-note">${ex.postNote}</p>`;
   }
@@ -2738,6 +2753,7 @@ function buildExerciseBlock(ex, sec) {
   else if (ex.field === 'protocol-check') {
     let savedPC = {};
     try { savedPC = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
+    const pendienteArr = Array.isArray(savedPC.pendiente) ? savedPC.pendiente : (savedPC.pendiente ? [savedPC.pendiente] : []);
     const protocols = [
       { id:'p1', roman:'I',   name:'Mental',    sublabel:'Lo que Piensas'   },
       { id:'p2', roman:'II',  name:'Emocional', sublabel:'Lo que Sientes'   },
@@ -2747,7 +2763,7 @@ function buildExerciseBlock(ex, sec) {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">`;
     protocols.forEach(p => {
       const isFortaleza = savedPC.fortaleza === p.id;
-      const isPendiente = savedPC.pendiente === p.id;
+      const isPendiente = pendienteArr.includes(p.id);
       bodyHtml += `<div style="border:1.5px solid var(--surface-2);border-radius:14px;padding:14px 10px;text-align:center;background:white">
         <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#B8892A;margin-bottom:2px">${p.roman}</div>
         <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:2px">${p.name}</div>
@@ -3088,29 +3104,64 @@ function updateDDSField(exId, key, val) {
 function setProtocolCheck(exId, role, val, btn) {
   let obj = {};
   try { obj = JSON.parse(state.answers[exId] || '{}'); } catch(e) {}
-  obj[role] = val;
-  state.answers[exId] = JSON.stringify(obj);
-  saveState();
-  updateLessonProgress(currentSectionId);
 
-  const group = `${exId}-${role}`;
-  const isFortaleza = role === 'fortaleza';
-  document.querySelectorAll(`[data-pc-group="${group}"]`).forEach(b => {
-    const sel = b.dataset.pcVal === val;
-    if (isFortaleza) {
+  if (role === 'fortaleza') {
+    // Single selection
+    obj.fortaleza = val;
+    const group = `${exId}-fortaleza`;
+    document.querySelectorAll(`[data-pc-group="${group}"]`).forEach(b => {
+      const sel = b.dataset.pcVal === val;
       b.style.borderColor = sel ? '#2D7A4F' : '#c8dbb0';
       b.style.background = sel ? '#E8F5EE' : 'white';
       b.style.color = sel ? '#2D7A4F' : 'var(--text-muted)';
       b.style.fontWeight = sel ? '700' : '500';
       b.textContent = (sel ? '✓ ' : '') + 'Mi fortaleza';
-    } else {
-      b.style.borderColor = sel ? 'var(--burgundy)' : '#e8c8d0';
-      b.style.background = sel ? 'rgba(139,26,47,.08)' : 'white';
-      b.style.color = sel ? 'var(--burgundy)' : 'var(--text-muted)';
-      b.style.fontWeight = sel ? '700' : '500';
-      b.textContent = (sel ? '✓ ' : '') + 'Necesito profundizar';
-    }
-  });
+    });
+  } else {
+    // Multi selection toggle for pendiente
+    let arr = Array.isArray(obj.pendiente) ? obj.pendiente : (obj.pendiente ? [obj.pendiente] : []);
+    const idx = arr.indexOf(val);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(val);
+    obj.pendiente = arr;
+    // Update just this button
+    const sel = arr.includes(val);
+    btn.style.borderColor = sel ? 'var(--burgundy)' : '#e8c8d0';
+    btn.style.background = sel ? 'rgba(139,26,47,.08)' : 'white';
+    btn.style.color = sel ? 'var(--burgundy)' : 'var(--text-muted)';
+    btn.style.fontWeight = sel ? '700' : '500';
+    btn.textContent = (sel ? '✓ ' : '') + 'Necesito profundizar';
+  }
+
+  state.answers[exId] = JSON.stringify(obj);
+  saveState();
+  updateLessonProgress(currentSectionId);
+}
+
+function toggleEspejo1(btn) {
+  // Find the preview div as next sibling of the button's parent container
+  const container = btn.parentElement;
+  const preview = container.querySelector('[id^="espejo1-preview-"]');
+  const textEl = container.querySelector('[id^="espejo1-text-"]');
+  if (!preview) return;
+
+  if (preview.style.display === 'none' || preview.style.display === '') {
+    // Populate text from s1_e1 answer
+    const ans = (state.answers['s1_e1'] || '').trim();
+    textEl.textContent = ans || 'Aún no has respondido tu Espejo 1.';
+    if (!ans) textEl.style.color = 'var(--mauve)';
+
+    preview.style.display = 'block';
+    requestAnimationFrame(() => {
+      preview.style.opacity = '1';
+      preview.style.transform = 'translateY(0)';
+    });
+    btn.textContent = 'Cerrar Espejo 1 ↑';
+  } else {
+    preview.style.opacity = '0';
+    preview.style.transform = 'translateY(10px)';
+    setTimeout(() => { preview.style.display = 'none'; }, 600);
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg> Ver mi Espejo 1 →`;
+  }
 }
 
 function updateCodigoPersonal(exId, key, val) {

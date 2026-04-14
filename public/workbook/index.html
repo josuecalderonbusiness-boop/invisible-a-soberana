@@ -2717,13 +2717,14 @@ function renderSectionsList() {
   }
 
   const totalNodes = nodes.length;
-  const containerHeight = totalNodes * NODE_SPACING + 80;
+  const S10_EXTRA = s9Done ? 120 : 0; // extra gap before s10 (suspense effect)
+  const containerHeight = totalNodes * NODE_SPACING + 80 + S10_EXTRA;
   workshopMap.style.height = containerHeight + 'px';
 
-  // Compute pixel positions
+  // Compute pixel positions — s10 gets extra 120px gap
   const nodePositions = nodes.map((n, i) => {
     const xPct = (n.isS10 ? 50 : NODE_X_PCT[Math.min(i, NODE_X_PCT.length - 1)]);
-    const y = 40 + i * NODE_SPACING;
+    const y = 40 + i * NODE_SPACING + (n.isS10 ? S10_EXTRA : 0);
     return { xPct, y };
   });
 
@@ -2847,18 +2848,36 @@ function renderSectionsList() {
       }
     });
 
+    // "· · ·" suspense dots before s10
+    if (isS10) {
+      const dots = document.createElement('div');
+      dots.style.cssText = `
+        position:absolute;
+        left:50%;transform:translateX(-50%);
+        top:${y - 60}px;
+        font-size:20px;letter-spacing:6px;
+        color:rgba(212,175,106,0.3);
+        text-align:center;
+      `;
+      dots.textContent = '· · ·';
+      workshopMap.appendChild(dots);
+    }
+
     workshopMap.appendChild(wrap);
   });
 
   list.appendChild(workshopMap);
 
-  // ── PARTE 2: Caja transición Soberana 7D ────────────────────
+  // ── PARTE 2: Degradé + Caja transición Soberana 7D ──────────
   const abyssWrap = document.createElement('div');
-  abyssWrap.style.cssText = 'padding:60px 20px 60px;background:var(--burgundy-deep)';
+  abyssWrap.style.cssText = `
+    padding:60px 20px 60px;
+    background:linear-gradient(to bottom,var(--burgundy-deep) 0%,#0D1A14 50%,#0F0A0B 100%);
+  `;
   abyssWrap.innerHTML = `
     <div style="
       width:85%;margin:0 auto;
-      background:rgba(184,137,42,0.08);
+      background:transparent;
       border:1.5px solid rgba(184,137,42,0.3);
       border-radius:16px;
       padding:20px 24px;
@@ -3027,6 +3046,188 @@ function mark7dDone(nodeKey) {
   renderSectionsList();
 }
 
+// ── Masterclass fullscreen (FIX 5) ───────────────────────────────
+let _masterclassCountdown = null;
+
+function openMasterclassFullscreen({ dia, semana, nodeKey }) {
+  // Use lesson-view overlay reused as masterclass screen
+  const lv = document.getElementById('lesson-view');
+
+  // Header
+  document.getElementById('lesson-eyebrow').textContent = `LUNES · SEMANA 1 · MASTERCLASS`;
+  document.getElementById('lesson-eyebrow').style.color = semana.color;
+  document.getElementById('lesson-title-h').textContent = 'Arquitecta de Realidad';
+  document.querySelector('.lesson-header').style.background = '#0D1A14';
+  document.querySelector('.lesson-header').style.borderBottom = `1px solid ${semana.color}33`;
+  document.querySelector('.lesson-progress-bar').style.background = semana.bannerBg;
+  document.getElementById('lesson-prog-fill').style.background = semana.color;
+
+  // Determine if masterclass is available
+  // For now: available if tienen7d, else show countdown to a future date
+  // Using fecha7d day 1 = first Monday. If no fecha7d, show as coming soon.
+  const tiene7d = state.user && state.user.tiene7d;
+  let unlockDate = null;
+  if (tiene7d && state.user.fecha7d) {
+    // day 0 of program = fecha7d, masterclass day 1 = same day or next monday
+    unlockDate = new Date(state.user.fecha7d);
+  }
+  // For testing: masterclass is available if tiene7d (simplified)
+  const isAvailable = tiene7d;
+  const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
+
+  const body = document.getElementById('lesson-body');
+  body.style.background = '#0D1A14';
+  body.style.minHeight = '100%';
+  body.style.padding = '24px 20px 40px';
+
+  if (!isAvailable) {
+    // ── Cuenta regresiva ──────────────────────────────────────────
+    const targetDate = unlockDate || new Date(Date.now() + 7 * 86400000);
+    body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:40px">
+        <div style="color:#B8892A;margin-bottom:20px">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:8px">
+          Esta clase se activa el ${targetDate.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'})}
+        </div>
+        <div id="mc-countdown" style="display:flex;gap:16px;margin:24px 0 32px">
+          <div style="text-align:center"><div class="mc-cd-num" id="mc-dd">--</div><div class="mc-cd-label">días</div></div>
+          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
+          <div style="text-align:center"><div class="mc-cd-num" id="mc-hh">--</div><div class="mc-cd-label">horas</div></div>
+          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
+          <div style="text-align:center"><div class="mc-cd-num" id="mc-mm">--</div><div class="mc-cd-label">min</div></div>
+          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
+          <div style="text-align:center"><div class="mc-cd-num" id="mc-ss">--</div><div class="mc-cd-label">seg</div></div>
+        </div>
+        <div style="width:60px;height:1px;background:rgba(184,137,42,0.4);margin-bottom:24px"></div>
+        <div style="font-size:13px;color:rgba(237,227,206,0.7);margin-bottom:20px">¿Te avisamos cuando esté lista?</div>
+        <button id="mc-notify-btn" onclick="requestMasterclassNotify(this)" style="
+          width:100%;max-width:320px;
+          background:#2A5C42;border:none;border-radius:14px;
+          color:#fff;font-family:'Jost',sans-serif;
+          font-size:15px;font-weight:600;padding:16px 24px;cursor:pointer;
+        ">Sí, avísame cuando se active →</button>
+      </div>
+      <style>
+        .mc-cd-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#D4AF6A;line-height:1}
+        .mc-cd-label{font-size:10px;color:rgba(237,227,206,0.5);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+      </style>
+    `;
+    // Check if already subscribed
+    if (localStorage.getItem('soberana_notify_masterclass_s1') === 'true') {
+      const btn = document.getElementById('mc-notify-btn');
+      if (btn) { btn.disabled = true; btn.textContent = '✓ Te avisaremos cuando esté disponible'; btn.style.opacity = '.6'; }
+    }
+    // Start countdown
+    clearInterval(_masterclassCountdown);
+    function updateCountdown() {
+      const diff = targetDate - Date.now();
+      if (diff <= 0) { clearInterval(_masterclassCountdown); return; }
+      const dd = Math.floor(diff / 86400000);
+      const hh = Math.floor((diff % 86400000) / 3600000);
+      const mm = Math.floor((diff % 3600000) / 60000);
+      const ss = Math.floor((diff % 60000) / 1000);
+      const pad = n => String(n).padStart(2,'0');
+      const el = (id) => document.getElementById(id);
+      if (el('mc-dd')) el('mc-dd').textContent = pad(dd);
+      if (el('mc-hh')) el('mc-hh').textContent = pad(hh);
+      if (el('mc-mm')) el('mc-mm').textContent = pad(mm);
+      if (el('mc-ss')) el('mc-ss').textContent = pad(ss);
+    }
+    updateCountdown();
+    _masterclassCountdown = setInterval(updateCountdown, 1000);
+
+  } else {
+    // ── Masterclass disponible ─────────────────────────────────────
+    body.innerHTML = `
+      <!-- Video placeholder -->
+      <div style="
+        width:100%;aspect-ratio:16/9;
+        background:#0D2418;
+        border:1px solid ${semana.color}55;
+        border-radius:14px;
+        display:flex;align-items:center;justify-content:center;
+        margin-bottom:24px;
+      ">
+        <div style="
+          width:64px;height:64px;border-radius:50%;
+          background:rgba(184,137,42,0.15);border:2px solid rgba(184,137,42,0.5);
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <polygon points="5,3 19,12 5,21" fill="#B8892A"/>
+          </svg>
+        </div>
+      </div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:6px">
+        Semana 1 — Masterclass
+      </div>
+      <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">
+        ${dia.desc}
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${semana.color};margin-bottom:8px">Mis notas</div>
+        <textarea id="mc-notes" style="
+          width:100%;min-height:100px;
+          background:rgba(255,255,255,0.04);
+          border:1px solid rgba(255,255,255,0.1);
+          border-radius:12px;color:#EDE3CE;
+          font-family:'Jost',sans-serif;font-size:13px;
+          padding:12px 14px;resize:none;
+        " placeholder="Lo que más me impactó de esta masterclass...">${state.answers && state.answers['7d_mc_s1_notes'] || ''}</textarea>
+      </div>
+
+      <button onclick="completeMasterclassS1('${nodeKey}')" style="
+        width:100%;background:${semana.color};border:none;border-radius:14px;
+        color:#fff;font-family:'Jost',sans-serif;
+        font-size:15px;font-weight:600;padding:16px;cursor:pointer;
+        ${isDone ? 'opacity:.6' : ''}
+      " ${isDone ? 'disabled' : ''}>
+        ${isDone ? '✓ Masterclass completada' : 'Completar Masterclass ✓'}
+      </button>
+    `;
+    // Persist notes on change
+    const notesEl = document.getElementById('mc-notes');
+    if (notesEl) notesEl.addEventListener('input', () => {
+      if (!state.answers) state.answers = {};
+      state.answers['7d_mc_s1_notes'] = notesEl.value;
+      saveState();
+    });
+  }
+
+  lv.classList.add('open');
+  document.querySelector('.lesson-scroll').scrollTop = 0;
+}
+
+function requestMasterclassNotify(btn) {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        localStorage.setItem('soberana_notify_masterclass_s1', 'true');
+        btn.disabled = true;
+        btn.textContent = '✓ Te avisaremos cuando esté disponible';
+        btn.style.opacity = '.6';
+      }
+    });
+  } else {
+    localStorage.setItem('soberana_notify_masterclass_s1', 'true');
+    btn.disabled = true;
+    btn.textContent = '✓ Te avisaremos cuando esté disponible';
+    btn.style.opacity = '.6';
+  }
+}
+
+function completeMasterclassS1(nodeKey) {
+  clearInterval(_masterclassCountdown);
+  mark7dDone(nodeKey);
+  closeLesson();
+}
+
 function render7dJourney(container) {
   const tiene7d = state.user && state.user.tiene7d;
   // TODO: remover para producción — forzar semana 1 activa para prueba visual
@@ -3043,31 +3244,43 @@ function render7dJourney(container) {
     // Semana 1 siempre desbloqueada visualmente (preview); otras requieren acceso
     const semUnlocked = semNum === 1 || (tiene7d && semNum <= semanaActiva);
 
-    // ── Banner de semana ────────────────────────────────────────
+    // ── Banner de semana (FIX 3: simplificado + toggle desc) ───
     const header = document.createElement('div');
     header.style.cssText = `
-      margin:0; padding:20px 24px;
+      margin:0; padding:18px 24px;cursor:pointer;
       background:${semUnlocked ? semana.bannerBg : 'rgba(255,255,255,0.02)'};
       border-top:1px solid rgba(255,255,255,0.05);
       border-left:3px solid ${semUnlocked ? semana.bannerBorder : 'rgba(255,255,255,0.1)'};
     `;
+    const descId = `s7d-desc-${si}`;
     header.innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:${semUnlocked ? '10px' : '0'}">
+      <div style="display:flex;align-items:center;gap:12px">
         <div style="color:${semUnlocked ? semana.color : 'rgba(255,255,255,0.15)'}">
           ${SEMANA_ICONS[si]}
         </div>
-        <div>
+        <div style="flex:1">
           <div style="font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:${semUnlocked ? semana.color : 'rgba(255,255,255,0.2)'};margin-bottom:3px">
-            SEMANA ${semana.num} · SOBERANA 7D
+            SEMANA ${semana.num}
           </div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:${semUnlocked ? '#EDE3CE' : 'rgba(255,255,255,0.2)'};line-height:1.2">
             ${semana.title}
           </div>
         </div>
-        ${!semUnlocked ? `<div style="margin-left:auto;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg></div>` : ''}
+        <div id="${descId}-chevron" style="color:${semUnlocked ? semana.color : 'rgba(255,255,255,0.15)'};transition:transform .25s;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
       </div>
-      ${semUnlocked ? `<div style="font-size:13px;color:rgba(237,227,206,0.65);line-height:1.6">${semana.desc}</div>` : ''}
+      <div id="${descId}" style="overflow:hidden;max-height:0;transition:max-height .35s ease;font-size:13px;color:rgba(237,227,206,0.65);line-height:1.6;margin-top:0">
+        <div style="padding-top:12px">${semana.desc}</div>
+      </div>
     `;
+    header.addEventListener('click', () => {
+      const descEl = document.getElementById(descId);
+      const chevron = document.getElementById(descId + '-chevron');
+      const isOpen = descEl.style.maxHeight !== '0px' && descEl.style.maxHeight !== '';
+      descEl.style.maxHeight = isOpen ? '0px' : '300px';
+      if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    });
     container.appendChild(header);
 
     // ── Nodos de la semana ──────────────────────────────────────
@@ -3123,7 +3336,8 @@ function render7dJourney(container) {
       node.className = 'journey-node';
 
       if (isDone) {
-        node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:2px solid ${semana.nodeBorder}`;
+        // FIX 4: gold gradient identical to workshop done nodes
+        node.style.cssText = `width:72px;height:72px;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 0 20px rgba(212,175,106,0.4);animation:pulse-glow 2.5s ease-in-out infinite`;
       } else if (semUnlocked) {
         if (isSiguiente) {
           node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:2px solid ${semana.nodeBorder};animation:node-pulse 1.8s ease-in-out infinite`;
@@ -3145,18 +3359,17 @@ function render7dJourney(container) {
 
       // Icon (28px same as workshop)
       const iconWrap = document.createElement('div');
-      iconWrap.style.color = isDone
-        ? semana.color
+      iconWrap.style.color = isDone ? '#fff'
         : semUnlocked ? semana.color
         : 'rgba(255,255,255,0.15)';
       iconWrap.innerHTML = dia.icon;
       node.appendChild(iconWrap);
 
-      // Done check
+      // Done check + stars for done
       if (isDone) {
         const chk = document.createElement('div');
-        chk.style.cssText = `position:absolute;bottom:-5px;right:-5px;width:20px;height:20px;background:#0F0A0B;border:2px solid ${semana.nodeBorder};border-radius:50%;display:flex;align-items:center;justify-content:center`;
-        chk.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${semana.color}" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+        chk.style.cssText = `position:absolute;bottom:-5px;right:-5px;width:22px;height:22px;background:#1a0a0f;border:2px solid #E8C870;border-radius:50%;display:flex;align-items:center;justify-content:center`;
+        chk.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
         node.appendChild(chk);
       }
 
@@ -3172,15 +3385,24 @@ function render7dJourney(container) {
       // Label
       const label = document.createElement('div');
       label.className = 'journey-node-label';
-      label.style.cssText = `font-size:11px;color:${semUnlocked ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.2)'}`;
+      label.style.cssText = `font-size:11px;color:${isDone ? '#E8C870' : semUnlocked ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.2)'}`;
       label.textContent = dia.label;
       wrap.appendChild(label);
 
-      // FIX 1: Semana 1 siempre abre drawer. Otras semanas: modal si no tiene7d.
+      // Stars for 7D nodes (done = gold, else faint)
+      const stars7d = document.createElement('div');
+      stars7d.className = isDone ? 'journey-stars done-stars' : 'journey-stars empty-stars';
+      stars7d.style.opacity = semUnlocked ? '1' : '0.3';
+      stars7d.textContent = isDone ? '★★★' : '☆☆☆';
+      wrap.appendChild(stars7d);
+
+      // FIX 1+5: Semana 1 lunes → fullscreen masterclass. Otras: drawer o modal.
       wrap.addEventListener('click', () => {
         bounceNode(node);
         if (!tiene7d && semNum > 1) {
           document.getElementById('modal-7d-locked').style.display = 'flex';
+        } else if (semNum === 1 && dia.key === 'lun' && semUnlocked) {
+          openMasterclassFullscreen({ dia, semana, nodeKey });
         } else {
           open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });
         }
@@ -4156,6 +4378,18 @@ function saveLesson(secId) {
 }
 
 function closeLesson() {
+  clearInterval(_masterclassCountdown);
+  // Restore lesson-view header styles to defaults
+  const lh = document.querySelector('.lesson-header');
+  if (lh) { lh.style.background = ''; lh.style.borderBottom = ''; }
+  const lpb = document.querySelector('.lesson-progress-bar');
+  if (lpb) lpb.style.background = '';
+  const lpf = document.getElementById('lesson-prog-fill');
+  if (lpf) lpf.style.background = '';
+  const eyebrow = document.getElementById('lesson-eyebrow');
+  if (eyebrow) eyebrow.style.color = '';
+  const body = document.getElementById('lesson-body');
+  if (body) { body.style.background = ''; body.style.padding = ''; }
   document.getElementById('lesson-view').classList.remove('open');
   currentSectionId = null;
   updateProgressUI();

@@ -725,15 +725,21 @@
   /* ── Streak counter ── */
   .streak-counter {
     display: flex; align-items: center; gap: 4px;
-    background: rgba(212,175,106,0.08);
-    border: 1px solid rgba(212,175,106,0.2);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 20px;
     padding: 5px 10px;
     cursor: default;
+    color: rgba(255,255,255,0.2);
+  }
+  .streak-counter.active-streak {
+    background: rgba(212,175,106,0.08);
+    border-color: rgba(212,175,106,0.2);
+    color: #D4AF6A;
   }
   #streak-num {
     font-size: 13px; font-weight: 600;
-    color: #D4AF6A;
+    color: inherit;
     line-height: 1;
   }
 
@@ -886,22 +892,7 @@
     color: rgba(184,137,42,0.6);
     text-transform: uppercase;
   }
-  /* 7D nodes sizing */
-  .journey-node-wrap.d7 .journey-node {
-    width: 64px; height: 64px;
-  }
-  .journey-node-wrap.d7 .journey-node.s7d-active {
-    background: rgba(184,137,42,0.1);
-    border: 1.5px solid rgba(184,137,42,0.4);
-  }
-  .journey-node-wrap.d7 .journey-node.s7d-done {
-    background: linear-gradient(135deg,#1A3D2B,#2A5C42);
-    border: 2px solid rgba(61,122,90,0.6);
-  }
-  .journey-node-wrap.d7 .journey-node.s7d-locked {
-    background: rgba(255,255,255,0.04);
-    border: 1.5px solid rgba(255,255,255,0.08);
-  }
+  /* 7D node labels */
   .journey-node-wrap.d7 .journey-node-label {
     font-size: 11px;
     color: rgba(255,255,255,0.6);
@@ -1808,8 +1799,8 @@
         <span class="header-title-main">Código Soberana</span>
       </div>
       <div class="header-right">
-        <div class="streak-counter" id="streak-counter" title="Días de sostenimiento">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="#D4AF6A" stroke="none"/></svg>
+        <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="currentColor" stroke="none"/></svg>
           <span id="streak-num">0</span>
         </div>
         <div class="progress-ring-mini">
@@ -2602,6 +2593,9 @@ function updateStreak() {
   state.lastActive = today;
   saveState();
   document.getElementById('streak-num').textContent = state.streak || 1;
+  // Golden only when 7D active
+  const sc = document.getElementById('streak-counter');
+  if (sc) sc.classList.toggle('active-streak', !!(state.user && state.user.tiene7d));
 }
 
 // ── ERES modal ────────────────────────────────────────────────────
@@ -2885,148 +2879,241 @@ function renderSectionsList() {
 
 // ── 7D Journey data ───────────────────────────────────────────────
 const SEMANAS_7D = [
-  { num:'01', title:'Arquitecta de Realidad',  sub:'Tu cerebro construye lo que tú le das.' },
-  { num:'02', title:'Gravedad Propia',          sub:'Las mujeres que no necesitan validación generan magnetismo.' },
-  { num:'03', title:'Biología del Poder',       sub:'Tu cuerpo y tu dinero saben cosas que tu mente niega.' },
-  { num:'04', title:'El Código Final',          sub:'La dimensión que lo sostiene todo cuando todo lo demás falla.' }
+  {
+    num:'01', title:'Arquitecta de Realidad',
+    color:'#2A5C42', nodeBg:'rgba(42,92,66,0.2)', nodeBorder:'#2A5C42',
+    bannerBg:'rgba(42,92,66,0.15)', bannerBorder:'#2A5C42',
+    desc:'Descubres por qué tu cerebro construye conflictos antes de que él abra la boca. Trabajas la biología de tus emociones y aprendes a leer tu ciclo como información estratégica. Al final de esta semana, sabes exactamente qué activa tu sistema — y cómo detenerlo antes de que tome el control.'
+  },
+  {
+    num:'02', title:'Gravedad Propia',
+    color:'#6B1A2A', nodeBg:'rgba(107,26,42,0.2)', nodeBorder:'#6B1A2A',
+    bannerBg:'rgba(107,26,42,0.15)', bannerBorder:'#6B1A2A',
+    desc:'Construyes el tipo de presencia que no se puede fingir ni comprar. Trabajas tus estándares en frío — antes de que llegue la presión. Entiendes por qué los sistemas relacionales responden al carácter, no a las palabras. Al final de esta semana, tu punto de influencia es tuyo — no depende de su humor del día.'
+  },
+  {
+    num:'03', title:'Biología del Poder',
+    color:'#B8892A', nodeBg:'rgba(122,92,30,0.2)', nodeBorder:'#B8892A',
+    bannerBg:'rgba(122,92,30,0.15)', bannerBorder:'#B8892A',
+    desc:'Tu cuerpo, tus hormonas y tu dinero afectan directamente tu dinámica de pareja — y nadie te lo había explicado así. Aprendes a usar tu ciclo como ventaja estratégica, a recuperar energía sin necesitar más tiempo, y a limpiar la dinámica de poder que el dinero crea sin que nadie lo nombre.'
+  },
+  {
+    num:'04', title:'El Código Final',
+    color:'#3D7A5A', nodeBg:'rgba(26,61,43,0.2)', nodeBorder:'#3D7A5A',
+    bannerBg:'rgba(26,61,43,0.15)', bannerBorder:'#3D7A5A',
+    desc:'La dimensión que sostiene todo cuando todo lo demás falla. Trabajas tu propósito propio — el que existe independientemente de si él está de buen humor o no. Al final de estos 30 días, tienes un documento tuyo: tu Código Soberana Personal. El mapa de quién eres cuando estás operando desde tu mejor versión.'
+  }
 ];
 
 const DIAS_7D = [
-  { key:'lun', label:'Masterclass',    isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>` },
-  { key:'mar', label:'Reflexión',      isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` },
-  { key:'mie', label:'Reto',           isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>` },
-  { key:'jue', label:'Envío de caso',  isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>` },
-  { key:'vie', label:'Diario',         isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>` },
-  { key:'sab', label:'Sesión en vivo', isLive: true,  icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>` },
-  { key:'dom', label:'Integración',    isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` }
+  { key:'lun', dia:'Lunes',     label:'Masterclass',    isLive: false,
+    desc:'Una masterclass grabada para trabajar a tu ritmo. Base conceptual de la semana.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>` },
+  { key:'mar', dia:'Martes',    label:'Reflexión',      isLive: false,
+    desc:'Ejercicio escrito de introspección. Sin respuestas correctas, solo las tuyas.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` },
+  { key:'mie', dia:'Miércoles', label:'Reto',           isLive: false,
+    desc:'Una acción concreta para aplicar lo que aprendiste en tu vida real esta semana.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>` },
+  { key:'jue', dia:'Jueves',    label:'Envío de caso',  isLive: false,
+    desc:'Envías tu situación real para que sea analizada en la sesión del sábado.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>` },
+  { key:'vie', dia:'Viernes',   label:'Diario',         isLive: false,
+    desc:'Registro de tus observaciones de la semana. Lo que notaste, lo que cambió.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>` },
+  { key:'sab', dia:'Sábado',    label:'Sesión en vivo', isLive: true,
+    desc:'Sesión grupal en vivo. Casos reales analizados. Tu caso podría ser uno de ellos.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>` },
+  { key:'dom', dia:'Domingo',   label:'Integración',    isLive: false,
+    desc:'Descanso activo. Tu mente procesa e integra todo lo trabajado en la semana.',
+    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` }
 ];
 
-const NODE_X_7D = [50, 70, 50, 30, 50, 70, 50]; // 7 nodos por semana
+const NODE_X_7D = [50, 70, 50, 30, 50, 70, 50];
+
+const SEMANA_ICONS = [
+  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
+  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2.5"/></svg>`,
+  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+];
+
+// ── Drawer de nodo 7D ────────────────────────────────────────────
+function open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum }) {
+  let drawer = document.getElementById('drawer-7d');
+  if (!drawer) {
+    drawer = document.createElement('div');
+    drawer.id = 'drawer-7d';
+    drawer.className = 'modal-overlay';
+    drawer.style.display = 'none';
+    drawer.onclick = (e) => { if (e.target === drawer) drawer.style.display = 'none'; };
+    document.body.appendChild(drawer);
+  }
+  drawer.innerHTML = `
+    <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
+      <div class="modal-drag-bar"></div>
+      <div style="padding:24px 20px 32px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.18em;color:${semana.color};text-transform:uppercase;margin-bottom:6px">
+          ${dia.dia} · ${semana.title}
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:12px">${dia.label}</div>
+        <div style="font-size:13px;color:rgba(237,227,206,0.65);line-height:1.6;margin-bottom:24px">${dia.desc}</div>
+        ${semUnlocked
+          ? `<button style="width:100%;background:${semana.nodeBg};border:1.5px solid ${semana.nodeBorder};border-radius:12px;color:#F0E6EA;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer" onclick="mark7dDone('${nodeKey}')">Marcar como completado ✓</button>`
+          : `<div style="text-align:center;background:${semana.bannerBg};border:1px solid ${semana.bannerBorder};border-radius:12px;padding:14px;color:${semana.color};font-size:13px;font-weight:600">Disponible en Semana ${semNum}</div>`
+        }
+        <button onclick="document.getElementById('drawer-7d').style.display='none'" style="width:100%;margin-top:10px;background:none;border:none;color:rgba(196,160,178,0.5);font-size:13px;cursor:pointer;padding:8px">Cerrar</button>
+      </div>
+    </div>`;
+  drawer.style.display = 'flex';
+}
+
+function mark7dDone(nodeKey) {
+  if (!state.completed7d) state.completed7d = {};
+  state.completed7d[nodeKey] = new Date().toISOString();
+  saveState();
+  const drawer = document.getElementById('drawer-7d');
+  if (drawer) drawer.style.display = 'none';
+  renderSectionsList();
+}
 
 function render7dJourney(container) {
   const tiene7d = state.user && state.user.tiene7d;
-  let semanaActiva = 0;
+  // TODO: remover para producción — forzar semana 1 activa para prueba visual
+  let semanaActiva = tiene7d ? 1 : 0;
 
-  if (tiene7d && state.user.fecha7d) {
-    const dias = Math.floor((Date.now() - new Date(state.user.fecha7d)) / 86400000);
-    semanaActiva = Math.min(Math.floor(dias / 7) + 1, 4);
-  }
-
-  const SEMANA_ICONS = [
-    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
-    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2.5"/></svg>`,
-    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
-  ];
+  // (producción) descomentar y eliminar línea anterior:
+  // if (tiene7d && state.user.fecha7d) {
+  //   const dias = Math.floor((Date.now() - new Date(state.user.fecha7d)) / 86400000);
+  //   semanaActiva = Math.min(Math.floor(dias / 7) + 1, 4);
+  // }
 
   SEMANAS_7D.forEach((semana, si) => {
-    const semNum = si + 1; // 1-based
+    const semNum = si + 1;
     const semUnlocked = tiene7d && semNum <= semanaActiva;
 
-    // Week banner (Duolingo style)
+    // ── Banner de semana ────────────────────────────────────────
     const header = document.createElement('div');
-    header.className = 'journey-banner';
-    header.style.cssText = 'margin:0;border-radius:0;background:#0F0A0B;border-top:1px solid rgba(184,137,42,0.15);border-bottom:1px solid rgba(255,255,255,0.04);padding:18px 20px';
+    header.style.cssText = `
+      margin:0; padding:20px 24px;
+      background:${semUnlocked ? semana.bannerBg : 'rgba(255,255,255,0.02)'};
+      border-top:1px solid rgba(255,255,255,0.05);
+      border-left:3px solid ${semUnlocked ? semana.bannerBorder : 'rgba(255,255,255,0.1)'};
+    `;
     header.innerHTML = `
-      <div class="journey-banner-icon" style="color:${semUnlocked ? '#B8892A' : 'rgba(255,255,255,0.2)'}">
-        ${SEMANA_ICONS[si]}
-      </div>
-      <div>
-        <div class="journey-banner-label" style="color:${semUnlocked ? '#B8892A' : 'rgba(255,255,255,0.2)'}">
-          SEMANA ${semana.num} · SOBERANA 7D
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:${semUnlocked ? '10px' : '0'}">
+        <div style="color:${semUnlocked ? semana.color : 'rgba(255,255,255,0.15)'}">
+          ${SEMANA_ICONS[si]}
         </div>
-        <div class="journey-banner-title" style="color:${semUnlocked ? '#EDE3CE' : 'rgba(255,255,255,0.25)'}">
-          ${semana.title}
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:${semUnlocked ? semana.color : 'rgba(255,255,255,0.2)'};margin-bottom:3px">
+            SEMANA ${semana.num} · SOBERANA 7D
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:${semUnlocked ? '#EDE3CE' : 'rgba(255,255,255,0.2)'};line-height:1.2">
+            ${semana.title}
+          </div>
         </div>
+        ${!semUnlocked ? `<div style="margin-left:auto;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg></div>` : ''}
       </div>
-      ${!semUnlocked ? `<div style="margin-left:auto"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg></div>` : ''}`;
+      ${semUnlocked ? `<div style="font-size:13px;color:rgba(237,227,206,0.65);line-height:1.6">${semana.desc}</div>` : ''}
+    `;
     container.appendChild(header);
 
-    // 7 nodes section
-    const totalNodes7 = DIAS_7D.length;
-    const spacing = 100;
-    const sectionH = totalNodes7 * spacing + 60;
-
+    // ── Nodos de la semana ──────────────────────────────────────
+    const spacing = 115;
+    const sectionH = DIAS_7D.length * spacing + 70;
     const section = document.createElement('div');
     section.style.cssText = `position:relative;height:${sectionH}px;background:#0F0A0B`;
 
-    // SVG path for this week
+    const positions = DIAS_7D.map((_, i) => ({ xPct: NODE_X_7D[i], y: 35 + i * spacing }));
+
+    // SVG path — color de semana para activos, gris para bloqueados
     const svgW = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgW.setAttribute('class', 'journey-svg');
     svgW.setAttribute('viewBox', `0 0 100 ${sectionH}`);
     svgW.setAttribute('preserveAspectRatio', 'none');
-
-    const positions = DIAS_7D.map((_, i) => ({
-      xPct: NODE_X_7D[i],
-      y: 30 + i * spacing
-    }));
-
     if (positions.length > 1) {
       let d = `M ${positions[0].xPct} ${positions[0].y}`;
       for (let i = 1; i < positions.length; i++) {
-        const prev = positions[i - 1], cur = positions[i];
+        const prev = positions[i-1], cur = positions[i];
         const midY = (prev.y + cur.y) / 2;
         d += ` C ${prev.xPct} ${midY}, ${cur.xPct} ${midY}, ${cur.xPct} ${cur.y}`;
       }
       const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       pathEl.setAttribute('d', d);
       pathEl.setAttribute('fill', 'none');
-      pathEl.setAttribute('stroke', semUnlocked ? 'rgba(212,175,106,0.6)' : 'rgba(255,255,255,0.08)');
-      pathEl.setAttribute('stroke-width', '3');
-      pathEl.setAttribute('stroke-dasharray', '6 5');
+      pathEl.setAttribute('stroke', semUnlocked ? semana.color + '4D' : 'rgba(255,255,255,0.06)');
+      pathEl.setAttribute('stroke-width', '2');
       svgW.appendChild(pathEl);
     }
     section.appendChild(svgW);
 
-    // Nodes
+    // Primer nodo no completado de la semana activa (para el badge SIGUIENTE)
+    let firstUndoneIdx = -1;
+    if (semUnlocked) {
+      firstUndoneIdx = DIAS_7D.findIndex((_, di) => {
+        const k = `7d_s${semNum}_d${di + 1}`;
+        return !(state.completed7d && state.completed7d[k]);
+      });
+    }
+
     DIAS_7D.forEach((dia, di) => {
       const nodeKey = `7d_s${semNum}_d${di + 1}`;
-      const isDone    = !!(state.completed7d && state.completed7d[nodeKey]);
-      const isNodeLocked = !semUnlocked;
+      const isDone  = !!(state.completed7d && state.completed7d[nodeKey]);
+      const isSiguiente = semUnlocked && di === firstUndoneIdx && !isDone;
 
       const { xPct, y } = positions[di];
-
       const wrap = document.createElement('div');
       wrap.className = 'journey-node-wrap d7';
       wrap.style.cssText = `left:${xPct}%;top:${y}px`;
 
+      // Node circle — 72px (same as workshop)
       const node = document.createElement('div');
-      let nodeClass = 'journey-node ';
-      if (!semUnlocked)  nodeClass += 's7d-locked';
-      else if (isDone)   nodeClass += 's7d-done';
-      else               nodeClass += 's7d-active';
-      node.className = nodeClass;
+      node.className = 'journey-node';
 
-      // Icon
+      if (isDone) {
+        node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:2px solid ${semana.nodeBorder}`;
+      } else if (semUnlocked) {
+        if (isSiguiente) {
+          node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:2px solid ${semana.nodeBorder};animation:node-pulse 1.8s ease-in-out infinite`;
+        } else {
+          node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:1.5px solid ${semana.nodeBorder}`;
+        }
+      } else {
+        node.style.cssText = `width:72px;height:72px;background:rgba(255,255,255,0.04);border:1.5px dashed rgba(255,255,255,0.1)`;
+      }
+
+      // Badge SIGUIENTE
+      if (isSiguiente) {
+        const badge = document.createElement('div');
+        badge.className = 'journey-node-badge';
+        badge.style.background = semana.nodeBorder;
+        badge.textContent = 'SIGUIENTE';
+        node.appendChild(badge);
+      }
+
+      // Icon (28px same as workshop)
       const iconWrap = document.createElement('div');
-      if (isDone)         iconWrap.style.color = '#96C7B3';
-      else if (semUnlocked) iconWrap.style.color = '#B8892A';
-      else                iconWrap.style.color = 'rgba(255,255,255,0.15)';
+      iconWrap.style.color = isDone
+        ? semana.color
+        : semUnlocked ? semana.color
+        : 'rgba(255,255,255,0.15)';
       iconWrap.innerHTML = dia.icon;
       node.appendChild(iconWrap);
-
-      // Lock icon for locked nodes
-      if (isNodeLocked) {
-        const lb = document.createElement('div');
-        lb.style.cssText = 'position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#0F0A0B;border:1px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center';
-        lb.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.4)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg>`;
-        node.appendChild(lb);
-      }
-
-      // Live dot for Saturday
-      if (dia.isLive && semUnlocked && !isDone) {
-        const dot = document.createElement('div');
-        dot.className = 's7d-live-dot';
-        node.appendChild(dot);
-        node.style.borderColor = 'rgba(107,26,42,0.6)';
-      }
 
       // Done check
       if (isDone) {
         const chk = document.createElement('div');
-        chk.style.cssText = 'position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;background:#0F0A0B;border:1.5px solid #3D7A5A;border-radius:50%;display:flex;align-items:center;justify-content:center';
-        chk.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#96C7B3" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+        chk.style.cssText = `position:absolute;bottom:-5px;right:-5px;width:20px;height:20px;background:#0F0A0B;border:2px solid ${semana.nodeBorder};border-radius:50%;display:flex;align-items:center;justify-content:center`;
+        chk.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="${semana.color}" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
         node.appendChild(chk);
+      }
+
+      // Live dot (sábado)
+      if (dia.isLive && semUnlocked && !isDone) {
+        const dot = document.createElement('div');
+        dot.className = 's7d-live-dot';
+        node.appendChild(dot);
       }
 
       wrap.appendChild(node);
@@ -3034,33 +3121,18 @@ function render7dJourney(container) {
       // Label
       const label = document.createElement('div');
       label.className = 'journey-node-label';
-      label.style.color = isNodeLocked ? 'rgba(255,255,255,0.2)' : (isDone ? '#96C7B3' : 'rgba(237,227,206,0.7)');
-      label.style.fontSize = '10px';
+      label.style.cssText = `font-size:11px;color:${semUnlocked ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.2)'}`;
       label.textContent = dia.label;
       wrap.appendChild(label);
 
-      // Click
+      // Click — siempre muestra el drawer
       wrap.addEventListener('click', () => {
         if (!tiene7d) {
           shakeNode(node);
           document.getElementById('modal-7d-locked').style.display = 'flex';
-        } else if (isNodeLocked) {
-          shakeNode(node);
-          // calculate unlock date
-          if (state.user.fecha7d) {
-            const unlockDate = new Date(new Date(state.user.fecha7d).getTime() + si * 7 * 86400000);
-            showJourneyToast(`Se desbloquea el ${unlockDate.toLocaleDateString('es', {day:'numeric',month:'long'})}`);
-          } else {
-            showJourneyToast('Esta semana aún no está disponible');
-          }
         } else {
           bounceNode(node);
-          if (!isDone) {
-            if (!state.completed7d) state.completed7d = {};
-            state.completed7d[nodeKey] = new Date().toISOString();
-            saveState();
-            renderSectionsList();
-          }
+          open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });
         }
       });
 

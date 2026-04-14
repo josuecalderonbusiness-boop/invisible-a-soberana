@@ -1742,6 +1742,146 @@
     pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ════════════════════════════════════════
+     TAB: NOVEDADES
+  ════════════════════════════════════════ */
+  #tab-novedades { background: #0F0A0B; min-height: 100%; }
+  .nov-section { padding: 20px 16px 0; }
+  .nov-section-title {
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500; margin-bottom: 14px;
+  }
+
+  /* Streak card */
+  .nov-streak-card {
+    background: linear-gradient(135deg, rgba(42,92,66,0.2), rgba(26,61,43,0.12));
+    border: 1px solid rgba(61,122,90,0.3);
+    border-radius: 18px;
+    padding: 20px 20px 22px;
+  }
+  .nov-streak-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+  .nov-streak-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px; font-weight: 700; color: var(--gold); line-height: 1;
+  }
+  .nov-streak-label { font-size: 11px; color: rgba(212,175,106,0.6); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 4px; }
+  .nov-streak-badge {
+    background: rgba(212,175,106,0.1);
+    border: 1px solid rgba(212,175,106,0.2);
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 12px; color: var(--gold); font-weight: 500;
+    white-space: nowrap;
+  }
+  .nov-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+  .nov-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .nov-dot.done { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 5px rgba(212,175,106,0.35); }
+  .nov-dot.today { background: rgba(212,175,106,0.25); border-color: var(--gold); animation: node-pulse 2s infinite; }
+
+  /* Community feed */
+  .nov-feed { display: flex; flex-direction: column; gap: 10px; }
+  .nov-feed-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 16px 16px 12px;
+  }
+  .nov-feed-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .nov-feed-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--burgundy), var(--mauve));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 700; color: var(--cream);
+    flex-shrink: 0;
+    border: 1.5px solid rgba(212,175,106,0.18);
+  }
+  .nov-feed-meta { flex: 1; }
+  .nov-feed-name { font-size: 13px; font-weight: 600; color: rgba(240,230,234,0.85); }
+  .nov-feed-time { font-size: 11px; color: rgba(196,160,178,0.45); margin-top: 1px; }
+  .nov-feed-event {
+    font-size: 13px; color: rgba(240,230,234,0.7); line-height: 1.55;
+    padding: 10px 12px;
+    background: rgba(212,175,106,0.05);
+    border-left: 2px solid rgba(212,175,106,0.25);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 10px;
+  }
+  .nov-feed-actions { display: flex; gap: 18px; }
+  .nov-feed-btn {
+    display: flex; align-items: center; gap: 5px;
+    background: none; border: none;
+    font-size: 12px; color: rgba(196,160,178,0.5);
+    font-family: 'Jost', sans-serif; cursor: pointer; padding: 4px 0;
+    transition: color .15s;
+  }
+  .nov-feed-btn:active { color: var(--gold); }
+
+  /* Article cards */
+  .nov-articles { display: flex; flex-direction: column; gap: 10px; }
+  .nov-article-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 16px 14px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: background .15s;
+  }
+  .nov-article-card:active { background: rgba(255,255,255,0.06); }
+  .nov-article-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(139,26,47,0.35), rgba(92,16,32,0.5));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+    border: 1px solid rgba(212,175,106,0.15);
+  }
+  .nov-article-body { flex: 1; min-width: 0; }
+  .nov-article-tag { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 3px; }
+  .nov-article-title { font-size: 13px; font-weight: 600; color: rgba(240,230,234,0.85); line-height: 1.35; margin-bottom: 3px; }
+  .nov-article-sub { font-size: 11px; color: rgba(196,160,178,0.45); }
+  .nov-article-arrow { color: rgba(196,160,178,0.25); flex-shrink: 0; }
+
+  /* Achievement cards */
+  .nov-achievements { display: flex; flex-direction: column; gap: 10px; }
+  .nov-achievement-card {
+    border-radius: 16px;
+    padding: 16px 16px 16px 14px;
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid;
+  }
+  .nov-achievement-card.unlocked {
+    background: linear-gradient(135deg, rgba(212,175,106,0.1), rgba(212,175,106,0.05));
+    border-color: rgba(212,175,106,0.28);
+  }
+  .nov-achievement-card.locked {
+    background: rgba(255,255,255,0.025);
+    border-color: rgba(255,255,255,0.06);
+  }
+  .nov-achievement-icon {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .unlocked .nov-achievement-icon { background: rgba(212,175,106,0.12); border: 2px solid rgba(212,175,106,0.35); }
+  .locked  .nov-achievement-icon { background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.09); filter: grayscale(1); opacity: 0.45; }
+  .nov-achievement-body { flex: 1; min-width: 0; }
+  .nov-achievement-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .unlocked .nov-achievement-name { color: var(--gold); }
+  .locked  .nov-achievement-name { color: rgba(196,160,178,0.35); }
+  .nov-achievement-desc { font-size: 12px; line-height: 1.4; }
+  .unlocked .nov-achievement-desc { color: rgba(212,175,106,0.6); }
+  .locked  .nov-achievement-desc { color: rgba(196,160,178,0.28); }
+  .nov-achievement-badge {
+    font-size: 10px; font-weight: 600; padding: 4px 10px;
+    border-radius: 100px; flex-shrink: 0; white-space: nowrap;
+  }
+  .unlocked .nov-achievement-badge { background: rgba(212,175,106,0.18); color: var(--gold); border: 1px solid rgba(212,175,106,0.28); }
+  .locked  .nov-achievement-badge { background: rgba(255,255,255,0.04); color: rgba(196,160,178,0.28); border: 1px solid rgba(255,255,255,0.07); }
 </style>
 </head>
 <body>
@@ -1937,6 +2077,50 @@
         </div>
       </div>
 
+      <!-- TAB: NOVEDADES -->
+      <div class="tab-content" id="tab-novedades">
+        <div style="height:16px"></div>
+
+        <!-- Block 1: Racha diaria (solo si tiene7d) -->
+        <div id="nov-streak-section" style="display:none" class="nov-section">
+          <div class="nov-section-title">Tu racha</div>
+          <div class="nov-streak-card">
+            <div class="nov-streak-header">
+              <div>
+                <div class="nov-streak-num" id="nov-streak-num">0</div>
+                <div class="nov-streak-label">días activa</div>
+              </div>
+              <div class="nov-streak-badge" id="nov-streak-badge">Sin racha</div>
+            </div>
+            <div class="nov-dots" id="nov-dots"></div>
+          </div>
+        </div>
+
+        <!-- Block 2: Comunidad -->
+        <div class="nov-section" style="margin-top:6px">
+          <div class="nov-section-title">Comunidad Soberana</div>
+          <div class="nov-feed" id="nov-feed"></div>
+          <div style="text-align:center;padding:10px 0 0">
+            <span style="font-size:10px;color:rgba(196,160,178,0.22);letter-spacing:.04em">// TODO: conectar a Google Sheets</span>
+          </div>
+        </div>
+
+        <!-- Block 3: Lecturas -->
+        <div class="nov-section" style="margin-top:6px">
+          <div class="nov-section-title">Lecturas recomendadas</div>
+          <div class="nov-articles" id="nov-articles"></div>
+          <div style="text-align:center;padding:10px 0 0">
+            <span style="font-size:10px;color:rgba(196,160,178,0.22);letter-spacing:.04em">// TODO: conectar a blog</span>
+          </div>
+        </div>
+
+        <!-- Block 4: Logros -->
+        <div class="nov-section" style="margin-top:6px;padding-bottom:32px">
+          <div class="nov-section-title">Mis logros</div>
+          <div class="nov-achievements" id="nov-achievements"></div>
+        </div>
+      </div>
+
       <!-- TAB: 7D -->
     </div>
 
@@ -2017,9 +2201,13 @@
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         Inicio
       </button>
+      <button class="tab-btn" id="tab-btn-novedades" onclick="switchTab('novedades')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Novedades
+      </button>
       <button class="tab-btn" id="tab-btn-progreso" onclick="switchTab('progreso')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-         Mi Progreso
+        Mi Progreso
       </button>
       <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -4500,6 +4688,156 @@ function openQueSigneAhora() {
 }
 
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// TAB: NOVEDADES
+// ═══════════════════════════════════════════
+function renderNovedades() {
+  const tiene7d = state.user && state.user.tiene7d;
+  const streak = state.streak || 0;
+
+  // Block 1: Racha
+  const streakSection = document.getElementById('nov-streak-section');
+  if (tiene7d) {
+    streakSection.style.display = 'block';
+    document.getElementById('nov-streak-num').textContent = streak;
+    const badge = document.getElementById('nov-streak-badge');
+    if (streak >= 30)     badge.textContent = '🔥 30 días';
+    else if (streak >= 14) badge.textContent = '🔥 ' + streak + ' días';
+    else if (streak >= 7)  badge.textContent = '⚡ ' + streak + ' días';
+    else if (streak > 0)   badge.textContent = streak + (streak === 1 ? ' día' : ' días');
+    else                   badge.textContent = 'Sin racha';
+    const dotsEl = document.getElementById('nov-dots');
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < 30; i++) {
+      const d = document.createElement('div');
+      d.className = 'nov-dot' + (i < streak ? ' done' : (i === streak ? ' today' : ''));
+      dotsEl.appendChild(d);
+    }
+  } else {
+    streakSection.style.display = 'none';
+  }
+
+  // Block 2: Feed comunitario (hardcoded)
+  const feedData = [
+    { initial: 'V', name: 'Valeria M.', time: 'hace 2 horas',
+      event: 'Completó la Sección 3 — Patrones de Apego. "Por fin entiendo por qué me quedo cuando debería irme."',
+      hearts: 12 },
+    { initial: 'C', name: 'Camila R.', time: 'hace 5 horas',
+      event: 'Terminó el Día 1 de Soberana 7D. Primera vez que siento que el protocolo tiene sentido para mí.',
+      hearts: 8 },
+    { initial: 'S', name: 'Sofía A.', time: 'ayer',
+      event: 'Completó el Workshop completo. "Lo que más me impactó: darme cuenta de que yo era quien perpetuaba el ciclo."',
+      hearts: 24 },
+  ];
+  document.getElementById('nov-feed').innerHTML = feedData.map(f => `
+    <div class="nov-feed-card">
+      <div class="nov-feed-top">
+        <div class="nov-feed-avatar">${f.initial}</div>
+        <div class="nov-feed-meta">
+          <div class="nov-feed-name">${f.name}</div>
+          <div class="nov-feed-time">${f.time}</div>
+        </div>
+      </div>
+      <div class="nov-feed-event">${f.event}</div>
+      <div class="nov-feed-actions">
+        <button class="nov-feed-btn" onclick="novToggleHeart(this,${f.hearts})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span>${f.hearts}</span>
+        </button>
+        <button class="nov-feed-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Acompañar
+        </button>
+      </div>
+    </div>`).join('');
+
+  // Block 3: Lecturas
+  const articles = [
+    { icon: '🧠', tag: 'Psicología', title: 'Por qué el amor ansioso no es amor: el sistema nervioso y el apego', sub: '8 min de lectura' },
+    { icon: '🌿', tag: 'Protocolo', title: 'El método ERES: cómo regularte antes de hablar', sub: '5 min de lectura' },
+    { icon: '👑', tag: 'Desarrollo', title: 'Soberanía emocional no es frialdad: la diferencia que lo cambia todo', sub: '6 min de lectura' },
+  ];
+  document.getElementById('nov-articles').innerHTML = articles.map(a => `
+    <div class="nov-article-card" onclick="openArticleFullscreen(this)">
+      <div class="nov-article-icon">${a.icon}</div>
+      <div class="nov-article-body">
+        <div class="nov-article-tag">${a.tag}</div>
+        <div class="nov-article-title">${a.title}</div>
+        <div class="nov-article-sub">${a.sub}</div>
+      </div>
+      <svg class="nov-article-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`).join('');
+
+  // Block 4: Logros
+  const { pct } = getProgress();
+  const workshopComplete = pct >= 100;
+  const halfDone = pct >= 50;
+  const achievements = [
+    {
+      icon: '👑',
+      name: 'Workshop Completo',
+      desc: workshopComplete ? 'Completaste los 10 módulos del Workbook.' : `${pct}% completado — sigue avanzando.`,
+      badge: workshopComplete ? 'Desbloqueado' : `${pct}%`,
+      unlocked: workshopComplete,
+    },
+    {
+      icon: '⚡',
+      name: 'Mitad del Camino',
+      desc: halfDone ? '5 o más secciones del Workshop completadas.' : 'Completa el 50% del Workshop para desbloquear.',
+      badge: halfDone ? 'Desbloqueado' : 'Bloqueado',
+      unlocked: halfDone,
+    },
+    {
+      icon: '🌿',
+      name: 'Soberana 7D',
+      desc: tiene7d ? 'Acceso activo al entrenamiento de 30 días.' : 'Accede al entrenamiento de 30 días para desbloquear.',
+      badge: tiene7d ? 'Activo' : 'Bloqueado',
+      unlocked: !!tiene7d,
+    },
+  ];
+  document.getElementById('nov-achievements').innerHTML = achievements.map(a => `
+    <div class="nov-achievement-card ${a.unlocked ? 'unlocked' : 'locked'}">
+      <div class="nov-achievement-icon">${a.icon}</div>
+      <div class="nov-achievement-body">
+        <div class="nov-achievement-name">${a.name}</div>
+        <div class="nov-achievement-desc">${a.desc}</div>
+      </div>
+      <div class="nov-achievement-badge">${a.badge}</div>
+    </div>`).join('');
+}
+
+function novToggleHeart(btn, original) {
+  const liked = btn.dataset.liked === '1';
+  btn.dataset.liked = liked ? '0' : '1';
+  btn.style.color = liked ? '' : 'var(--gold)';
+  btn.querySelector('span').textContent = liked ? original : original + 1;
+  btn.querySelector('svg').setAttribute('fill', liked ? 'none' : 'currentColor');
+}
+
+function openArticleFullscreen(card) {
+  const title = card.querySelector('.nov-article-title').textContent;
+  const tag   = card.querySelector('.nov-article-tag').textContent;
+  const icon  = card.querySelector('.nov-article-icon').textContent;
+  const lv = document.getElementById('lesson-view');
+  const lh = document.getElementById('lesson-header');
+  lh.style.background = 'linear-gradient(135deg,#1a0a0f,#3a0e1f)';
+  lh.style.borderBottom = '1px solid rgba(212,175,106,0.2)';
+  document.getElementById('lesson-title').textContent = title;
+  document.getElementById('lesson-section-name').textContent = tag;
+  document.getElementById('lesson-body').innerHTML = `
+    <div style="padding:32px 24px 40px">
+      <div style="text-align:center;font-size:52px;margin-bottom:20px">${icon}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--cream);line-height:1.35;margin-bottom:8px;text-align:center">${title}</div>
+      <div style="font-size:11px;text-align:center;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:28px">${tag}</div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px 20px;text-align:center">
+        <div style="font-size:32px;margin-bottom:14px">📖</div>
+        <div style="color:rgba(196,160,178,0.6);font-size:14px;line-height:1.7">Artículo disponible próximamente.</div>
+        <div style="font-size:11px;color:rgba(196,160,178,0.25);margin-top:8px">// TODO: conectar a blog</div>
+      </div>
+    </div>`;
+  lv.classList.add('open');
+}
+
 // TABS
 // ═══════════════════════════════════════════
 function switchTab(tab) {
@@ -4510,6 +4848,7 @@ function switchTab(tab) {
   if (tabEl) tabEl.classList.add('active');
   if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); }
+  if (tab === 'novedades') { renderNovedades(); }
 }
 
 // ═══════════════════════════════════════════

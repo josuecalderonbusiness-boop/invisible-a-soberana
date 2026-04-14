@@ -66,6 +66,11 @@
   }
   .screen.active { display: flex; }
 
+  @keyframes node-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(212,175,106,0.6); }
+    70%  { box-shadow: 0 0 0 14px rgba(212,175,106,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,175,106,0); }
+  }
   @keyframes pulse-glow {
     0%   { box-shadow: 0 0 8px rgba(184,137,42,0.4); }
     50%  { box-shadow: 0 0 20px rgba(184,137,42,0.8), 0 0 40px rgba(184,137,42,0.3); }
@@ -589,12 +594,132 @@
     padding: 24px 20px 12px;
   }
 
+  /* ── Journey Map ── */
   .sections-list {
-    padding: 0 16px;
+    position: relative;
+    margin: 16px 0 32px;
+    padding-bottom: 32px;
+  }
+  .journey-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .journey-node-wrap {
+    position: absolute;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    gap: 6px;
+    transform: translateX(-50%);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
+  .journey-node {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: transform .15s;
+  }
+  .journey-node.done {
+    background: linear-gradient(135deg,#7A5C1E,#D4A843);
+    border: 2.5px solid #E8C870;
+    box-shadow: 0 4px 18px rgba(184,137,42,0.4);
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+  .journey-node.current {
+    background: linear-gradient(135deg,#5A1020,#8B1A2F);
+    border: 2.5px solid #C4384F;
+    animation: node-pulse 1.8s ease-in-out infinite;
+  }
+  .journey-node.locked {
+    background: rgba(255,255,255,0.03);
+    border: 2px dashed rgba(255,255,255,0.15);
+  }
+  .journey-node.s0-node {
+    background: linear-gradient(135deg,#7A5C1E,#D4A843);
+    border: 2.5px solid #E8C870;
+    box-shadow: 0 4px 18px rgba(184,137,42,0.4);
+  }
+  .journey-node.s10-node {
+    background: linear-gradient(135deg,#1A3D2B,#2A5C42);
+    border: 2.5px solid #4CAF80;
+    box-shadow: 0 4px 18px rgba(76,175,80,0.35);
+    width: 76px; height: 76px;
+  }
+  .journey-node-badge {
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    background: #C4384F;
+    color: #fff;
+    font-size: 8px; font-weight: 800;
+    letter-spacing: .1em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .journey-node-badge.start-badge {
+    background: #B8892A;
+  }
+  .journey-node-label {
+    font-size: 10px; color: #C9A8B8;
+    text-align: center;
+    max-width: 80px;
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: .02em;
+  }
+  .journey-node-label.done-label { color: #E8C870; }
+  .journey-node-label.current-label { color: #F0E6EA; font-weight: 600; }
+  .journey-node-label.s0-label { color: #E8C870; }
+  .journey-node-label.s10-label { color: #4CAF80; font-weight: 600; }
+  .journey-stars {
+    font-size: 11px; letter-spacing: 2px;
+    line-height: 1;
+  }
+  .journey-stars.done-stars { color: #E8C870; }
+  .journey-stars.empty-stars { color: rgba(255,255,255,0.15); }
+  .journey-lock-icon {
+    position: absolute;
+    bottom: -4px; right: -4px;
+    width: 22px; height: 22px;
+    background: #1a0a0f;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  @keyframes node-bounce {
+    0%   { transform: translateY(0); }
+    30%  { transform: translateY(-10px); }
+    55%  { transform: translateY(-4px); }
+    75%  { transform: translateY(-8px); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes node-shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-5px); }
+    40%     { transform: translateX(5px); }
+    60%     { transform: translateX(-4px); }
+    80%     { transform: translateX(4px); }
+  }
+  .journey-node.bouncing { animation: node-bounce .5s ease forwards !important; }
+  .journey-node.shaking  { animation: node-shake .4s ease forwards !important; }
+  .journey-toast {
+    position: fixed;
+    bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: #2a0a12; border: 1px solid #8B1A2F;
+    color: #F0E6EA; font-size: 13px;
+    padding: 10px 20px; border-radius: 24px;
+    z-index: 999; pointer-events: none;
+    opacity: 0; transition: opacity .25s;
+    white-space: nowrap;
+  }
+  .journey-toast.show { opacity: 1; }
+
 
   .section-card {
     background: white;
@@ -1524,7 +1649,6 @@
           <div class="confrontation-attr">— Código Soberana</div>
         </div>
 
-        <div class="section-title">Tu recorrido</div>
         <div class="sections-list" id="sections-list"></div>
       </div>
 
@@ -2282,77 +2406,211 @@ function apply7dAccess() {
 // ═══════════════════════════════════════════
 // SECTIONS LIST
 // ═══════════════════════════════════════════
+// ── Journey Map helpers ─────────────────────────────────────────
+const SECTION_ICONS = {
+  s0: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
+  s1: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>`,
+  s2: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M15 9H9l-2 6h10l-2-6z"/><path d="M12 9v-3"/></svg>`,
+  s3: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  s4: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`,
+  s5: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
+  s6: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
+  s7: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
+  s8: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  s9: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  s10:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4CAF80" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`
+};
+
+// x-positions alternating for the sinuous path (as % of container width)
+const NODE_X_PCT = [50, 70, 50, 30, 50, 70, 50, 30, 50, 70]; // s0..s9
+const NODE_SPACING = 120; // px between nodes vertically
+
+function bounceNode(el) {
+  el.classList.remove('bouncing','shaking');
+  void el.offsetWidth;
+  el.classList.add('bouncing');
+  el.addEventListener('animationend', () => el.classList.remove('bouncing'), { once: true });
+}
+
+function shakeNode(el) {
+  el.classList.remove('bouncing','shaking');
+  void el.offsetWidth;
+  el.classList.add('shaking');
+  el.addEventListener('animationend', () => el.classList.remove('shaking'), { once: true });
+}
+
+let _toastTimer = null;
+function showJourneyToast(msg) {
+  let t = document.getElementById('journey-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'journey-toast';
+    t.className = 'journey-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
   list.innerHTML = '';
 
+  // Build node data: s0..s9 always, s10 only when s9 complete
+  const nodes = [];
   SECTIONS.forEach((sec, idx) => {
-    const card = document.createElement('div');
-
-    // s0 — Punto de arranque: estilo especial, sin número ni progreso
-    if (sec.id === 's0') {
-      card.className = 'section-card';
-      card.style.cssText = 'border-color:rgba(184,137,42,0.25);background:rgba(184,137,42,0.04)';
-      card.innerHTML = `
-        <div style="min-width:36px;height:36px;border-radius:10px;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3" stroke-linecap="round"/></svg>
-        </div>
-        <div class="section-info">
-          <div style="font-size:9px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px">Punto de arranque</div>
-          <div class="section-name">${sec.title}</div>
-          <div class="section-desc">${sec.desc}</div>
-        </div>
-        <div class="section-status">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-      `;
-      card.onclick = () => openLesson(sec.id);
-      list.appendChild(card);
-      return;
-    }
-
     const done = state.completedSections.includes(sec.id);
-    // Cascada: s1 siempre disponible; el resto se desbloquea cuando cualquier anterior está completada
     const anyPrevDone = idx === 0 || SECTIONS.slice(0, idx).some(s => state.completedSections.includes(s.id));
     const isCurrent = !done && anyPrevDone;
-
-    card.className = `section-card ${done ? 'completed' : ''} ${isCurrent ? 'current' : ''}`;
-
-    let statusIcon = '';
-    if (done) statusIcon = '<svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    else if (isCurrent) statusIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#8B1A2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    else statusIcon = '<svg class="lock-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-
-    const numClass = done ? 'done' : isCurrent ? 'active-num' : 'pending';
-
-    card.innerHTML = `
-      <div class="section-num ${numClass}">${sec.num}</div>
-      <div class="section-info">
-        <div class="section-name">${sec.title}</div>
-        <div class="section-desc">${sec.desc}</div>
-      </div>
-      <div class="section-status">${statusIcon}</div>
-    `;
-
-    card.onclick = () => openLesson(sec.id);
-    list.appendChild(card);
+    nodes.push({ sec, idx, done, isCurrent, locked: !done && !isCurrent });
   });
 
-  // Botón especial "¿Qué sigue ahora?" — solo cuando s9 está completa
-  if (state.completedSections.includes('s9')) {
-    const btn = document.createElement('div');
-    btn.style.cssText = 'margin-top:12px;background:linear-gradient(135deg,#1A3D2B,#2A5C42);border:1.5px solid #B8892A;border-radius:16px;padding:20px 24px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px';
-    btn.innerHTML = `
-      <div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#F0E6EA;font-weight:600;margin-bottom:4px">¿Qué sigue ahora?</div>
-        <div style="font-size:12px;color:#B8892A;letter-spacing:.04em">Tu siguiente paso como Soberana →</div>
-      </div>
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.4">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>`;
-    btn.onclick = openQueSigneAhora;
-    list.appendChild(btn);
+  const s9Done = state.completedSections.includes('s9');
+  if (s9Done) {
+    nodes.push({
+      sec: { id:'s10', label:'¿Qué sigue ahora?', title:'¿Qué sigue ahora?' },
+      idx: nodes.length,
+      done: false, isCurrent: true, locked: false, isS10: true
+    });
   }
+
+  const totalNodes = nodes.length;
+  const containerHeight = totalNodes * NODE_SPACING + 80;
+  list.style.height = containerHeight + 'px';
+
+  // Compute pixel positions after layout
+  // We use percentage for x, absolute px for y
+  const nodePositions = nodes.map((n, i) => {
+    const xPct = (n.isS10 ? 50 : NODE_X_PCT[Math.min(i, NODE_X_PCT.length - 1)]);
+    const y = 40 + i * NODE_SPACING;
+    return { xPct, y };
+  });
+
+  // ── SVG sinuous path ──────────────────────────────────────────
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'journey-svg');
+  svg.setAttribute('viewBox', `0 0 100 ${containerHeight}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+
+  if (nodePositions.length > 1) {
+    let d = `M ${nodePositions[0].xPct} ${nodePositions[0].y}`;
+    for (let i = 1; i < nodePositions.length; i++) {
+      const prev = nodePositions[i - 1];
+      const cur  = nodePositions[i];
+      const midY = (prev.y + cur.y) / 2;
+      d += ` C ${prev.xPct} ${midY}, ${cur.xPct} ${midY}, ${cur.xPct} ${cur.y}`;
+    }
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'rgba(184,137,42,0.18)');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-dasharray', '6 5');
+    svg.appendChild(path);
+  }
+  list.appendChild(svg);
+
+  // ── Nodes ─────────────────────────────────────────────────────
+  nodes.forEach((n, i) => {
+    const { sec, done, isCurrent, locked, isS10 } = n;
+    const { xPct, y } = nodePositions[i];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'journey-node-wrap';
+    wrap.style.cssText = `left:${xPct}%;top:${y}px`;
+
+    // Node circle
+    const node = document.createElement('div');
+    let nodeClass = 'journey-node';
+    if (isS10)        nodeClass += ' s10-node';
+    else if (sec.id === 's0') nodeClass += ' s0-node';
+    else if (done)    nodeClass += ' done';
+    else if (isCurrent) nodeClass += ' current';
+    else              nodeClass += ' locked';
+    node.className = nodeClass;
+
+    // Badge (START / CONTINUAR) for current non-s0
+    if (isCurrent && sec.id !== 's0' && !isS10) {
+      const badge = document.createElement('div');
+      badge.className = 'journey-node-badge';
+      badge.textContent = done ? '' : (state.completedSections.length === 0 ? 'EMPEZAR' : 'CONTINUAR');
+      node.appendChild(badge);
+    }
+    if (isS10) {
+      const badge = document.createElement('div');
+      badge.className = 'journey-node-badge';
+      badge.style.background = '#2A5C42';
+      badge.style.border = '1px solid #4CAF80';
+      badge.textContent = 'SIGUIENTE';
+      node.appendChild(badge);
+    }
+
+    // Icon
+    const iconWrap = document.createElement('div');
+    iconWrap.innerHTML = SECTION_ICONS[sec.id] || SECTION_ICONS.s9;
+    if (locked) iconWrap.style.opacity = '0.3';
+    node.appendChild(iconWrap);
+
+    // Lock badge for locked nodes
+    if (locked) {
+      const lockBadge = document.createElement('div');
+      lockBadge.className = 'journey-lock-icon';
+      lockBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg>`;
+      node.appendChild(lockBadge);
+    }
+
+    // Done checkmark overlay
+    if (done && sec.id !== 's0') {
+      const chk = document.createElement('div');
+      chk.style.cssText = 'position:absolute;bottom:-5px;right:-5px;width:22px;height:22px;background:#1a0a0f;border:2px solid #E8C870;border-radius:50%;display:flex;align-items:center;justify-content:center';
+      chk.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+      node.appendChild(chk);
+    }
+
+    wrap.appendChild(node);
+
+    // Label
+    const label = document.createElement('div');
+    let labelClass = 'journey-node-label';
+    if (isS10)           labelClass += ' s10-label';
+    else if (sec.id === 's0') labelClass += ' s0-label';
+    else if (done)       labelClass += ' done-label';
+    else if (isCurrent)  labelClass += ' current-label';
+    label.className = labelClass;
+
+    if (sec.id === 's0') {
+      label.innerHTML = `<div style="font-size:8px;font-weight:800;letter-spacing:.12em;color:#B8892A;text-transform:uppercase;margin-bottom:2px">Punto de arranque</div>${sec.label}`;
+    } else {
+      label.textContent = sec.label;
+    }
+    wrap.appendChild(label);
+
+    // Stars (not for s0/s10)
+    if (sec.id !== 's0' && !isS10) {
+      const stars = document.createElement('div');
+      stars.className = done ? 'journey-stars done-stars' : 'journey-stars empty-stars';
+      stars.textContent = done ? '★★★' : '☆☆☆';
+      wrap.appendChild(stars);
+    }
+
+    // Click handler
+    wrap.addEventListener('click', () => {
+      if (locked) {
+        shakeNode(node);
+        showJourneyToast('Completa la sección anterior primero');
+      } else if (isS10) {
+        bounceNode(node);
+        openQueSigneAhora();
+      } else {
+        bounceNode(node);
+        openLesson(sec.id);
+      }
+    });
+
+    list.appendChild(wrap);
+  });
 }
 
 // ═══════════════════════════════════════════

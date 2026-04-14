@@ -874,17 +874,6 @@
   }
 
   /* ── 7D Journey section ── */
-  .journey-abyss {
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 120px;
-    background: linear-gradient(to bottom, var(--burgundy-deep), #0F0A0B);
-    gap: 8px;
-  }
-  .abyss-line {
-    width: 60px; height: 1px;
-    background: rgba(184,137,42,0.5);
-  }
   .abyss-label {
     font-family: 'Cormorant Garamond',serif;
     font-size: 11px;
@@ -2755,9 +2744,8 @@ function renderSectionsList() {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', d);
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', 'rgba(212,175,106,0.6)');
-    path.setAttribute('stroke-width', '3');
-    path.setAttribute('stroke-dasharray', '6 5');
+    path.setAttribute('stroke', 'rgba(212,175,106,0.25)');
+    path.setAttribute('stroke-width', '1.5');
     svg.appendChild(path);
   }
   workshopMap.appendChild(svg);
@@ -2864,14 +2852,30 @@ function renderSectionsList() {
 
   list.appendChild(workshopMap);
 
-  // ── PARTE 2: Transición "El Abismo" ──────────────────────────
-  const abyss = document.createElement('div');
-  abyss.className = 'journey-abyss';
-  abyss.innerHTML = `
-    <div class="abyss-line"></div>
-    <div class="abyss-label">Soberana 7D</div>
-    <div class="abyss-line"></div>`;
-  list.appendChild(abyss);
+  // ── PARTE 2: Caja transición Soberana 7D ────────────────────
+  const abyssWrap = document.createElement('div');
+  abyssWrap.style.cssText = 'padding:60px 20px 60px;background:var(--burgundy-deep)';
+  abyssWrap.innerHTML = `
+    <div style="
+      width:85%;margin:0 auto;
+      background:rgba(184,137,42,0.08);
+      border:1.5px solid rgba(184,137,42,0.3);
+      border-radius:16px;
+      padding:20px 24px;
+      display:flex;align-items:center;gap:14px
+    ">
+      <div style="flex-shrink:0;color:#B8892A">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#B8892A;margin-bottom:4px">ENTRENAMIENTO</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#EDE3CE;line-height:1.1;margin-bottom:3px">Soberana 7D</div>
+        <div style="font-size:11px;color:rgba(237,227,206,0.6)">30 días · 4 semanas · Tu caso en vivo</div>
+      </div>
+    </div>`;
+  list.appendChild(abyssWrap);
 
   // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
   render7dJourney(list);
@@ -2949,20 +2953,66 @@ function open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum }) {
     drawer.onclick = (e) => { if (e.target === drawer) drawer.style.display = 'none'; };
     document.body.appendChild(drawer);
   }
+
+  const isUnlocked = semUnlocked;
+  const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
+
   drawer.innerHTML = `
     <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
       <div class="modal-drag-bar"></div>
-      <div style="padding:24px 20px 32px">
+      <div style="padding:24px 20px 36px">
+
+        <!-- Header -->
         <div style="font-size:9px;font-weight:700;letter-spacing:.18em;color:${semana.color};text-transform:uppercase;margin-bottom:6px">
-          ${dia.dia} · ${semana.title}
+          ${dia.dia.toUpperCase()} · SEMANA ${semNum}
         </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:12px">${dia.label}</div>
-        <div style="font-size:13px;color:rgba(237,227,206,0.65);line-height:1.6;margin-bottom:24px">${dia.desc}</div>
-        ${semUnlocked
-          ? `<button style="width:100%;background:${semana.nodeBg};border:1.5px solid ${semana.nodeBorder};border-radius:12px;color:#F0E6EA;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer" onclick="mark7dDone('${nodeKey}')">Marcar como completado ✓</button>`
-          : `<div style="text-align:center;background:${semana.bannerBg};border:1px solid ${semana.bannerBorder};border-radius:12px;padding:14px;color:${semana.color};font-size:13px;font-weight:600">Disponible en Semana ${semNum}</div>`
-        }
-        <button onclick="document.getElementById('drawer-7d').style.display='none'" style="width:100%;margin-top:10px;background:none;border:none;color:rgba(196,160,178,0.5);font-size:13px;cursor:pointer;padding:8px">Cerrar</button>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#F0E6EA;margin-bottom:4px">${dia.label}</div>
+        <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">${dia.desc}</div>
+
+        ${isUnlocked ? `
+          <!-- Video placeholder -->
+          <div style="
+            width:100%;aspect-ratio:16/9;
+            background:${semana.nodeBg};
+            border:1px solid ${semana.nodeBorder};
+            border-radius:12px;
+            display:flex;align-items:center;justify-content:center;
+            margin-bottom:20px;cursor:pointer;
+          ">
+            <div style="
+              width:56px;height:56px;border-radius:50%;
+              background:rgba(184,137,42,0.2);border:2px solid rgba(184,137,42,0.4);
+              display:flex;align-items:center;justify-content:center;
+            ">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <polygon points="5,3 19,12 5,21" fill="#B8892A"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Completado button -->
+          <button
+            style="width:100%;background:${semana.color};border:none;border-radius:12px;color:#fff;font-family:'Jost',sans-serif;font-size:15px;font-weight:600;padding:15px;cursor:pointer;${isDone ? 'opacity:.6' : ''}"
+            onclick="mark7dDone('${nodeKey}')"
+            ${isDone ? 'disabled' : ''}
+          >
+            ${isDone ? '✓ Completado' : 'Marcar como completado'}
+          </button>
+        ` : `
+          <!-- Bloqueado -->
+          <div style="
+            text-align:center;
+            background:${semana.bannerBg};
+            border:1px solid ${semana.bannerBorder};
+            border-radius:12px;padding:18px;
+            color:${semana.color};font-size:14px;font-weight:600
+          ">Disponible en Semana ${semNum}</div>
+        `}
+
+        <button onclick="document.getElementById('drawer-7d').style.display='none'"
+          style="width:100%;margin-top:12px;background:none;border:none;color:rgba(196,160,178,0.4);font-size:13px;cursor:pointer;padding:8px">
+          Cerrar
+        </button>
       </div>
     </div>`;
   drawer.style.display = 'flex';
@@ -2990,7 +3040,8 @@ function render7dJourney(container) {
 
   SEMANAS_7D.forEach((semana, si) => {
     const semNum = si + 1;
-    const semUnlocked = tiene7d && semNum <= semanaActiva;
+    // Semana 1 siempre desbloqueada visualmente (preview); otras requieren acceso
+    const semUnlocked = semNum === 1 || (tiene7d && semNum <= semanaActiva);
 
     // ── Banner de semana ────────────────────────────────────────
     const header = document.createElement('div');
@@ -3042,8 +3093,8 @@ function render7dJourney(container) {
       const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       pathEl.setAttribute('d', d);
       pathEl.setAttribute('fill', 'none');
-      pathEl.setAttribute('stroke', semUnlocked ? semana.color + '4D' : 'rgba(255,255,255,0.06)');
-      pathEl.setAttribute('stroke-width', '2');
+      pathEl.setAttribute('stroke', semUnlocked ? 'rgba(212,175,106,0.25)' : 'rgba(255,255,255,0.08)');
+      pathEl.setAttribute('stroke-width', '1.5');
       svgW.appendChild(pathEl);
     }
     section.appendChild(svgW);
@@ -3125,13 +3176,12 @@ function render7dJourney(container) {
       label.textContent = dia.label;
       wrap.appendChild(label);
 
-      // Click — siempre muestra el drawer
+      // FIX 1: Semana 1 siempre abre drawer. Otras semanas: modal si no tiene7d.
       wrap.addEventListener('click', () => {
-        if (!tiene7d) {
-          shakeNode(node);
+        bounceNode(node);
+        if (!tiene7d && semNum > 1) {
           document.getElementById('modal-7d-locked').style.display = 'flex';
         } else {
-          bounceNode(node);
           open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });
         }
       });

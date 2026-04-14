@@ -720,6 +720,191 @@
   }
   .journey-toast.show { opacity: 1; }
 
+  /* ── Streak counter ── */
+  .streak-counter {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(212,175,106,0.08);
+    border: 1px solid rgba(212,175,106,0.2);
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: default;
+  }
+  #streak-num {
+    font-size: 13px; font-weight: 600;
+    color: #D4AF6A;
+    line-height: 1;
+  }
+
+  /* ── Botón flotante ERES ── */
+  .eres-fab {
+    position: fixed;
+    bottom: 80px; right: 20px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#6B1A2A,#8B2D3F);
+    border: 1.5px solid rgba(212,175,106,0.4);
+    box-shadow: 0 4px 20px rgba(107,26,42,0.5);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 90;
+    transition: transform .15s;
+  }
+  .eres-fab:active { transform: scale(.93); }
+
+  /* ── Modal overlay & sheet ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    display: flex; align-items: flex-end;
+  }
+  .modal-sheet {
+    background: #1a0a0f;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-height: 92dvh;
+    overflow-y: auto;
+    border-top: 1px solid rgba(212,175,106,0.15);
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .modal-drag-bar {
+    width: 36px; height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  /* ── ERES steps ── */
+  .eres-step {
+    display: flex; gap: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212,175,106,0.1);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .eres-letter {
+    font-family: 'Cormorant Garamond',serif;
+    font-size: 28px; font-weight: 700;
+    color: rgba(212,175,106,0.5);
+    line-height: 1;
+    min-width: 20px;
+  }
+  .eres-content { flex: 1; }
+  .eres-title {
+    font-weight: 600; font-size: 14px;
+    color: #F0E6EA; margin-bottom: 4px;
+  }
+  .eres-q {
+    font-size: 12px; color: rgba(196,160,178,0.7);
+    margin-bottom: 10px; line-height: 1.4;
+  }
+  .eres-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #F0E6EA;
+    font-family: 'Jost',sans-serif;
+    font-size: 13px;
+    padding: 10px 12px;
+    resize: none;
+    min-height: 60px;
+  }
+  .eres-input:focus { outline: none; border-color: rgba(212,175,106,0.4); }
+  .eres-choice-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: #F0E6EA;
+    font-family: 'Jost',sans-serif;
+    font-size: 12px;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .eres-choice-btn.selected {
+    background: rgba(184,137,42,0.15);
+    border-color: rgba(184,137,42,0.5);
+    color: #D4AF6A;
+  }
+
+  /* ── 7D Journey section ── */
+  .journey-abyss {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 120px;
+    background: linear-gradient(to bottom, var(--burgundy-deep), #0F0A0B);
+    gap: 8px;
+  }
+  .abyss-line {
+    width: 60px; height: 1px;
+    background: rgba(184,137,42,0.5);
+  }
+  .abyss-label {
+    font-family: 'Cormorant Garamond',serif;
+    font-size: 11px;
+    letter-spacing: .4em;
+    color: rgba(184,137,42,0.6);
+    text-transform: uppercase;
+  }
+  .week-header-7d {
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid rgba(184,137,42,0.15);
+    padding: 24px 20px 16px;
+  }
+  .week-num-7d {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: .2em;
+    color: #B8892A;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .week-title-7d {
+    font-family: 'Cormorant Garamond',serif;
+    font-size: 22px; font-weight: 600;
+    color: #EDE3CE;
+    margin-bottom: 4px;
+  }
+  .week-sub-7d {
+    font-style: italic;
+    font-size: 13px;
+    color: rgba(237,227,206,0.5);
+  }
+  /* 7D nodes sizing */
+  .journey-node-wrap.d7 .journey-node {
+    width: 56px; height: 56px;
+  }
+  .journey-node-wrap.d7 .journey-node.s7d-active {
+    background: rgba(184,137,42,0.1);
+    border: 1.5px solid rgba(184,137,42,0.4);
+  }
+  .journey-node-wrap.d7 .journey-node.s7d-done {
+    background: linear-gradient(135deg,#1A3D2B,#2A5C42);
+    border: 2px solid rgba(61,122,90,0.6);
+  }
+  .journey-node-wrap.d7 .journey-node.s7d-locked {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+  }
+  .s7d-live-dot {
+    position: absolute; top: -4px; right: -4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #6B1A2A;
+    animation: pulse7d 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse7d {
+    0%,100% { box-shadow: 0 0 0 0 rgba(107,26,42,0.7); }
+    50%      { box-shadow: 0 0 0 6px rgba(107,26,42,0); }
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
 
   .section-card {
     background: white;
@@ -1609,6 +1794,10 @@
         <span class="header-title-main">Código Soberana</span>
       </div>
       <div class="header-right">
+        <div class="streak-counter" id="streak-counter" title="Días de sostenimiento">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="#D4AF6A" stroke="none"/></svg>
+          <span id="streak-num">0</span>
+        </div>
         <div class="progress-ring-mini">
           <svg width="40" height="40" viewBox="0 0 40 40">
             <circle class="ring-bg" cx="20" cy="20" r="16"/>
@@ -1755,95 +1944,75 @@
       </div>
 
       <!-- TAB: 7D -->
-      <div class="tab-content" id="tab-7d">
-        <div class="tab-7d">
+    </div>
 
-          <!-- Header -->
-          <div class="s7d-header">
-            <div class="s7d-eyebrow">Entrenamiento</div>
-            <div class="s7d-title">Soberana 7D</div>
-            <div class="s7d-sub">30 días · 4 semanas · Tu caso en vivo</div>
-            <div class="s7d-divider"></div>
-          </div>
+    <!-- Botón flotante ERES -->
+    <button class="eres-fab" id="eres-fab" onclick="openEresModal()">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#D4AF6A;line-height:1">E</span>
+    </button>
 
-          <!-- Contenido bloqueado (default) -->
-          <div id="s7d-locked">
-            <div class="s7d-weeks">
+    <!-- Modal ERES -->
+    <div class="modal-overlay" id="eres-modal" style="display:none" onclick="if(event.target===this)closeEresModal()">
+      <div class="modal-sheet" id="eres-sheet">
+        <div class="modal-drag-bar"></div>
+        <div style="padding:24px 20px 32px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;margin-bottom:4px">Sistema ERES</div>
+          <div style="font-size:12px;color:rgba(196,160,178,0.7);letter-spacing:.06em;margin-bottom:24px">Tu protocolo de regulación</div>
 
-              <div class="s7d-week-card">
-                <div class="s7d-lock">🔒</div>
-                <div class="s7d-week-info">
-                  <div class="s7d-week-badge">Semana 1 · Días 1–7</div>
-                  <div class="s7d-week-name">Arquitecta de Realidad</div>
-                  <div class="s7d-week-desc">Tu cerebro construye lo que tú le das.</div>
-                  <div class="s7d-week-dims">Mental + Emocional</div>
-                </div>
-              </div>
-
-              <div class="s7d-week-card">
-                <div class="s7d-lock">🔒</div>
-                <div class="s7d-week-info">
-                  <div class="s7d-week-badge">Semana 2 · Días 8–14</div>
-                  <div class="s7d-week-name">Gravedad Propia</div>
-                  <div class="s7d-week-desc">Las mujeres que no necesitan validación generan magnetismo.</div>
-                  <div class="s7d-week-dims">Carácter + Relacional</div>
-                </div>
-              </div>
-
-              <div class="s7d-week-card">
-                <div class="s7d-lock">🔒</div>
-                <div class="s7d-week-info">
-                  <div class="s7d-week-badge">Semana 3 · Días 15–21</div>
-                  <div class="s7d-week-name">Biología del Poder</div>
-                  <div class="s7d-week-desc">Tu cuerpo y tu dinero saben cosas que tu mente niega.</div>
-                  <div class="s7d-week-dims">Física + Economía</div>
-                </div>
-              </div>
-
-              <div class="s7d-week-card">
-                <div class="s7d-lock">🔒</div>
-                <div class="s7d-week-info">
-                  <div class="s7d-week-badge">Semana 4 · Días 22–30</div>
-                  <div class="s7d-week-name">El Código Final</div>
-                  <div class="s7d-week-desc">La dimensión que sostiene todo cuando todo lo demás falla.</div>
-                  <div class="s7d-week-dims">Espiritual</div>
-                </div>
-              </div>
-
-            </div>
-
-            <div class="s7d-stats">
-              <div class="s7d-stat">
-                <div class="s7d-stat-num">4</div>
-                <div class="s7d-stat-label">Masterclasses grabadas</div>
-              </div>
-              <div class="s7d-stat">
-                <div class="s7d-stat-num">4</div>
-                <div class="s7d-stat-label">Sesiones en vivo</div>
-              </div>
-              <div class="s7d-stat">
-                <div class="s7d-stat-num">31</div>
-                <div class="s7d-stat-label">Días de acompañamiento</div>
-              </div>
-              <div class="s7d-stat">
-                <div class="s7d-stat-num">1</div>
-                <div class="s7d-stat-label">Tu caso analizado en vivo</div>
-              </div>
-            </div>
-
-            <a class="s7d-cta" href="https://invisible-a-soberana.josuecalderon.lat/soberana7d">Quiero acceder al entrenamiento completo →</a>
-          </div>
-
-          <!-- Contenido activo (tiene acceso 7D) -->
-          <div id="s7d-active-content" style="display:none">
-            <div class="s7d-active">
-              <div class="s7d-active-icon">👑</div>
-              <div class="s7d-active-title">Acceso Soberana 7D Activo</div>
-              <div class="s7d-active-sub">Tu dashboard completo está en construcción.</div>
-              <div class="s7d-active-note">Mientras tanto, continúa con tu workbook.</div>
+          <div class="eres-step" id="eres-e">
+            <div class="eres-letter">E</div>
+            <div class="eres-content">
+              <div class="eres-title">Escúchate</div>
+              <div class="eres-q">¿Qué estoy sintiendo exactamente?</div>
+              <textarea class="eres-input" id="eres-e-val" placeholder="Describe lo que sientes sin filtro..."></textarea>
             </div>
           </div>
 
+          <div class="eres-step" id="eres-r">
+            <div class="eres-letter">R</div>
+            <div class="eres-content">
+              <div class="eres-title">Reconócete</div>
+              <div class="eres-q">Tiene sentido que me sienta así porque...</div>
+              <textarea class="eres-input" id="eres-r-val" placeholder="Valida tu experiencia..."></textarea>
+            </div>
+          </div>
+
+          <div class="eres-step" id="eres-e2">
+            <div class="eres-letter">E</div>
+            <div class="eres-content">
+              <div class="eres-title">Elige tu momento</div>
+              <div class="eres-q">¿Es este el momento para actuar?</div>
+              <div style="display:flex;gap:10px;margin-top:10px">
+                <button class="eres-choice-btn" id="eres-act-si" onclick="eresChoose('si')">Sí, actúo</button>
+                <button class="eres-choice-btn" id="eres-act-no" onclick="eresChoose('no')">Guardo para después</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="eres-step" id="eres-s">
+            <div class="eres-letter">S</div>
+            <div class="eres-content">
+              <div class="eres-title">Sostén tu necesidad</div>
+              <div class="eres-q">Lo que necesito comunicar es...</div>
+              <textarea class="eres-input" id="eres-s-val" placeholder="Escribe lo que necesitas decir o hacer..."></textarea>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="width:100%;margin-top:20px" onclick="saveEres()">Guardar en mi diario</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 7D locked (sin acceso) -->
+    <div class="modal-overlay" id="modal-7d-locked" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+      <div class="modal-sheet">
+        <div class="modal-drag-bar"></div>
+        <div style="padding:28px 24px 36px;text-align:center">
+          <div style="font-size:32px;margin-bottom:12px">👑</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#F0E6EA;margin-bottom:8px">Soberana 7D</div>
+          <div style="font-size:14px;color:rgba(237,227,206,0.6);line-height:1.6;margin-bottom:24px">Este contenido es parte del entrenamiento de 30 días. Accede al programa completo para desbloquear.</div>
+          <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d" style="display:block;background:linear-gradient(135deg,#1A3D2B,#2A5C42);color:#EDE3CE;text-decoration:none;font-size:15px;font-weight:600;padding:16px 24px;border-radius:14px;border:1px solid rgba(61,122,90,0.5)">Ver el entrenamiento →</a>
+          <button onclick="document.getElementById('modal-7d-locked').style.display='none'" style="margin-top:12px;background:none;border:none;color:rgba(196,160,178,0.5);font-size:13px;cursor:pointer;width:100%;padding:8px">Cerrar</button>
         </div>
       </div>
     </div>
@@ -1861,10 +2030,6 @@
       <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         Mi Perfil
-      </button>
-      <button class="tab-btn" id="tab-btn-7d" onclick="switchTab('7d')">
-        <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        7D
       </button>
     </div>
   </div>
@@ -2207,7 +2372,11 @@ let state = {
   answers: {},
   completedSections: [],
   beliefRows: {},
-  identityChecks: {}
+  identityChecks: {},
+  streak: 0,
+  lastActive: null,
+  eresLog: [],
+  completed7d: {}
 };
 
 function saveState() {
@@ -2380,6 +2549,7 @@ function initApp() {
   document.querySelector('#daily-quote .confrontation-text').textContent = q.text;
   document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
   
+  updateStreak();
   renderSectionsList();
   updateProgressUI();
   renderInstallSection();
@@ -2394,13 +2564,65 @@ function initApp() {
 }
 
 function apply7dAccess() {
-  if (state.user && state.user.tiene7d) {
-    document.getElementById('s7d-locked').style.display = 'none';
-    document.getElementById('s7d-active-content').style.display = 'block';
+  // 7D content now lives in the unified camino (renderSectionsList)
+  // Nothing to toggle here
+}
+
+// ── Streak logic ─────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  const last  = state.lastActive;
+  if (!last) {
+    state.streak = 1;
   } else {
-    document.getElementById('s7d-locked').style.display = 'block';
-    document.getElementById('s7d-active-content').style.display = 'none';
+    const diffMs = new Date(today) - new Date(last);
+    const diffDays = Math.round(diffMs / 86400000);
+    if (diffDays === 0) {
+      // same day, no change
+    } else if (diffDays === 1) {
+      state.streak = (state.streak || 0) + 1;
+    } else {
+      state.streak = 1; // reset if gap > 1 day
+    }
   }
+  state.lastActive = today;
+  saveState();
+  document.getElementById('streak-num').textContent = state.streak || 1;
+}
+
+// ── ERES modal ────────────────────────────────────────────────────
+let _eresChoice = null;
+function openEresModal() {
+  _eresChoice = null;
+  ['eres-e-val','eres-r-val','eres-s-val'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('eres-act-si').classList.remove('selected');
+  document.getElementById('eres-act-no').classList.remove('selected');
+  document.getElementById('eres-modal').style.display = 'flex';
+}
+function closeEresModal() {
+  document.getElementById('eres-modal').style.display = 'none';
+}
+function eresChoose(val) {
+  _eresChoice = val;
+  document.getElementById('eres-act-si').classList.toggle('selected', val === 'si');
+  document.getElementById('eres-act-no').classList.toggle('selected', val === 'no');
+}
+function saveEres() {
+  const entry = {
+    fecha: new Date().toISOString(),
+    e: document.getElementById('eres-e-val').value.trim(),
+    r: document.getElementById('eres-r-val').value.trim(),
+    elijo: _eresChoice,
+    s: document.getElementById('eres-s-val').value.trim()
+  };
+  if (!state.eresLog) state.eresLog = [];
+  state.eresLog.push(entry);
+  saveState();
+  closeEresModal();
+  showToast('Guardado en tu diario ✓');
 }
 
 // ═══════════════════════════════════════════
@@ -2457,6 +2679,11 @@ function showJourneyToast(msg) {
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
   list.innerHTML = '';
+  list.style.height = ''; // allow natural height for 7D content below
+
+  // ── Workshop journey sub-container ───────────────────────────
+  const workshopMap = document.createElement('div');
+  workshopMap.style.cssText = 'position:relative;';
 
   // Build node data: s0..s9 always, s10 only when s9 complete
   const nodes = [];
@@ -2478,10 +2705,9 @@ function renderSectionsList() {
 
   const totalNodes = nodes.length;
   const containerHeight = totalNodes * NODE_SPACING + 80;
-  list.style.height = containerHeight + 'px';
+  workshopMap.style.height = containerHeight + 'px';
 
-  // Compute pixel positions after layout
-  // We use percentage for x, absolute px for y
+  // Compute pixel positions
   const nodePositions = nodes.map((n, i) => {
     const xPct = (n.isS10 ? 50 : NODE_X_PCT[Math.min(i, NODE_X_PCT.length - 1)]);
     const y = 40 + i * NODE_SPACING;
@@ -2510,7 +2736,7 @@ function renderSectionsList() {
     path.setAttribute('stroke-dasharray', '6 5');
     svg.appendChild(path);
   }
-  list.appendChild(svg);
+  workshopMap.appendChild(svg);
 
   // ── Nodes ─────────────────────────────────────────────────────
   nodes.forEach((n, i) => {
@@ -2609,7 +2835,192 @@ function renderSectionsList() {
       }
     });
 
-    list.appendChild(wrap);
+    workshopMap.appendChild(wrap);
+  });
+
+  list.appendChild(workshopMap);
+
+  // ── PARTE 2: Transición "El Abismo" ──────────────────────────
+  const abyss = document.createElement('div');
+  abyss.className = 'journey-abyss';
+  abyss.innerHTML = `
+    <div class="abyss-line"></div>
+    <div class="abyss-label">Soberana 7D</div>
+    <div class="abyss-line"></div>`;
+  list.appendChild(abyss);
+
+  // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
+  render7dJourney(list);
+}
+
+// ── 7D Journey data ───────────────────────────────────────────────
+const SEMANAS_7D = [
+  { num:'01', title:'Arquitecta de Realidad',  sub:'Tu cerebro construye lo que tú le das.' },
+  { num:'02', title:'Gravedad Propia',          sub:'Las mujeres que no necesitan validación generan magnetismo.' },
+  { num:'03', title:'Biología del Poder',       sub:'Tu cuerpo y tu dinero saben cosas que tu mente niega.' },
+  { num:'04', title:'El Código Final',          sub:'La dimensión que lo sostiene todo cuando todo lo demás falla.' }
+];
+
+const DIAS_7D = [
+  { key:'lun', label:'Masterclass',    isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>` },
+  { key:'mar', label:'Reflexión',      isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` },
+  { key:'mie', label:'Reto',           isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>` },
+  { key:'jue', label:'Envío de caso',  isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>` },
+  { key:'vie', label:'Diario',         isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>` },
+  { key:'sab', label:'Sesión en vivo', isLive: true,  icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>` },
+  { key:'dom', label:'Integración',    isLive: false, icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` }
+];
+
+const NODE_X_7D = [50, 70, 50, 30, 50, 70, 50]; // 7 nodos por semana
+
+function render7dJourney(container) {
+  const tiene7d = state.user && state.user.tiene7d;
+  let semanaActiva = 0;
+
+  if (tiene7d && state.user.fecha7d) {
+    const dias = Math.floor((Date.now() - new Date(state.user.fecha7d)) / 86400000);
+    semanaActiva = Math.min(Math.floor(dias / 7) + 1, 4);
+  }
+
+  SEMANAS_7D.forEach((semana, si) => {
+    const semNum = si + 1; // 1-based
+    const semUnlocked = tiene7d && semNum <= semanaActiva;
+
+    // Week header
+    const header = document.createElement('div');
+    header.className = 'week-header-7d';
+    header.innerHTML = `
+      <div class="week-num-7d">SEMANA ${semana.num}</div>
+      <div class="week-title-7d">${semana.title}</div>
+      <div class="week-sub-7d">${semana.sub}</div>`;
+    container.appendChild(header);
+
+    // 7 nodes section
+    const totalNodes7 = DIAS_7D.length;
+    const spacing = 100;
+    const sectionH = totalNodes7 * spacing + 60;
+
+    const section = document.createElement('div');
+    section.style.cssText = `position:relative;height:${sectionH}px;background:#0F0A0B`;
+
+    // SVG path for this week
+    const svgW = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgW.setAttribute('class', 'journey-svg');
+    svgW.setAttribute('viewBox', `0 0 100 ${sectionH}`);
+    svgW.setAttribute('preserveAspectRatio', 'none');
+
+    const positions = DIAS_7D.map((_, i) => ({
+      xPct: NODE_X_7D[i],
+      y: 30 + i * spacing
+    }));
+
+    if (positions.length > 1) {
+      let d = `M ${positions[0].xPct} ${positions[0].y}`;
+      for (let i = 1; i < positions.length; i++) {
+        const prev = positions[i - 1], cur = positions[i];
+        const midY = (prev.y + cur.y) / 2;
+        d += ` C ${prev.xPct} ${midY}, ${cur.xPct} ${midY}, ${cur.xPct} ${cur.y}`;
+      }
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', d);
+      pathEl.setAttribute('fill', 'none');
+      pathEl.setAttribute('stroke', semUnlocked ? 'rgba(184,137,42,0.2)' : 'rgba(255,255,255,0.05)');
+      pathEl.setAttribute('stroke-width', '2');
+      pathEl.setAttribute('stroke-dasharray', '6 5');
+      svgW.appendChild(pathEl);
+    }
+    section.appendChild(svgW);
+
+    // Nodes
+    DIAS_7D.forEach((dia, di) => {
+      const nodeKey = `7d_s${semNum}_d${di + 1}`;
+      const isDone    = !!(state.completed7d && state.completed7d[nodeKey]);
+      const isNodeLocked = !semUnlocked;
+
+      const { xPct, y } = positions[di];
+
+      const wrap = document.createElement('div');
+      wrap.className = 'journey-node-wrap d7';
+      wrap.style.cssText = `left:${xPct}%;top:${y}px`;
+
+      const node = document.createElement('div');
+      let nodeClass = 'journey-node ';
+      if (!semUnlocked)  nodeClass += 's7d-locked';
+      else if (isDone)   nodeClass += 's7d-done';
+      else               nodeClass += 's7d-active';
+      node.className = nodeClass;
+
+      // Icon
+      const iconWrap = document.createElement('div');
+      if (isDone)         iconWrap.style.color = '#96C7B3';
+      else if (semUnlocked) iconWrap.style.color = '#B8892A';
+      else                iconWrap.style.color = 'rgba(255,255,255,0.15)';
+      iconWrap.innerHTML = dia.icon;
+      node.appendChild(iconWrap);
+
+      // Lock icon for locked nodes
+      if (isNodeLocked) {
+        const lb = document.createElement('div');
+        lb.style.cssText = 'position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#0F0A0B;border:1px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center';
+        lb.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.4)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-linecap="round"/></svg>`;
+        node.appendChild(lb);
+      }
+
+      // Live dot for Saturday
+      if (dia.isLive && semUnlocked && !isDone) {
+        const dot = document.createElement('div');
+        dot.className = 's7d-live-dot';
+        node.appendChild(dot);
+        node.style.borderColor = 'rgba(107,26,42,0.6)';
+      }
+
+      // Done check
+      if (isDone) {
+        const chk = document.createElement('div');
+        chk.style.cssText = 'position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;background:#0F0A0B;border:1.5px solid #3D7A5A;border-radius:50%;display:flex;align-items:center;justify-content:center';
+        chk.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#96C7B3" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+        node.appendChild(chk);
+      }
+
+      wrap.appendChild(node);
+
+      // Label
+      const label = document.createElement('div');
+      label.className = 'journey-node-label';
+      label.style.color = isNodeLocked ? 'rgba(255,255,255,0.2)' : (isDone ? '#96C7B3' : 'rgba(237,227,206,0.7)');
+      label.style.fontSize = '10px';
+      label.textContent = dia.label;
+      wrap.appendChild(label);
+
+      // Click
+      wrap.addEventListener('click', () => {
+        if (!tiene7d) {
+          shakeNode(node);
+          document.getElementById('modal-7d-locked').style.display = 'flex';
+        } else if (isNodeLocked) {
+          shakeNode(node);
+          // calculate unlock date
+          if (state.user.fecha7d) {
+            const unlockDate = new Date(new Date(state.user.fecha7d).getTime() + si * 7 * 86400000);
+            showJourneyToast(`Se desbloquea el ${unlockDate.toLocaleDateString('es', {day:'numeric',month:'long'})}`);
+          } else {
+            showJourneyToast('Esta semana aún no está disponible');
+          }
+        } else {
+          bounceNode(node);
+          if (!isDone) {
+            if (!state.completed7d) state.completed7d = {};
+            state.completed7d[nodeKey] = new Date().toISOString();
+            saveState();
+            renderSectionsList();
+          }
+        }
+      });
+
+      section.appendChild(wrap);
+    });
+
+    container.appendChild(section);
   });
 }
 
@@ -3691,9 +4102,10 @@ function openQueSigneAhora() {
 function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.getElementById('tab-btn-' + tab).classList.add('active');
-  
+  const tabEl = document.getElementById('tab-' + tab);
+  const btnEl = document.getElementById('tab-btn-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); }
 }
 

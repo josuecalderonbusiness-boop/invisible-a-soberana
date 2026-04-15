@@ -438,6 +438,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const functions = firebase.functions('us-central1');
 
 // ── Auth gate ─────────────────────────────────────────────────────
 const ADMIN_PWD = 'Soberana2026Admin';
@@ -494,16 +495,22 @@ async function publishPost() {
 }
 
 async function sendPushNotification(author, message) {
+  console.log('[Push] Llamando sendPushNotification...', { author, message });
   try {
-    const fn = firebase.functions().httpsCallable('sendPushNotification');
+    const fn = functions.httpsCallable('sendPushNotification');
     const result = await fn({
       titulo:   'Novedades Soberana',
       mensaje:  message,
       adminKey: 'Sob3rana@Admin2026'
     });
+    console.log('[Push] Resultado completo:', result);
+    console.log('[Push] result.data:', result.data);
     console.log('[Push] Enviadas:', result.data.enviadas);
   } catch(e) {
-    console.warn('[Push] Error al enviar notificación:', e.message);
+    console.error('[Push] Error completo:', e);
+    console.error('[Push] e.code:', e.code);
+    console.error('[Push] e.message:', e.message);
+    console.error('[Push] e.details:', e.details);
   }
 }
 

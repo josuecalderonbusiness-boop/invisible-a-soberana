@@ -35,5 +35,6 @@
     }
   ],
   "categories": ["education", "lifestyle"],
-  "lang": "es"
+  "lang": "es",
+  "gcm_sender_id": "30025552803"
 }

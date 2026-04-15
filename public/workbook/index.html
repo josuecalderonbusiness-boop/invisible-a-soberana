@@ -1904,6 +1904,64 @@
   }
   .unlocked .nov-achievement-badge { background: rgba(212,175,106,0.18); color: var(--gold); border: 1px solid rgba(212,175,106,0.28); }
   .locked  .nov-achievement-badge { background: rgba(255,255,255,0.04); color: rgba(196,160,178,0.28); border: 1px solid rgba(255,255,255,0.07); }
+
+  /* ── PANTALLA NOTIFICACIONES ── */
+  #screen-notif {
+    background: var(--burgundy-deep);
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .notif-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 35%, #3a0e1f 0%, #1a0a0f 70%);
+  }
+  .notif-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 340px;
+  }
+  .notif-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 0 20px rgba(212,175,106,0.4));
+  }
+  .notif-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .notif-body {
+    font-size: 15px;
+    color: rgba(196,160,178,0.8);
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+  .notif-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--burgundy), #6B1020);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cream);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 24px rgba(139,26,47,0.4);
+    transition: opacity .2s;
+  }
+  .notif-btn:active { opacity: .85; }
 </style>
 </head>
 <body>
@@ -1938,6 +1996,17 @@
         <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
       </div>
       <p class="login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
+    </div>
+  </div>
+
+  <!-- ══ NOTIFICACIONES ══ -->
+  <div id="screen-notif" class="screen">
+    <div class="notif-bg"></div>
+    <div class="notif-content">
+      <div class="notif-icon">🔥</div>
+      <div class="notif-title">No te pierdas nada</div>
+      <p class="notif-body">Para recibir tus lecciones diarias y mensajes de Josué activa las notificaciones 🔥</p>
+      <button class="notif-btn" id="notif-btn" onclick="activarNotificaciones()">Activar notificaciones</button>
     </div>
   </div>
 
@@ -2272,6 +2341,7 @@
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
 <script>
 // ═══════════════════════════════════════════
@@ -2328,6 +2398,79 @@ async function fsReadLogros(email) {
     if (doc.exists) return doc.data();
   } catch(e) { console.warn('[Firestore] readLogros:', e); }
   return null;
+}
+
+// ═══════════════════════════════════════════
+// FCM — NOTIFICACIONES PUSH
+// ═══════════════════════════════════════════
+const FCM_VAPID = 'BGNznm5prEz43d3H69QwBmbopFNKCV_7JkancIg-bn5gIxiS9qMuRXVWZ7pIQ9PRva6Ud2q454oLKiZ33NCwPto';
+let _messaging = null;
+
+function _getMessaging() {
+  if (_messaging) return _messaging;
+  try { _messaging = firebase.messaging(); } catch(e) {}
+  return _messaging;
+}
+
+// Mostrar pantalla de notificaciones (una sola vez por dispositivo)
+function maybeShowNotifScreen() {
+  if (localStorage.getItem('soberana_notif_asked')) {
+    // Ya se preguntó antes — ir directo al app
+    requestAnimationFrame(() => initApp());
+    return;
+  }
+  // Navegadores sin soporte (Safari iOS < 16.4, etc.) — saltar silenciosamente
+  if (!('Notification' in window) || !('PushManager' in window)) {
+    localStorage.setItem('soberana_notif_asked', '1');
+    requestAnimationFrame(() => initApp());
+    return;
+  }
+  // Si ya concedió o denegó anteriormente, no volver a preguntar
+  if (Notification.permission !== 'default') {
+    localStorage.setItem('soberana_notif_asked', '1');
+    if (Notification.permission === 'granted') {
+      saveFcmToken(); // asegurarse de tener el token guardado
+    }
+    requestAnimationFrame(() => initApp());
+    return;
+  }
+  // Mostrar pantalla de permiso
+  document.getElementById('screen-splash').classList.remove('active');
+  document.getElementById('screen-notif').classList.add('active');
+}
+
+async function activarNotificaciones() {
+  const btn = document.getElementById('notif-btn');
+  btn.disabled = true;
+  btn.textContent = 'Activando...';
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await saveFcmToken();
+    }
+  } catch(e) {
+    console.warn('[FCM] requestPermission:', e);
+  }
+  localStorage.setItem('soberana_notif_asked', '1');
+  document.getElementById('screen-notif').classList.remove('active');
+  requestAnimationFrame(() => initApp());
+}
+
+async function saveFcmToken() {
+  const messaging = _getMessaging();
+  if (!messaging || !state.user) return;
+  try {
+    const sw = await navigator.serviceWorker.ready;
+    const token = await messaging.getToken({ vapidKey: FCM_VAPID, serviceWorkerRegistration: sw });
+    if (token) {
+      await db.collection('tokens').doc(state.user.email).set({
+        token,
+        email: state.user.email,
+        name:  state.user.name,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  } catch(e) { console.warn('[FCM] saveFcmToken:', e); }
 }
 
 // ═══════════════════════════════════════════
@@ -2741,14 +2884,14 @@ async function doLogin() {
     }
 
     saveState();
-    // requestAnimationFrame garantiza que el DOM esté listo antes de initApp (necesario en iOS)
-    requestAnimationFrame(() => initApp());
+    // Mostrar pantalla de notificaciones (primera vez) o ir directo al app
+    maybeShowNotifScreen();
 
   } catch(err) {
     // Sin internet — usar sesión guardada localmente
     if (loadState() && state.user && state.user.email === email) {
       state.completedSections = calcularSeccionesCompletadas(state.answers);
-      requestAnimationFrame(() => initApp());
+      maybeShowNotifScreen();
     } else {
       btn.textContent = 'Comenzar mi Workbook →';
       btn.disabled = false;
@@ -5843,7 +5986,7 @@ if ('serviceWorker' in navigator) {
 }
 
 if (loadState() && state.user) {
-  initApp();
+  maybeShowNotifScreen();
 } else {
   document.getElementById('screen-splash').classList.add('active');
 }

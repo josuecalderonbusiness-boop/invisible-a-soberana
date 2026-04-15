@@ -1,8 +1,9 @@
 const { setGlobalOptions } = require("firebase-functions");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onRequest } = require("firebase-functions/v2/https");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
+const cors = require("cors")({ origin: true });
 
 setGlobalOptions({ maxInstances: 10 });
 
@@ -10,92 +11,112 @@ initializeApp();
 
 const ADMIN_KEY = "Sob3rana@Admin2026";
 
-exports.sendPushNotification = onCall({
-  maxInstances: 10,
-  cors: [
-    "https://soberana-app.josuecalderon.lat",
-    "https://invisible-a-soberana.josuecalderon.lat",
-  ],
-}, async (request) => {
-  const { titulo, mensaje, adminKey } = request.data;
+exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
+  cors(req, res, async () => {
+    // Preflight
+    if (req.method === "OPTIONS") {
+      res.set("Access-Control-Allow-Origin", "*");
+      res.set("Access-Control-Allow-Methods", "POST");
+      res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.status(204).send("");
+      return;
+    }
 
-  // 1. Verificar clave de admin
-  if (adminKey !== ADMIN_KEY) {
-    throw new HttpsError("permission-denied", "Clave de administrador incorrecta.");
-  }
+    if (req.method !== "POST") {
+      res.status(405).json({ error: "Método no permitido" });
+      return;
+    }
 
-  if (!titulo || !mensaje) {
-    throw new HttpsError("invalid-argument", "Se requieren titulo y mensaje.");
-  }
+    const { titulo, mensaje, adminKey } = req.body;
 
-  const db = getFirestore();
-  const messaging = getMessaging();
+    // 1. Verificar clave de admin
+    if (adminKey !== ADMIN_KEY) {
+      res.status(403).json({ error: "No autorizado" });
+      return;
+    }
 
-  // 2. Leer todos los tokens de Firestore
-  const tokensSnap = await db.collection("tokens").get();
+    if (!titulo || !mensaje) {
+      res.status(400).json({ error: "Se requieren titulo y mensaje" });
+      return;
+    }
 
-  if (tokensSnap.empty) {
-    return { success: true, enviadas: 0 };
-  }
+    try {
+      const db = getFirestore();
+      const messaging = getMessaging();
 
-  const tokenDocs = tokensSnap.docs
-    .map(doc => ({ docId: doc.id, token: doc.data().token }))
-    .filter(t => !!t.token);
+      // 2. Leer todos los tokens de Firestore
+      const tokensSnap = await db.collection("tokens").get();
 
-  if (tokenDocs.length === 0) {
-    return { success: true, enviadas: 0 };
-  }
-
-  // 3. Enviar en lotes de 500 (límite de FCM sendEachForMulticast)
-  const BATCH_SIZE = 500;
-  let enviadas = 0;
-  const invalidTokenDocIds = [];
-
-  for (let i = 0; i < tokenDocs.length; i += BATCH_SIZE) {
-    const batch = tokenDocs.slice(i, i + BATCH_SIZE);
-    const tokens = batch.map(t => t.token);
-
-    const response = await messaging.sendEachForMulticast({
-      tokens,
-      notification: {
-        title: titulo,
-        body:  mensaje,
-      },
-      webpush: {
-        notification: {
-          icon:  "/workbook/icon-192.png",
-          badge: "/workbook/icon-192.png",
-        },
-        fcmOptions: {
-          link: "/workbook/",
-        },
-      },
-    });
-
-    response.responses.forEach((res, idx) => {
-      if (res.success) {
-        enviadas++;
-      } else {
-        const code = res.error && res.error.code;
-        // Tokens inválidos o no registrados — marcar para borrar
-        if (
-          code === "messaging/registration-token-not-registered" ||
-          code === "messaging/invalid-registration-token" ||
-          code === "messaging/invalid-argument"
-        ) {
-          invalidTokenDocIds.push(batch[idx].docId);
-        }
+      if (tokensSnap.empty) {
+        res.json({ success: true, enviadas: 0 });
+        return;
       }
-    });
-  }
 
-  // 4. Borrar tokens inválidos de Firestore
-  if (invalidTokenDocIds.length > 0) {
-    const deleteOps = invalidTokenDocIds.map(docId =>
-      db.collection("tokens").doc(docId).delete()
-    );
-    await Promise.all(deleteOps);
-  }
+      const tokenDocs = tokensSnap.docs
+        .map(doc => ({ docId: doc.id, token: doc.data().token }))
+        .filter(t => !!t.token);
 
-  return { success: true, enviadas };
+      if (tokenDocs.length === 0) {
+        res.json({ success: true, enviadas: 0 });
+        return;
+      }
+
+      // 3. Enviar en lotes de 500 (límite de FCM sendEachForMulticast)
+      const BATCH_SIZE = 500;
+      let enviadas = 0;
+      const invalidTokenDocIds = [];
+
+      for (let i = 0; i < tokenDocs.length; i += BATCH_SIZE) {
+        const batch = tokenDocs.slice(i, i + BATCH_SIZE);
+        const tokens = batch.map(t => t.token);
+
+        const response = await messaging.sendEachForMulticast({
+          tokens,
+          notification: {
+            title: titulo,
+            body:  mensaje,
+          },
+          webpush: {
+            notification: {
+              icon:  "/workbook/icon-192.png",
+              badge: "/workbook/icon-192.png",
+            },
+            fcmOptions: {
+              link: "/workbook/",
+            },
+          },
+        });
+
+        response.responses.forEach((r, idx) => {
+          if (r.success) {
+            enviadas++;
+          } else {
+            const code = r.error && r.error.code;
+            if (
+              code === "messaging/registration-token-not-registered" ||
+              code === "messaging/invalid-registration-token" ||
+              code === "messaging/invalid-argument"
+            ) {
+              invalidTokenDocIds.push(batch[idx].docId);
+            }
+          }
+        });
+      }
+
+      // 4. Borrar tokens inválidos de Firestore
+      if (invalidTokenDocIds.length > 0) {
+        await Promise.all(
+          invalidTokenDocIds.map(docId =>
+            db.collection("tokens").doc(docId).delete()
+          )
+        );
+      }
+
+      res.json({ success: true, enviadas });
+
+    } catch (e) {
+      console.error("sendPushNotification error:", e);
+      res.status(500).json({ error: e.message });
+    }
+  });
 });

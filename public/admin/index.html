@@ -496,20 +496,24 @@ async function publishPost() {
 async function sendPushNotification(author, message) {
   console.log('[Push] Llamando sendPushNotification...', { author, message });
   try {
-    const fn = firebase.functions().httpsCallable('sendPushNotification');
-    const result = await fn({
-      titulo:   'Novedades Soberana',
-      mensaje:  message,
-      adminKey: 'Sob3rana@Admin2026'
-    });
+    const res = await fetch(
+      'https://us-central1-soberana-app.cloudfunctions.net/sendPushNotification',
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          titulo:   'Novedades Soberana',
+          mensaje:  message,
+          adminKey: 'Sob3rana@Admin2026'
+        })
+      }
+    );
+    const result = await res.json();
     console.log('[Push] Resultado completo:', result);
-    console.log('[Push] result.data:', result.data);
-    console.log('[Push] Enviadas:', result.data.enviadas);
+    console.log('[Push] Enviadas:', result.enviadas);
   } catch(e) {
     console.error('[Push] Error completo:', e);
-    console.error('[Push] e.code:', e.code);
     console.error('[Push] e.message:', e.message);
-    console.error('[Push] e.details:', e.details);
   }
 }
 

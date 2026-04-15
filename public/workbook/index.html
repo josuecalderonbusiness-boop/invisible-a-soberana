@@ -2414,29 +2414,49 @@ function _getMessaging() {
 
 // Mostrar pantalla de notificaciones (una sola vez por dispositivo)
 function maybeShowNotifScreen() {
-  if (localStorage.getItem('soberana_notif_asked')) {
-    // Ya se preguntó antes — ir directo al app
-    requestAnimationFrame(() => initApp());
+  const alreadyAsked   = localStorage.getItem('soberana_notif_asked');
+  const hasPush        = ('Notification' in window) && ('PushManager' in window);
+  const permission     = hasPush ? Notification.permission : 'unsupported';
+
+  console.log('[Notif] maybeShowNotifScreen —', {
+    soberana_notif_asked: alreadyAsked,
+    'Notification.permission': permission,
+    PushManager: hasPush
+  });
+
+  // Ya respondió antes → app directo
+  if (alreadyAsked) {
+    console.log('[Notif] → rama: ya preguntado antes, ir al app');
+    _goToApp();
     return;
   }
-  // Navegadores sin soporte (Safari iOS < 16.4, etc.) — saltar silenciosamente
-  if (!('Notification' in window) || !('PushManager' in window)) {
+
+  // Sin soporte en este navegador → saltar silenciosamente
+  if (!hasPush) {
+    console.log('[Notif] → rama: sin soporte Push/Notification, saltar');
     localStorage.setItem('soberana_notif_asked', '1');
-    requestAnimationFrame(() => initApp());
+    _goToApp();
     return;
   }
-  // Si ya concedió o denegó anteriormente, no volver a preguntar
-  if (Notification.permission !== 'default') {
+
+  // Ya concedido → renovar token y pasar al app
+  if (permission === 'granted') {
+    console.log('[Notif] → rama: ya concedido, renovar token y app');
     localStorage.setItem('soberana_notif_asked', '1');
-    if (Notification.permission === 'granted') {
-      saveFcmToken(); // asegurarse de tener el token guardado
-    }
-    requestAnimationFrame(() => initApp());
+    saveFcmToken();
+    _goToApp();
     return;
   }
-  // Mostrar pantalla de permiso
-  document.getElementById('screen-splash').classList.remove('active');
+
+  // permission === 'default' (o 'denied') → mostrar pantalla
+  console.log('[Notif] → rama: mostrar pantalla de notificaciones (permission=' + permission + ')');
+  // Ocultar todas las screens activas y mostrar la de notificaciones
+  document.querySelectorAll('.screen.active').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-notif').classList.add('active');
+}
+
+function _goToApp() {
+  requestAnimationFrame(() => initApp());
 }
 
 async function activarNotificaciones() {
@@ -2453,7 +2473,7 @@ async function activarNotificaciones() {
   }
   localStorage.setItem('soberana_notif_asked', '1');
   document.getElementById('screen-notif').classList.remove('active');
-  requestAnimationFrame(() => initApp());
+  _goToApp();
 }
 
 async function saveFcmToken() {

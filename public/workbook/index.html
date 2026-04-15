@@ -2247,7 +2247,58 @@
   <div class="toast" id="toast"></div>
 </div>
 
+<!-- ══ FIREBASE CDN (compat v9) ══ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
+// ═══════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB7-A43AHuHDERC-ZdEyFRZ5R2w6w_rRYo",
+  authDomain: "soberana-app.firebaseapp.com",
+  projectId: "soberana-app",
+  storageBucket: "soberana-app.firebasestorage.app",
+  messagingSenderId: "30025552803",
+  appId: "1:30025552803:web:eb47af86c1898b99e94016"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ── Helpers Firestore ────────────────────────────────────────────
+async function fsReadStreak(email) {
+  try {
+    const doc = await db.collection('rachas').doc(email).get();
+    if (doc.exists) return doc.data();
+  } catch(e) { console.warn('[Firestore] readStreak:', e); }
+  return null;
+}
+
+async function fsWriteStreak(email, data) {
+  try {
+    await db.collection('rachas').doc(email).set(data, { merge: true });
+  } catch(e) { console.warn('[Firestore] writeStreak:', e); }
+}
+
+async function fsReadComunidad() {
+  try {
+    const snap = await db.collection('comunidad')
+      .orderBy('timestamp', 'desc')
+      .limit(20)
+      .get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { console.warn('[Firestore] readComunidad:', e); return []; }
+}
+
+async function fsReadLogros(email) {
+  try {
+    const doc = await db.collection('logros').doc(email).get();
+    if (doc.exists) return doc.data();
+  } catch(e) { console.warn('[Firestore] readLogros:', e); }
+  return null;
+}
+
 // ═══════════════════════════════════════════
 // DATA MODEL
 // ═══════════════════════════════════════════
@@ -2731,7 +2782,7 @@ function initApp() {
   document.querySelector('#daily-quote .confrontation-text').textContent = q.text;
   document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
   
-  updateStreak();
+  updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
   renderSectionsList();
   updateProgressUI();
   renderInstallSection();
@@ -2751,26 +2802,61 @@ function apply7dAccess() {
 }
 
 // ── Streak logic ─────────────────────────────────────────────────
-function updateStreak() {
+async function updateStreak() {
   const today = new Date().toDateString();
-  const last  = state.lastActive;
-  if (!last) {
-    state.streak = 1;
-  } else {
-    const diffMs = new Date(today) - new Date(last);
-    const diffDays = Math.round(diffMs / 86400000);
-    if (diffDays === 0) {
-      // same day, no change
-    } else if (diffDays === 1) {
-      state.streak = (state.streak || 0) + 1;
+  const email = state.user && state.user.email;
+
+  // Leer racha desde Firestore si hay usuario
+  if (email) {
+    const remote = await fsReadStreak(email);
+    if (remote && remote.lastActive) {
+      // Usar la racha más reciente entre local y remota
+      const remoteDate = remote.lastActive;
+      const diffRemote = Math.round((new Date(today) - new Date(remoteDate)) / 86400000);
+      if (diffRemote === 0) {
+        // Ya fue actualizada hoy remotamente — sincronizar local
+        state.streak = remote.streak || state.streak || 1;
+        state.lastActive = remoteDate;
+      } else if (diffRemote === 1) {
+        state.streak = (remote.streak || 0) + 1;
+        state.lastActive = today;
+      } else {
+        state.streak = 1;
+        state.lastActive = today;
+      }
     } else {
-      state.streak = 1; // reset if gap > 1 day
+      // Primera vez en Firestore — calcular con datos locales
+      const last = state.lastActive;
+      if (!last) {
+        state.streak = 1;
+      } else {
+        const diffMs = new Date(today) - new Date(last);
+        const diffDays = Math.round(diffMs / 86400000);
+        if (diffDays === 0) { /* sin cambio */ }
+        else if (diffDays === 1) { state.streak = (state.streak || 0) + 1; }
+        else { state.streak = 1; }
+      }
+      state.lastActive = today;
     }
+    // Persistir en Firestore
+    await fsWriteStreak(email, { streak: state.streak, lastActive: state.lastActive, email });
+  } else {
+    // Sin usuario — lógica local
+    const last = state.lastActive;
+    if (!last) {
+      state.streak = 1;
+    } else {
+      const diffMs = new Date(today) - new Date(last);
+      const diffDays = Math.round(diffMs / 86400000);
+      if (diffDays === 0) { /* sin cambio */ }
+      else if (diffDays === 1) { state.streak = (state.streak || 0) + 1; }
+      else { state.streak = 1; }
+    }
+    state.lastActive = today;
   }
-  state.lastActive = today;
+
   saveState();
   document.getElementById('streak-num').textContent = state.streak || 1;
-  // Golden only when 7D active
   const sc = document.getElementById('streak-counter');
   if (sc) sc.classList.toggle('active-streak', !!(state.user && state.user.tiene7d));
 }
@@ -4691,17 +4777,27 @@ function openQueSigneAhora() {
 // ═══════════════════════════════════════════
 // TAB: NOVEDADES
 // ═══════════════════════════════════════════
-function renderNovedades() {
-  const tiene7d = state.user && state.user.tiene7d;
-  const streak = state.streak || 0;
 
-  // Block 1: Racha
+// Feed fallback cuando Firestore no tiene datos
+const FEED_FALLBACK = [
+  { initial: 'V', name: 'Valeria M.', time: 'hace 2 horas',
+    event: 'Completó la Sección 3 — Patrones de Apego. "Por fin entiendo por qué me quedo cuando debería irme."',
+    hearts: 12 },
+  { initial: 'C', name: 'Camila R.', time: 'hace 5 horas',
+    event: 'Terminó el Día 1 de Soberana 7D. Primera vez que siento que el protocolo tiene sentido para mí.',
+    hearts: 8 },
+  { initial: 'S', name: 'Sofía A.', time: 'ayer',
+    event: 'Completó el Workshop completo. "Lo que más me impactó: darme cuenta de que yo era quien perpetuaba el ciclo."',
+    hearts: 24 },
+];
+
+function _renderStreakBlock(streak, tiene7d) {
   const streakSection = document.getElementById('nov-streak-section');
   if (tiene7d) {
     streakSection.style.display = 'block';
     document.getElementById('nov-streak-num').textContent = streak;
     const badge = document.getElementById('nov-streak-badge');
-    if (streak >= 30)     badge.textContent = '🔥 30 días';
+    if (streak >= 30)      badge.textContent = '🔥 30 días';
     else if (streak >= 14) badge.textContent = '🔥 ' + streak + ' días';
     else if (streak >= 7)  badge.textContent = '⚡ ' + streak + ' días';
     else if (streak > 0)   badge.textContent = streak + (streak === 1 ? ' día' : ' días');
@@ -4716,62 +4812,50 @@ function renderNovedades() {
   } else {
     streakSection.style.display = 'none';
   }
+}
 
-  // Block 2: Feed comunitario (hardcoded)
-  const feedData = [
-    { initial: 'V', name: 'Valeria M.', time: 'hace 2 horas',
-      event: 'Completó la Sección 3 — Patrones de Apego. "Por fin entiendo por qué me quedo cuando debería irme."',
-      hearts: 12 },
-    { initial: 'C', name: 'Camila R.', time: 'hace 5 horas',
-      event: 'Terminó el Día 1 de Soberana 7D. Primera vez que siento que el protocolo tiene sentido para mí.',
-      hearts: 8 },
-    { initial: 'S', name: 'Sofía A.', time: 'ayer',
-      event: 'Completó el Workshop completo. "Lo que más me impactó: darme cuenta de que yo era quien perpetuaba el ciclo."',
-      hearts: 24 },
-  ];
-  document.getElementById('nov-feed').innerHTML = feedData.map(f => `
+function _renderFeedBlock(feedData) {
+  document.getElementById('nov-feed').innerHTML = feedData.map(f => {
+    const initial = f.initial || (f.name ? f.name[0].toUpperCase() : '?');
+    const hearts  = typeof f.hearts === 'number' ? f.hearts : 0;
+    const time    = f.time || (f.timestamp ? _timeAgo(f.timestamp.toDate ? f.timestamp.toDate() : new Date(f.timestamp)) : '');
+    return `
     <div class="nov-feed-card">
       <div class="nov-feed-top">
-        <div class="nov-feed-avatar">${f.initial}</div>
+        <div class="nov-feed-avatar">${initial}</div>
         <div class="nov-feed-meta">
-          <div class="nov-feed-name">${f.name}</div>
-          <div class="nov-feed-time">${f.time}</div>
+          <div class="nov-feed-name">${f.name || 'Soberana'}</div>
+          <div class="nov-feed-time">${time}</div>
         </div>
       </div>
-      <div class="nov-feed-event">${f.event}</div>
+      <div class="nov-feed-event">${f.event || ''}</div>
       <div class="nov-feed-actions">
-        <button class="nov-feed-btn" onclick="novToggleHeart(this,${f.hearts})">
+        <button class="nov-feed-btn" onclick="novToggleHeart(this,${hearts})">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span>${f.hearts}</span>
+          <span>${hearts}</span>
         </button>
         <button class="nov-feed-btn">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Acompañar
         </button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
 
-  // Block 3: Lecturas
-  const articles = [
-    { icon: '🧠', tag: 'Psicología', title: 'Por qué el amor ansioso no es amor: el sistema nervioso y el apego', sub: '8 min de lectura' },
-    { icon: '🌿', tag: 'Protocolo', title: 'El método ERES: cómo regularte antes de hablar', sub: '5 min de lectura' },
-    { icon: '👑', tag: 'Desarrollo', title: 'Soberanía emocional no es frialdad: la diferencia que lo cambia todo', sub: '6 min de lectura' },
-  ];
-  document.getElementById('nov-articles').innerHTML = articles.map(a => `
-    <div class="nov-article-card" onclick="openArticleFullscreen(this)">
-      <div class="nov-article-icon">${a.icon}</div>
-      <div class="nov-article-body">
-        <div class="nov-article-tag">${a.tag}</div>
-        <div class="nov-article-title">${a.title}</div>
-        <div class="nov-article-sub">${a.sub}</div>
-      </div>
-      <svg class="nov-article-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-    </div>`).join('');
+function _timeAgo(date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 3600)  return 'hace ' + Math.floor(diff / 60) + ' min';
+  if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + ' horas';
+  if (diff < 172800) return 'ayer';
+  return 'hace ' + Math.floor(diff / 86400) + ' días';
+}
 
-  // Block 4: Logros
+function _renderLogrosBlock(tiene7d, fsLogros) {
   const { pct } = getProgress();
-  const workshopComplete = pct >= 100;
-  const halfDone = pct >= 50;
+  const workshopComplete = (fsLogros && fsLogros.workshopComplete) || pct >= 100;
+  const halfDone         = (fsLogros && fsLogros.halfDone)         || pct >= 50;
+  const tiene7dFinal     = (fsLogros && fsLogros.tiene7d)          || !!tiene7d;
   const achievements = [
     {
       icon: '👑',
@@ -4790,9 +4874,9 @@ function renderNovedades() {
     {
       icon: '🌿',
       name: 'Soberana 7D',
-      desc: tiene7d ? 'Acceso activo al entrenamiento de 30 días.' : 'Accede al entrenamiento de 30 días para desbloquear.',
-      badge: tiene7d ? 'Activo' : 'Bloqueado',
-      unlocked: !!tiene7d,
+      desc: tiene7dFinal ? 'Acceso activo al entrenamiento de 30 días.' : 'Accede al entrenamiento de 30 días para desbloquear.',
+      badge: tiene7dFinal ? 'Activo' : 'Bloqueado',
+      unlocked: !!tiene7dFinal,
     },
   ];
   document.getElementById('nov-achievements').innerHTML = achievements.map(a => `
@@ -4804,6 +4888,56 @@ function renderNovedades() {
       </div>
       <div class="nov-achievement-badge">${a.badge}</div>
     </div>`).join('');
+}
+
+async function renderNovedades() {
+  const tiene7d = state.user && state.user.tiene7d;
+  const email   = state.user && state.user.email;
+  const streak  = state.streak || 0;
+
+  // Block 1: Racha (sincronizar con Firestore si tiene 7D)
+  let streakFinal = streak;
+  if (tiene7d && email) {
+    const remote = await fsReadStreak(email);
+    if (remote && typeof remote.streak === 'number') {
+      streakFinal = remote.streak;
+      // Actualizar local si difiere
+      if (streakFinal !== state.streak) {
+        state.streak = streakFinal;
+        saveState();
+        document.getElementById('streak-num').textContent = streakFinal;
+      }
+    }
+  }
+  _renderStreakBlock(streakFinal, tiene7d);
+
+  // Block 2: Feed comunitario desde Firestore
+  let feedData = FEED_FALLBACK;
+  const remoteFeed = await fsReadComunidad();
+  if (remoteFeed && remoteFeed.length > 0) feedData = remoteFeed;
+  _renderFeedBlock(feedData);
+
+  // Block 3: Lecturas
+  const articles = [
+    { icon: '🧠', tag: 'Psicología', title: 'Por qué el amor ansioso no es amor: el sistema nervioso y el apego', sub: '8 min de lectura' },
+    { icon: '🌿', tag: 'Protocolo', title: 'El método ERES: cómo regularte antes de hablar', sub: '5 min de lectura' },
+    { icon: '👑', tag: 'Desarrollo', title: 'Soberanía emocional no es frialdad: la diferencia que lo cambia todo', sub: '6 min de lectura' },
+  ];
+  document.getElementById('nov-articles').innerHTML = articles.map(a => `
+    <div class="nov-article-card" onclick="openArticleFullscreen(this)">
+      <div class="nov-article-icon">${a.icon}</div>
+      <div class="nov-article-body">
+        <div class="nov-article-tag">${a.tag}</div>
+        <div class="nov-article-title">${a.title}</div>
+        <div class="nov-article-sub">${a.sub}</div>
+      </div>
+      <svg class="nov-article-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`).join('');
+
+  // Block 4: Logros (desde Firestore si hay email)
+  let fsLogros = null;
+  if (email) fsLogros = await fsReadLogros(email);
+  _renderLogrosBlock(tiene7d, fsLogros);
 }
 
 function novToggleHeart(btn, original) {

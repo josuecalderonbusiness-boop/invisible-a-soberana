@@ -1785,6 +1785,27 @@
 
   /* Community feed */
   .nov-feed { display: flex; flex-direction: column; gap: 10px; }
+  @keyframes feedFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .nov-feed-card { animation: feedFadeIn .3s ease both; }
+  .nov-feed-card.liked .nov-feed-heart svg { fill: var(--gold); stroke: var(--gold); }
+  .nov-feed-card.liked .nov-feed-heart { color: var(--gold); }
+  .nov-feed-more-btn {
+    width: 100%; margin-top: 4px;
+    background: none;
+    border: 1px solid rgba(212,175,106,0.2);
+    border-radius: 12px;
+    padding: 11px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: rgba(212,175,106,0.6);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: border-color .2s, color .2s;
+  }
+  .nov-feed-more-btn:active { border-color: var(--gold); color: var(--gold); }
   .nov-feed-card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
@@ -2798,6 +2819,12 @@ function initApp() {
   setupInstallPrompt();
   apply7dAccess();
 
+  // Post automático: primer acceso a Soberana 7D
+  if (state.user.tiene7d && !localStorage.getItem('soberana_7d_announced')) {
+    localStorage.setItem('soberana_7d_announced', '1');
+    publishComunidadPost(state.user.name, `${state.user.name.split(' ')[0]} comenzó Soberana 7D 👑`, 'automatico');
+  }
+
   // Popup de instalación — una sola vez, 3s después de entrar
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (!isStandalone && !localStorage.getItem('soberana_install_shown')) {
@@ -3322,10 +3349,12 @@ function open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum }) {
 
 function mark7dDone(nodeKey) {
   if (!state.completed7d) state.completed7d = {};
+  const isNew = !state.completed7d[nodeKey];
   state.completed7d[nodeKey] = new Date().toISOString();
   saveState();
   const drawer = document.getElementById('drawer-7d');
   if (drawer) drawer.style.display = 'none';
+  if (isNew) publish7dAutoPost(nodeKey);
   renderSectionsList();
 }
 
@@ -4632,12 +4661,14 @@ function saveLesson(secId) {
     return ans.length > 5;
   });
 
-  if (hasAnswer && !state.completedSections.includes(secId)) {
+  const isNewCompletion = hasAnswer && !state.completedSections.includes(secId);
+  if (isNewCompletion) {
     state.completedSections.push(secId);
+    publishAutoPost(secId); // post automático en comunidad
   }
-  
+
   saveState();
-  
+
   // Sincronizar con Google Sheets (en segundo plano, no bloquea la UI)
   syncToSheets(secId);
 
@@ -4784,6 +4815,69 @@ function openQueSigneAhora() {
 
 // ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// POSTS AUTOMÁTICOS EN COMUNIDAD
+// ═══════════════════════════════════════════
+async function publishComunidadPost(authorName, event, tipo) {
+  try {
+    await db.collection('comunidad').add({
+      name:      authorName,
+      initial:   authorName.trim()[0].toUpperCase(),
+      event:     event,
+      hearts:    0,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      adminKey:  'Sob3rana@Admin2026',
+      tipo:      tipo || 'automatico'
+    });
+  } catch(e) { console.warn('[Firestore] publishComunidadPost:', e); }
+}
+
+const PROTOCOLO_NAMES = { s5: 'Mental', s6: 'Emocional', s7: 'del Carácter' };
+
+function publishAutoPost(secId) {
+  if (!state.user) return;
+  const nombre = state.user.name.split(' ')[0];
+  const fullName = state.user.name;
+
+  if (secId === 's9') {
+    // Workshop completo
+    const flag = 'soberana_post_workshop_' + state.user.email;
+    if (!localStorage.getItem(flag)) {
+      localStorage.setItem(flag, '1');
+      publishComunidadPost(fullName, `${nombre} acaba de completar el Código Soberana 🔥`, 'automatico');
+    }
+    return;
+  }
+
+  if (PROTOCOLO_NAMES[secId]) {
+    const flag = 'soberana_post_prot_' + secId + '_' + state.user.email;
+    if (!localStorage.getItem(flag)) {
+      localStorage.setItem(flag, '1');
+      publishComunidadPost(fullName, `${nombre} activó el Protocolo ${PROTOCOLO_NAMES[secId]} ⚡`, 'automatico');
+    }
+  }
+}
+
+function publish7dAutoPost(nodeKey) {
+  if (!state.user) return;
+  const nombre   = state.user.name.split(' ')[0];
+  const fullName = state.user.name;
+  // nodeKey = "7d_s{N}_d{D}"
+  const match = nodeKey.match(/^7d_s(\d+)_d(\d+)$/);
+  if (!match) return;
+  const semNum = parseInt(match[1], 10);
+  const dayNum = parseInt(match[2], 10);
+
+  // Al completar el día 7 de una semana → "completó la Semana N del 7D"
+  if (dayNum === 7) {
+    const flag = 'soberana_post_7d_s' + semNum + '_' + state.user.email;
+    if (!localStorage.getItem(flag)) {
+      localStorage.setItem(flag, '1');
+      publishComunidadPost(fullName, `${nombre} completó la Semana ${semNum} del 7D 🌿`, 'automatico');
+    }
+  }
+}
+
 // TAB: NOVEDADES
 // ═══════════════════════════════════════════
 
@@ -4823,33 +4917,126 @@ function _renderStreakBlock(streak, tiene7d) {
   }
 }
 
+// ── Likes persistentes ────────────────────────────────────────────
+function _getLikedPosts() {
+  try { return JSON.parse(localStorage.getItem('soberana_likes') || '{}'); } catch(e) { return {}; }
+}
+function _saveLikedPosts(obj) {
+  localStorage.setItem('soberana_likes', JSON.stringify(obj));
+}
+function _likeKey() {
+  return (state.user && state.user.email) || 'anon';
+}
+
+async function novToggleHeart(btn, docId, originalHearts) {
+  if (!docId) return; // fallback posts no tienen id
+  const liked    = _getLikedPosts();
+  const key      = _likeKey();
+  const userKey  = key + '_' + docId;
+  const isLiked  = !!liked[userKey];
+  const card     = btn.closest('.nov-feed-card');
+  const spanEl   = btn.querySelector('span');
+  const svgEl    = btn.querySelector('svg');
+
+  // Toggle estado visual inmediatamente (optimistic UI)
+  const newLiked = !isLiked;
+  liked[userKey] = newLiked || undefined;
+  if (!newLiked) delete liked[userKey];
+  _saveLikedPosts(liked);
+
+  if (newLiked) {
+    card.classList.add('liked');
+    btn.style.color = 'var(--gold)';
+    svgEl.setAttribute('fill', 'currentColor');
+    spanEl.textContent = originalHearts + 1;
+  } else {
+    card.classList.remove('liked');
+    btn.style.color = '';
+    svgEl.setAttribute('fill', 'none');
+    spanEl.textContent = originalHearts;
+  }
+
+  // Persistir en Firestore
+  try {
+    const delta = newLiked ? 1 : -1;
+    await db.collection('comunidad').doc(docId).update({
+      hearts: firebase.firestore.FieldValue.increment(delta)
+    });
+  } catch(e) { console.warn('[Firestore] toggleHeart:', e); }
+}
+
+// ── Paginación del feed (3 por página) ───────────────────────────
+const FEED_PAGE_SIZE = 3;
+let _feedAllPosts    = [];
+let _feedShownCount  = 0;
+
+function _buildFeedCard(f) {
+  const liked    = _getLikedPosts();
+  const userKey  = _likeKey() + '_' + (f.id || '');
+  const isLiked  = f.id ? !!liked[userKey] : false;
+  const initial  = f.initial || (f.name ? f.name[0].toUpperCase() : '?');
+  const hearts   = typeof f.hearts === 'number' ? f.hearts : 0;
+  const time     = f.time || (f.timestamp ? _timeAgo(f.timestamp.toDate ? f.timestamp.toDate() : new Date(f.timestamp)) : '');
+  const likedCls = isLiked ? ' liked' : '';
+  const fillVal  = isLiked ? 'currentColor' : 'none';
+  const heartColor = isLiked ? 'color:var(--gold)' : '';
+  const docId    = f.id || '';
+  return `
+  <div class="nov-feed-card${likedCls}">
+    <div class="nov-feed-top">
+      <div class="nov-feed-avatar">${initial}</div>
+      <div class="nov-feed-meta">
+        <div class="nov-feed-name">${f.name || 'Soberana'}</div>
+        <div class="nov-feed-time">${time}</div>
+      </div>
+    </div>
+    <div class="nov-feed-event">${f.event || ''}</div>
+    <div class="nov-feed-actions">
+      <button class="nov-feed-btn nov-feed-heart" style="${heartColor}" onclick="novToggleHeart(this,'${docId}',${hearts})">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="${fillVal}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>${hearts}</span>
+      </button>
+      <button class="nov-feed-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Acompañar
+      </button>
+    </div>
+  </div>`;
+}
+
 function _renderFeedBlock(feedData) {
-  document.getElementById('nov-feed').innerHTML = feedData.map(f => {
-    const initial = f.initial || (f.name ? f.name[0].toUpperCase() : '?');
-    const hearts  = typeof f.hearts === 'number' ? f.hearts : 0;
-    const time    = f.time || (f.timestamp ? _timeAgo(f.timestamp.toDate ? f.timestamp.toDate() : new Date(f.timestamp)) : '');
-    return `
-    <div class="nov-feed-card">
-      <div class="nov-feed-top">
-        <div class="nov-feed-avatar">${initial}</div>
-        <div class="nov-feed-meta">
-          <div class="nov-feed-name">${f.name || 'Soberana'}</div>
-          <div class="nov-feed-time">${time}</div>
-        </div>
-      </div>
-      <div class="nov-feed-event">${f.event || ''}</div>
-      <div class="nov-feed-actions">
-        <button class="nov-feed-btn" onclick="novToggleHeart(this,${hearts})">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span>${hearts}</span>
-        </button>
-        <button class="nov-feed-btn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Acompañar
-        </button>
-      </div>
-    </div>`;
-  }).join('');
+  _feedAllPosts   = feedData;
+  _feedShownCount = 0;
+  const container = document.getElementById('nov-feed');
+  container.innerHTML = '';
+  _appendFeedPosts(container, false);
+}
+
+function _appendFeedPosts(container, animate) {
+  const slice = _feedAllPosts.slice(_feedShownCount, _feedShownCount + FEED_PAGE_SIZE);
+  _feedShownCount += slice.length;
+
+  // Eliminar botón previo si existe
+  const prevBtn = container.querySelector('.nov-feed-more-btn');
+  if (prevBtn) prevBtn.remove();
+
+  slice.forEach((f, i) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = _buildFeedCard(f);
+    const card = tmp.firstElementChild;
+    if (animate) card.style.animationDelay = (i * 0.06) + 's';
+    container.appendChild(card);
+  });
+
+  // Botón "Ver más" si quedan posts
+  if (_feedShownCount < _feedAllPosts.length) {
+    const btn = document.createElement('button');
+    btn.className = 'nov-feed-more-btn';
+    const remaining = _feedAllPosts.length - _feedShownCount;
+    btn.textContent = `Ver ${Math.min(remaining, FEED_PAGE_SIZE)} publicaciones más`;
+    btn.onclick = () => _appendFeedPosts(container, true);
+    container.appendChild(btn);
+  }
 }
 
 function _timeAgo(date) {
@@ -4946,14 +5133,6 @@ async function renderNovedades() {
   let fsLogros = null;
   if (email) fsLogros = await fsReadLogros(email);
   _renderLogrosBlock(tiene7d, fsLogros);
-}
-
-function novToggleHeart(btn, original) {
-  const liked = btn.dataset.liked === '1';
-  btn.dataset.liked = liked ? '0' : '1';
-  btn.style.color = liked ? '' : 'var(--gold)';
-  btn.querySelector('span').textContent = liked ? original : original + 1;
-  btn.querySelector('svg').setAttribute('fill', liked ? 'none' : 'currentColor');
 }
 
 function openArticleFullscreen(card) {

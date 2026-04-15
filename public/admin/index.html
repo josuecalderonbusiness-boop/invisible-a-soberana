@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Soberana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:       #0f0608;
+    --surface:  #1a0a0f;
+    --surface2: #251018;
+    --border:   rgba(184,137,42,0.18);
+    --gold:     #B8892A;
+    --gold-lt:  #D4AF6A;
+    --burg:     #8B1A2F;
+    --burg-lt:  #B02040;
+    --text:     #F5E6C8;
+    --muted:    #8a6575;
+    --danger:   #c0392b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── PASSWORD GATE ── */
+  #gate {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(ellipse 70% 50% at 50% 40%, #2a0a14, #0f0608);
+  }
+
+  .gate-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 32px 36px;
+    text-align: center;
+  }
+
+  .gate-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+  }
+
+  .gate-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .gate-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .gate-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    transition: border-color .2s;
+  }
+  .gate-input:focus { border-color: var(--gold); }
+
+  .gate-btn {
+    width: 100%;
+    background: var(--burg);
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background .2s;
+  }
+  .gate-btn:hover { background: var(--burg-lt); }
+
+  .gate-error {
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 12px;
+    min-height: 18px;
+  }
+
+  /* ── PANEL ── */
+  #panel {
+    display: none;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold-lt);
+  }
+
+  .panel-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(184,137,42,0.3);
+    border-radius: 100px;
+    padding: 4px 12px;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold-lt);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title span {
+    font-family: 'Jost', sans-serif;
+    font-size: 18px;
+  }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 16px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    transition: border-color .2s;
+    line-height: 1.6;
+  }
+  .field input:focus,
+  .field textarea:focus { border-color: var(--gold); }
+
+  .field textarea { min-height: 120px; }
+
+  .btn-publish {
+    background: var(--burg);
+    border: none;
+    border-radius: 12px;
+    padding: 13px 28px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background .2s, opacity .2s;
+  }
+  .btn-publish:hover { background: var(--burg-lt); }
+  .btn-publish:disabled { opacity: .5; cursor: default; }
+
+  .publish-status {
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 18px;
+    color: var(--gold);
+  }
+  .publish-status.error { color: var(--danger); }
+
+  /* ── POSTS LIST ── */
+  #posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .post-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .post-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--burg);
+    color: var(--text);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .post-body { flex: 1; min-width: 0; }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .post-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold-lt);
+  }
+
+  .post-time {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .post-hearts {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .post-event {
+    font-size: 13px;
+    color: rgba(245,230,200,0.75);
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  .btn-delete {
+    background: none;
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--danger);
+    cursor: pointer;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-delete:hover { background: rgba(192,57,43,0.12); border-color: var(--danger); }
+
+  .posts-empty {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .posts-loading {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* ── REFRESH ── */
+  .card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .btn-refresh {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: var(--gold);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: border-color .15s;
+  }
+  .btn-refresh:hover { border-color: var(--gold); }
+
+  .posts-count {
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ PASSWORD GATE ══ -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">Código Soberana</div>
+    <div class="gate-title">Panel de Administrador</div>
+    <div class="gate-sub">Acceso restringido</div>
+    <input
+      type="password"
+      id="pwd-input"
+      class="gate-input"
+      placeholder="Contraseña"
+      autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') doLogin()"
+    >
+    <button class="gate-btn" onclick="doLogin()">Ingresar</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div id="panel">
+  <div class="panel-header">
+    <div class="panel-title">Panel Soberana</div>
+    <div class="panel-badge">Admin</div>
+  </div>
+
+  <!-- Publicar en Novedades -->
+  <div class="card">
+    <div class="card-title">
+      <span>📢</span> Publicar en Novedades
+    </div>
+
+    <div class="field">
+      <label>Nombre del autor</label>
+      <input type="text" id="inp-author" value="Josué Calderón" placeholder="Nombre del autor">
+    </div>
+
+    <div class="field">
+      <label>Mensaje / Evento</label>
+      <textarea id="inp-event" placeholder="Ej: Sofía A. completó el Workshop completo. &quot;Lo que más me impactó fue...&quot;"></textarea>
+    </div>
+
+    <button class="btn-publish" id="btn-publish" onclick="publishPost()">Publicar en Novedades</button>
+    <div class="publish-status" id="publish-status"></div>
+  </div>
+
+  <!-- Posts publicados -->
+  <div class="card">
+    <div class="card-actions">
+      <div class="card-title" style="margin-bottom:0">
+        <span>📋</span> Posts publicados
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="posts-count" id="posts-count"></span>
+        <button class="btn-refresh" onclick="loadPosts()">↻ Recargar</button>
+      </div>
+    </div>
+
+    <div id="posts-list">
+      <div class="posts-loading">Cargando posts...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FIREBASE CDN (compat v9) ══ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase init ─────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyB7-A43AHuHDERC-ZdEyFRZ5R2w6w_rRYo",
+  authDomain: "soberana-app.firebaseapp.com",
+  projectId: "soberana-app",
+  storageBucket: "soberana-app.firebasestorage.app",
+  messagingSenderId: "30025552803",
+  appId: "1:30025552803:web:eb47af86c1898b99e94016"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ── Auth gate ─────────────────────────────────────────────────────
+const ADMIN_PWD = 'Soberana2026Admin';
+
+function doLogin() {
+  const val = document.getElementById('pwd-input').value;
+  const err = document.getElementById('gate-error');
+  if (val === ADMIN_PWD) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    loadPosts();
+  } else {
+    err.textContent = 'Contraseña incorrecta.';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+// ── Publish ───────────────────────────────────────────────────────
+async function publishPost() {
+  const author  = document.getElementById('inp-author').value.trim();
+  const event   = document.getElementById('inp-event').value.trim();
+  const statusEl = document.getElementById('publish-status');
+  const btn     = document.getElementById('btn-publish');
+
+  if (!author) { setStatus('Ingresa el nombre del autor.', true); return; }
+  if (!event)  { setStatus('Escribe un mensaje antes de publicar.', true); return; }
+
+  btn.disabled = true;
+  setStatus('Publicando...', false);
+
+  try {
+    await db.collection('comunidad').add({
+      name:      author,
+      initial:   author.trim()[0].toUpperCase(),
+      event:     event,
+      hearts:    0,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    setStatus('¡Publicado correctamente!', false);
+    document.getElementById('inp-event').value = '';
+    loadPosts();
+  } catch(e) {
+    console.error(e);
+    setStatus('Error al publicar: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setStatus(msg, isError) {
+  const el = document.getElementById('publish-status');
+  el.textContent = msg;
+  el.className = 'publish-status' + (isError ? ' error' : '');
+}
+
+// ── Load & render posts ───────────────────────────────────────────
+async function loadPosts() {
+  const listEl   = document.getElementById('posts-list');
+  const countEl  = document.getElementById('posts-count');
+  listEl.innerHTML = '<div class="posts-loading">Cargando...</div>';
+  countEl.textContent = '';
+
+  try {
+    const snap = await db.collection('comunidad')
+      .orderBy('timestamp', 'desc')
+      .limit(10)
+      .get();
+
+    if (snap.empty) {
+      listEl.innerHTML = '<div class="posts-empty">No hay posts publicados aún.</div>';
+      countEl.textContent = '0 posts';
+      return;
+    }
+
+    countEl.textContent = snap.size + ' post' + (snap.size !== 1 ? 's' : '');
+    listEl.innerHTML = '';
+
+    snap.forEach(doc => {
+      const d  = doc.data();
+      const ts = d.timestamp ? d.timestamp.toDate() : null;
+      listEl.appendChild(buildPostEl(doc.id, d, ts));
+    });
+
+  } catch(e) {
+    console.error(e);
+    listEl.innerHTML = '<div class="posts-empty" style="color:var(--danger)">Error al cargar: ' + e.message + '</div>';
+  }
+}
+
+function buildPostEl(docId, d, ts) {
+  const wrap = document.createElement('div');
+  wrap.className = 'post-item';
+  wrap.id = 'post-' + docId;
+
+  const timeStr = ts ? formatTime(ts) : '—';
+  const hearts  = typeof d.hearts === 'number' ? d.hearts : 0;
+
+  wrap.innerHTML = `
+    <div class="post-avatar">${d.initial || '?'}</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-name">${esc(d.name || '')}</span>
+        <span class="post-time">${timeStr}</span>
+        <span class="post-hearts">♥ ${hearts}</span>
+      </div>
+      <div class="post-event">${esc(d.event || '')}</div>
+    </div>
+    <button class="btn-delete" onclick="deletePost('${docId}')">Eliminar</button>
+  `;
+  return wrap;
+}
+
+async function deletePost(docId) {
+  if (!confirm('¿Eliminar este post? Esta acción no se puede deshacer.')) return;
+  try {
+    await db.collection('comunidad').doc(docId).delete();
+    const el = document.getElementById('post-' + docId);
+    if (el) el.remove();
+    // Update count
+    const listEl  = document.getElementById('posts-list');
+    const countEl = document.getElementById('posts-count');
+    const remaining = listEl.querySelectorAll('.post-item').length;
+    if (remaining === 0) {
+      listEl.innerHTML = '<div class="posts-empty">No hay posts publicados aún.</div>';
+      countEl.textContent = '0 posts';
+    } else {
+      countEl.textContent = remaining + ' post' + (remaining !== 1 ? 's' : '');
+    }
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatTime(date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 60)     return 'hace un momento';
+  if (diff < 3600)   return 'hace ' + Math.floor(diff / 60) + ' min';
+  if (diff < 86400)  return 'hace ' + Math.floor(diff / 3600) + ' h';
+  if (diff < 172800) return 'ayer';
+  return date.toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+</script>
+</body>
+</html>

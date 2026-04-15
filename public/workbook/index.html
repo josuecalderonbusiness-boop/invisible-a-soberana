@@ -2281,14 +2281,23 @@ async function fsWriteStreak(email, data) {
   } catch(e) { console.warn('[Firestore] writeStreak:', e); }
 }
 
-async function fsReadComunidad() {
+// Listener en tiempo real para la colección "comunidad"
+let _comunidadUnsub = null;
+
+function initComunidadListener() {
+  if (_comunidadUnsub) return; // ya activo, no duplicar
   try {
-    const snap = await db.collection('comunidad')
+    _comunidadUnsub = db.collection('comunidad')
       .orderBy('timestamp', 'desc')
       .limit(20)
-      .get();
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { console.warn('[Firestore] readComunidad:', e); return []; }
+      .onSnapshot(
+        snap => {
+          const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          _renderFeedBlock(posts.length > 0 ? posts : FEED_FALLBACK);
+        },
+        err => { console.warn('[Firestore] comunidad onSnapshot:', err); }
+      );
+  } catch(e) { console.warn('[Firestore] initComunidadListener:', e); }
 }
 
 async function fsReadLogros(email) {
@@ -4911,11 +4920,10 @@ async function renderNovedades() {
   }
   _renderStreakBlock(streakFinal, tiene7d);
 
-  // Block 2: Feed comunitario desde Firestore
-  let feedData = FEED_FALLBACK;
-  const remoteFeed = await fsReadComunidad();
-  if (remoteFeed && remoteFeed.length > 0) feedData = remoteFeed;
-  _renderFeedBlock(feedData);
+  // Block 2: Feed comunitario — listener en tiempo real
+  // Muestra fallback de inmediato; onSnapshot lo reemplaza cuando llegan datos
+  if (!_comunidadUnsub) _renderFeedBlock(FEED_FALLBACK);
+  initComunidadListener();
 
   // Block 3: Lecturas
   const articles = [

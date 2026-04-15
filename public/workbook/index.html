@@ -2549,45 +2549,33 @@ function activarNotificaciones() {
 }
 
 async function saveFcmToken() {
-  console.log('[FCM] saveFcmToken() iniciada');
-  console.log('[FCM] VAPID key:', FCM_VAPID);
-  console.log('[FCM] state.user:', state.user ? state.user.email : 'null');
-
-  const messaging = _getMessaging();
-  console.log('[FCM] messaging instance:', messaging ? 'OK' : 'null — firebase.messaging() falló');
-  if (!messaging) { console.error('[FCM] Abortando: no hay instancia de messaging'); return; }
-  if (!state.user) { console.error('[FCM] Abortando: no hay state.user'); return; }
-
   try {
-    console.log('[FCM] Esperando navigator.serviceWorker.ready (timeout 10s)...');
-    const swTimeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('serviceWorker.ready timeout después de 10s')), 10000)
-    );
-    const sw = await Promise.race([navigator.serviceWorker.ready, swTimeout]);
-    console.log('[FCM] SW listo:', sw.scope, '| state:', sw.active ? sw.active.state : 'sin active');
+    const registration = await navigator.serviceWorker.getRegistration('/workbook/');
+    console.log('[FCM] Registration obtenida:', registration);
 
-    console.log('[FCM] Llamando messaging.getToken() con VAPID y SW...');
-    const token = await messaging.getToken({ vapidKey: FCM_VAPID, serviceWorkerRegistration: sw });
-    console.log('[FCM] Token obtenido:', token || 'null/vacío');
+    if (!registration) {
+      console.error('[FCM] No hay SW registrado en /workbook/');
+      return;
+    }
 
-    if (token) {
-      const docPath = 'tokens/' + state.user.email;
-      console.log('[FCM] Guardando token en Firestore →', docPath);
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({
+      vapidKey: FCM_VAPID,
+      serviceWorkerRegistration: registration
+    });
+
+    console.log('[FCM] Token:', token);
+
+    if (token && state.user) {
       await db.collection('tokens').doc(state.user.email).set({
         token,
         email: state.user.email,
-        name:  state.user.name,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      console.log('[FCM] Token guardado correctamente en Firestore');
-    } else {
-      console.warn('[FCM] getToken() retornó vacío — puede ser que el permiso no esté granted o el SW no registró firebase-messaging');
+        fecha: new Date().toISOString()
+      });
+      console.log('[FCM] Token guardado en Firestore');
     }
   } catch(e) {
-    console.error('[FCM] Error en saveFcmToken:', e);
-    console.error('[FCM] e.code:', e.code);
-    console.error('[FCM] e.message:', e.message);
-    console.error('[FCM] e.stack:', e.stack);
+    console.error('[FCM] Error:', e);
   }
 }
 

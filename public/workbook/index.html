@@ -2559,8 +2559,11 @@ async function saveFcmToken() {
   if (!state.user) { console.error('[FCM] Abortando: no hay state.user'); return; }
 
   try {
-    console.log('[FCM] Esperando navigator.serviceWorker.ready...');
-    const sw = await navigator.serviceWorker.ready;
+    console.log('[FCM] Esperando navigator.serviceWorker.ready (timeout 10s)...');
+    const swTimeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('serviceWorker.ready timeout después de 10s')), 10000)
+    );
+    const sw = await Promise.race([navigator.serviceWorker.ready, swTimeout]);
     console.log('[FCM] SW listo:', sw.scope, '| state:', sw.active ? sw.active.state : 'sin active');
 
     console.log('[FCM] Llamando messaging.getToken() con VAPID y SW...');

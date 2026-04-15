@@ -3081,6 +3081,11 @@ function initApp() {
     setTimeout(() => showInstallPopup(), 3000);
   }
 
+  // Guardar/actualizar token FCM si ya tiene permiso concedido
+  if ('Notification' in window && Notification.permission === 'granted') {
+    saveFcmToken();
+  }
+
   // Modal de notificaciones — 3s después, solo si permission === 'default' y no se ha preguntado
   setTimeout(() => maybeShowNotifModal(), 3000);
 }

@@ -1792,7 +1792,7 @@
   .nov-feed-card { animation: feedFadeIn .3s ease both; }
   .nov-feed-card.liked .nov-feed-heart svg { fill: var(--gold); stroke: var(--gold); }
   .nov-feed-card.liked .nov-feed-heart { color: var(--gold); }
-  .nov-feed-more-btn {
+  .nov-feed-more-btn, .nov-feed-less-btn {
     width: 100%; margin-top: 4px;
     background: none;
     border: 1px solid rgba(212,175,106,0.2);
@@ -1805,7 +1805,8 @@
     letter-spacing: 0.05em;
     transition: border-color .2s, color .2s;
   }
-  .nov-feed-more-btn:active { border-color: var(--gold); color: var(--gold); }
+  .nov-feed-more-btn:active, .nov-feed-less-btn:active { border-color: var(--gold); color: var(--gold); }
+  .nov-feed-less-btn { margin-top: 0; margin-bottom: 4px; }
   .nov-feed-card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
@@ -5009,16 +5010,16 @@ function _renderFeedBlock(feedData) {
   _feedShownCount = 0;
   const container = document.getElementById('nov-feed');
   container.innerHTML = '';
-  _appendFeedPosts(container, false);
+  _renderFeedControls(container, false);
 }
 
-function _appendFeedPosts(container, animate) {
+function _renderFeedControls(container, animate) {
+  // Quitar controles anteriores (Ver más / Ver menos)
+  container.querySelectorAll('.nov-feed-more-btn, .nov-feed-less-btn').forEach(el => el.remove());
+
+  // Renderizar el slice actual
   const slice = _feedAllPosts.slice(_feedShownCount, _feedShownCount + FEED_PAGE_SIZE);
   _feedShownCount += slice.length;
-
-  // Eliminar botón previo si existe
-  const prevBtn = container.querySelector('.nov-feed-more-btn');
-  if (prevBtn) prevBtn.remove();
 
   slice.forEach((f, i) => {
     const tmp = document.createElement('div');
@@ -5028,15 +5029,50 @@ function _appendFeedPosts(container, animate) {
     container.appendChild(card);
   });
 
-  // Botón "Ver más" si quedan posts
-  if (_feedShownCount < _feedAllPosts.length) {
-    const btn = document.createElement('button');
-    btn.className = 'nov-feed-more-btn';
-    const remaining = _feedAllPosts.length - _feedShownCount;
-    btn.textContent = `Ver ${Math.min(remaining, FEED_PAGE_SIZE)} publicaciones más`;
-    btn.onclick = () => _appendFeedPosts(container, true);
-    container.appendChild(btn);
+  // Botón "Ver menos" — aparece cuando se muestran más de 3 posts
+  if (_feedShownCount > FEED_PAGE_SIZE) {
+    const lessBtn = document.createElement('button');
+    lessBtn.className = 'nov-feed-less-btn';
+    lessBtn.textContent = 'Ver menos';
+    lessBtn.onclick = () => _collapseFeed(container);
+    container.appendChild(lessBtn);
   }
+
+  // Botón "Ver más" — aparece si aún quedan posts sin mostrar
+  if (_feedShownCount < _feedAllPosts.length) {
+    const moreBtn = document.createElement('button');
+    moreBtn.className = 'nov-feed-more-btn';
+    const remaining = _feedAllPosts.length - _feedShownCount;
+    moreBtn.textContent = `Ver ${Math.min(remaining, FEED_PAGE_SIZE)} publicaciones más`;
+    moreBtn.onclick = () => _renderFeedControls(container, true);
+    container.appendChild(moreBtn);
+  }
+}
+
+function _collapseFeed(container) {
+  // Animar salida de los cards extra y volver a 3
+  const cards = Array.from(container.querySelectorAll('.nov-feed-card'));
+  const toRemove = cards.slice(FEED_PAGE_SIZE);
+
+  if (toRemove.length === 0) return;
+
+  // Fade-out rápido antes de quitar
+  toRemove.forEach(c => { c.style.transition = 'opacity .2s, transform .2s'; c.style.opacity = '0'; c.style.transform = 'translateY(-6px)'; });
+  setTimeout(() => {
+    toRemove.forEach(c => c.remove());
+    _feedShownCount = FEED_PAGE_SIZE;
+    // Quitar controles y redibujar con el estado colapsado
+    container.querySelectorAll('.nov-feed-more-btn, .nov-feed-less-btn').forEach(el => el.remove());
+    // Botón "Ver más" si quedan posts
+    if (_feedShownCount < _feedAllPosts.length) {
+      const moreBtn = document.createElement('button');
+      moreBtn.className = 'nov-feed-more-btn';
+      const remaining = _feedAllPosts.length - _feedShownCount;
+      moreBtn.textContent = `Ver ${Math.min(remaining, FEED_PAGE_SIZE)} publicaciones más`;
+      moreBtn.onclick = () => _renderFeedControls(container, true);
+      container.appendChild(moreBtn);
+    }
+  }, 220);
 }
 
 function _timeAgo(date) {
@@ -5108,8 +5144,13 @@ async function renderNovedades() {
   _renderStreakBlock(streakFinal, tiene7d);
 
   // Block 2: Feed comunitario — listener en tiempo real
-  // Muestra fallback de inmediato; onSnapshot lo reemplaza cuando llegan datos
-  if (!_comunidadUnsub) _renderFeedBlock(FEED_FALLBACK);
+  // Resetea siempre al volver al tab (colapsa a 3 posts iniciales)
+  // Si el listener ya tiene datos, los usa; si no, muestra fallback hasta que lleguen
+  if (_feedAllPosts.length > 0) {
+    _renderFeedBlock(_feedAllPosts);
+  } else {
+    _renderFeedBlock(FEED_FALLBACK);
+  }
   initComunidadListener();
 
   // Block 3: Lecturas

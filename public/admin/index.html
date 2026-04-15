@@ -474,7 +474,8 @@ async function publishPost() {
       initial:   author.trim()[0].toUpperCase(),
       event:     event,
       hearts:    0,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      adminKey:  'Sob3rana@Admin2026'
     });
     setStatus('¡Publicado correctamente!', false);
     document.getElementById('inp-event').value = '';

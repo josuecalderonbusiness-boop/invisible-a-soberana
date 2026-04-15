@@ -424,6 +424,7 @@
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 
 <script>
 // ── Firebase init ─────────────────────────────────────────────────
@@ -492,27 +493,17 @@ async function publishPost() {
   }
 }
 
-// Cloud Function URL — reemplazar cuando esté desplegada
-const PUSH_FUNCTION_URL = null; // ej: 'https://us-central1-soberana-app.cloudfunctions.net/sendPush'
-
 async function sendPushNotification(author, message) {
-  if (!PUSH_FUNCTION_URL) {
-    console.log('[Push] Cloud Function no configurada aún. Payload:', { titulo: 'Novedades Soberana', mensaje: message, adminKey: 'Sob3rana@Admin2026' });
-    return;
-  }
   try {
-    const res = await fetch(PUSH_FUNCTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        titulo:   'Novedades Soberana',
-        mensaje:  message,
-        adminKey: 'Sob3rana@Admin2026'
-      })
+    const fn = firebase.functions().httpsCallable('sendPushNotification');
+    const result = await fn({
+      titulo:   'Novedades Soberana',
+      mensaje:  message,
+      adminKey: 'Sob3rana@Admin2026'
     });
-    if (!res.ok) console.warn('[Push] Cloud Function respondió:', res.status);
+    console.log('[Push] Enviadas:', result.data.enviadas);
   } catch(e) {
-    console.warn('[Push] Error al enviar notificación:', e);
+    console.warn('[Push] Error al enviar notificación:', e.message);
   }
 }
 

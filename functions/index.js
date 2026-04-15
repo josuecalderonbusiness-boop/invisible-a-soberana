@@ -10,7 +10,13 @@ initializeApp();
 
 const ADMIN_KEY = "Sob3rana@Admin2026";
 
-exports.sendPushNotification = onCall(async (request) => {
+exports.sendPushNotification = onCall({
+  maxInstances: 10,
+  cors: [
+    "https://soberana-app.josuecalderon.lat",
+    "https://invisible-a-soberana.josuecalderon.lat",
+  ],
+}, async (request) => {
   const { titulo, mensaje, adminKey } = request.data;
 
   // 1. Verificar clave de admin

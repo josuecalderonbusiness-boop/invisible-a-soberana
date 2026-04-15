@@ -1905,63 +1905,92 @@
   .unlocked .nov-achievement-badge { background: rgba(212,175,106,0.18); color: var(--gold); border: 1px solid rgba(212,175,106,0.28); }
   .locked  .nov-achievement-badge { background: rgba(255,255,255,0.04); color: rgba(196,160,178,0.28); border: 1px solid rgba(255,255,255,0.07); }
 
-  /* ── PANTALLA NOTIFICACIONES ── */
-  #screen-notif {
-    background: var(--burgundy-deep);
-    align-items: center;
+  /* ── MODAL NOTIFICACIONES ── */
+  #notif-modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(15,6,9,0.82);
+    align-items: flex-end;
     justify-content: center;
-    padding: 40px 32px;
-    position: relative;
-    overflow: hidden;
+    padding: 0 0 32px;
+    animation: fadeIn .25s ease;
   }
-  .notif-bg {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 50% 35%, #3a0e1f 0%, #1a0a0f 70%);
-  }
-  .notif-content {
-    position: relative;
-    z-index: 1;
+  #notif-modal-overlay.open {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+  }
+  .notif-modal {
+    background: linear-gradient(160deg, #2a0f1a, #1a0a0f);
+    border: 1px solid rgba(212,175,106,0.2);
+    border-radius: 24px 24px 20px 20px;
+    padding: 32px 28px 28px;
+    width: 100%;
+    max-width: 400px;
     text-align: center;
-    max-width: 340px;
+    box-shadow: 0 -8px 48px rgba(0,0,0,0.5);
+    animation: slideUp .3s cubic-bezier(.22,1,.36,1);
   }
-  .notif-icon {
-    font-size: 64px;
-    margin-bottom: 24px;
-    filter: drop-shadow(0 0 20px rgba(212,175,106,0.4));
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
   }
-  .notif-title {
+  .notif-modal-icon {
+    font-size: 52px;
+    margin-bottom: 16px;
+    line-height: 1;
+  }
+  .notif-modal-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 700;
     color: var(--cream);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     line-height: 1.2;
   }
-  .notif-body {
-    font-size: 15px;
-    color: rgba(196,160,178,0.8);
-    line-height: 1.7;
-    margin-bottom: 36px;
+  .notif-modal-body {
+    font-size: 14px;
+    color: rgba(196,160,178,0.75);
+    line-height: 1.65;
+    margin-bottom: 28px;
   }
-  .notif-btn {
+  .notif-modal-btn {
     width: 100%;
-    background: linear-gradient(135deg, var(--burgundy), #6B1020);
+    background: linear-gradient(135deg, #B8892A, #8a6010);
     border: none;
     border-radius: 14px;
-    padding: 16px;
+    padding: 15px;
     font-family: 'Jost', sans-serif;
     font-size: 15px;
     font-weight: 600;
-    color: var(--cream);
+    color: #fff;
     cursor: pointer;
     letter-spacing: 0.04em;
-    box-shadow: 0 4px 24px rgba(139,26,47,0.4);
+    box-shadow: 0 4px 20px rgba(184,137,42,0.3);
     transition: opacity .2s;
+    margin-bottom: 14px;
   }
-  .notif-btn:active { opacity: .85; }
+  .notif-modal-btn:active { opacity: .85; }
+  .notif-modal-skip {
+    background: none; border: none;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    color: rgba(138,101,117,0.7);
+    cursor: pointer;
+    padding: 4px 0;
+    letter-spacing: 0.02em;
+  }
+  .notif-ios-hint {
+    background: rgba(184,137,42,0.08);
+    border: 1px solid rgba(184,137,42,0.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    text-align: left;
+    font-size: 13px;
+    color: rgba(212,175,106,0.8);
+    line-height: 1.6;
+    display: none;
+  }
+  .notif-ios-hint.visible { display: block; }
 </style>
 </head>
 <body>
@@ -1996,17 +2025,6 @@
         <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
       </div>
       <p class="login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
-    </div>
-  </div>
-
-  <!-- ══ NOTIFICACIONES ══ -->
-  <div id="screen-notif" class="screen">
-    <div class="notif-bg"></div>
-    <div class="notif-content">
-      <div class="notif-icon">🔥</div>
-      <div class="notif-title">No te pierdas nada</div>
-      <p class="notif-body">Para recibir tus lecciones diarias y mensajes de Josué activa las notificaciones 🔥</p>
-      <button class="notif-btn" id="notif-btn" onclick="activarNotificaciones()">Activar notificaciones</button>
     </div>
   </div>
 
@@ -2338,6 +2356,23 @@
   <div class="toast" id="toast"></div>
 </div>
 
+<!-- ══ MODAL NOTIFICACIONES ══ -->
+<div id="notif-modal-overlay">
+  <div class="notif-modal">
+    <div class="notif-modal-icon">🔔</div>
+    <div class="notif-modal-title">No te pierdas nada</div>
+    <p class="notif-modal-body">Recibe mensajes de Josué y celebraciones de la comunidad directamente en tu celular</p>
+    <div class="notif-ios-hint" id="notif-ios-hint">
+      📲 Para recibir notificaciones, primero instala la app:<br>
+      1. Toca el ícono de compartir <strong>⎙</strong> en Safari<br>
+      2. Selecciona <strong>"Añadir a pantalla de inicio"</strong><br>
+      3. Abre la app instalada y activa las notificaciones
+    </div>
+    <button class="notif-modal-btn" id="notif-btn" onclick="activarNotificaciones()">Activar notificaciones</button>
+    <button class="notif-modal-skip" onclick="cerrarNotifModal()">Ahora no</button>
+  </div>
+</div>
+
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -2412,11 +2447,11 @@ function _getMessaging() {
   return _messaging;
 }
 
-// Mostrar pantalla de notificaciones (una sola vez por dispositivo)
+// Ir directo al app (sin pantalla intermedia de notificaciones)
 function maybeShowNotifScreen() {
-  const alreadyAsked   = localStorage.getItem('soberana_notif_asked');
-  const hasPush        = ('Notification' in window) && ('PushManager' in window);
-  const permission     = hasPush ? Notification.permission : 'unsupported';
+  const alreadyAsked = localStorage.getItem('soberana_notif_asked');
+  const hasPush      = ('Notification' in window) && ('PushManager' in window);
+  const permission   = hasPush ? Notification.permission : 'unsupported';
 
   console.log('[Notif] maybeShowNotifScreen —', {
     soberana_notif_asked: alreadyAsked,
@@ -2424,56 +2459,93 @@ function maybeShowNotifScreen() {
     PushManager: hasPush
   });
 
-  // Ya respondió antes → app directo
-  if (alreadyAsked) {
-    console.log('[Notif] → rama: ya preguntado antes, ir al app');
-    _goToApp();
-    return;
-  }
+  // Siempre ir al app primero — el modal aparece después como overlay
+  _goToApp();
 
-  // Sin soporte en este navegador → saltar silenciosamente
-  if (!hasPush) {
-    console.log('[Notif] → rama: sin soporte Push/Notification, saltar');
-    localStorage.setItem('soberana_notif_asked', '1');
-    _goToApp();
-    return;
-  }
-
-  // Ya concedido → renovar token y pasar al app
-  if (permission === 'granted') {
-    console.log('[Notif] → rama: ya concedido, renovar token y app');
-    localStorage.setItem('soberana_notif_asked', '1');
+  // Si ya concedido, renovar token silenciosamente
+  if (hasPush && permission === 'granted') {
     saveFcmToken();
-    _goToApp();
-    return;
   }
-
-  // permission === 'default' (o 'denied') → mostrar pantalla
-  console.log('[Notif] → rama: mostrar pantalla de notificaciones (permission=' + permission + ')');
-  // Ocultar todas las screens activas y mostrar la de notificaciones
-  document.querySelectorAll('.screen.active').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-notif').classList.add('active');
 }
 
 function _goToApp() {
   requestAnimationFrame(() => initApp());
 }
 
-async function activarNotificaciones() {
-  const btn = document.getElementById('notif-btn');
+// Disparado por initApp() 3s después de cargar
+function maybeShowNotifModal() {
+  const alreadyAsked = localStorage.getItem('soberana_notif_asked');
+  const hasPush      = ('Notification' in window) && ('PushManager' in window);
+  const permission   = hasPush ? Notification.permission : 'unsupported';
+
+  console.log('[Notif] maybeShowNotifModal —', {
+    soberana_notif_asked: alreadyAsked,
+    'Notification.permission': permission,
+    PushManager: hasPush
+  });
+
+  if (alreadyAsked)                { console.log('[Notif] → ya preguntado, skip'); return; }
+  if (!hasPush)                    { console.log('[Notif] → sin soporte, skip'); return; }
+  if (permission === 'granted')    { console.log('[Notif] → ya granted, skip'); return; }
+  // permission === 'default' → mostrar modal
+  console.log('[Notif] → mostrando modal (permission=' + permission + ')');
+
+  const isIOS       = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
+
+  if (isIOS && !isStandalone) {
+    // iOS fuera de standalone: no puede pedir permiso — mostrar hint de instalación
+    document.getElementById('notif-ios-hint').classList.add('visible');
+    document.getElementById('notif-btn').style.display = 'none';
+    console.log('[Notif] → iOS no-standalone: mostrando hint de instalación');
+  }
+
+  document.getElementById('notif-modal-overlay').classList.add('open');
+}
+
+function cerrarNotifModal() {
+  localStorage.setItem('soberana_notif_asked', '1');
+  document.getElementById('notif-modal-overlay').classList.remove('open');
+}
+
+function activarNotificaciones() {
+  const btn      = document.getElementById('notif-btn');
+  const isIOS    = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
+
+  if (isIOS && !isStandalone) {
+    cerrarNotifModal();
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Activando...';
-  try {
-    const permission = await Notification.requestPermission();
+
+  // requestPermission() DEBE llamarse sincrónicamente desde el click handler en iOS
+  // Se usa la versión callback para máxima compatibilidad
+  const handlePermission = (permission) => {
+    console.log('[Notif] Permiso:', permission);
     if (permission === 'granted') {
-      await saveFcmToken();
+      saveFcmToken();
+    }
+    cerrarNotifModal();
+  };
+
+  try {
+    const result = Notification.requestPermission();
+    // Algunos navegadores retornan Promise, otros usan callback
+    if (result && typeof result.then === 'function') {
+      result.then(handlePermission).catch(e => {
+        console.warn('[FCM] requestPermission:', e);
+        cerrarNotifModal();
+      });
+    } else {
+      handlePermission(result);
     }
   } catch(e) {
-    console.warn('[FCM] requestPermission:', e);
+    console.warn('[FCM] requestPermission error:', e);
+    cerrarNotifModal();
   }
-  localStorage.setItem('soberana_notif_asked', '1');
-  document.getElementById('screen-notif').classList.remove('active');
-  _goToApp();
 }
 
 async function saveFcmToken() {
@@ -2994,6 +3066,9 @@ function initApp() {
   if (!isStandalone && !localStorage.getItem('soberana_install_shown')) {
     setTimeout(() => showInstallPopup(), 3000);
   }
+
+  // Modal de notificaciones — 3s después, solo si permission === 'default' y no se ha preguntado
+  setTimeout(() => maybeShowNotifModal(), 3000);
 }
 
 function apply7dAccess() {

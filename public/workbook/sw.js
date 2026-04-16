@@ -36,8 +36,7 @@ try {
       icon: '/workbook/icon-192.png',
       badge: '/workbook/icon-192.png',
       tag: d.tag || tipo,
-      renotify: true,
-      vibrate: tipo === 'inactividad' ? [200, 100, 200] : [100],
+      vibrate: [200, 100, 200],
       data: { url: d.url || '/workbook/' }
     };
 

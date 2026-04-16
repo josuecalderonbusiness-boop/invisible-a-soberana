@@ -100,7 +100,16 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
             tag: cfg.tag,
             icon: '/workbook/icon-192.png',
             badge: '/workbook/icon-192.png'
-          }
+          },
+          android: {
+            priority: 'high',
+            notification: {
+              color: tipo === 'novedades' ? '#5DAA7F'
+                   : tipo === 'sistema'   ? '#8B1A2F'
+                   : '#B8892A'
+            }
+          },
+          webpush: { headers: { Urgency: 'high' } }
           // Sin campo "notification" — el SW controla el render completo
         });
 

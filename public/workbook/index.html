@@ -6096,7 +6096,7 @@ function runExport() {
 // BOOT
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/workbook/sw.js').catch(() => {});
+  navigator.serviceWorker.register('/workbook/sw.js', { scope: '/workbook/' }).catch(() => {});
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type === 'NAVIGATE') {
       const url = event.data.url;

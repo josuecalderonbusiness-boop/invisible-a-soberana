@@ -98,8 +98,8 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
             title: cfg.title,
             body: cfg.body,
             tag: cfg.tag,
-            icon: '/workbook/icons/icon-192.png',
-            badge: '/workbook/icons/badge-72.png'
+            icon: '/workbook/icon-192.png',
+            badge: '/workbook/icon-192.png'
           }
           // Sin campo "notification" — el SW controla el render completo
         });

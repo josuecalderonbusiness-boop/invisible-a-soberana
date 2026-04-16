@@ -20,57 +20,29 @@ try {
   const messaging = firebase.messaging();
   self.console.log('[SW] firebase.messaging() OK');
 
-  const estilos = {
-    novedades: {
-      backgroundColor: '#0D2418',
-      borderColor: 'rgba(93,170,127,0.35)',
-      iconBg: 'linear-gradient(145deg, #1A3D2B, #2A5C42)',
-      tagColor: '#5DAA7F',
-      titleColor: '#EDE3CE',
-      subColor: 'rgba(237,227,206,0.6)',
-      timeColor: 'rgba(93,170,127,0.5)',
-      appTag: 'Soberana · 7D Novedades'
-    },
-    sistema: {
-      backgroundColor: '#1a0a0f',
-      borderColor: 'rgba(139,26,47,0.5)',
-      iconBg: 'linear-gradient(145deg, #3D0C11, #5C1020)',
-      tagColor: 'rgba(212,168,67,0.8)',
-      titleColor: '#F9F4EC',
-      subColor: 'rgba(249,244,236,0.5)',
-      timeColor: 'rgba(184,137,42,0.4)',
-      appTag: 'Soberana · Sistema'
-    },
-    inactividad: {
-      backgroundColor: '#B8892A',
-      borderColor: 'none',
-      iconBg: 'rgba(61,12,17,0.25)',
-      tagColor: 'rgba(61,12,17,0.7)',
-      titleColor: '#3D0C11',
-      subColor: 'rgba(61,12,17,0.65)',
-      timeColor: 'rgba(61,12,17,0.45)',
-      appTag: 'Soberana · Alerta'
-    }
-  };
-
-  messaging.onBackgroundMessage(payload => {
+  messaging.onBackgroundMessage((payload) => {
     self.console.log('[SW] onBackgroundMessage recibido:', payload);
     const d = payload.data || {};
     const tipo = d.tipo || 'novedades';
-    const estilo = estilos[tipo] || estilos.novedades;
+
+    const titulos = {
+      novedades: `${d.title || 'Soberana'} · Novedades`,
+      sistema: d.title || 'Soberana · Sistema',
+      inactividad: d.title || 'Soberana · Alerta'
+    };
 
     const options = {
       body: d.body,
-      icon: d.icon || '/workbook/icons/icon-192.png',
-      badge: d.badge || '/workbook/icons/badge-72.png',
+      icon: '/workbook/icon-192.png',
+      badge: '/workbook/icon-192.png',
       tag: d.tag || tipo,
       renotify: true,
       silent: tipo !== 'inactividad',
       vibrate: tipo === 'inactividad' ? [200, 100, 200] : [100],
-      data: { url: d.url || '/workbook/', estilo }
+      data: { url: d.url || '/workbook/' }
     };
 
-    return self.registration.showNotification(d.title || 'Soberana', options);
+    return self.registration.showNotification(titulos[tipo] || d.title || 'Soberana', options);
   });
 
 } catch (e) {

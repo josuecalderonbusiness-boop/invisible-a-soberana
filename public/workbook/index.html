@@ -4930,6 +4930,21 @@ function saveLesson(secId) {
   // Sincronizar con Google Sheets (en segundo plano, no bloquea la UI)
   syncToSheets(secId);
 
+  // Escribir evento en Firestore para notificaciones por progreso
+  const _evEmail = state.user && state.user.email;
+  if (window.db && _evEmail) {
+    firebase.firestore()
+      .collection('eventos').doc(_evEmail)
+      .collection('secciones').doc(secId)
+      .set({
+        seccion: secId,
+        nombre: state.user.nombre || '',
+        email: _evEmail,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        notifEnviada: false
+      }, { merge: false });
+  }
+
   // Visual feedback
   const btn = document.getElementById('lesson-save-btn');
   btn.classList.add('save-success');
@@ -4968,6 +4983,21 @@ function closeLesson() {
 }
 
 function openQueSigneAhora() {
+  // Registrar evento en Firestore para notificación de seguimiento
+  const _qsEmail = state.user && state.user.email;
+  if (window.db && _qsEmail) {
+    firebase.firestore()
+      .collection('eventos').doc(_qsEmail)
+      .collection('secciones').doc('quesigue_visto')
+      .set({
+        seccion: 'quesigue_visto',
+        nombre: state.user.nombre || '',
+        email: _qsEmail,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        notifEnviada: false
+      }, { merge: false });
+  }
+
   currentSectionId = null;
   document.getElementById('lesson-eyebrow').textContent = 'Tu siguiente paso';
   document.getElementById('lesson-title-h').textContent = '¿Qué sigue ahora?';

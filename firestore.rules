@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Tokens FCM — solo lectura/escritura desde el propio cliente
+    match /tokens/{email} {
+      allow read, write: if true;
+    }
+
+    // Log de notificaciones — solo admin/functions
+    match /notif_log/{email} {
+      allow read, write: if false;
+    }
+
+    // Eventos de progreso — trigger de Cloud Function
+    match /eventos/{email}/secciones/{seccionId} {
+      allow read, write: if true;
+    }
+
+  }
+}

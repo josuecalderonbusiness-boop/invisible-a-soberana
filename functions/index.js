@@ -1,5 +1,6 @@
 const { setGlobalOptions } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
@@ -369,3 +370,96 @@ exports.checkAndNotify = onRequest({ maxInstances: 10 }, (req, res) => {
     }
   });
 });
+
+// ── onEventoProgreso ──────────────────────────────────────────────────────────
+
+const EVENTO_CONFIG = {
+  s0:            { horas: 24, titulo: (n) => `${n}, el primer paso toma 3 minutos.`,                     cuerpo: "" },
+  s3:            { horas: 48, titulo: ()  => "Tu identidad Soberana está a medias.",                     cuerpo: "", checkActividad: true },
+  s5:            { horas: 2,  titulo: ()  => "Protocolo Mental activado. ¿Ya lo aplicaste hoy?",         cuerpo: "" },
+  s7:            { horas: 2,  titulo: ()  => "Los 3 protocolos están en ti. El sistema está completo.",  cuerpo: "" },
+  s9:            { horas: 1,  titulo: ()  => "Completaste el workshop. Hay una dimensión que esto no toca.", cuerpo: "" },
+  quesigue_visto:{ horas: 6,  titulo: ()  => "El 7D abre lo que el workshop no puede.",                  cuerpo: "" },
+};
+
+function tsToMs(ts) {
+  if (!ts) return null;
+  if (typeof ts.toMillis === "function") return ts.toMillis();
+  if (ts instanceof Date) return ts.getTime();
+  if (typeof ts === "number") return ts;
+  if (typeof ts === "string") return new Date(ts).getTime();
+  return null;
+}
+
+exports.onEventoProgreso = onDocumentWritten(
+  "eventos/{email}/secciones/{seccionId}",
+  async (event) => {
+    const after = event.data?.after;
+    if (!after?.exists) return; // documento borrado
+
+    const data = after.data();
+    if (data.notifEnviada === true) return;
+
+    const { email, seccionId } = event.params;
+    const seccion = data.seccion || seccionId;
+    const cfg = EVENTO_CONFIG[seccion];
+    if (!cfg) return; // sección no monitoreada
+
+    const tsMs = tsToMs(data.timestamp);
+    const horasTranscurridas = tsMs ? (Date.now() - tsMs) / (1000 * 60 * 60) : Infinity;
+
+    if (horasTranscurridas < cfg.horas) return; // aún no es tiempo — se reintentará
+
+    const db = getFirestore();
+    const messaging = getMessaging();
+
+    // Para s3: verificar que no haya actividad más reciente en la colección
+    if (cfg.checkActividad && data.timestamp) {
+      const recientes = await db
+        .collection("eventos").doc(email).collection("secciones")
+        .where("timestamp", ">", data.timestamp)
+        .limit(1)
+        .get();
+      if (!recientes.empty) return; // hay actividad más reciente — no enviar
+    }
+
+    // Buscar token FCM
+    const tokenDoc = await db.collection("tokens").doc(email).get();
+    if (!tokenDoc.exists || !tokenDoc.data().token) return; // sin token, skip silencioso
+
+    const token = tokenDoc.data().token;
+    const nombre = tokenDoc.data().nombre || nombreDesdeEmail(email);
+    const titulo = cfg.titulo(nombre);
+
+    try {
+      await messaging.send({
+        token,
+        data: {
+          tipo:   "sistema",
+          title:  titulo,
+          body:   cfg.cuerpo,
+          tag:    `evento_${seccion}`,
+          url:    "/workbook/",
+          icon:   "/workbook/icon-192.png",
+          badge:  "/workbook/icon-192.png",
+        },
+        android: {
+          priority: "high",
+          notification: { color: "#8B1A2F" },
+        },
+        webpush: { headers: { Urgency: "high" } },
+      });
+
+      await after.ref.update({ notifEnviada: true });
+    } catch (e) {
+      console.error(`[onEventoProgreso] send error ${email}/${seccion}:`, e.message);
+      const code = e.errorInfo?.code;
+      if (
+        code === "messaging/registration-token-not-registered" ||
+        code === "messaging/invalid-registration-token"
+      ) {
+        await db.collection("tokens").doc(email).delete();
+      }
+    }
+  }
+);

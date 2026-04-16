@@ -182,9 +182,19 @@ function nombreDesdeEmail(email) {
   return limpio.charAt(0).toUpperCase() + limpio.slice(1).toLowerCase();
 }
 
+function toMs(fechaRegistro) {
+  if (!fechaRegistro) return null;
+  if (typeof fechaRegistro.toMillis === "function") return fechaRegistro.toMillis();
+  if (fechaRegistro instanceof Date) return fechaRegistro.getTime();
+  if (typeof fechaRegistro === "number") return fechaRegistro;
+  if (typeof fechaRegistro === "string") return new Date(fechaRegistro).getTime();
+  return null;
+}
+
 function buildMensaje(nombre, estado, seccionesCompletadas, vioQueSigue, fechaRegistro) {
   const ahora = Date.now();
-  const msDesdeRegistro = fechaRegistro ? ahora - fechaRegistro.toMillis() : Infinity;
+  const fechaMs = toMs(fechaRegistro);
+  const msDesdeRegistro = fechaMs ? ahora - fechaMs : Infinity;
   const horas24 = 24 * 60 * 60 * 1000;
 
   // Caso: ya vio el CTA o completado+vioQueSigue → no enviar

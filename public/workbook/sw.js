@@ -25,12 +25,6 @@ try {
     const d = payload.data || {};
     const tipo = d.tipo || 'novedades';
 
-    const titulos = {
-      novedades: `${d.title || 'Soberana'} · Novedades`,
-      sistema: d.title || 'Soberana · Sistema',
-      inactividad: d.title || 'Soberana · Alerta'
-    };
-
     const options = {
       body: d.body,
       icon: '/workbook/icon-192.png',
@@ -40,7 +34,7 @@ try {
       data: { url: d.url || '/workbook/' }
     };
 
-    return self.registration.showNotification(titulos[tipo] || d.title || 'Soberana', options);
+    return self.registration.showNotification(d.title || 'Soberana', options);
   });
 
 } catch (e) {

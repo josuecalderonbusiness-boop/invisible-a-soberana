@@ -27,16 +27,11 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
       return;
     }
 
-    const { titulo, mensaje, adminKey } = req.body;
+    const { nombre, mensaje, adminKey, tipo: tipoRaw } = req.body;
 
     // 1. Verificar clave de admin
     if (adminKey !== ADMIN_KEY) {
       res.status(403).json({ error: "No autorizado" });
-      return;
-    }
-
-    if (!titulo || !mensaje) {
-      res.status(400).json({ error: "Se requieren titulo y mensaje" });
       return;
     }
 
@@ -61,7 +56,33 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
         return;
       }
 
-      // 3. Enviar en lotes de 500 (límite de FCM sendEachForMulticast)
+      // 3. Construir payload según tipo
+      const data = { nombre, mensaje };
+      const configs = {
+        novedades: {
+          title: data.nombre ? `${data.nombre}, Valentina` : 'Soberana · 7D Novedades',
+          body: data.mensaje || 'Nuevo contenido publicado en Novedades.',
+          tag: 'novedades',
+          data: { url: '/workbook/#tab-novedades', tipo: 'novedades' }
+        },
+        sistema: {
+          title: data.nombre ? `${data.nombre}` : 'Soberana · Sistema',
+          body: data.mensaje || 'Establece tu estándar para hoy.',
+          tag: 'sistema',
+          data: { url: '/workbook/#tab-inicio', tipo: 'sistema' }
+        },
+        inactividad: {
+          title: '48 h sin configuración de sistema.',
+          body: 'La gravedad del entorno está ganando terreno. Entra y recupera tu centro.',
+          tag: 'inactividad',
+          data: { url: '/workbook/', tipo: 'inactividad' }
+        }
+      };
+
+      const tipo = tipoRaw && configs[tipoRaw] ? tipoRaw : 'novedades';
+      const cfg = configs[tipo];
+
+      // 4. Enviar en lotes de 500 (límite de FCM sendEachForMulticast)
       const BATCH_SIZE = 500;
       let enviadas = 0;
       const invalidTokenDocIds = [];
@@ -72,19 +93,15 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
 
         const response = await messaging.sendEachForMulticast({
           tokens,
-          notification: {
-            title: titulo,
-            body:  mensaje,
-          },
-          webpush: {
-            notification: {
-              icon:  "/workbook/icon-192.png",
-              badge: "/workbook/icon-192.png",
-            },
-            fcmOptions: {
-              link: "/workbook/",
-            },
-          },
+          data: {
+            ...cfg.data,
+            title: cfg.title,
+            body: cfg.body,
+            tag: cfg.tag,
+            icon: '/workbook/icons/icon-192.png',
+            badge: '/workbook/icons/badge-72.png'
+          }
+          // Sin campo "notification" — el SW controla el render completo
         });
 
         response.responses.forEach((r, idx) => {
@@ -103,7 +120,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
         });
       }
 
-      // 4. Borrar tokens inválidos de Firestore
+      // 5. Borrar tokens inválidos de Firestore
       if (invalidTokenDocIds.length > 0) {
         await Promise.all(
           invalidTokenDocIds.map(docId =>

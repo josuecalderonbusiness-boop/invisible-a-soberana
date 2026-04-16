@@ -187,6 +187,22 @@
     margin-bottom: 8px;
   }
 
+  .field select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color .2s;
+  }
+  .field select:focus { border-color: var(--gold); }
+
   .field input,
   .field textarea {
     width: 100%;
@@ -399,6 +415,15 @@
       <textarea id="inp-event" placeholder="Ej: Sofía A. completó el Workshop completo. &quot;Lo que más me impactó fue...&quot;"></textarea>
     </div>
 
+    <div class="field">
+      <label>Tipo de notificación</label>
+      <select id="tipoNotif">
+        <option value="novedades">🌿 Novedades (verde 7D)</option>
+        <option value="sistema">🔴 Sistema (vino)</option>
+        <option value="inactividad">⚡ Inactividad (dorado)</option>
+      </select>
+    </div>
+
     <button class="btn-publish" id="btn-publish" onclick="publishPost()">Publicar en Novedades</button>
     <div class="publish-status" id="publish-status"></div>
   </div>
@@ -494,7 +519,8 @@ async function publishPost() {
 }
 
 async function sendPushNotification(author, message) {
-  console.log('[Push] Llamando sendPushNotification...', { author, message });
+  const tipo = document.getElementById('tipoNotif').value;
+  console.log('[Push] Llamando sendPushNotification...', { author, message, tipo });
   try {
     const res = await fetch(
       'https://us-central1-soberana-app.cloudfunctions.net/sendPushNotification',
@@ -502,8 +528,9 @@ async function sendPushNotification(author, message) {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          titulo:   'Novedades Soberana',
+          nombre:   author,
           mensaje:  message,
+          tipo:     tipo,
           adminKey: 'Sob3rana@Admin2026'
         })
       }

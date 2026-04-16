@@ -6097,6 +6097,13 @@ function runExport() {
 // ═══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/workbook/sw.js').catch(() => {});
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'NAVIGATE') {
+      const url = event.data.url;
+      if (url.includes('#tab-novedades')) switchTab('novedades');
+      else if (url.includes('#tab-inicio')) switchTab('inicio');
+    }
+  });
 }
 
 if (loadState() && state.user) {

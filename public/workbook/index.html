@@ -1982,6 +1982,73 @@
     color: var(--gold); font-weight: 500; margin-bottom: 14px;
   }
 
+  /* Energía de la Soberana */
+  .energia-card {
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(42,92,66,0.4);
+  }
+  .energia-card.activa {
+    background: rgba(13,36,24,0.6);
+  }
+  .energia-card.apagada {
+    background: rgba(26,10,15,0.4);
+    filter: grayscale(.6);
+    opacity: .55;
+  }
+  .energia-dia-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px; font-weight: 700;
+    color: #4CAF80; line-height: 1;
+  }
+  .energia-dia-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; color: rgba(76,175,128,0.7);
+    letter-spacing: .15em; text-transform: uppercase; margin-top: 2px;
+  }
+  .energia-week-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; color: rgba(196,160,178,0.45);
+    letter-spacing: .18em; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .energia-days { display: flex; justify-content: space-between; gap: 4px; }
+  .energia-day-dot {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;
+  }
+  .energia-day-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .energia-day-circle.done {
+    background: linear-gradient(135deg,#1A3D2B,#2A5C42);
+    border: 1.5px solid #4CAF80;
+    box-shadow: 0 2px 8px rgba(76,175,128,0.3);
+  }
+  .energia-day-circle.pending {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .energia-day-name {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px; letter-spacing: .06em;
+    color: rgba(196,160,178,0.35);
+  }
+  .energia-day-name.done { color: #4CAF80; }
+  .energia-workshop-dots { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .energia-ws-dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .energia-ws-dot.done {
+    background: rgba(184,137,42,0.18);
+    border: 1px solid rgba(184,137,42,0.35);
+  }
+  .energia-ws-dot.pending {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
   /* Streak card */
   .nov-streak-card {
     background: linear-gradient(135deg, rgba(42,92,66,0.2), rgba(26,61,43,0.12));
@@ -2433,6 +2500,12 @@
             </div>
             <div class="nov-dots" id="nov-dots"></div>
           </div>
+        </div>
+
+        <!-- Block 1b: Energía de la Soberana -->
+        <div class="nov-section" id="nov-energia-section" style="margin-top:6px">
+          <div class="nov-section-title">Energía de la Soberana</div>
+          <div id="nov-energia"></div>
         </div>
 
         <!-- Block 2: Comunidad -->
@@ -5827,6 +5900,71 @@ function _renderLogrosBlock(tiene7d, fsLogros) {
     </div>`).join('');
 }
 
+function renderEnergiaSection() {
+  const container = document.getElementById('nov-energia');
+  if (!container) return;
+  const tiene7d = state.user && state.user.tiene7d;
+  const dayNames = ['L','M','X','J','V','S','D'];
+
+  if (tiene7d) {
+    // Calcular día del programa y semana actual
+    let diaNum = 1, semNum = 1;
+    let weekDone = Array(7).fill(false);
+
+    if (state.user.fecha7d) {
+      const start = new Date(state.user.fecha7d);
+      const diff  = Math.floor((Date.now() - start.getTime()) / 86400000);
+      diaNum  = Math.min(diff + 1, 30);
+      semNum  = Math.min(Math.ceil(diaNum / 7), 4);
+      const diaEnSemana = ((diaNum - 1) % 7); // 0-6
+      for (let i = 0; i <= diaEnSemana; i++) {
+        const key = `7d_s${semNum}_d${i + 1}`;
+        weekDone[i] = !!(state.completed7d && state.completed7d[key]);
+      }
+    }
+
+    const dotsHtml = dayNames.map((name, i) => {
+      const done = weekDone[i];
+      return `<div class="energia-day-dot">
+        <div class="energia-day-circle ${done ? 'done' : 'pending'}">
+          ${done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#4CAF80" stroke-width="2.5" stroke-linecap="round"/></svg>' : ''}
+        </div>
+        <div class="energia-day-name ${done ? 'done' : ''}">${name}</div>
+      </div>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="energia-card activa">
+        <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:18px">
+          <div class="energia-dia-num">Día ${diaNum}</div>
+          <div style="padding-bottom:8px">
+            <div class="energia-dia-label">de 30 · Soberana 7D</div>
+          </div>
+        </div>
+        <div class="energia-week-label">Semana ${semNum} — esta semana</div>
+        <div class="energia-days">${dotsHtml}</div>
+      </div>`;
+  } else {
+    // Workshop: secciones s1–s9 con iconos
+    const wsIcons = ['👁','💬','🧠','🌱','💡','❤️','🤝','⚡','🌟'];
+    const wsSecs  = ['s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+    const dotsHtml = wsSecs.map((sec, i) => {
+      const done = state.completedSections.includes(sec);
+      return `<div class="energia-ws-dot ${done ? 'done' : 'pending'}">${done ? wsIcons[i] : ''}</div>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="energia-card apagada" style="border-color:rgba(255,255,255,0.06)">
+        <div style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(196,160,178,0.6);text-align:center;margin-bottom:14px">Tu energía se activa en el Soberana 7D</div>
+        <div class="energia-workshop-dots">${dotsHtml}</div>
+        <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d"
+           style="display:block;text-align:center;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;color:#D4AF6A;background:rgba(184,137,42,0.1);border:1px solid rgba(184,137,42,0.2);border-radius:8px;padding:10px;text-decoration:none;letter-spacing:.05em">
+          Ver Soberana 7D →
+        </a>
+      </div>`;
+  }
+}
+
 async function renderNovedades() {
   const tiene7d = state.user && state.user.tiene7d;
   const email   = state.user && state.user.email;
@@ -5847,6 +5985,9 @@ async function renderNovedades() {
     }
   }
   _renderStreakBlock(streakFinal, tiene7d);
+
+  // Block 1b: Energía de la Soberana
+  renderEnergiaSection();
 
   // Block 2: Feed comunitario — listener en tiempo real
   // Siempre mostrar skeleton mientras llegan datos; nunca usar FEED_FALLBACK

@@ -750,9 +750,9 @@
     right: 0;
     writing-mode: vertical-rl;
     text-orientation: mixed;
-    background: #1a0a0f;
+    background: #8B1A2F;
     border: none;
-    border-left: 2px solid #B8892A;
+    border-left: 2px solid #D4AF6A;
     border-radius: 10px 0 0 10px;
     padding: 18px 10px;
     cursor: pointer;
@@ -760,9 +760,9 @@
     display: none;
     align-items: center;
     justify-content: center;
-    transition: right .15s, background .15s;
+    animation: eresPeek 600ms ease-in-out 4s infinite;
   }
-  .eres-tab:active { background: rgba(184,137,42,0.1); }
+  .eres-tab:active { background: #6B1A2A; }
   .eres-tab-label {
     font-family: 'Cormorant Garamond', serif;
     font-size: 15px;
@@ -776,6 +776,11 @@
     to   { transform: translateX(0);    opacity: 1; }
   }
   .eres-tab.slide-in { animation: eresSlideIn .4s cubic-bezier(.22,1,.36,1) forwards; }
+  @keyframes eresPeek {
+    0%   { transform: translateX(0); }
+    40%  { transform: translateX(-8px); }
+    100% { transform: translateX(0); }
+  }
 
   /* ── Tour overlay ERES ── */
   #eres-tour {

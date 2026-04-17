@@ -2477,7 +2477,8 @@ async function fsWriteStreak(email, data) {
 let _comunidadUnsub = null;
 
 function initComunidadListener() {
-  if (_comunidadUnsub) return; // ya activo, no duplicar
+  // Cancelar listener anterior si existe, para siempre recibir datos frescos
+  if (_comunidadUnsub) { _comunidadUnsub(); _comunidadUnsub = null; }
   try {
     _comunidadUnsub = db.collection('comunidad')
       .orderBy('timestamp', 'desc')
@@ -2485,7 +2486,12 @@ function initComunidadListener() {
       .onSnapshot(
         snap => {
           const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          _renderFeedBlock(posts.length > 0 ? posts : FEED_FALLBACK);
+          if (posts.length > 0) {
+            _renderFeedBlock(posts);
+          } else {
+            const container = document.getElementById('nov-feed');
+            if (container) container.innerHTML = '<p style="text-align:center;color:rgba(196,160,178,0.45);font-size:13px;padding:24px 0">No hay publicaciones aún.</p>';
+          }
         },
         err => { console.warn('[Firestore] comunidad onSnapshot:', err); }
       );
@@ -5499,12 +5505,24 @@ async function renderNovedades() {
   _renderStreakBlock(streakFinal, tiene7d);
 
   // Block 2: Feed comunitario — listener en tiempo real
-  // Resetea siempre al volver al tab (colapsa a 3 posts iniciales)
-  // Si el listener ya tiene datos, los usa; si no, muestra fallback hasta que lleguen
-  if (_feedAllPosts.length > 0) {
-    _renderFeedBlock(_feedAllPosts);
-  } else {
-    _renderFeedBlock(FEED_FALLBACK);
+  // Siempre mostrar skeleton mientras llegan datos; nunca usar FEED_FALLBACK
+  const _feedContainer = document.getElementById('nov-feed');
+  if (_feedContainer) {
+    _feedContainer.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">
+        ${[1,2,3].map(() => `
+          <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:16px;animation:pulse-glow 1.8s ease-in-out infinite">
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
+              <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.07)"></div>
+              <div style="flex:1">
+                <div style="height:10px;width:40%;background:rgba(255,255,255,0.07);border-radius:6px;margin-bottom:6px"></div>
+                <div style="height:8px;width:25%;background:rgba(255,255,255,0.05);border-radius:6px"></div>
+              </div>
+            </div>
+            <div style="height:9px;width:90%;background:rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px"></div>
+            <div style="height:9px;width:70%;background:rgba(255,255,255,0.04);border-radius:6px"></div>
+          </div>`).join('')}
+      </div>`;
   }
   initComunidadListener();
 

@@ -1743,6 +1743,64 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ── Community Feed Toast ── */
+  #community-toast {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 12px) + 68px);
+    left: 16px; right: 16px;
+    background: rgba(26,10,15,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid #B8892A;
+    border-radius: 14px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Jost', sans-serif;
+    z-index: 8000;
+    opacity: 0;
+    transform: translateY(-14px);
+    transition: opacity .35s ease, transform .35s ease;
+    pointer-events: none;
+    box-shadow: 0 6px 28px rgba(0,0,0,.55), 0 0 0 1px rgba(184,137,42,.12);
+  }
+  #community-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  #community-toast .ct-icon {
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  #community-toast .ct-text {
+    flex: 1;
+    font-size: 13px;
+    color: #EDE3CE;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  #community-toast .ct-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid #B8892A;
+    border-radius: 8px;
+    padding: 6px 13px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #B8892A;
+    cursor: pointer;
+    letter-spacing: .05em;
+    transition: background .18s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #community-toast .ct-btn:active { background: rgba(184,137,42,.18); }
+
   /* ════════════════════════════════════════
      TAB: NOVEDADES
   ════════════════════════════════════════ */
@@ -2350,6 +2408,13 @@
       <div class="modal-handle"></div>
       <div class="modal-content" id="modal-content"></div>
     </div>
+  </div>
+
+  <!-- Community Feed Toast -->
+  <div id="community-toast">
+    <span class="ct-icon">✨</span>
+    <span class="ct-text" id="ct-text"></span>
+    <button class="ct-btn" onclick="switchTab('novedades');hideCommunityToast()">Ver</button>
   </div>
 
   <!-- Toast -->
@@ -3088,6 +3153,9 @@ function initApp() {
 
   // Modal de notificaciones — 3s después, solo si permission === 'default' y no se ha preguntado
   setTimeout(() => maybeShowNotifModal(), 3000);
+
+  // Community toast — 1 vez por sesión, 1.5s después de entrar
+  setTimeout(() => showCommunityToast(), 1500);
 }
 
 function apply7dAccess() {
@@ -5731,6 +5799,37 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+async function showCommunityToast() {
+  if (sessionStorage.getItem('toastMostrado')) return;
+  if (!window.db) return;
+  try {
+    const snap = await db.collection('comunidad')
+      .orderBy('timestamp', 'desc')
+      .limit(1)
+      .get();
+    if (snap.empty) return;
+    const text = (snap.docs[0].data().event || '').trim();
+    if (!text) return;
+
+    const el     = document.getElementById('community-toast');
+    const textEl = document.getElementById('ct-text');
+    if (!el || !textEl) return;
+
+    textEl.textContent = text;
+    el.classList.add('show');
+    sessionStorage.setItem('toastMostrado', '1');
+
+    setTimeout(() => el.classList.remove('show'), 5000);
+  } catch (e) {
+    console.warn('[communityToast]', e);
+  }
+}
+
+function hideCommunityToast() {
+  const el = document.getElementById('community-toast');
+  if (el) el.classList.remove('show');
 }
 
 function confirmReset() {

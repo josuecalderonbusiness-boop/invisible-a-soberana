@@ -620,37 +620,19 @@
   }
   .journey-node {
     width: 72px; height: 72px;
-    border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     position: relative;
     transition: transform .15s;
+    background: none;
+    border: none;
   }
-  .journey-node.done {
-    background: linear-gradient(135deg,#7A5C1E,#D4A843);
-    border: 2.5px solid #E8C870;
-    box-shadow: 0 4px 18px rgba(184,137,42,0.4);
-    animation: pulse-glow 2.5s ease-in-out infinite;
+  @keyframes gemRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
-  .journey-node.current {
-    width: 80px; height: 80px;
-    background: linear-gradient(135deg,#5A1020,#8B1A2F);
-    border: 2.5px solid #C4384F;
-    animation: node-pulse 1.8s ease-in-out infinite;
-  }
-  .journey-node.locked {
-    background: rgba(255,255,255,0.03);
-    border: 2px dashed rgba(255,255,255,0.15);
-  }
-  .journey-node.s0-node {
-    background: linear-gradient(135deg,#7A5C1E,#D4A843);
-    border: 2.5px solid #E8C870;
-    box-shadow: 0 4px 18px rgba(184,137,42,0.4);
-  }
-  .journey-node.s10-node {
-    background: linear-gradient(135deg,#1A3D2B,#2A5C42);
-    border: 2.5px solid #4CAF80;
-    box-shadow: 0 4px 18px rgba(76,175,80,0.35);
-    width: 80px; height: 80px;
+  @keyframes gemPulse {
+    0%,100% { opacity:.75; }
+    50%     { opacity:1; }
   }
   .journey-node-badge {
     position: absolute;
@@ -3615,22 +3597,99 @@ function saveEres() {
 // ═══════════════════════════════════════════
 // ── Journey Map helpers ─────────────────────────────────────────
 const SECTION_ICONS = {
-  s0: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
-  s1: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>`,
-  s2: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M15 9H9l-2 6h10l-2-6z"/><path d="M12 9v-3"/></svg>`,
-  s3: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  s4: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`,
-  s5: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
-  s6: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
-  s7: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
-  s8: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-  s9: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F0E6EA" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
-  s10:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4CAF80" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`
+  s0: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
+  s1: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>`,
+  s2: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M15 9H9l-2 6h10l-2-6z"/><path d="M12 9v-3"/></svg>`,
+  s3: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  s4: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`,
+  s5: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
+  s6: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
+  s7: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
+  s8: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  s9: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  s10:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`
 };
 
 // x-positions alternating for the sinuous path (as % of container width)
 const NODE_X_PCT = [50, 70, 50, 30, 50, 70, 50, 30, 50, 70]; // s0..s9
 const NODE_SPACING = 120; // px between nodes vertically
+
+// ── Gem SVG factory ──────────────────────────────────────────────────
+let _gemUID = 0;
+function makeGemSVG(gemType, nodeState) {
+  const CFG = {
+    workshop: { shape:'hex',      dark:'#7A5C1E', mid:'#D4A843', light:'#F5D485', glow:'#B8892A' },
+    sem1:     { shape:'vdiamond', dark:'#1A3D2B', mid:'#2A5C42', light:'#4A9C72', glow:'#2A6A4E' },
+    sem2:     { shape:'heart',    dark:'#3D0A14', mid:'#6B1A2A', light:'#A03050', glow:'#8B1A2A' },
+    sem3:     { shape:'octagon',  dark:'#7A5C1E', mid:'#B8892A', light:'#E8C060', glow:'#C89A30' },
+    sem4:     { shape:'wdiamond', dark:'#0D2418', mid:'#1A3D2B', light:'#2A6040', glow:'#1A5038' }
+  };
+  const cfg = CFG[gemType] || CFG.workshop;
+  const id  = ++_gemUID;
+  const isLocked  = nodeState === 'locked';
+  const isCurrent = nodeState === 'current';
+  const isAvail   = nodeState === 'available';
+
+  // Shape geometry in 72×72 viewBox
+  const SHAPES = {
+    hex:      { tag:'polygon', a:'points', v:'70,36 53,65.4 19,65.4 2,36 19,6.6 53,6.6' },
+    vdiamond: { tag:'polygon', a:'points', v:'36,2 58,36 36,70 14,36' },
+    heart:    { tag:'path',    a:'d',      v:'M36,62 C4,44 4,20 18,13 C25,9 32,11 36,17 C40,11 47,9 54,13 C68,20 68,44 36,62Z' },
+    octagon:  { tag:'polygon', a:'points', v:'57,10 66,22 66,50 57,62 15,62 6,50 6,22 15,10' },
+    wdiamond: { tag:'polygon', a:'points', v:'36,13 69,36 36,59 3,36' }
+  };
+  const sh = SHAPES[cfg.shape];
+  const shA = `${sh.a}="${sh.v}"`;
+  const T = sh.tag;
+
+  // CSS filter on outer SVG
+  let outerStyle = 'position:absolute;top:0;left:0;pointer-events:none;';
+  if (isLocked) {
+    outerStyle += 'filter:saturate(0);opacity:0.35';
+  } else if (isCurrent) {
+    outerStyle += `filter:drop-shadow(0 0 12px ${cfg.glow}) drop-shadow(0 0 24px ${cfg.glow})`;
+  } else if (isAvail) {
+    outerStyle += 'opacity:0.52';
+  } else {
+    outerStyle += `filter:drop-shadow(0 0 8px ${cfg.glow}) drop-shadow(0 0 16px ${cfg.glow})`;
+  }
+
+  // Inner group rotation for active gem
+  const gStyle = isCurrent
+    ? `style="animation:gemRotate 8s linear infinite;transform-origin:36px 36px"`
+    : '';
+
+  // SMIL pulse ring on active gem
+  const pulseRing = isCurrent ? `
+    <${T} ${shA} fill="none" stroke="${cfg.glow}" stroke-width="2.5" opacity="0">
+      <animate attributeName="opacity" values="0;0.55;0" dur="2.4s" repeatCount="indefinite"/>
+    </${T}>` : '';
+
+  return `<svg width="72" height="72" viewBox="0 0 72 72" style="${outerStyle}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="rg${id}" cx="42%" cy="30%" r="65%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="${cfg.light}"/>
+      <stop offset="42%"  stop-color="${cfg.mid}"/>
+      <stop offset="100%" stop-color="${cfg.dark}"/>
+    </radialGradient>
+    <linearGradient id="sh${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="48%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="${cfg.dark}" stop-opacity="0.62"/>
+    </linearGradient>
+    <linearGradient id="sp${id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="white" stop-opacity="0.52"/>
+      <stop offset="36%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g ${gStyle}>
+    <${T} ${shA} fill="url(#rg${id})"/>
+    <${T} ${shA} fill="url(#sh${id})"/>
+    <${T} ${shA} fill="url(#sp${id})"/>
+    <ellipse cx="22" cy="17" rx="7" ry="3.5" fill="white" opacity="0.58" transform="rotate(-25,22,17)"/>
+  </g>
+  ${pulseRing}
+</svg>`;
+}
 
 function bounceNode(el) {
   el.classList.remove('bouncing','shaking');
@@ -3748,15 +3807,19 @@ function renderSectionsList() {
     wrap.className = 'journey-node-wrap';
     wrap.style.cssText = `left:${xPct}%;top:${y}px`;
 
-    // Node circle
+    // Node gem
     const node = document.createElement('div');
-    let nodeClass = 'journey-node';
-    if (isS10)        nodeClass += ' s10-node';
-    else if (sec.id === 's0') nodeClass += ' s0-node';
-    else if (done)    nodeClass += ' done';
-    else if (isCurrent) nodeClass += ' current';
-    else              nodeClass += ' locked';
-    node.className = nodeClass;
+    node.className = 'journey-node';
+
+    // Determine gem state
+    let gemState;
+    if (isS10)              gemState = 'current';
+    else if (sec.id === 's0') gemState = done ? 'done' : 'current';
+    else if (done)          gemState = 'done';
+    else if (isCurrent)     gemState = 'current';
+    else                    gemState = 'locked';
+
+    node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
 
     // Badge (START / CONTINUAR) for current non-s0
     if (isCurrent && sec.id !== 's0' && !isS10) {
@@ -3774,10 +3837,11 @@ function renderSectionsList() {
       node.appendChild(badge);
     }
 
-    // Icon
+    // Icon (centered on top of gem, z-index:1)
     const iconWrap = document.createElement('div');
+    const iconColor = locked ? 'rgba(255,255,255,0.25)' : '#fff';
+    iconWrap.style.cssText = `position:relative;z-index:1;display:flex;align-items:center;justify-content:center;color:${iconColor}`;
     iconWrap.innerHTML = SECTION_ICONS[sec.id] || SECTION_ICONS.s9;
-    if (locked) iconWrap.style.opacity = '0.3';
     node.appendChild(iconWrap);
 
     // Lock badge for locked nodes
@@ -3919,25 +3983,25 @@ const SEMANAS_7D = [
 const DIAS_7D = [
   { key:'lun', dia:'Lunes',     label:'Masterclass',    isLive: false,
     desc:'Una masterclass grabada para trabajar a tu ritmo. Base conceptual de la semana.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>` },
   { key:'mar', dia:'Martes',    label:'Reflexión',      isLive: false,
     desc:'Ejercicio escrito de introspección. Sin respuestas correctas, solo las tuyas.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>` },
   { key:'mie', dia:'Miércoles', label:'Reto',           isLive: false,
     desc:'Una acción concreta para aplicar lo que aprendiste en tu vida real esta semana.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>` },
   { key:'jue', dia:'Jueves',    label:'Envío de caso',  isLive: false,
     desc:'Envías tu situación real para que sea analizada en la sesión del sábado.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>` },
   { key:'vie', dia:'Viernes',   label:'Diario',         isLive: false,
     desc:'Registro de tus observaciones de la semana. Lo que notaste, lo que cambió.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>` },
   { key:'sab', dia:'Sábado',    label:'Sesión en vivo', isLive: true,
     desc:'Sesión grupal en vivo. Casos reales analizados. Tu caso podría ser uno de ellos.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>` },
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>` },
   { key:'dom', dia:'Domingo',   label:'Integración',    isLive: false,
     desc:'Descanso activo. Tu mente procesa e integra todo lo trabajado en la semana.',
-    icon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` }
+    icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` }
 ];
 
 const NODE_X_7D = [50, 70, 50, 30, 50, 70, 50];
@@ -4321,22 +4385,18 @@ function render7dJourney(container) {
       wrap.className = 'journey-node-wrap d7';
       wrap.style.cssText = `left:${xPct}%;top:${y}px`;
 
-      // Node circle — 72px (same as workshop)
+      // Node gem — per-week shape
       const node = document.createElement('div');
       node.className = 'journey-node';
 
-      if (isDone) {
-        // FIX 4: gold gradient identical to workshop done nodes
-        node.style.cssText = `width:72px;height:72px;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 0 20px rgba(212,175,106,0.4);animation:pulse-glow 2.5s ease-in-out infinite`;
-      } else if (semUnlocked) {
-        if (isSiguiente) {
-          node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:2px solid ${semana.nodeBorder};animation:node-pulse 1.8s ease-in-out infinite`;
-        } else {
-          node.style.cssText = `width:72px;height:72px;background:${semana.nodeBg};border:1.5px solid ${semana.nodeBorder}`;
-        }
-      } else {
-        node.style.cssText = `width:72px;height:72px;background:rgba(255,255,255,0.04);border:1.5px dashed rgba(255,255,255,0.1)`;
-      }
+      // Gem state
+      let gemState7d;
+      if (isDone)           gemState7d = 'done';
+      else if (isSiguiente) gemState7d = 'current';
+      else if (semUnlocked) gemState7d = 'available';
+      else                  gemState7d = 'locked';
+
+      node.insertAdjacentHTML('afterbegin', makeGemSVG('sem' + semNum, gemState7d));
 
       // Badge SIGUIENTE
       if (isSiguiente) {
@@ -4347,11 +4407,9 @@ function render7dJourney(container) {
         node.appendChild(badge);
       }
 
-      // Icon (28px same as workshop)
+      // Icon centered on top of gem
       const iconWrap = document.createElement('div');
-      iconWrap.style.color = isDone ? '#fff'
-        : semUnlocked ? semana.color
-        : 'rgba(255,255,255,0.15)';
+      iconWrap.style.cssText = `position:relative;z-index:1;display:flex;align-items:center;justify-content:center;color:${gemState7d === 'locked' ? 'rgba(255,255,255,0.15)' : '#fff'}`;
       iconWrap.innerHTML = dia.icon;
       node.appendChild(iconWrap);
 

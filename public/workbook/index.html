@@ -831,13 +831,24 @@
     z-index: 1;
   }
 
-  /* ── Modal ERES específico ── */
+  /* ── Modal ERES específico — fuerza override de var(--surface) en línea 1806 ── */
+  #eres-modal {
+    background: rgba(0,0,0,0.88) !important;
+  }
   #eres-sheet {
+    background: #1a0a0f !important;
+    color: #EDE3CE !important;
     border: 1px solid #B8892A !important;
     border-radius: 16px 16px 0 0 !important;
   }
   #eres-sheet .eres-step {
-    border-color: rgba(184,137,42,0.15);
+    background: rgba(184,137,42,0.08) !important;
+    border: 1px solid rgba(184,137,42,0.3) !important;
+  }
+  #eres-sheet .eres-input {
+    background: rgba(255,255,255,0.05) !important;
+    color: #EDE3CE !important;
+    border: 1px solid rgba(184,137,42,0.2) !important;
   }
 
   /* ── Pantalla de logro ERES ── */

@@ -725,6 +725,187 @@
     line-height: 1;
   }
 
+  /* ── Gem counter header ── */
+  .gem-counter-header {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(42,92,66,0.35);
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: default;
+    text-decoration: none;
+  }
+  .gem-counter-header.complete {
+    border-color: rgba(184,137,42,0.4);
+    background: rgba(184,137,42,0.06);
+  }
+  #gem-counter-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #96C7B3;
+    line-height: 1;
+  }
+  .gem-counter-header.complete #gem-counter-label { color: #D4A843; }
+
+  /* ── Celebration overlay ── */
+  .celebration-overlay {
+    position: fixed; inset: 0;
+    background: #0F0A0B;
+    z-index: 9500;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 32px;
+    animation: celebFadeIn .4s ease forwards;
+  }
+  @keyframes celebFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes celebFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  @keyframes celebSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .celeb-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: .15em;
+    color: #B8892A;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .2s forwards;
+    margin-bottom: 32px;
+  }
+  .celeb-gem-wrap {
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .3s forwards;
+  }
+  .celeb-titulo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px; font-weight: 600;
+    color: #EDE3CE;
+    text-align: center; line-height: 1.2;
+    margin-bottom: 6px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .4s forwards;
+  }
+  .celeb-subtitulo {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: rgba(150,199,179,.55);
+    text-align: center;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .5s forwards;
+  }
+  .celeb-frase {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 16px; line-height: 1.7;
+    color: rgba(237,227,206,.6);
+    text-align: center;
+    max-width: 280px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .6s forwards;
+  }
+  .celeb-btn {
+    margin-top: 48px;
+    background: transparent;
+    border: 1px solid rgba(184,137,42,.45);
+    border-radius: 40px;
+    padding: 12px 32px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: #B8892A;
+    cursor: pointer;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .8s forwards;
+  }
+  /* Partículas doradas */
+  .celeb-particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #D4A843;
+    pointer-events: none;
+    animation: particleFloat linear infinite;
+  }
+  @keyframes particleFloat {
+    0%   { transform: translateY(0) scale(1);   opacity: .8; }
+    100% { transform: translateY(-120vh) scale(0); opacity: 0; }
+  }
+  /* Órbita gemas workshop final */
+  @keyframes gemOrbit {
+    from { transform: rotate(var(--orbit-start, 0deg)) translateX(80px); }
+    to   { transform: rotate(calc(var(--orbit-start, 0deg) + 360deg)) translateX(80px); }
+  }
+
+  /* Orbit container */
+  .celeb-orbit-container {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .celeb-orbit-wrap {
+    position: absolute;
+    width: 0; height: 0;
+  }
+  /* Content card */
+  .celeb-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .celeb-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px; font-weight: 600;
+    color: #EDE3CE;
+    text-align: center; line-height: 1.2;
+    margin-bottom: 6px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .4s forwards;
+  }
+  .celeb-subtitle {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: rgba(150,199,179,.65);
+    text-align: center;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .5s forwards;
+  }
+  .celeb-cta {
+    background: transparent;
+    border: 1px solid rgba(96,200,160,.4);
+    border-radius: 40px;
+    padding: 12px 36px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: #60C8A0;
+    cursor: pointer;
+    opacity: 0;
+    animation: celebSlideUp .5s ease .8s forwards;
+  }
+  .celeb-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(42,92,66,.18) 0%, #0F0609 70%);
+  }
+
+  /* Tab flash */
+  .tab-gem-flash {
+    animation: tabFlash .4s ease forwards;
+  }
+  @keyframes tabFlash {
+    0%   { color: #B8892A; text-shadow: 0 0 12px #B8892A; }
+    100% { color: inherit; text-shadow: none; }
+  }
+
   /* ── Pestaña lateral ERES ── */
   .eres-tab {
     position: fixed;
@@ -2315,6 +2496,26 @@
         <span class="header-title-main">Código Soberana</span>
       </div>
       <div class="header-right">
+        <div id="gem-counter" class="gem-counter-header" title="Gemas del Camino">
+          <svg id="gem-counter-icon" width="22" height="22" viewBox="0 0 44 44" style="overflow:visible">
+            <defs>
+              <filter id="gcGlow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <polygon points="22,2 38,11 38,33 22,42 6,33 6,11" fill="#1a1a2e" filter="url(#gcGlow)"/>
+            <polygon points="22,2 38,11 30,11 22,5" fill="#a0e8c8"/>
+            <polygon points="38,11 38,33 32,22" fill="#4cc898"/>
+            <polygon points="22,42 38,33 32,22 22,38" fill="#2da870"/>
+            <polygon points="22,42 6,33 12,22 22,38" fill="#3dc090"/>
+            <polygon points="6,11 6,33 12,22" fill="#5dd8a8"/>
+            <polygon points="22,2 6,11 14,11 22,5" fill="#c0f4e0"/>
+            <polygon points="30,11 6,11 14,11 22,16 30,11" fill="#80e0b8" opacity="0.9"/>
+            <polygon points="22,16 30,11 32,22 22,38 12,22 14,11" fill="#60c8a0"/>
+          </svg>
+          <span id="gem-counter-label">0 de 7</span>
+        </div>
         <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="currentColor" stroke="none"/></svg>
           <span id="streak-num">0</span>
@@ -3398,6 +3599,7 @@ function initApp() {
   
   updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
   applyStreakSemanaColor();
+  updateGemCounter();
   renderSectionsList();
   updateProgressUI();
   renderInstallSection();
@@ -3535,6 +3737,225 @@ function showEresTab(animate) {
 function hideEresTab() {
   const tab = document.getElementById('eres-tab');
   if (tab) tab.style.display = 'none';
+}
+
+// ── Gem counter ──────────────────────────────────────────────────
+function updateGemCounter() {
+  const workshopGems = ['s5','s6','s7'].filter(id => state.completedSections && state.completedSections.includes(id)).length;
+  let weekGems = 0;
+  if (state.completed7d) {
+    for (let sem = 1; sem <= 4; sem++) {
+      const allDone = [1,2,3,4,5,6,7].every(d => state.completed7d[`7d_s${sem}_d${d}`]);
+      if (allDone) weekGems++;
+    }
+  }
+  const total = workshopGems + weekGems;
+  const label = document.getElementById('gem-counter-label');
+  const counter = document.getElementById('gem-counter');
+  if (label) label.textContent = `${total} de 7`;
+  if (counter) {
+    counter.classList.toggle('complete', total === 7);
+  }
+}
+
+// ── Celebration overlay ───────────────────────────────────────────
+const CELEBRATION_DATA = {
+  workshop_s5: {
+    variant: 'protocolo',
+    title: '¡Protocolo desbloqueado!',
+    subtitle: 'Has completado el Protocolo de Encendido',
+    gemColor: '#60C8A0',
+    gemType: 'hexagon',
+    cta: 'Seguir avanzando'
+  },
+  workshop_s6: {
+    variant: 'protocolo',
+    title: '¡Protocolo desbloqueado!',
+    subtitle: 'Has completado el Protocolo de Claridad',
+    gemColor: '#60C8A0',
+    gemType: 'hexagon',
+    cta: 'Seguir avanzando'
+  },
+  workshop_s7: {
+    variant: 'protocolo',
+    title: '¡Protocolo desbloqueado!',
+    subtitle: 'Has completado el Protocolo de Integración',
+    gemColor: '#60C8A0',
+    gemType: 'hexagon',
+    cta: 'Seguir avanzando'
+  },
+  workshop_final: {
+    variant: 'final_workshop',
+    title: '¡Workshop Completado!',
+    subtitle: 'Todas las secciones del Workshop están hechas',
+    gemColor: '#D4A843',
+    gemType: 'hexagon',
+    cta: 'Ver mi progreso'
+  },
+  semana1_final: {
+    variant: 'final_semana',
+    title: '¡Semana 1 completada!',
+    subtitle: '7 días de práctica soberana',
+    gemColor: '#7EB8E8',
+    gemType: 'vdiamond',
+    cta: 'Continuar'
+  },
+  semana2_final: {
+    variant: 'final_semana',
+    title: '¡Semana 2 completada!',
+    subtitle: '14 días de transformación',
+    gemColor: '#E87E9A',
+    gemType: 'heart',
+    cta: 'Continuar'
+  },
+  semana3_final: {
+    variant: 'final_semana',
+    title: '¡Semana 3 completada!',
+    subtitle: '21 días de poder soberano',
+    gemColor: '#A87EE8',
+    gemType: 'brilliant',
+    cta: 'Continuar'
+  },
+  semana4_final: {
+    variant: 'final_semana',
+    title: '¡Semana 4 completada!',
+    subtitle: '28 días — ¡Soberana total!',
+    gemColor: '#D4A843',
+    gemType: 'crown',
+    cta: 'Ver mis gemas'
+  },
+  gema_dia_generico: {
+    variant: 'gema_dia',
+    title: '¡Gema del día!',
+    subtitle: 'Práctica diaria completada',
+    gemColor: '#60C8A0',
+    gemType: 'hexagon',
+    cta: 'Continuar'
+  }
+};
+
+function _makeCelebGemSVG(gemType, color, size) {
+  const s = size || 80;
+  const h = s / 2;
+  const light = color;
+  const mid = color + 'cc';
+  const dark = color + '88';
+  let paths = '';
+  if (gemType === 'hexagon') {
+    const r = h * 0.9, cx = h, cy = h;
+    const pts = (n, ri) => Array.from({length:n},(_,i)=>{const a=Math.PI/n*(2*i+(n%2?1:0));return `${cx+ri*Math.cos(a)},${cy+ri*Math.sin(a)}`;}).join(' ');
+    const hex = (ri) => pts(6, ri);
+    paths = `<polygon points="${hex(r)}" fill="${dark}"/>
+      <polygon points="${pts(6,r)} ${pts(6,r*0.55)}" fill="${light}" opacity=".18" clip-path="none"/>
+      <polygon points="${cx},${cy-r} ${cx+r*0.87},${cy-r*0.5} ${cx+r*0.55},${cy-r*0.1} ${cx},${cy-r*0.55}" fill="${light}" opacity=".7"/>
+      <polygon points="${cx},${cy+r} ${cx-r*0.87},${cy+r*0.5} ${cx-r*0.55},${cy+r*0.1} ${cx},${cy+r*0.55}" fill="${dark}" opacity=".85"/>`;
+  } else if (gemType === 'vdiamond') {
+    const w = s*0.72, topY = s*0.08, midY = s*0.42, botY = s*0.96;
+    const cx = h;
+    paths = `<polygon points="${cx},${topY} ${cx+w/2},${midY} ${cx},${botY} ${cx-w/2},${midY}" fill="${dark}"/>
+      <polygon points="${cx},${topY} ${cx+w/2},${midY} ${cx},${midY*0.6}" fill="${light}" opacity=".8"/>
+      <polygon points="${cx},${topY} ${cx-w/2},${midY} ${cx},${midY*0.6}" fill="${mid}" opacity=".7"/>`;
+  } else {
+    paths = `<circle cx="${h}" cy="${h}" r="${h*0.8}" fill="${mid}"/>
+      <circle cx="${h}" cy="${h*0.7}" r="${h*0.35}" fill="${light}" opacity=".6"/>`;
+  }
+  return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="overflow:visible;filter:drop-shadow(0 0 12px ${color}aa)">${paths}</svg>`;
+}
+
+function showCelebration(key) {
+  const cfg = CELEBRATION_DATA[key];
+  if (!cfg) return;
+  const existing = document.getElementById('celebration-overlay');
+  if (existing) existing.remove();
+
+  const ov = document.createElement('div');
+  ov.id = 'celebration-overlay';
+  ov.className = 'celebration-overlay';
+
+  const isFinalWorkshop = cfg.variant === 'final_workshop';
+  const isFinalSemana = cfg.variant === 'final_semana';
+
+  let orbitHTML = '';
+  if (isFinalWorkshop) {
+    const colors = ['#60C8A0','#7EB8E8','#E87E9A','#A87EE8','#D4A843'];
+    orbitHTML = colors.map((c,i) => {
+      const startDeg = i * 72;
+      return `<div class="celeb-orbit-wrap" style="--orbit-start:${startDeg}deg;animation:gemOrbit 4s linear ${i*-0.8}s infinite">${_makeCelebGemSVG('hexagon', c, 28)}</div>`;
+    }).join('');
+  }
+
+  let particlesHTML = '';
+  if (isFinalWorkshop || isFinalSemana) {
+    const pColors = ['#60C8A0','#D4A843','#7EB8E8','#E87E9A','#A87EE8','#ffffff'];
+    particlesHTML = Array.from({length: isFinalWorkshop ? 20 : 12}, (_,i) => {
+      const c = pColors[i % pColors.length];
+      const x = 10 + Math.random()*80, dur = 1.2 + Math.random()*1.6, delay = Math.random()*0.8;
+      return `<div class="celeb-particle" style="left:${x}%;background:${c};animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
+    }).join('');
+  }
+
+  const gemSize = isFinalSemana ? 120 : 72;
+  ov.innerHTML = `
+    <div class="celeb-bg"></div>
+    ${particlesHTML}
+    ${orbitHTML ? `<div class="celeb-orbit-container">${orbitHTML}</div>` : ''}
+    <div class="celeb-content">
+      <div class="celeb-gem-wrap" id="celeb-gem-wrap">
+        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor, gemSize)}
+      </div>
+      <div class="celeb-title">${cfg.title}</div>
+      <div class="celeb-subtitle">${cfg.subtitle}</div>
+      <button class="celeb-cta" onclick="closeCelebration('${key}')">${cfg.cta}</button>
+    </div>`;
+
+  document.body.appendChild(ov);
+
+  if (isFinalWorkshop || isFinalSemana) {
+    if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]);
+  }
+}
+
+function closeCelebration(key) {
+  const ov = document.getElementById('celebration-overlay');
+  if (!ov) return;
+  ov.style.animation = 'celebFadeOut .35s forwards';
+  setTimeout(() => {
+    if (ov.parentNode) ov.remove();
+    launchGemToTab();
+  }, 350);
+}
+
+function launchGemToTab() {
+  updateGemCounter();
+  const tabBtn = document.querySelector('.nav-tab[data-tab="progreso"]') ||
+                 document.getElementById('tab-btn-progreso') ||
+                 [...document.querySelectorAll('.nav-tab')].find(el => el.textContent.includes('Progreso'));
+  if (!tabBtn) return;
+
+  const gem = document.createElement('div');
+  gem.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;';
+  gem.innerHTML = _makeCelebGemSVG('hexagon', '#60C8A0', 28);
+  document.body.appendChild(gem);
+
+  const startX = window.innerWidth / 2 - 14;
+  const startY = window.innerHeight / 2 - 14;
+  const tabRect = tabBtn.getBoundingClientRect();
+  const endX = tabRect.left + tabRect.width / 2 - 14;
+  const endY = tabRect.top + tabRect.height / 2 - 14;
+
+  gem.style.left = startX + 'px';
+  gem.style.top = startY + 'px';
+
+  const anim = gem.animate([
+    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+    { transform: `translate(${endX-startX}px,${endY-startY}px) scale(0.3)`, opacity: 0.7 }
+  ], { duration: 600, easing: 'cubic-bezier(0.4,0,0.2,1)', fill: 'forwards' });
+
+  anim.onfinish = () => {
+    gem.remove();
+    tabBtn.classList.add('tab-gem-flash');
+    setTimeout(() => tabBtn.classList.remove('tab-gem-flash'), 700);
+  };
 }
 
 function showEresAchievement() {
@@ -4207,7 +4628,18 @@ function mark7dDone(nodeKey) {
   saveState();
   const drawer = document.getElementById('drawer-7d');
   if (drawer) drawer.style.display = 'none';
-  if (isNew) publish7dAutoPost(nodeKey);
+  if (isNew) {
+    publish7dAutoPost(nodeKey);
+    // Detectar si se completó una semana completa
+    const match = nodeKey.match(/7d_s(\d+)_d\d+/);
+    if (match) {
+      const sem = parseInt(match[1]);
+      const weekDone = [1,2,3,4,5,6,7].every(d => state.completed7d[`7d_s${sem}_d${d}`]);
+      if (weekDone) {
+        setTimeout(() => showCelebration(`semana${sem}_final`), 600);
+      }
+    }
+  }
   renderSectionsList();
 }
 
@@ -5605,6 +6037,17 @@ function saveLesson(secId) {
   // Pantalla de logro al completar s6 por primera vez
   if (isNewCompletion && secId === 's6') {
     setTimeout(() => showEresAchievement(), 400);
+  }
+
+  // Celebraciones por gemas del camino
+  if (isNewCompletion) {
+    const workshopGemSecs = ['s5','s6','s7'];
+    if (workshopGemSecs.includes(secId)) {
+      setTimeout(() => showCelebration('workshop_' + secId), 600);
+    } else if (secId === 's9') {
+      // s9 = última sección del workshop
+      setTimeout(() => showCelebration('workshop_final'), 600);
+    }
   }
 
   // Sincronizar con Google Sheets (en segundo plano, no bloquea la UI)

@@ -4406,8 +4406,8 @@ function render7dJourney(container) {
 
   SEMANAS_7D.forEach((semana, si) => {
     const semNum = si + 1;
-    // Semana 1 siempre desbloqueada visualmente (preview); otras requieren acceso
-    const semUnlocked = semNum === 1 || (tiene7d && semNum <= semanaActiva);
+    // TODO: bloqueo de semanas desactivado temporalmente para edición
+    const semUnlocked = true;
 
     // ── Banner de semana (FIX 3: simplificado + toggle desc) ───
     const header = document.createElement('div');
@@ -4558,9 +4558,7 @@ function render7dJourney(container) {
       // FIX 1+5: Semana 1 lunes → fullscreen masterclass. Otras: drawer o modal.
       wrap.addEventListener('click', () => {
         bounceNode(node);
-        if (!tiene7d && semNum > 1) {
-          document.getElementById('modal-7d-locked').style.display = 'flex';
-        } else if (semNum === 1 && dia.key === 'lun' && semUnlocked) {
+        if (semNum === 1 && dia.key === 'lun' && semUnlocked) {
           openMasterclassFullscreen({ dia, semana, nodeKey });
         } else {
           open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });

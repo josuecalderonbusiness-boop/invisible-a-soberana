@@ -60,7 +60,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // ── Cache (PWA) ───────────────────────────────────────────────────
-const CACHE_NAME = 'soberana-v19';
+const CACHE_NAME = 'soberana-v20';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',

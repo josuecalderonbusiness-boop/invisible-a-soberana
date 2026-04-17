@@ -3415,6 +3415,7 @@ function initApp() {
   document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
   
   updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
+  applyStreakSemanaColor();
   renderSectionsList();
   updateProgressUI();
   renderInstallSection();
@@ -3513,6 +3514,27 @@ async function updateStreak() {
   document.getElementById('streak-num').textContent = state.streak || 1;
   const sc = document.getElementById('streak-counter');
   if (sc) sc.classList.toggle('active-streak', !!(state.user && state.user.tiene7d));
+  applyStreakSemanaColor();
+}
+
+function applyStreakSemanaColor() {
+  const sc = document.getElementById('streak-counter');
+  if (!sc) return;
+  const tiene7d = state.user && state.user.tiene7d;
+  if (!tiene7d) {
+    sc.style.color = ''; sc.style.borderColor = ''; sc.style.background = '';
+    return;
+  }
+  const SEM_COLORS = ['#2A5C42','#6B1A2A','#B8892A','#1A3D2B'];
+  let semNum = 1;
+  if (state.user.fecha7d) {
+    const diff = Math.floor((Date.now() - new Date(state.user.fecha7d).getTime()) / 86400000);
+    semNum = Math.min(Math.ceil((diff + 1) / 7), 4);
+  }
+  const c = SEM_COLORS[semNum - 1];
+  sc.style.color        = c;
+  sc.style.borderColor  = c + '80';
+  sc.style.background   = c + '20';
 }
 
 // ── ERES tab visibility ────────────────────────────────────────────
@@ -5904,63 +5926,61 @@ function renderEnergiaSection() {
   const container = document.getElementById('nov-energia');
   if (!container) return;
   const tiene7d = state.user && state.user.tiene7d;
-  const dayNames = ['L','M','X','J','V','S','D'];
+  const SEM_COLORS = ['#2A5C42','#6B1A2A','#B8892A','#1A3D2B'];
+
+  function diaColor(d) {
+    if (d <= 7)  return SEM_COLORS[0];
+    if (d <= 14) return SEM_COLORS[1];
+    if (d <= 21) return SEM_COLORS[2];
+    return SEM_COLORS[3];
+  }
 
   if (tiene7d) {
-    // Calcular día del programa y semana actual
-    let diaNum = 1, semNum = 1;
-    let weekDone = Array(7).fill(false);
-
+    let diasTranscurridos = 0;
     if (state.user.fecha7d) {
-      const start = new Date(state.user.fecha7d);
-      const diff  = Math.floor((Date.now() - start.getTime()) / 86400000);
-      diaNum  = Math.min(diff + 1, 30);
-      semNum  = Math.min(Math.ceil(diaNum / 7), 4);
-      const diaEnSemana = ((diaNum - 1) % 7); // 0-6
-      for (let i = 0; i <= diaEnSemana; i++) {
-        const key = `7d_s${semNum}_d${i + 1}`;
-        weekDone[i] = !!(state.completed7d && state.completed7d[key]);
-      }
+      diasTranscurridos = Math.min(
+        Math.floor((Date.now() - new Date(state.user.fecha7d).getTime()) / 86400000) + 1,
+        30
+      );
     }
 
-    const dotsHtml = dayNames.map((name, i) => {
-      const done = weekDone[i];
-      return `<div class="energia-day-dot">
-        <div class="energia-day-circle ${done ? 'done' : 'pending'}">
-          ${done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#4CAF80" stroke-width="2.5" stroke-linecap="round"/></svg>' : ''}
-        </div>
-        <div class="energia-day-name ${done ? 'done' : ''}">${name}</div>
-      </div>`;
-    }).join('');
+    let circlesHtml = '';
+    for (let d = 1; d <= 30; d++) {
+      const done   = d <= diasTranscurridos;
+      const color  = diaColor(d);
+      const bg     = done ? color + '33' : 'rgba(255,255,255,0.04)';
+      const border = done ? color        : 'rgba(255,255,255,0.07)';
+      const txt    = done ? color        : 'rgba(255,255,255,0.14)';
+      circlesHtml += `<div style="width:34px;height:34px;border-radius:50%;background:${bg};border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-size:10px;font-weight:600;color:${txt};${done?`box-shadow:0 0 5px ${color}44`:''}">${d}</div>`;
+    }
 
+    const hoy = diasTranscurridos || 1;
     container.innerHTML = `
-      <div class="energia-card activa">
-        <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:18px">
-          <div class="energia-dia-num">Día ${diaNum}</div>
-          <div style="padding-bottom:8px">
-            <div class="energia-dia-label">de 30 · Soberana 7D</div>
+      <div style="background:rgba(13,36,24,0.6);border:1px solid rgba(42,92,66,0.35);border-radius:16px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:${diaColor(hoy)};line-height:1">Día ${diasTranscurridos}</div>
+            <div style="font-family:'Jost',sans-serif;font-size:10px;color:rgba(196,160,178,0.5);letter-spacing:.12em;text-transform:uppercase;margin-top:2px">de 30 · Soberana 7D</div>
           </div>
+          <div style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(196,160,178,0.35);text-align:right;line-height:1.5">${30-diasTranscurridos} días<br>restantes</div>
         </div>
-        <div class="energia-week-label">Semana ${semNum} — esta semana</div>
-        <div class="energia-days">${dotsHtml}</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">${circlesHtml}</div>
       </div>`;
   } else {
-    // Workshop: secciones s1–s9 con iconos
-    const wsIcons = ['👁','💬','🧠','🌱','💡','❤️','🤝','⚡','🌟'];
-    const wsSecs  = ['s1','s2','s3','s4','s5','s6','s7','s8','s9'];
-    const dotsHtml = wsSecs.map((sec, i) => {
-      const done = state.completedSections.includes(sec);
-      return `<div class="energia-ws-dot ${done ? 'done' : 'pending'}">${done ? wsIcons[i] : ''}</div>`;
-    }).join('');
+    const completadas = ['s1','s2','s3','s4','s5','s6','s7','s8','s9']
+      .filter(s => state.completedSections.includes(s)).length;
+
+    let circlesHtml = '';
+    for (let d = 1; d <= 30; d++) {
+      circlesHtml += `<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)"></div>`;
+    }
 
     container.innerHTML = `
-      <div class="energia-card apagada" style="border-color:rgba(255,255,255,0.06)">
-        <div style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(196,160,178,0.6);text-align:center;margin-bottom:14px">Tu energía se activa en el Soberana 7D</div>
-        <div class="energia-workshop-dots">${dotsHtml}</div>
-        <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d"
-           style="display:block;text-align:center;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;color:#D4AF6A;background:rgba(184,137,42,0.1);border:1px solid rgba(184,137,42,0.2);border-radius:8px;padding:10px;text-decoration:none;letter-spacing:.05em">
-          Ver Soberana 7D →
-        </a>
+      <div style="background:rgba(26,10,15,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;opacity:0.4">
+        <div style="font-family:'Jost',sans-serif;font-size:14px;color:rgba(196,160,178,0.8);margin-bottom:4px">${completadas} lecciones completadas</div>
+        <div style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(196,160,178,0.45);margin-bottom:14px">Tu energía se activa en el Soberana 7D</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:16px">${circlesHtml}</div>
+        <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d" style="display:block;text-align:center;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;color:#D4AF6A;background:rgba(184,137,42,0.1);border:1px solid rgba(184,137,42,0.2);border-radius:8px;padding:10px;text-decoration:none;letter-spacing:.05em">Ver Soberana 7D →</a>
       </div>`;
   }
 }

@@ -760,7 +760,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    animation: eresPeek 600ms ease-in-out 4s infinite;
+    animation: eresPeek 22.4s linear infinite;
   }
   .eres-tab:active { background: #6B1A2A; }
   .eres-tab-label {
@@ -777,9 +777,16 @@
   }
   .eres-tab.slide-in { animation: eresSlideIn .4s cubic-bezier(.22,1,.36,1) forwards; }
   @keyframes eresPeek {
-    0%   { transform: translateX(0); }
-    40%  { transform: translateX(-8px); }
-    100% { transform: translateX(0); }
+    /* 4 peeks × 600ms = 2400ms, luego 20s de pausa. Total: 22400ms */
+    0%      { transform: translateX(0); }
+    1.07%   { transform: translateX(-8px); }
+    2.68%   { transform: translateX(0); }
+    3.75%   { transform: translateX(-8px); }
+    5.36%   { transform: translateX(0); }
+    6.43%   { transform: translateX(-8px); }
+    8.04%   { transform: translateX(0); }
+    9.11%   { transform: translateX(-8px); }
+    10.71%, 100% { transform: translateX(0); }
   }
 
   /* ── Tour overlay ERES ── */

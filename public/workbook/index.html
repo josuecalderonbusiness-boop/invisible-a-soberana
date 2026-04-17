@@ -743,21 +743,82 @@
     line-height: 1;
   }
 
-  /* ── Botón flotante ERES ── */
-  .eres-fab {
+  /* ── Pestaña lateral ERES ── */
+  .eres-tab {
     position: fixed;
-    bottom: 80px; right: 20px;
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#6B1A2A,#8B2D3F);
-    border: 1.5px solid rgba(212,175,106,0.4);
-    box-shadow: 0 4px 20px rgba(107,26,42,0.5);
-    display: flex; align-items: center; justify-content: center;
+    bottom: 35%;
+    right: 0;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    background: #1a0a0f;
+    border: none;
+    border-left: 2px solid #B8892A;
+    border-radius: 10px 0 0 10px;
+    padding: 18px 10px;
     cursor: pointer;
     z-index: 90;
-    transition: transform .15s;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: right .15s, background .15s;
   }
-  .eres-fab:active { transform: scale(.93); }
+  .eres-tab:active { background: rgba(184,137,42,0.1); }
+  .eres-tab-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #D4AF6A;
+    letter-spacing: .18em;
+    line-height: 1;
+  }
+  @keyframes eresSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  .eres-tab.slide-in { animation: eresSlideIn .4s cubic-bezier(.22,1,.36,1) forwards; }
+
+  /* ── Tour overlay ERES ── */
+  #eres-tour {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 480;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  #eres-tour.visible { display: flex; }
+  .eres-tour-card {
+    background: rgba(26,10,15,0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(184,137,42,0.5);
+    border-radius: 20px;
+    padding: 28px 24px 24px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    animation: achieveIn .35s ease forwards;
+  }
+
+  /* ── Pantalla de logro ERES ── */
+  #eres-achievement {
+    position: fixed; inset: 0;
+    background: #1a0a0f;
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    text-align: center;
+  }
+  #eres-achievement.visible { display: flex; }
+  @keyframes achieveIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #eres-achievement .achieve-inner { animation: achieveIn .5s ease forwards; }
 
   /* ── Modal overlay & sheet ── */
   .modal-overlay {
@@ -2291,10 +2352,41 @@
       <!-- TAB: 7D -->
     </div>
 
-    <!-- Botón flotante ERES -->
-    <button class="eres-fab" id="eres-fab" onclick="openEresModal()">
-      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#D4AF6A;line-height:1">E</span>
+    <!-- Pestaña lateral ERES -->
+    <button class="eres-tab" id="eres-tab" onclick="openEresModal()">
+      <span class="eres-tab-label">E·R·E·S</span>
     </button>
+
+    <!-- Pantalla de logro: Sistema ERES desbloqueado -->
+    <div id="eres-achievement">
+      <div class="achieve-inner">
+        <div style="font-size:56px;margin-bottom:24px">👑</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#D4AF6A;line-height:1.2;margin-bottom:14px">Desbloqueaste el Sistema ERES</div>
+        <div style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(196,160,178,0.8);line-height:1.6;max-width:280px;margin:0 auto 40px">Tu herramienta de emergencia emocional ya está activa</div>
+        <button onclick="closeEresAchievement()" style="background:linear-gradient(135deg,#6B1A2A,#8B2D3F);border:1.5px solid rgba(212,175,106,0.5);color:#D4AF6A;font-family:'Jost',sans-serif;font-size:15px;font-weight:600;padding:16px 44px;border-radius:50px;cursor:pointer;letter-spacing:.04em">Entendido</button>
+      </div>
+    </div>
+
+    <!-- Tour overlay ERES (onboarding, solo primera vez) -->
+    <div id="eres-tour">
+      <div class="eres-tour-card">
+        <div style="font-size:40px;margin-bottom:16px">🛡️</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#D4AF6A;line-height:1.2;margin-bottom:10px">Sistema ERES</div>
+        <div style="font-size:13px;color:rgba(196,160,178,0.9);line-height:1.65;margin-bottom:8px">
+          <strong style="color:#F0E6EA">¿Qué es?</strong><br>
+          Tu protocolo personal de regulación emocional: 4 pasos que te devuelven al centro cuando el secuestro emocional amenaza con tomar el control.
+        </div>
+        <div style="font-size:13px;color:rgba(196,160,178,0.9);line-height:1.65;margin-bottom:8px">
+          <strong style="color:#F0E6EA">¿Para qué sirve?</strong><br>
+          Para pausar, procesar y elegir tu respuesta en lugar de reaccionar. En menos de 2 minutos recuperas claridad.
+        </div>
+        <div style="font-size:13px;color:rgba(196,160,178,0.9);line-height:1.65;margin-bottom:24px">
+          <strong style="color:#F0E6EA">¿Cuándo usarlo?</strong><br>
+          Cuando sientes que estás a punto de decir o hacer algo que puedes lamentar — antes de responder, no después.
+        </div>
+        <button onclick="closeEresTour()" style="width:100%;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);border:1.5px solid rgba(184,137,42,0.5);color:#D4AF6A;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;padding:15px 24px;border-radius:50px;cursor:pointer;letter-spacing:.04em">Activar mi Sistema ERES</button>
+      </div>
+    </div>
 
     <!-- Modal ERES -->
     <div class="modal-overlay" id="eres-modal" style="display:none" onclick="if(event.target===this)closeEresModal()">
@@ -2302,7 +2394,20 @@
         <div class="modal-drag-bar"></div>
         <div style="padding:24px 20px 32px">
           <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;margin-bottom:4px">Sistema ERES</div>
-          <div style="font-size:12px;color:rgba(196,160,178,0.7);letter-spacing:.06em;margin-bottom:24px">Tu protocolo de regulación</div>
+          <div style="font-size:12px;color:rgba(196,160,178,0.7);letter-spacing:.06em;margin-bottom:20px">Tu protocolo de regulación</div>
+
+          <!-- Botón de Emergencia: instrucciones de uso -->
+          <div style="background:rgba(212,175,106,0.06);border:1px solid rgba(212,175,106,0.2);border-radius:14px;padding:16px 18px;margin-bottom:24px">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#D4AF6A;margin-bottom:10px">Botón de Emergencia</div>
+            <div style="font-size:12px;color:rgba(196,160,178,0.8);line-height:1.65;margin-bottom:10px">
+              <span style="color:#F0E6EA;font-weight:600">¿Cuándo usarlo?</span><br>
+              En un momento de secuestro emocional, cuando sientes que estás a punto de reaccionar de forma automática, o antes de responder algo que puedes lamentar.
+            </div>
+            <div style="font-size:12px;color:rgba(196,160,178,0.8);line-height:1.65">
+              <span style="color:#F0E6EA;font-weight:600">¿Cómo funciona?</span><br>
+              Los 4 pasos E·R·E·S te devuelven al centro en menos de 2 minutos, transformando tu reacción en una respuesta consciente.
+            </div>
+          </div>
 
           <div class="eres-step" id="eres-e">
             <div class="eres-letter">E</div>
@@ -3140,6 +3245,11 @@ function initApp() {
   setupInstallPrompt();
   apply7dAccess();
 
+  // Mostrar pestaña ERES si s6 ya fue completada (sin animación ni pantalla de logro)
+  if (state.completedSections.includes('s6')) {
+    showEresTab(false);
+  }
+
   // Post automático: primer acceso a Soberana 7D
   if (state.user.tiene7d && !localStorage.getItem('soberana_7d_announced')) {
     localStorage.setItem('soberana_7d_announced', '1');
@@ -3227,6 +3337,44 @@ async function updateStreak() {
   document.getElementById('streak-num').textContent = state.streak || 1;
   const sc = document.getElementById('streak-counter');
   if (sc) sc.classList.toggle('active-streak', !!(state.user && state.user.tiene7d));
+}
+
+// ── ERES tab visibility ────────────────────────────────────────────
+function showEresTab(animate) {
+  const tab = document.getElementById('eres-tab');
+  if (!tab) return;
+  tab.style.display = 'flex';
+  if (animate) {
+    tab.classList.remove('slide-in');
+    void tab.offsetWidth;
+    tab.classList.add('slide-in');
+    tab.addEventListener('animationend', () => tab.classList.remove('slide-in'), { once: true });
+  }
+}
+
+function hideEresTab() {
+  const tab = document.getElementById('eres-tab');
+  if (tab) tab.style.display = 'none';
+}
+
+function showEresAchievement() {
+  const el = document.getElementById('eres-achievement');
+  if (el) el.classList.add('visible');
+}
+
+function closeEresAchievement() {
+  const el = document.getElementById('eres-achievement');
+  if (el) el.classList.remove('visible');
+  // Mostrar tour de onboarding (solo si no se ha visto antes — se marca en closeEresTour)
+  const tour = document.getElementById('eres-tour');
+  if (tour) tour.classList.add('visible');
+}
+
+function closeEresTour() {
+  const tour = document.getElementById('eres-tour');
+  if (tour) tour.classList.remove('visible');
+  localStorage.setItem('soberana_eres_tour_done', '1');
+  showEresTab(true);
 }
 
 // ── ERES modal ────────────────────────────────────────────────────
@@ -5001,6 +5149,11 @@ function saveLesson(secId) {
 
   saveState();
 
+  // Pantalla de logro al completar s6 por primera vez
+  if (isNewCompletion && secId === 's6') {
+    setTimeout(() => showEresAchievement(), 400);
+  }
+
   // Sincronizar con Google Sheets (en segundo plano, no bloquea la UI)
   syncToSheets(secId);
 
@@ -5584,6 +5737,11 @@ function switchTab(tab) {
   if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); }
   if (tab === 'novedades') { renderNovedades(); }
+  // La pestaña ERES solo aparece en el tab Inicio
+  const eresTabEl = document.getElementById('eres-tab');
+  if (eresTabEl) {
+    eresTabEl.style.display = (tab === 'inicio' && state.completedSections.includes('s6')) ? 'flex' : 'none';
+  }
 }
 
 // ═══════════════════════════════════════════

@@ -1646,32 +1646,90 @@
   .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
   /* Milestone timeline */
-  .milestone-section { padding: 24px 16px 0; }
-  .milestone-section h4 {
-    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--mauve); font-weight: 500; margin-bottom: 16px;
+  /* ── Protocolos Soberana ── */
+  .protocolos-section { padding: 24px 16px 8px; }
+  .protocolos-section-title {
+    font-size: 10px; letter-spacing: .28em; text-transform: uppercase;
+    color: rgba(196,160,178,0.6); font-family: 'Jost',sans-serif;
+    font-weight: 500; margin-bottom: 6px;
   }
-  .milestone {
-    display: flex;
-    gap: 14px;
-    margin-bottom: 12px;
-    align-items: flex-start;
+  .protocolos-divider {
+    height: 1px;
+    background: linear-gradient(to right, rgba(184,137,42,0.4), transparent);
+    margin-bottom: 16px;
   }
-  .milestone-dot {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .protocolo-card {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(26,10,15,0.9);
+    border: 1px solid rgba(184,137,42,0.25);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .protocolo-card.unlocked {
+    border-color: rgba(184,137,42,0.5);
+    box-shadow: 0 2px 16px rgba(184,137,42,0.15);
+  }
+  .protocolo-card.locked { opacity: .55; filter: grayscale(.8); cursor: default; }
+  .protocolo-card.locked-7d { cursor: default; }
+  .protocolo-icon {
+    font-size: 28px; flex-shrink: 0; line-height: 1;
+    width: 44px; height: 44px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(184,137,42,0.15);
   }
-  .milestone-dot.done { background: linear-gradient(135deg, var(--gold-pale), var(--gold)); }
-  .milestone-dot.pending { background: var(--surface-2); }
-  .milestone-info h5 {
+  .protocolo-info { flex: 1; min-width: 0; }
+  .protocolo-titulo {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 16px; font-weight: 600;
-    color: var(--text-dark); margin-bottom: 2px;
+    font-size: 17px; font-weight: 600;
+    color: #D4AF6A; line-height: 1.2; margin-bottom: 2px;
   }
-  .milestone-info p { font-size: 12px; color: var(--text-muted); }
+  .protocolo-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; color: rgba(196,160,178,0.7);
+  }
+  .protocolo-badge {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; padding: 3px 8px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .protocolo-badge.badge-active {
+    background: rgba(184,137,42,0.15); color: #D4AF6A;
+    border: 1px solid rgba(184,137,42,0.3);
+  }
+  .protocolo-badge.badge-locked {
+    background: rgba(255,255,255,0.05); color: rgba(196,160,178,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .protocolos-group-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 600; letter-spacing: .2em;
+    text-transform: uppercase; color: rgba(196,160,178,0.4);
+    margin: 20px 0 10px;
+  }
+
+  /* Modal protocolo */
+  #protocolo-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 300; display: none; align-items: flex-end;
+  }
+  #protocolo-modal.open { display: flex; }
+  #protocolo-modal-sheet {
+    background: #1a0a0f;
+    border: 1px solid #B8892A;
+    border-radius: 20px 20px 0 0;
+    width: 100%; max-height: 88dvh; overflow-y: auto;
+    animation: slideUp .3s ease;
+    padding: 8px 0 0;
+  }
 
   /* Hilo conductor section */
   .hilo-section { padding: 20px 16px 0; }
@@ -2284,9 +2342,10 @@
             <div id="hilo-cards"></div>
           </div>
 
-          <div class="milestone-section">
-            <h4>Tus Protocolos Soberana</h4>
-            <div id="milestones"></div>
+          <div class="protocolos-section" id="protocolos-section">
+            <div class="protocolos-section-title">Tus Protocolos Soberana</div>
+            <div class="protocolos-divider"></div>
+            <div id="protocolos-list"></div>
           </div>
         </div>
       </div>
@@ -2500,6 +2559,14 @@
           <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d" style="display:block;background:linear-gradient(135deg,#1A3D2B,#2A5C42);color:#EDE3CE;text-decoration:none;font-size:15px;font-weight:600;padding:16px 24px;border-radius:14px;border:1px solid rgba(61,122,90,0.5)">Ver el entrenamiento →</a>
           <button onclick="document.getElementById('modal-7d-locked').style.display='none'" style="margin-top:12px;background:none;border:none;color:rgba(196,160,178,0.5);font-size:13px;cursor:pointer;width:100%;padding:8px">Cerrar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Protocolo -->
+    <div id="protocolo-modal" onclick="if(event.target===this)closeProtocoloModal()">
+      <div id="protocolo-modal-sheet">
+        <div class="modal-drag-bar"></div>
+        <div style="padding:24px 22px 36px" id="protocolo-modal-body"></div>
       </div>
     </div>
 
@@ -4297,7 +4364,7 @@ function updateProgressUI() {
   if (sh) sh.textContent = countHilo() + '/3';
   
   renderHiloCards();
-  renderMilestones();
+  renderProtocolos();
 }
 
 function renderHiloCards() {
@@ -4327,51 +4394,139 @@ function renderHiloCards() {
   }).join('');
 }
 
-function renderMilestones() {
-  const container = document.getElementById('milestones');
+const PROTOCOLOS_DATA = [
+  { id:'mental',   tipo:'workshop', desbloqueo:'s5', icon:'🧠', color:'#9B6FD4',
+    titulo:'Protocolo Mental',       subtitulo:'Lo que Piensas',
+    desc:'Aprende a identificar y reconfigurar los patrones de pensamiento que generan conflicto antes de que se conviertan en palabras.',
+    cuando:'Cuando tu mente entra en bucle, anticipa conflictos o construye narrativas negativas sin evidencia.',
+    pasos:['Pausa y observa el pensamiento sin juzgarlo','Pregúntate: ¿esto es un hecho o una interpretación?','Elige la narrativa que te da más poder de acción'] },
+  { id:'emocional', tipo:'workshop', desbloqueo:'s6', icon:'❤️', color:'#8B1A2F',
+    titulo:'Protocolo Emocional',    subtitulo:'Lo que Sientes',
+    desc:'El Sistema ERES: cuatro pasos para procesar lo que sientes antes de reaccionar. Tu botón de emergencia emocional activa en menos de 2 minutos.',
+    cuando:'En el momento del secuestro emocional, antes de responder algo que puedes lamentar.',
+    pasos:['E — Escúchate: ¿qué estoy sintiendo exactamente?','R — Reconócete: tiene sentido que me sienta así porque...','E — Elige tu momento: ¿es este el momento de actuar?','S — Sostén tu necesidad: lo que necesito comunicar es...'] },
+  { id:'caracter',  tipo:'workshop', desbloqueo:'s7', icon:'🤝', color:'#2A5C42',
+    titulo:'Protocolo del Carácter', subtitulo:'Lo que Sostienes',
+    desc:'Aprende a sostener tus estándares cuando la presión sube. El protocolo que diferencia a la mujer que cede de la mujer que elige.',
+    cuando:'Cuando sientas presión para ceder, cuando tus palabras y tus acciones se empiezan a desalinear.',
+    pasos:['Identifica exactamente qué estás a punto de ceder','Pregúntate: ¿cedo por miedo o por elección consciente?','Actúa desde tu estándar, no desde el estado emocional del momento'] },
+  { id:'7d_1', tipo:'7d', semNum:1, icon:'🌿', color:'#2A5C42',
+    titulo:'Arquitecta de Realidad', subtitulo:'Semana 1 · Soberana 7D',
+    desc:'Descubres por qué tu cerebro construye conflictos antes de que él abra la boca. Trabajas la biología de tus emociones y aprendes a leer tu ciclo como información estratégica.',
+    cuando:'Cuando sientas que reaccionas antes de pensar, o que tus emociones parecen tener vida propia.',
+    pasos:[] },
+  { id:'7d_2', tipo:'7d', semNum:2, icon:'🔥', color:'#6B1A2A',
+    titulo:'Gravedad Propia',        subtitulo:'Semana 2 · Soberana 7D',
+    desc:'Construyes el tipo de presencia que no se puede fingir ni comprar. Trabajas tus estándares en frío — antes de que llegue la presión.',
+    cuando:'Cuando sientas que tu influencia depende del humor de él, no del tuyo.',
+    pasos:[] },
+  { id:'7d_3', tipo:'7d', semNum:3, icon:'⚡', color:'#B8892A',
+    titulo:'Biología del Poder',     subtitulo:'Semana 3 · Soberana 7D',
+    desc:'Tu cuerpo, tus hormonas y tu dinero afectan directamente tu dinámica de pareja. Aprendes a usar tu ciclo como ventaja estratégica y a recuperar energía sin necesitar más tiempo.',
+    cuando:'Cuando sientas que tu energía o recursos están impactando tu relación de formas que no puedes nombrar.',
+    pasos:[] },
+  { id:'7d_4', tipo:'7d', semNum:4, icon:'👑', color:'#3D7A5A',
+    titulo:'El Código Final',        subtitulo:'Semana 4 · Soberana 7D',
+    desc:'La dimensión que sostiene todo cuando todo lo demás falla. Tu propósito propio, independiente de si él está de buen humor o no.',
+    cuando:'Cuando sientas que todo tu avance depende de él, no de ti misma.',
+    pasos:[] }
+];
+
+function _protocoloEstado(p) {
+  if (p.tipo === 'workshop') {
+    return state.completedSections.includes(p.desbloqueo) ? 'unlocked' : 'locked';
+  }
+  const tiene7d = state.user && state.user.tiene7d;
+  if (!tiene7d) return 'locked-7d-noaccess';
+  const done = Object.keys(state.completed7d || {}).some(k => k.startsWith('7d_s' + p.semNum + '_'));
+  return done ? 'unlocked' : 'locked-7d-pending';
+}
+
+function renderProtocolos() {
+  const container = document.getElementById('protocolos-list');
   if (!container) return;
 
-  const milestones = [
-    { sec:'s5', label:'Protocolo Mental',       sublabel:'Lo que Piensas',
-      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.04-4.69A2.5 2.5 0 0 1 4 12a2.5 2.5 0 0 1 2-2.45A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.04-4.69A2.5 2.5 0 0 0 20 12a2.5 2.5 0 0 0-2-2.45A2.5 2.5 0 0 0 14.5 2Z"/></svg>` },
-    { sec:'s6', label:'Protocolo Emocional',    sublabel:'Lo que Sientes',
-      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.134 4.397.5 7.5.5c1.97 0 3.623 1.002 4.5 2.315C12.877 1.502 14.53.5 16.5.5 19.603.5 23 3.134 23 6.691c0 4.105-5.37 8.863-11 14.402z" transform="scale(0.85) translate(1.5,1.5)"/></svg>` },
-    { sec:'s7', label:'Protocolo del Carácter', sublabel:'Lo que Sostienes',
-      svg:`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 12l2 2 4-4"/><path d="M12 3c-1.2 5.4-5 7-7 9 0 5 3 7 7 9 4-2 7-4 7-9-2-2-5.8-3.6-7-9z"/></svg>` }
-  ];
+  let html = `<div class="protocolos-group-label">Workshop</div>`;
 
-  container.innerHTML = `<div style="display:flex;justify-content:center;gap:20px;padding:8px 0 16px">` +
-    milestones.map(m => {
-      const done = state.completedSections.includes(m.sec);
-      if (done) {
-        return `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px">
-            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7A5C1E,#D4A843);border:2px solid #E8C870;box-shadow:0 4px 18px rgba(184,137,42,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#F9F3E8;animation:pulse-glow 2.5s ease-in-out infinite">
-              ${m.svg}
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:12px;font-weight:700;color:var(--burgundy);line-height:1.3">${m.label}</div>
-              <div style="font-size:11px;color:var(--mauve);margin-top:2px">${m.sublabel}</div>
-            </div>
-          </div>`;
-      } else {
-        return `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:88px;position:relative">
-            <div style="position:relative">
-              <div style="width:64px;height:64px;border-radius:50%;background:var(--surface-2);border:1px dashed rgba(160,128,144,0.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#ccc;opacity:0.5">
-                ${m.svg}
-              </div>
-              <div style="position:absolute;top:-6px;right:-4px;width:18px;height:18px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.1)">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#C4A8B0" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#C4A8B0" stroke-width="2" stroke-linecap="round"/></svg>
-              </div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:12px;font-weight:600;color:#ccc;line-height:1.3">${m.label}</div>
-              <div style="font-size:11px;color:#ddd;margin-top:2px">${m.sublabel}</div>
-            </div>
-          </div>`;
-      }
-    }).join('') + `</div>`;
+  PROTOCOLOS_DATA.forEach((p, i) => {
+    if (i === 3) html += `<div class="protocolos-group-label" style="margin-top:24px">Soberana 7D</div>`;
+    const estado = _protocoloEstado(p);
+    const isUnlocked = estado === 'unlocked';
+    const isLocked   = estado === 'locked';
+    const is7dNo     = estado === 'locked-7d-noaccess';
+    const is7dPend   = estado === 'locked-7d-pending';
+
+    const cardClass = isUnlocked ? 'protocolo-card unlocked'
+                    : isLocked   ? 'protocolo-card locked'
+                    : 'protocolo-card locked-7d';
+
+    const onClick = isUnlocked || is7dPend
+      ? `onclick="openProtocoloModal('${p.id}')"`
+      : is7dNo ? '' : '';
+
+    const badge = isUnlocked
+      ? `<span class="protocolo-badge badge-active">Activo</span>`
+      : isLocked
+      ? `<span class="protocolo-badge badge-locked">🔒</span>`
+      : is7dNo
+      ? ''
+      : `<span class="protocolo-badge badge-locked">En progreso</span>`;
+
+    const extra7d = is7dNo ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(184,137,42,0.12)">
+        <div style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(196,160,178,0.6);margin-bottom:8px">Actívalo entrando al Soberana 7D</div>
+        <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d" style="display:inline-block;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;color:#D4AF6A;background:rgba(184,137,42,0.12);border:1px solid rgba(184,137,42,0.3);border-radius:8px;padding:6px 14px;text-decoration:none;letter-spacing:.04em">Ver Soberana 7D →</a>
+      </div>` : '';
+
+    html += `
+      <div class="${cardClass}" ${onClick}>
+        <div class="protocolo-icon">${p.icon}</div>
+        <div class="protocolo-info">
+          <div class="protocolo-titulo">${p.titulo}</div>
+          <div class="protocolo-sub">${p.subtitulo}</div>
+          ${extra7d}
+        </div>
+        ${badge}
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function openProtocoloModal(id) {
+  const p = PROTOCOLOS_DATA.find(x => x.id === id);
+  if (!p) return;
+  const body = document.getElementById('protocolo-modal-body');
+  const pasosHtml = p.pasos.length
+    ? `<div style="margin-top:20px">
+        <div style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(196,160,178,0.5);margin-bottom:12px">Pasos</div>
+        ${p.pasos.map((paso, i) => `
+          <div style="display:flex;gap:12px;margin-bottom:10px;align-items:flex-start">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#D4AF6A;min-width:20px;line-height:1.2">${i+1}</div>
+            <div style="font-family:'Jost',sans-serif;font-size:14px;color:#EDE3CE;line-height:1.55">${paso}</div>
+          </div>`).join('')}
+      </div>` : '';
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:32px">${p.icon}</div>
+      <button onclick="closeProtocoloModal()" style="background:none;border:none;color:rgba(196,160,178,0.5);font-size:22px;cursor:pointer;padding:0;line-height:1">×</button>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#D4AF6A;line-height:1.2;margin-bottom:4px">${p.titulo}</div>
+    <div style="font-family:'Jost',sans-serif;font-size:11px;color:#A0748A;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">${p.subtitulo}</div>
+    <div style="height:1px;background:linear-gradient(to right,#B8892A,transparent);margin-bottom:18px"></div>
+    <div style="font-family:'Jost',sans-serif;font-size:14px;color:#EDE3CE;line-height:1.7;margin-bottom:16px">${p.desc}</div>
+    <div style="background:rgba(184,137,42,0.1);border-left:3px solid #B8892A;border-radius:0 10px 10px 0;padding:12px 14px">
+      <div style="font-family:'Jost',sans-serif;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#D4AF6A;margin-bottom:6px">Cuándo usarlo</div>
+      <div style="font-family:'Jost',sans-serif;font-size:13px;color:#EDE3CE;line-height:1.6">${p.cuando}</div>
+    </div>
+    ${pasosHtml}
+  `;
+  document.getElementById('protocolo-modal').classList.add('open');
+}
+
+function closeProtocoloModal() {
+  document.getElementById('protocolo-modal').classList.remove('open');
 }
 
 // ═══════════════════════════════════════════

@@ -244,18 +244,13 @@
     min-height: 60px;
     flex-shrink: 0;
     border-bottom: 1px solid rgba(212,175,106,.1);
+    transition: background 400ms ease, border-color 400ms ease;
   }
 
   .header-brand {
     display: flex;
     flex-direction: column;
-  }
-  .header-eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    color: var(--gold);
-    text-transform: uppercase;
-    font-weight: 500;
+    gap: 1px;
   }
   .header-title-main {
     font-family: 'Cormorant Garamond', serif;
@@ -263,12 +258,22 @@
     font-weight: 600;
     color: var(--cream);
     line-height: 1;
+    transition: color 300ms ease;
+  }
+  .header-title-sub {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: rgba(184,137,42,0.75);
+    line-height: 1;
+    transition: color 300ms ease;
   }
 
   .header-right {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
   }
 
   .progress-ring-mini {
@@ -295,6 +300,7 @@
     color: var(--cream);
     cursor: pointer;
     flex-shrink: 0;
+    transition: border-color 300ms ease;
   }
 
   /* Tab Navigation */
@@ -713,6 +719,7 @@
     padding: 5px 10px;
     cursor: default;
     color: rgba(255,255,255,0.2);
+    transition: color 300ms ease, border-color 300ms ease;
   }
   .streak-counter.active-streak {
     background: rgba(212,175,106,0.08);
@@ -2490,10 +2497,10 @@
   <!-- ══ MAIN APP ══ -->
   <div id="screen-app" class="screen">
     <!-- Header -->
-    <div class="app-header">
+    <div class="app-header" id="app-header">
       <div class="header-brand">
-        <span class="header-eyebrow">Workshop</span>
-        <span class="header-title-main">Código Soberana</span>
+        <span class="header-title-main" id="header-program-name">Código Soberana</span>
+        <span class="header-title-sub" id="header-program-sub">lección 0 de 9</span>
       </div>
       <div class="header-right">
         <div id="gem-counter" class="gem-counter-header" title="Gemas del Camino">
@@ -2514,7 +2521,7 @@
             <polygon points="30,11 6,11 14,11 22,16 30,11" fill="#80e0b8" opacity="0.9"/>
             <polygon points="22,16 30,11 32,22 22,38 12,22 14,11" fill="#60c8a0"/>
           </svg>
-          <span id="gem-counter-label">0 de 7</span>
+          <span id="gem-counter-label">0/7</span>
         </div>
         <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="currentColor" stroke="none"/></svg>
@@ -3601,6 +3608,13 @@ function initApp() {
   applyStreakSemanaColor();
   updateGemCounter();
   renderSectionsList();
+  // Header mode — must run after renderSectionsList so #journey-7d-start exists
+  if (state.user && state.user.tiene7d) {
+    updateHeaderMode('7d');
+  } else {
+    updateHeaderMode('workshop');
+    setupHeaderObserver();
+  }
   updateProgressUI();
   renderInstallSection();
   setupInstallPrompt();
@@ -3739,6 +3753,59 @@ function hideEresTab() {
   if (tab) tab.style.display = 'none';
 }
 
+// ── Header adaptive mode ──────────────────────────────────────────
+let _headerObserver = null;
+
+function updateHeaderMode(mode) {
+  const header    = document.getElementById('app-header');
+  const nameEl    = document.getElementById('header-program-name');
+  const subEl     = document.getElementById('header-program-sub');
+  const streakEl  = document.getElementById('streak-counter');
+  const avatarEl  = document.getElementById('avatar-btn');
+  if (!header) return;
+
+  if (mode === '7d') {
+    header.style.background    = '#0F0A0B';
+    header.style.borderBottom  = '0.5px solid rgba(184,137,42,0.22)';
+    if (nameEl) nameEl.textContent = 'Soberana 7D';
+    if (subEl) {
+      // Compute semana/día from completed7d
+      const done7d = Object.keys(state.completed7d || {}).length;
+      const sem = Math.min(Math.floor(done7d / 7) + 1, 4);
+      const dia = Math.min(done7d + 1, 30);
+      subEl.textContent = `semana ${sem} · día ${dia} de 30`;
+      subEl.style.color = 'rgba(150,199,179,0.75)';
+    }
+    if (streakEl) streakEl.style.color = '#96C7B3';
+    if (avatarEl) avatarEl.style.borderColor = 'rgba(42,92,66,0.55)';
+  } else {
+    header.style.background    = 'var(--burgundy-deep)';
+    header.style.borderBottom  = '1px solid rgba(212,175,106,0.1)';
+    if (nameEl) nameEl.textContent = 'Código Soberana';
+    if (subEl) {
+      const done = (state.completedSections || []).length;
+      subEl.textContent = `lección ${done} de 9`;
+      subEl.style.color = 'rgba(184,137,42,0.75)';
+    }
+    if (streakEl) streakEl.style.color = '';
+    if (avatarEl) avatarEl.style.borderColor = 'rgba(184,137,42,0.55)';
+  }
+}
+
+function setupHeaderObserver() {
+  if (_headerObserver) { _headerObserver.disconnect(); _headerObserver = null; }
+  if (state.user && state.user.tiene7d) return; // fixed to 7d mode
+  const target = document.getElementById('journey-7d-start');
+  if (!target) return;
+  _headerObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (state.user && state.user.tiene7d) return;
+      updateHeaderMode(entry.isIntersecting ? '7d' : 'workshop');
+    });
+  }, { threshold: 0.1 });
+  _headerObserver.observe(target);
+}
+
 // ── Gem counter ──────────────────────────────────────────────────
 function updateGemCounter() {
   const workshopGems = ['s5','s6','s7'].filter(id => state.completedSections && state.completedSections.includes(id)).length;
@@ -3752,7 +3819,7 @@ function updateGemCounter() {
   const total = workshopGems + weekGems;
   const label = document.getElementById('gem-counter-label');
   const counter = document.getElementById('gem-counter');
-  if (label) label.textContent = `${total} de 7`;
+  if (label) label.textContent = `${total}/7`;
   if (counter) {
     counter.classList.toggle('complete', total === 7);
   }
@@ -4454,6 +4521,7 @@ function renderSectionsList() {
 
   // ── PARTE 2: Degradé + Caja transición Soberana 7D ──────────
   const abyssWrap = document.createElement('div');
+  abyssWrap.id = 'journey-7d-start';
   abyssWrap.style.cssText = `
     padding:60px 20px 60px;
     background:linear-gradient(to bottom,var(--burgundy-deep) 0%,#0D1A14 50%,#0F0A0B 100%);
@@ -6728,6 +6796,23 @@ function switchTab(tab) {
   const eresTabEl = document.getElementById('eres-tab');
   if (eresTabEl) {
     eresTabEl.style.display = (tab === 'inicio' && state.completedSections.includes('s6')) ? 'flex' : 'none';
+  }
+  // Header mode
+  if (state.user && state.user.tiene7d) {
+    updateHeaderMode('7d');
+  } else if (tab !== 'inicio') {
+    updateHeaderMode('workshop');
+  } else {
+    // Re-check scroll position: if 7d section visible, stay in 7d mode
+    const el7d = document.getElementById('journey-7d-start');
+    if (el7d) {
+      const rect = el7d.getBoundingClientRect();
+      const inView = rect.top < window.innerHeight && rect.bottom > 0;
+      updateHeaderMode(inView ? '7d' : 'workshop');
+    } else {
+      updateHeaderMode('workshop');
+    }
+    setupHeaderObserver();
   }
 }
 

@@ -1395,23 +1395,22 @@
     transition: background 0.15s;
   }
   .journey-key-btn:active { background: rgba(255,255,255,0.28); }
-  .journey-week-subtitle {
+  .semana-separador {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 16px 8px;
+    color: #888;
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 13px;
-    color: #888;
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 4px 8px;
   }
-  .journey-week-subtitle::before,
-  .journey-week-subtitle::after {
+  .semana-separador::before,
+  .semana-separador::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(136,136,136,0.35);
+    background: rgba(255,255,255,0.15);
   }
   /* ── Methodology modal ── */
   .methodology-modal-overlay {
@@ -4472,12 +4471,8 @@ function updateHeaderMode(mode) {
 }
 
 function syncPill() {
-  console.log('[PILL] tiene7d:', state.user && state.user.tiene7d, '| semana:', computeSemanaActiva());
-  if (!state.user || !state.user.tiene7d) {
-    updateSectionPill('workshop');
-  } else {
-    updateSectionPill('semana' + computeSemanaActiva());
-  }
+  // Always start at workshop; IntersectionObserver updates as user scrolls into 7D
+  updateSectionPill('workshop');
 }
 
 function setupHeaderObserver() {
@@ -5258,14 +5253,8 @@ function renderSectionsList() {
   const tiene7d = state.user && state.user.tiene7d;
   const semanaActiva = computeSemanaActiva();
 
-  // Color inicial de la pill (workshop por defecto; updateSectionPill ajusta según scroll)
-  let pillBg = '#8B1A2F';
-  if (tiene7d) {
-    if      (semanaActiva === 1) pillBg = '#2A5C42';
-    else if (semanaActiva === 2) pillBg = '#6B1A2A';
-    else if (semanaActiva === 3) pillBg = '#B8892A';
-    else if (semanaActiva === 4) pillBg = 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
-  }
+  // Pill always starts as workshop; IntersectionObserver updates on scroll
+  const pillBg = '#8B1A2F';
 
   const keySVG = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
     <defs>
@@ -5278,13 +5267,9 @@ function renderSectionsList() {
   </svg>`;
 
   const weekNames7d = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
-  const initLabel = tiene7d && semanaActiva >= 1
-    ? `SEMANA ${semanaActiva} · SOBERANA 7D`
-    : 'WORKSHOP · CÓDIGO SOBERANA';
-  const initTitle = tiene7d && semanaActiva >= 1
-    ? weekNames7d[semanaActiva - 1]
-    : 'Código Soberana';
-  const initMode = tiene7d && semanaActiva >= 1 ? `semana${semanaActiva}` : 'workshop';
+  const initLabel = 'WORKSHOP · CÓDIGO SOBERANA';
+  const initTitle = 'Código Soberana';
+  const initMode = 'workshop';
 
   const bannerWrap = document.createElement('div');
   bannerWrap.className = 'journey-banner-wrapper';
@@ -5306,16 +5291,6 @@ function renderSectionsList() {
 
   bannerWrap.appendChild(wsBanner);
 
-  const subtitle = document.createElement('div');
-  subtitle.id = 'week-separator';
-  subtitle.className = 'journey-week-subtitle';
-  if (tiene7d && semanaActiva >= 1 && semanaActiva <= 4) {
-    subtitle.textContent = `— ${weekNames7d[semanaActiva - 1]} —`;
-  } else {
-    subtitle.style.display = 'none';
-  }
-  bannerWrap.appendChild(subtitle);
-
   // Insert pill as first direct child of #tab-inicio (the scroll container's immediate child)
   // so that position:sticky works correctly even when .app-main has overflow-x:hidden
   const tabInicio = document.getElementById('tab-inicio');
@@ -5331,6 +5306,8 @@ function renderSectionsList() {
 
   // ── Workshop journey sub-container ───────────────────────────
   const workshopMap = document.createElement('div');
+  workshopMap.id = 'journey-workshop';
+  workshopMap.dataset.semanaMode = 'workshop';
   workshopMap.style.cssText = 'position:relative;';
 
   // Build node data: s0..s9 always, s10 only when s9 complete
@@ -5541,35 +5518,25 @@ const _SEMANAS_PILL = {
 };
 
 function updateSectionPill(mode) {
-  const pill        = document.getElementById('section-pill');
-  const pillLabel   = document.getElementById('pill-label');
-  const pillTitle   = document.getElementById('pill-title');
-  const weekSep     = document.getElementById('week-separator');
+  const pill      = document.getElementById('section-pill');
+  const pillLabel = document.getElementById('pill-label');
+  const pillTitle = document.getElementById('pill-title');
   if (!pill) return;
 
   const configs = {
-    'workshop': { bg: '#8B1A2F',  label: 'WORKSHOP · CÓDIGO SOBERANA',  title: 'Código Soberana',        sep: null },
-    'semana1':  { bg: '#2A5C42',  label: 'SEMANA 1 · SOBERANA 7D',       title: 'Arquitecta de Realidad', sep: '— Arquitecta de Realidad —' },
-    'semana2':  { bg: '#6B1A2A',  label: 'SEMANA 2 · SOBERANA 7D',       title: 'Gravedad Propia',        sep: '— Gravedad Propia —' },
-    'semana3':  { bg: '#B8892A',  label: 'SEMANA 3 · SOBERANA 7D',       title: 'Biología del Poder',     sep: '— Biología del Poder —' },
+    'workshop': { bg: '#8B1A2F',  label: 'WORKSHOP · CÓDIGO SOBERANA', title: 'Código Soberana' },
+    'semana1':  { bg: '#2A5C42',  label: 'SEMANA 1 · SOBERANA 7D',      title: 'Arquitecta de Realidad' },
+    'semana2':  { bg: '#6B1A2A',  label: 'SEMANA 2 · SOBERANA 7D',      title: 'Gravedad Propia' },
+    'semana3':  { bg: '#B8892A',  label: 'SEMANA 3 · SOBERANA 7D',      title: 'Biología del Poder' },
     'semana4':  { bg: null, gradient: 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)',
-                  label: 'SEMANA 4 · SOBERANA 7D', title: 'El Código Final', sep: '— El Código Final —' },
+                  label: 'SEMANA 4 · SOBERANA 7D', title: 'El Código Final' },
   };
 
   const cfg = configs[mode] || configs['workshop'];
-
   pill.style.background = cfg.gradient || cfg.bg;
   pill.dataset.mode = mode;
-
   if (pillLabel) pillLabel.textContent = cfg.label;
   if (pillTitle) pillTitle.textContent = cfg.title;
-
-  if (weekSep) {
-    weekSep.style.display = cfg.sep ? 'flex' : 'none';
-    if (cfg.sep) weekSep.textContent = cfg.sep;
-  }
-
-  console.log('[PILL APLICADO]', mode, cfg.gradient || cfg.bg);
 }
 
 // ── Methodology modal ─────────────────────────────────────────────
@@ -6199,6 +6166,12 @@ function render7dJourney(container) {
     semanaBlock.id = `semana-block-${semNum}`;
     semanaBlock.dataset.semanaMode = `semana${semNum}`;
 
+    // Separador de semana — fijo al inicio del bloque, no sticky
+    const separador = document.createElement('div');
+    separador.className = 'semana-separador';
+    separador.innerHTML = `<span>— ${semana.title} —</span>`;
+    semanaBlock.appendChild(separador);
+
     // ── Nodos de la semana ──────────────────────────────────────
     const spacing = 115;
     const sectionH = DIAS_7D.length * spacing + 70;
@@ -6325,8 +6298,6 @@ function render7dJourney(container) {
 }
 
 function setupSemanaObservers() {
-  if (!(state.user && state.user.tiene7d)) return;
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -6334,12 +6305,22 @@ function setupSemanaObservers() {
         if (mode) updateSectionPill(mode);
       }
     });
-  }, { threshold: 0.15, rootMargin: '-60px 0px 0px 0px' });
-
-  [1, 2, 3, 4].forEach(n => {
-    const el = document.getElementById(`semana-block-${n}`);
-    if (el) observer.observe(el);
+  }, {
+    threshold: 0.05,
+    rootMargin: '0px 0px -85% 0px'
   });
+
+  // Workshop block always observed — pill returns to workshop when scrolled back up
+  const workshopEl = document.getElementById('journey-workshop');
+  if (workshopEl) observer.observe(workshopEl);
+
+  // 7D semana blocks only observed when user has 7D access
+  if (state.user && state.user.tiene7d) {
+    [1, 2, 3, 4].forEach(n => {
+      const el = document.getElementById(`semana-block-${n}`);
+      if (el) observer.observe(el);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -8925,18 +8906,7 @@ if ('serviceWorker' in navigator) {
       case 'pill_s3':
       case 'pill_s4': {
         const semNum = parseInt(action.slice(-1));
-        const s = _SEMANAS_PILL[semNum];
-        const pill = document.getElementById('section-pill');
-        const pillLabel = document.getElementById('pill-label');
-        const pillTitle = document.getElementById('pill-title');
-        const weekSep = document.getElementById('week-separator');
-        if (pill && s) {
-          pill.style.background = s.bg || 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
-          pill.dataset.mode = 'semana' + semNum;
-          if (pillLabel) pillLabel.textContent = s.label;
-          if (pillTitle) pillTitle.textContent = s.titulo;
-          if (weekSep) { weekSep.style.display = 'flex'; weekSep.textContent = s.sep; }
-        }
+        updateSectionPill('semana' + semNum);
         showToast(`Pill → Semana ${semNum}`);
         break;
       }

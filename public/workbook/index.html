@@ -1348,57 +1348,67 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 10px 16px 6px;
-    background: var(--burgundy-deep);
+    align-items: stretch;
+    padding: 10px 16px 0;
   }
   .journey-banner {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 10px;
-    border-radius: 50px;
-    padding: 8px 20px 8px 16px;
-    position: relative;
+    border-radius: 16px;
+    padding: 12px 16px;
+    gap: 0;
   }
-  .journey-banner-icon {
-    flex-shrink: 0;
-    color: rgba(237,227,206,0.85);
-    display: flex; align-items: center;
+  .journey-banner-text {
+    flex: 1;
+    min-width: 0;
   }
   .journey-banner-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    color: rgba(237,227,206,0.7);
-    letter-spacing: .18em;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: .12em;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
   .journey-banner-title {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
-    color: var(--cream);
+    color: #fff;
     line-height: 1.2;
   }
   .journey-key-btn {
-    background: none;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
     border: none;
-    padding: 0 0 0 6px;
-    font-size: 15px;
     cursor: pointer;
-    opacity: 0.75;
-    transition: opacity 0.2s;
     display: flex;
     align-items: center;
+    justify-content: center;
+    margin-left: 12px;
     -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
   }
-  .journey-key-btn:active { opacity: 1; transform: scale(1.15); }
+  .journey-key-btn:active { background: rgba(255,255,255,0.28); }
   .journey-week-subtitle {
     font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
     font-size: 13px;
     color: #888;
-    margin-top: 4px;
-    text-align: center;
-    letter-spacing: 0.04em;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px 8px;
+  }
+  .journey-week-subtitle::before,
+  .journey-week-subtitle::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(136,136,136,0.35);
   }
   /* ── Methodology modal ── */
   .methodology-modal-overlay {
@@ -1419,12 +1429,12 @@
     pointer-events: all;
   }
   .methodology-modal {
-    background: rgba(15,10,11,0.92);
+    background: rgba(15,10,11,0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(184,137,42,0.3);
     border-radius: 20px;
-    padding: 36px 28px 28px;
+    padding: 32px;
     max-width: 360px;
     width: 100%;
     position: relative;
@@ -1434,39 +1444,42 @@
   .methodology-modal-overlay.open .methodology-modal {
     transform: scale(1);
   }
+  .methodology-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .methodology-modal-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
   .methodology-modal-close {
-    position: absolute;
-    top: 14px;
-    right: 16px;
     background: none;
     border: none;
-    color: rgba(237,227,206,0.45);
+    color: rgba(237,227,206,0.4);
     font-size: 22px;
     cursor: pointer;
-    padding: 4px;
+    padding: 0;
     line-height: 1;
+    margin-top: -2px;
     -webkit-tap-highlight-color: transparent;
   }
   .methodology-modal-close:active { color: #EDE3CE; }
-  .methodology-modal-icon {
-    text-align: center;
-    font-size: 38px;
-    margin-bottom: 14px;
-  }
   .methodology-modal-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px;
     font-weight: 600;
     color: #B8892A;
-    text-align: center;
-    margin-bottom: 16px;
-    line-height: 1.2;
+    margin-bottom: 14px;
+    line-height: 1.25;
   }
   .methodology-modal-text {
-    font-size: 14px;
-    color: rgba(237,227,206,0.78);
-    line-height: 1.75;
-    text-align: center;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    color: #EDE3CE;
+    line-height: 1.7;
   }
 
   /* ── 7D Journey section ── */
@@ -5202,45 +5215,53 @@ function renderSectionsList() {
 
   // Color de la pill según semana activa
   let pillBg = '#8B1A2F';
-  let pillBgImg = '';
   if (tiene7d) {
     if      (semanaActiva === 1) pillBg = '#2A5C42';
     else if (semanaActiva === 2) pillBg = '#6B1A2A';
     else if (semanaActiva === 3) pillBg = '#B8892A';
-    else if (semanaActiva === 4) { pillBg = ''; pillBgImg = 'linear-gradient(135deg, #B8892A, #1A3D2B)'; }
+    else if (semanaActiva === 4) pillBg = 'linear-gradient(135deg, #B8892A, #1A3D2B)';
   }
+
+  const keySVG = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="keyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0.35)"/>
+      </linearGradient>
+    </defs>
+    <path fill="url(#keyGradient)" d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+  </svg>`;
+
+  const weekNames7d = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
+  const pillLabel = tiene7d && semanaActiva >= 1
+    ? `SEMANA 0${semanaActiva} · SOBERANA 7D`
+    : 'WORKSHOP · CÓDIGO SOBERANA';
+  const pillTitle = tiene7d && semanaActiva >= 1
+    ? weekNames7d[semanaActiva - 1]
+    : 'Código Soberana';
 
   const bannerWrap = document.createElement('div');
   bannerWrap.className = 'journey-banner-wrapper';
 
   const wsBanner = document.createElement('div');
   wsBanner.className = 'journey-banner';
-  if (pillBg)    wsBanner.style.background = pillBg;
-  if (pillBgImg) wsBanner.style.backgroundImage = pillBgImg;
-
-  const keyBtn = tiene7d
-    ? `<button class="journey-key-btn" onclick="openMethodologyModal(${semanaActiva})" title="Metodología de la semana">🗝️</button>`
-    : '';
+  wsBanner.style.background = pillBg;
 
   wsBanner.innerHTML = `
-    <div class="journey-banner-icon">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-      </svg>
+    <div class="journey-banner-text">
+      <div class="journey-banner-label">${pillLabel}</div>
+      <div class="journey-banner-title">${pillTitle}</div>
     </div>
-    <div>
-      <div class="journey-banner-label">WORKSHOP</div>
-      <div class="journey-banner-title">Código Soberana</div>
-    </div>
-    ${keyBtn}`;
+    <button class="journey-key-btn" onclick="openMethodologyModal(${semanaActiva})" title="Metodología">
+      ${keySVG}
+    </button>`;
 
   bannerWrap.appendChild(wsBanner);
 
   if (tiene7d && semanaActiva >= 1 && semanaActiva <= 4) {
-    const weekNames = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
     const subtitle = document.createElement('div');
     subtitle.className = 'journey-week-subtitle';
-    subtitle.textContent = `— ${weekNames[semanaActiva - 1]} —`;
+    subtitle.textContent = `— ${weekNames7d[semanaActiva - 1]} —`;
     bannerWrap.appendChild(subtitle);
   }
 
@@ -5451,29 +5472,44 @@ function renderSectionsList() {
 // ── Methodology modal ─────────────────────────────────────────────
 const METHODOLOGY_DATA = [
   {
-    weekNum: '01',
+    label: null,
+    title: 'Código Soberana',
+    text: 'Este es tu punto de partida. Lo que estás a punto de descubrir no es información nueva — es un sistema que ya vive en ti. Esta semana vas a nombrar lo que siempre supiste pero nunca pudiste articular.'
+  },
+  {
+    label: 'Semana 01',
     title: 'Arquitecta de Realidad',
     text: 'Esta semana tu mente deja de ser tu enemiga. Vas a descubrir que los conflictos que has tenido no nacieron en él — nacieron en el sistema de predicción que tu cerebro construyó sin pedirte permiso. Al terminar el domingo, vas a interpretar las mismas situaciones de una manera completamente diferente. Eso no se puede desaprender.'
   },
   {
-    weekNum: '02',
+    label: 'Semana 02',
     title: 'Gravedad Propia',
     text: 'Esta semana trabajas lo que ninguna técnica de comunicación puede reemplazar: tu presencia. Las mujeres que generan respeto no lo piden. Lo proyectan desde un lugar interno que esta semana vas a identificar y a activar. Al terminar el domingo, sabrás exactamente desde dónde has estado operando — y desde dónde vas a operar de ahora en adelante.'
   },
   {
-    weekNum: '03',
+    label: 'Semana 03',
     title: 'Biología del Poder',
     text: 'Esta semana el entrenamiento se vuelve concreto. Tu cuerpo, tus hormonas y tu relación con el dinero no son temas separados — son el mismo tema visto desde tres ángulos. Lo que descubras aquí va a explicar patrones que llevas años sin entender. Prepárate para respuestas incómodas y liberadoras al mismo tiempo.'
   },
   {
-    weekNum: '04',
+    label: 'Semana 04',
     title: 'El Código Final',
     text: 'Esta es la semana que sostiene todo lo demás cuando todo lo demás falla. No es la más técnica. Es la más honesta. Vamos a trabajar propósito, perdón y la pregunta que más da miedo responder. El video de esta semana es el más personal que he grabado. No porque sea difícil — sino porque es verdad.'
   }
 ];
 
+const _KEY_SVG_MODAL = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="keyGradientModal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(184,137,42,0.9)"/>
+      <stop offset="100%" stop-color="rgba(184,137,42,0.35)"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#keyGradientModal)" d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+</svg>`;
+
 function openMethodologyModal(semanaActiva) {
-  const data = METHODOLOGY_DATA[semanaActiva - 1];
+  const data = METHODOLOGY_DATA[semanaActiva];
   if (!data) return;
 
   let overlay = document.getElementById('methodology-modal-overlay');
@@ -5485,11 +5521,15 @@ function openMethodologyModal(semanaActiva) {
     document.body.appendChild(overlay);
   }
 
+  const titleText = data.label ? `${data.label} — ${data.title}` : data.title;
+
   overlay.innerHTML = `
     <div class="methodology-modal">
-      <button class="methodology-modal-close" onclick="closeMethodologyModal()">×</button>
-      <div class="methodology-modal-icon">🗝️</div>
-      <div class="methodology-modal-title">Semana ${data.weekNum} — ${data.title}</div>
+      <div class="methodology-modal-header">
+        <div class="methodology-modal-icon">${_KEY_SVG_MODAL}</div>
+        <button class="methodology-modal-close" onclick="closeMethodologyModal()">×</button>
+      </div>
+      <div class="methodology-modal-title">${titleText}</div>
       <div class="methodology-modal-text">${data.text}</div>
     </div>`;
 

@@ -2674,6 +2674,26 @@
   }
   .notif-ios-hint.visible { display: block; }
 
+/* ── Gem PNG animations ──────────────────────────────────────── */
+@keyframes gemFloat {
+  0%,100% { transform: translateY(0px) scale(1); }
+  50%      { transform: translateY(-10px) scale(1.03); }
+}
+@keyframes gemPulse {
+  0%,100% { transform: scale(1) rotate(-3deg);
+            filter: drop-shadow(0 0 12px var(--glow)) drop-shadow(0 0 24px var(--glow2)); }
+  50%      { transform: scale(1.08) rotate(3deg);
+            filter: drop-shadow(0 0 24px var(--glow)) drop-shadow(0 0 48px var(--glow2)); }
+}
+@keyframes gemBreathe {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+@keyframes gemGlow {
+  0%,100% { filter: drop-shadow(0 0 8px var(--glow)); }
+  50%      { filter: drop-shadow(0 0 20px var(--glow)) drop-shadow(0 0 40px var(--glow2)); }
+}
+
 /* ── Final Workshop celebration ──────────────────────────────── */
 .fw-particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
 .fw-star {
@@ -2860,31 +2880,12 @@
     <!-- Header -->
     <div class="app-header" id="app-header">
       <div class="header-brand">
-        <button class="header-title-main" id="header-program-name">Código Soberana</button>
+        <button class="header-title-main" id="header-program-name"><span style="font-family:'Cormorant Garamond',serif;font-weight:700;color:#EDE3CE;">Código </span><span style="font-family:'Playfair Display',serif;font-style:italic;color:#B8892A;text-shadow:0 0 20px #B8892A66;">Soberana</span></button>
         <span class="header-title-sub" id="header-program-sub">0/9</span>
       </div>
       <div class="header-right">
         <div id="gem-counter" class="gem-counter-header" title="Gemas del Camino" onclick="showProtocolsDrawer()" style="cursor:pointer">
-          <svg id="gem-counter-icon" width="22" height="22" viewBox="0 0 44 44" style="overflow:visible">
-            <defs>
-              <filter id="gcGlow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <!-- outer hex (glow base) -->
-            <polygon id="gem-counter-shape" points="22,2 38,11 38,33 22,42 6,33 6,11" fill="#B8892A" filter="url(#gcGlow)" opacity="0.55"/>
-            <!-- facets top -->
-            <polygon id="gem-counter-top"   points="22,2 38,11 30,11 22,5" fill="#E8C060"/>
-            <!-- facets sides -->
-            <polygon points="38,11 38,33 32,22" fill="#C8A040"/>
-            <polygon points="22,42 38,33 32,22 22,38" fill="#7A5218"/>
-            <polygon points="22,42 6,33 12,22 22,38" fill="#8C6424"/>
-            <polygon points="6,11 6,33 12,22" fill="#D4A830"/>
-            <polygon points="22,2 6,11 14,11 22,5" fill="#F0D060"/>
-            <!-- inner hex -->
-            <polygon id="gem-counter-inner" points="22,16 30,11 32,22 22,38 12,22 14,11" fill="#7A5C1E"/>
-          </svg>
+          <img id="gem-counter-img" src="/workbook/assets/gemas/gema-workshop.png" width="22" height="22" style="object-fit:contain;filter:drop-shadow(0 0 4px #B8892A88)" />
           <span id="gem-counter-label">0/7</span>
         </div>
         <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D" onclick="switchTab('novedades')" style="cursor:pointer">
@@ -4296,50 +4297,40 @@ function hideEresTab() {
 let _headerObserver = null;
 
 function updateHeaderMode(mode) {
-  const header    = document.getElementById('app-header');
-  const nameEl    = document.getElementById('header-program-name');
-  const subEl     = document.getElementById('header-program-sub');
-  const streakEl  = document.getElementById('streak-counter');
-  const avatarEl  = document.getElementById('avatar-btn');
-  const gemShape  = document.getElementById('gem-counter-shape');
-  const gemTop    = document.getElementById('gem-counter-top');
-  const gemInner  = document.getElementById('gem-counter-inner');
-  const gemLabel  = document.getElementById('gem-counter-label');
+  const header   = document.getElementById('app-header');
+  const nameEl   = document.getElementById('header-program-name');
+  const subEl    = document.getElementById('header-program-sub');
+  const streakEl = document.getElementById('streak-counter');
+  const avatarEl = document.getElementById('avatar-btn');
+  const gcImg    = document.getElementById('gem-counter-img');
+  const gemLabel = document.getElementById('gem-counter-label');
   if (!header) return;
 
   if (mode === '7d') {
-    header.style.background    = '#0F0A0B';
-    header.style.borderBottom  = '0.5px solid rgba(184,137,42,0.22)';
-    if (nameEl) nameEl.textContent = 'Soberana 7D';
+    header.style.background   = '#0F0A0B';
+    header.style.borderBottom = '0.5px solid rgba(184,137,42,0.22)';
+    if (nameEl) nameEl.innerHTML = '<span style="font-family:\'Playfair Display\',serif;font-style:italic;color:#96C7B3;text-shadow:0 0 20px #96C7B366;">Soberana</span><span style="font-family:\'Cormorant Garamond\',serif;font-weight:700;color:#96C7B3;"> 7D</span>';
     if (subEl) {
       const done7d = Object.keys(state.completed7d || {}).length;
-      const dia = Math.min(done7d + 1, 30);
-      subEl.textContent = `${dia}/30`;
+      subEl.textContent = `${Math.min(done7d + 1, 30)}/30`;
       subEl.style.color = 'rgba(150,199,179,0.7)';
     }
     if (streakEl) streakEl.style.color = '#96C7B3';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(42,92,66,0.55)';
-    // Gem icon → verde
-    if (gemShape) { gemShape.setAttribute('fill', '#2A5C42'); }
-    if (gemTop)   { gemTop.setAttribute('fill', '#60C8A0'); }
-    if (gemInner) { gemInner.setAttribute('fill', '#1A3D2B'); }
-    if (gemLabel) { gemLabel.style.color = '#96C7B3'; }
+    if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-semana1.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #96C7B388)'; }
+    if (gemLabel) gemLabel.style.color = '#96C7B3';
   } else {
-    header.style.background    = 'var(--burgundy-deep)';
-    header.style.borderBottom  = '1px solid rgba(212,175,106,0.1)';
-    if (nameEl) nameEl.textContent = 'Código Soberana';
+    header.style.background   = 'var(--burgundy-deep)';
+    header.style.borderBottom = '1px solid rgba(212,175,106,0.1)';
+    if (nameEl) nameEl.innerHTML = '<span style="font-family:\'Cormorant Garamond\',serif;font-weight:700;color:#EDE3CE;">Código </span><span style="font-family:\'Playfair Display\',serif;font-style:italic;color:#B8892A;text-shadow:0 0 20px #B8892A66;">Soberana</span>';
     if (subEl) {
-      const done = (state.completedSections || []).length;
-      subEl.textContent = `${done}/9`;
+      subEl.textContent = `${(state.completedSections || []).length}/9`;
       subEl.style.color = 'rgba(184,137,42,0.7)';
     }
     if (streakEl) streakEl.style.color = '#B8892A';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(184,137,42,0.55)';
-    // Gem icon → dorado
-    if (gemShape) { gemShape.setAttribute('fill', '#B8892A'); }
-    if (gemTop)   { gemTop.setAttribute('fill', '#E8C060'); }
-    if (gemInner) { gemInner.setAttribute('fill', '#7A5C1E'); }
-    if (gemLabel) { gemLabel.style.color = '#B8892A'; }
+    if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-workshop.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #B8892A88)'; }
+    if (gemLabel) gemLabel.style.color = '#B8892A';
   }
 }
 
@@ -4570,10 +4561,8 @@ function openProtocolDetail(key) {
       <div style="font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:${earned ? '#B8892A' : 'rgba(150,150,150,0.5)'};margin-bottom:20px">
         ${earned ? 'PROTOCOLO GANADO' : 'AÚN NO GANADO'}
       </div>
-      <div class="${earned ? 'gem-spin-wrap' : ''}" style="margin:0 auto 20px;position:relative;width:72px;height:72px">
-        <div class="${earned ? 'gem-spin-inner' : ''}" style="position:relative;width:72px;height:72px">
-          ${makeGemSVG(p.gemType, gemState)}
-        </div>
+      <div style="margin:0 auto 20px;position:relative;width:72px;height:72px">
+        ${makeGemSVG(p.gemType, gemState)}
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:${earned ? 0.75 : 0.2};pointer-events:none">${p.iconSvg}</div>
       </div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:${earned ? '#EDE3CE' : 'rgba(237,227,206,0.3)'};line-height:1.2;margin-bottom:10px">${p.fullName}</div>
@@ -4603,10 +4592,8 @@ function showProtocolsDrawer() {
     // gem wrapper: gem-spin-wrap adds perspective for rotateY; inner div gets the spin
     cells += `
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer" onclick="openProtocolDetail('${p.key}')">
-        <div class="${done ? 'gem-spin-wrap' : ''}" style="${done ? '' : 'position:relative;width:72px;height:72px'}">
-          <div class="${done ? 'gem-spin-inner' : ''}">
-            ${makeGemSVG(p.gemType, gemState)}
-          </div>
+        <div style="position:relative;width:72px;height:72px">
+          ${makeGemSVG(p.gemType, gemState)}
           ${lockIcon}
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:${done ? 0.7 : 0.15};pointer-events:none">${p.iconSvg}</div>
         </div>
@@ -4744,8 +4731,8 @@ function showCelebration(key) {
       <div class="celeb-content" style="gap:0">
         <div class="celeb-proto-label">${cfg.protocolLabel || 'PROTOCOLO ACTIVADO'}</div>
         <div class="celeb-proto-gem" id="celeb-gem-wrap">
-          <div class="gem-spin-inner" style="position:relative;width:72px;height:72px">
-            ${makeGemSVG(cfg.gemType || 'workshop', 'done')}
+          <div style="position:relative;width:72px;height:72px">
+            ${makeGemSVG(cfg.gemType || 'workshop', 'celebrate')}
           </div>
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2">${cfg.iconSvg || ''}</div>
         </div>
@@ -4827,8 +4814,7 @@ function showCelebration(key) {
       <div class="fw-icons">${floatingIconsHTML}</div>
       <div class="fw-content">
         <div class="fw-cup" id="fw-cup">${cupSVG}</div>
-        <div class="fw-eyebrow" id="fw-eyebrow">TIENES EL</div>
-        <div class="fw-headline" id="fw-headline"><span style="font-family:'Jost',sans-serif;font-weight:800;font-size:38px;color:#EDE3CE;letter-spacing:0.05em;">CÓDIGO </span><span style="font-family:'Playfair Display',serif;font-style:italic;font-size:38px;color:#B8892A;text-shadow:0 0 30px #B8892A88,0 0 60px #B8892A44;">Soberana</span></div>
+        <div class="fw-headline" id="fw-headline"><span style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:42px;color:#EDE3CE;letter-spacing:0.05em;display:block;text-align:center;">CÓDIGO</span><span style="font-family:'Playfair Display',serif;font-style:italic;font-size:44px;color:#B8892A;text-shadow:0 0 30px #B8892A88,0 0 60px #B8892A44;display:block;text-align:center;">Soberana</span></div>
         <div class="fw-phrase" id="fw-phrase">Lo que aprendiste aquí no es información.<br>Es el sistema que ya vive en ti.</div>
         <div class="fw-binary" id="fw-binary">01001011 · 01010011</div>
         <button class="fw-cta" id="fw-cta" onclick="closeCelebration('${key}');setTimeout(()=>switchTab('progreso'),250)">Ver mi Progreso →</button>
@@ -4837,7 +4823,6 @@ function showCelebration(key) {
     document.body.appendChild(ov);
 
     const cup = ov.querySelector('#fw-cup');
-    const eyebrow = ov.querySelector('#fw-eyebrow');
     const headline = ov.querySelector('#fw-headline');
     const phrase = ov.querySelector('#fw-phrase');
     const binaryEl = ov.querySelector('#fw-binary');
@@ -4858,21 +4843,13 @@ function showCelebration(key) {
       });
     }, 300);
 
-    // t=800: eyebrow
-    setTimeout(() => {
-      eyebrow.animate([
-        { opacity:0, transform:'translateY(10px)' },
-        { opacity:0.7, transform:'translateY(0)' }
-      ], { duration:400, easing:'ease-out', fill:'forwards' });
-    }, 800);
-
-    // t=1000: headline slam
+    // t=800: headline slam
     setTimeout(() => {
       headline.animate([
-        { opacity:0, letterSpacing:'0.4em', transform:'translateY(8px)' },
-        { opacity:1, letterSpacing:'0em', transform:'translateY(0)' }
-      ], { duration:500, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' });
-    }, 1000);
+        { opacity:0, transform:'translateY(16px) scale(0.95)' },
+        { opacity:1, transform:'translateY(0) scale(1)' }
+      ], { duration:600, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' });
+    }, 800);
 
     // t=1300: frase
     setTimeout(() => {
@@ -4916,7 +4893,7 @@ function showCelebration(key) {
     ${particlesHTML}
     <div class="celeb-content">
       <div class="celeb-gem-wrap" id="celeb-gem-wrap">
-        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor || '#D4A843', 120)}
+        ${(()=>{const _fs7={vdiamond:'gema-semana1.png',heart:'gema-semana2.png',brilliant:'gema-semana3.png',crown:'gema-corona.png'};const _fc7={vdiamond:'#96C7B3',heart:'#F9B95C',brilliant:'#B8892A',crown:'#B8892A'};const fn=_fs7[cfg.gemType]||'gema-workshop.png';const gc=_fc7[cfg.gemType]||cfg.gemColor||'#B8892A';return `<img src="/workbook/assets/gemas/${fn}" style="width:120px;height:120px;object-fit:contain;--glow:${gc}88;--glow2:${gc}44;animation:gemPulse 2s ease-in-out infinite;filter:drop-shadow(0 0 16px ${gc}88) drop-shadow(0 0 32px ${gc}44);" />`;})()}
       </div>
       <div class="celeb-title">${cfg.title}</div>
       <div class="celeb-subtitle">${cfg.subtitle}</div>
@@ -5090,200 +5067,32 @@ const NODE_SPACING = 120; // px between nodes vertically
 // ── Gem SVG factory ──────────────────────────────────────────────────
 let _gemUID = 0;
 function makeGemSVG(gemType, nodeState) {
-  const id = ++_gemUID;
+  const _gemFileMap = {
+    workshop: { file: 'gema-workshop.png', glow: '#B8892A' },
+    sem1:     { file: 'gema-semana1.png',  glow: '#96C7B3' },
+    sem2:     { file: 'gema-semana2.png',  glow: '#F9B95C' },
+    sem3:     { file: 'gema-semana3.png',  glow: '#B8892A' },
+    sem4:     { file: 'gema-corona.png',   glow: '#B8892A' }
+  };
+  const m = _gemFileMap[gemType] || _gemFileMap.workshop;
   const isLocked  = nodeState === 'locked';
   const isCurrent = nodeState === 'current';
-  const isAvail   = nodeState === 'available';
   const isDone    = nodeState === 'done';
-  const hasGlow   = isDone || isCurrent;
-  const glowOpa   = isCurrent ? '0.88' : '0.5';
+  const isCelebrate = nodeState === 'celebrate';
 
-  // Outer SVG style
-  let sStyle = 'position:absolute;top:0;left:0;pointer-events:none;overflow:visible;';
-  if (isLocked)                         sStyle += 'filter:saturate(0);opacity:0.3';
-  else if (isAvail)                     sStyle += 'opacity:0.52';
-  else if (gemType === 'sem4' && isCurrent) sStyle += 'animation:crownPulse 2s ease-in-out infinite';
-  else if (gemType === 'sem4' && isDone)    sStyle += 'filter:drop-shadow(0 0 8px #FFD060)';
-  else if (isCurrent)                   sStyle += 'animation:gemSpin 3s linear infinite;transform-origin:36px 36px';
-
-  // Shared glow filter def (blur diffusion outward)
-  const glowDef = hasGlow && gemType !== 'sem4'
-    ? `<filter id="gf${id}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b1"/><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`
-    : '';
-
-  let defs = '', body = '';
-
-  // ── WORKSHOP: Hexágono dorado tallado ─────────────────────────
-  if (gemType === 'workshop') {
-    const hexO = '70,36 53,65.4 19,65.4 2,36 19,6.6 53,6.6';
-    const hexI = '56,36 46,53.3 26,53.3 16,36 26,18.7 46,18.7';
-    defs = `${glowDef}
-      <radialGradient id="rg${id}" cx="42%" cy="38%" r="60%" gradientUnits="objectBoundingBox">
-        <stop offset="0%"   stop-color="#FFD84A"/>
-        <stop offset="50%"  stop-color="#E08800"/>
-        <stop offset="100%" stop-color="#804000"/>
-      </radialGradient>`;
-    const glow = hasGlow ? `<polygon points="${hexO}" fill="#D4A843" filter="url(#gf${id})" opacity="${glowOpa}"/>` : '';
-    body = `${glow}
-      <polygon points="26,18.7 46,18.7 53,6.6 19,6.6"  fill="#FFE584"/>
-      <polygon points="46,18.7 56,36 70,36 53,6.6"      fill="#E8C050"/>
-      <polygon points="56,36 46,53.3 53,65.5 70,36"     fill="#A07820"/>
-      <polygon points="46,53.3 26,53.3 19,65.5 53,65.5" fill="#7A5218"/>
-      <polygon points="26,53.3 16,36 2,36 19,65.5"      fill="#8C6020"/>
-      <polygon points="16,36 26,18.7 19,6.6 2,36"       fill="#F0D040"/>
-      <polygon points="${hexI}" fill="url(#rg${id})"/>
-      <polygon points="${hexO}" fill="none" stroke="rgba(255,220,100,0.4)"  stroke-width="0.5"/>
-      <polygon points="${hexI}" fill="none" stroke="rgba(255,220,100,0.45)" stroke-width="0.5"/>
-      <line x1="56" y1="36"   x2="70" y2="36"   stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <line x1="46" y1="53.3" x2="53" y2="65.5" stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <line x1="26" y1="53.3" x2="19" y2="65.5" stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <line x1="16" y1="36"   x2="2"  y2="36"   stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <line x1="26" y1="18.7" x2="19" y2="6.6"  stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <line x1="46" y1="18.7" x2="53" y2="6.6"  stroke="rgba(255,220,100,0.3)" stroke-width="0.4"/>
-      <ellipse cx="21" cy="13" rx="8" ry="3.5" fill="white" opacity="0.65" transform="rotate(-30,21,13)"/>
-      <circle  cx="18" cy="11" r="2.5" fill="white" opacity="0.98"/>`;
-
-  // ── SEM1: Rombo vertical verde tallado ────────────────────────
-  } else if (gemType === 'sem1') {
-    const dmO = '36,1 58,36 36,71 14,36';
-    const dmI = '36,12 50,36 36,60 22,36';
-    defs = `${glowDef}
-      <radialGradient id="rg${id}" cx="42%" cy="38%" r="60%" gradientUnits="objectBoundingBox">
-        <stop offset="0%"   stop-color="#70FFB0"/>
-        <stop offset="50%"  stop-color="#12A050"/>
-        <stop offset="100%" stop-color="#044820"/>
-      </radialGradient>`;
-    const glow = hasGlow ? `<polygon points="${dmO}" fill="#2A5C42" filter="url(#gf${id})" opacity="${glowOpa}"/>` : '';
-    body = `${glow}
-      <polygon points="14,36 22,36 36,12 36,1"  fill="#A0FFD0"/>
-      <polygon points="36,1 36,12 50,36 58,36"  fill="#40D080"/>
-      <polygon points="58,36 50,36 36,60 36,71" fill="#104030"/>
-      <polygon points="36,71 36,60 22,36 14,36" fill="#042818"/>
-      <polygon points="${dmI}" fill="url(#rg${id})"/>
-      <polygon points="${dmO}" fill="none" stroke="rgba(100,255,180,0.4)"  stroke-width="0.5"/>
-      <polygon points="${dmI}" fill="none" stroke="rgba(100,255,180,0.45)" stroke-width="0.5"/>
-      <line x1="36" y1="1"  x2="36" y2="12" stroke="rgba(100,255,180,0.3)" stroke-width="0.4"/>
-      <line x1="58" y1="36" x2="50" y2="36" stroke="rgba(100,255,180,0.3)" stroke-width="0.4"/>
-      <line x1="36" y1="71" x2="36" y2="60" stroke="rgba(100,255,180,0.3)" stroke-width="0.4"/>
-      <line x1="14" y1="36" x2="22" y2="36" stroke="rgba(100,255,180,0.3)" stroke-width="0.4"/>
-      <ellipse cx="22" cy="12" rx="7" ry="3" fill="white" opacity="0.65" transform="rotate(-30,22,12)"/>
-      <circle  cx="20" cy="10" r="2" fill="white" opacity="0.95"/>`;
-
-  // ── SEM2: Corazón vino tallado ────────────────────────────────
-  } else if (gemType === 'sem2') {
-    const hp = 'M36,62 C4,44 4,20 18,13 C25,9 32,11 36,17 C40,11 47,9 54,13 C68,20 68,44 36,62Z';
-    defs = `${glowDef}
-      <radialGradient id="rg${id}" cx="45%" cy="35%" r="65%" gradientUnits="objectBoundingBox">
-        <stop offset="0%"   stop-color="#FF80A0"/>
-        <stop offset="50%"  stop-color="#A01838"/>
-        <stop offset="100%" stop-color="#3A0818"/>
-      </radialGradient>
-      <clipPath id="hc${id}"><path d="${hp}"/></clipPath>`;
-    const glow = hasGlow ? `<path d="${hp}" fill="#6B1A2A" filter="url(#gf${id})" opacity="${glowOpa}"/>` : '';
-    body = `${glow}
-      <path d="${hp}" fill="url(#rg${id})"/>
-      <g clip-path="url(#hc${id})">
-        <polygon points="0,0 36,0 24,38 0,38"   fill="rgba(255,184,204,0.42)"/>
-        <polygon points="36,38 72,38 72,72 36,72" fill="rgba(40,4,16,0.48)"/>
-        <line x1="36" y1="17" x2="36" y2="62" stroke="rgba(255,150,180,0.38)" stroke-width="0.7"/>
-        <line x1="8"  y1="30" x2="64" y2="30" stroke="rgba(255,150,180,0.28)" stroke-width="0.6"/>
-      </g>
-      <path d="${hp}" fill="none" stroke="rgba(255,140,170,0.35)" stroke-width="0.5"/>
-      <ellipse cx="20" cy="17" rx="7" ry="3.5" fill="white" opacity="0.65" transform="rotate(-25,20,17)"/>
-      <circle  cx="18" cy="15" r="2.2" fill="white" opacity="0.95"/>`;
-
-  // ── SEM3: Diamante brillante verde, vista cenital ─────────────
-  } else if (gemType === 'sem3') {
-    const octO = '36,2 60,12 70,36 60,60 36,70 12,60 2,36 12,12';
-    const hexT = '52,36 44,49.9 28,49.9 20,36 28,22.1 44,22.1';
-    defs = `${glowDef}
-      <radialGradient id="tg${id}" cx="50%" cy="50%" r="50%" gradientUnits="objectBoundingBox">
-        <stop offset="0%"   stop-color="#D0FFF0"/>
-        <stop offset="50%"  stop-color="#60E8A8"/>
-        <stop offset="100%" stop-color="#18A060"/>
-      </radialGradient>`;
-    const glow = hasGlow ? `<polygon points="${octO}" fill="#20A060" filter="url(#gf${id})" opacity="${glowOpa}"/>` : '';
-    body = `${glow}
-      <polygon points="36,36 36,2  60,12"  fill="#A0FFD0"/>
-      <polygon points="36,36 60,12 70,36"  fill="#50D898"/>
-      <polygon points="36,36 70,36 60,60"  fill="#30B870"/>
-      <polygon points="36,36 60,60 36,70"  fill="#108048"/>
-      <polygon points="36,36 36,70 12,60"  fill="#0C6040"/>
-      <polygon points="36,36 12,60 2,36"   fill="#18784A"/>
-      <polygon points="36,36 2,36  12,12"  fill="#30B878"/>
-      <polygon points="36,36 12,12 36,2"   fill="#70E0B0"/>
-      <polygon points="${hexT}" fill="url(#tg${id})"/>
-      <polygon points="${octO}" fill="none" stroke="rgba(160,255,208,0.38)" stroke-width="0.5"/>
-      <polygon points="${hexT}" fill="none" stroke="rgba(160,255,208,0.55)" stroke-width="0.6"/>
-      <line x1="36" y1="36" x2="36"  y2="2"  stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="60"  y2="12" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="70"  y2="36" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="60"  y2="60" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="36"  y2="70" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="12"  y2="60" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="2"   y2="36" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <line x1="36" y1="36" x2="12"  y2="12" stroke="rgba(160,255,208,0.28)" stroke-width="0.4"/>
-      <ellipse cx="22" cy="14" rx="7" ry="3.5" fill="white" opacity="0.65" transform="rotate(-30,22,14)"/>
-      <circle  cx="19" cy="12" r="2.2" fill="white" opacity="0.98"/>
-      <circle  cx="46" cy="26" r="1.5" fill="white" opacity="0.75"/>`;
-
-  // ── SEM4: Corona dorada 3D ────────────────────────────────────
-  } else if (gemType === 'sem4') {
-    const crownPath = 'M6,54 L6,45 C7,38 9,32 13,28 C17,24 19,38 20,42 C21,40 23,20 26,16 C29,12 31,40 31,43 C32,40 34,10 36,7 C38,10 40,40 41,43 C42,40 44,12 46,16 C48,20 51,40 52,42 C53,38 55,24 59,28 C63,32 65,38 66,45 L66,62 L6,62 Z';
-    const crownGlow = (isDone || isCurrent) ? `<path d="${crownPath}" fill="#C07800" filter="url(#gf${id})" opacity="${glowOpa}"/>` : '';
-    const crownGlowDef = (isDone || isCurrent)
-      ? `<filter id="gf${id}" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur in="SourceGraphic" stdDeviation="14" result="b1"/><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`
-      : '';
-    defs = `${crownGlowDef}
-      <radialGradient id="bg${id}" cx="35%" cy="30%" r="65%" gradientUnits="objectBoundingBox">
-        <stop offset="0%"   stop-color="#FFF5A0"/>
-        <stop offset="50%"  stop-color="#E8A820"/>
-        <stop offset="100%" stop-color="#7A4800"/>
-      </radialGradient>
-      <linearGradient id="band${id}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%"   stop-color="#FFE878"/>
-        <stop offset="55%"  stop-color="#D4A020"/>
-        <stop offset="100%" stop-color="#7A4C00"/>
-      </linearGradient>`;
-    body = `${crownGlow}
-      <polygon points="6,45 13,28 16,37"   fill="#FFF090"/>
-      <polygon points="13,28 20,42 16,37"  fill="#804000"/>
-      <polygon points="20,42 26,16 29,30"  fill="#FFD060"/>
-      <polygon points="26,16 31,43 29,30"  fill="#905010"/>
-      <polygon points="31,43 36,7 38,25"   fill="#FFF8D0"/>
-      <polygon points="36,7 41,43 38,25"   fill="#A06010"/>
-      <polygon points="41,43 46,16 49,30"  fill="#F0C040"/>
-      <polygon points="46,16 52,42 49,30"  fill="#805010"/>
-      <polygon points="52,42 59,28 62,37"  fill="#E8B030"/>
-      <polygon points="59,28 66,45 62,37"  fill="#704020"/>
-      <polygon points="6,45 20,45 20,42"   fill="#A06018"/>
-      <polygon points="20,45 31,45 31,43"  fill="#B07020"/>
-      <polygon points="31,45 41,45 41,43"  fill="#A06018"/>
-      <polygon points="41,45 52,45 52,42"  fill="#B07020"/>
-      <polygon points="52,45 66,45 66,45"  fill="#A06018"/>
-      <rect x="6" y="45" width="60" height="17" fill="url(#band${id})"/>
-      <ellipse cx="36" cy="46" rx="30" ry="3.5" fill="#FFE878" opacity="0.72"/>
-      <ellipse cx="36" cy="62" rx="30" ry="3"   fill="#4A2800" opacity="0.55"/>
-      <polygon points="36,49 41,53 36,57 31,53" fill="#FFF5A0"/>
-      <polygon points="36,49 38.5,53 36,57 33.5,53" fill="#E8C040"/>
-      <circle cx="16" cy="53" r="3.5" fill="url(#bg${id})"/>
-      <circle cx="15" cy="52" r="1.2" fill="white" opacity="0.85"/>
-      <circle cx="56" cy="53" r="3.5" fill="url(#bg${id})"/>
-      <circle cx="55" cy="52" r="1.2" fill="white" opacity="0.85"/>
-      <circle cx="13" cy="28" r="4.5" fill="url(#bg${id})"/>
-      <circle cx="11" cy="27" r="1.5" fill="white" opacity="0.9"/>
-      <circle cx="26" cy="16" r="5"   fill="url(#bg${id})"/>
-      <circle cx="24" cy="14" r="1.8" fill="white" opacity="0.9"/>
-      <circle cx="36" cy="7"  r="5.5" fill="url(#bg${id})"/>
-      <circle cx="34" cy="5"  r="2"   fill="white" opacity="0.95"/>
-      <circle cx="46" cy="16" r="5"   fill="url(#bg${id})"/>
-      <circle cx="44" cy="14" r="1.8" fill="white" opacity="0.9"/>
-      <circle cx="59" cy="28" r="4.5" fill="url(#bg${id})"/>
-      <circle cx="57" cy="27" r="1.5" fill="white" opacity="0.9"/>`;
+  let style = 'position:absolute;top:0;left:0;width:72px;height:72px;object-fit:contain;pointer-events:none;';
+  if (isLocked) {
+    style += 'filter:saturate(0) brightness(0.3);opacity:0.5;';
+  } else if (isCelebrate) {
+    style += `--glow:${m.glow}88;--glow2:${m.glow}44;animation:gemPulse 2s ease-in-out infinite;filter:drop-shadow(0 0 12px ${m.glow}88) drop-shadow(0 0 24px ${m.glow}44);`;
+  } else if (isCurrent) {
+    style += `--glow:${m.glow}88;--glow2:${m.glow}44;animation:gemBreathe 3s ease-in-out infinite;filter:drop-shadow(0 0 12px ${m.glow}88) drop-shadow(0 0 24px ${m.glow}44);`;
+  } else if (isDone) {
+    style += `--glow:${m.glow}88;--glow2:${m.glow}44;animation:gemGlow 2s ease-in-out infinite;filter:drop-shadow(0 0 8px ${m.glow}88);`;
+  } else {
+    style += 'opacity:0.45;filter:saturate(0.4);';
   }
-
-  return `<svg width="72" height="72" viewBox="0 0 72 72" style="${sStyle}" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>${body}</svg>`;
-}
+  return `<img src="/workbook/assets/gemas/${m.file}" style="${style}" />`;
 
 function bounceNode(el) {
   el.classList.remove('bouncing','shaking');

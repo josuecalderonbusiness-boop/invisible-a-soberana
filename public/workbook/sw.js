@@ -60,13 +60,19 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // ── Cache (PWA) ───────────────────────────────────────────────────
-const CACHE_NAME = 'soberana-v29';
+const CACHE_NAME = 'soberana-v30';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',
   '/workbook/manifest.json',
   '/workbook/icon-192.png',
-  '/workbook/icon-512.png'
+  '/workbook/icon-512.png',
+  '/workbook/assets/gemas/copa-soberana.png',
+  '/workbook/assets/gemas/gema-workshop.png',
+  '/workbook/assets/gemas/gema-semana1.png',
+  '/workbook/assets/gemas/gema-semana2.png',
+  '/workbook/assets/gemas/gema-semana3.png',
+  '/workbook/assets/gemas/gema-corona.png'
 ];
 
 self.addEventListener('install', event => {

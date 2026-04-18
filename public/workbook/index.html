@@ -508,6 +508,57 @@
   .tab-content { display: none; padding: 0 0 32px; background: var(--burgundy-deep); }
   .tab-content.active { display: block; }
   #tab-inicio { background: var(--burgundy-deep); }
+  #tab-entrenamiento { background: #0F0609; min-height: 100%; }
+  .entrena-section-header { margin-bottom: 14px; }
+  .entrena-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: #EDE3CE;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .entrena-section-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; color: rgba(150,199,179,0.55);
+    margin-top: 3px;
+  }
+  .entrena-card {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(184,137,42,0.22);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .entrena-card-locked {
+    opacity: 0.45;
+    filter: saturate(0.3);
+  }
+  .entrena-card-top { margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .entrena-badge {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: .12em;
+    border-radius: 100px; padding: 3px 9px; text-transform: uppercase;
+  }
+  .entrena-badge-free { background: rgba(42,92,66,0.25); color: #60C8A0; border: 0.5px solid rgba(42,92,66,0.45); }
+  .entrena-lock-sm { opacity: 0.5; }
+  .entrena-card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600; color: #EDE3CE;
+    margin-bottom: 5px; line-height: 1.2;
+  }
+  .entrena-card-desc {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; color: rgba(196,160,178,0.6);
+    margin-bottom: 14px; line-height: 1.5;
+  }
+  .entrena-card-btn {
+    background: transparent;
+    border: 0.5px solid rgba(184,137,42,0.35);
+    border-radius: 40px;
+    padding: 8px 20px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 500; color: #B8892A;
+    cursor: pointer;
+  }
+  .entrena-card-btn:active { opacity: 0.7; }
 
   .hero-banner {
     background: linear-gradient(135deg, var(--burgundy-deep) 0%, var(--burgundy-dark) 60%, #3a0e1f 100%);
@@ -754,6 +805,15 @@
     line-height: 1;
   }
   .gem-counter-header.complete #gem-counter-label { color: #D4A843; }
+
+  /* ── Protocols drawer ── */
+  #protocols-drawer {
+    animation: drawerSlideUp .3s cubic-bezier(0.32,0.72,0,1) forwards;
+  }
+  @keyframes drawerSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
 
   /* ── Celebration overlay ── */
   .celebration-overlay {
@@ -2500,10 +2560,10 @@
     <div class="app-header" id="app-header">
       <div class="header-brand">
         <span class="header-title-main" id="header-program-name">Código Soberana</span>
-        <span class="header-title-sub" id="header-program-sub">lección 0 de 9</span>
+        <span class="header-title-sub" id="header-program-sub">0/9</span>
       </div>
       <div class="header-right">
-        <div id="gem-counter" class="gem-counter-header" title="Gemas del Camino">
+        <div id="gem-counter" class="gem-counter-header" title="Gemas del Camino" onclick="showProtocolsDrawer()" style="cursor:pointer">
           <svg id="gem-counter-icon" width="22" height="22" viewBox="0 0 44 44" style="overflow:visible">
             <defs>
               <filter id="gcGlow" x="-60%" y="-60%" width="220%" height="220%">
@@ -2523,7 +2583,7 @@
           </svg>
           <span id="gem-counter-label">0/7</span>
         </div>
-        <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D">
+        <div class="streak-counter" id="streak-counter" title="Activo en Soberana 7D" onclick="switchTab('novedades')" style="cursor:pointer">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2c-1 3-4 5-4 9a4 4 0 008 0c0-4-3-6-4-9z"/><path d="M12 12c-.5 1.5-2 2.5-2 4a2 2 0 004 0c0-1.5-1.5-2.5-2-4z" fill="currentColor" stroke="none"/></svg>
           <span id="streak-num">0</span>
         </div>
@@ -2669,6 +2729,72 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ENTRENAMIENTO -->
+      <div class="tab-content" id="tab-entrenamiento">
+        <div style="padding:24px 20px 40px">
+          <!-- Sección libre -->
+          <div class="entrena-section-header">
+            <div class="entrena-section-title">Ejercicios Soberana</div>
+            <div class="entrena-section-sub">Herramientas del Código Soberana</div>
+          </div>
+          <div class="entrena-card">
+            <div class="entrena-card-top">
+              <span class="entrena-badge entrena-badge-free">LIBRE</span>
+            </div>
+            <div class="entrena-card-name">Sistema de Tres Preguntas</div>
+            <div class="entrena-card-desc">Separa el hecho de la historia que tu mente construye</div>
+            <button class="entrena-card-btn" onclick="showEntrenaTost()">Comenzar →</button>
+          </div>
+          <div class="entrena-card">
+            <div class="entrena-card-top">
+              <span class="entrena-badge entrena-badge-free">LIBRE</span>
+            </div>
+            <div class="entrena-card-name">Sistema ERES</div>
+            <div class="entrena-card-desc">Convierte lo que sientes en información estratégica</div>
+            <button class="entrena-card-btn" onclick="showEntrenaTost()">Comenzar →</button>
+          </div>
+
+          <!-- Sección 7D -->
+          <div class="entrena-section-header" style="margin-top:32px">
+            <div class="entrena-section-title" id="entrena-7d-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2" stroke-linecap="round" id="entrena-lock-icon"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Entrenamiento 7D
+            </div>
+            <div class="entrena-section-sub" id="entrena-7d-sub">Se desbloquea con Soberana 7D</div>
+          </div>
+          <div class="entrena-card entrena-card-locked" id="entrena-c3">
+            <div class="entrena-card-top">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="entrena-lock-sm"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="entrena-card-name">Biología del Poder — Semana 3</div>
+            <div class="entrena-card-desc">Activa los recursos físicos de tu poder soberano</div>
+            <button class="entrena-card-btn" onclick="showEntrenaTost()">Comenzar →</button>
+          </div>
+          <div class="entrena-card entrena-card-locked" id="entrena-c4">
+            <div class="entrena-card-top">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="entrena-lock-sm"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="entrena-card-name">Gravedad Propia — Semana 2</div>
+            <div class="entrena-card-desc">Construye presencia sin esfuerzo y sin explicaciones</div>
+            <button class="entrena-card-btn" onclick="showEntrenaTost()">Comenzar →</button>
+          </div>
+          <div class="entrena-card entrena-card-locked" id="entrena-c5">
+            <div class="entrena-card-top">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="entrena-lock-sm"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="entrena-card-name">El Código Final — Semana 4</div>
+            <div class="entrena-card-desc">Integra todo lo aprendido en un sistema de vida</div>
+            <button class="entrena-card-btn" onclick="showEntrenaTost()">Comenzar →</button>
+          </div>
+
+          <div id="entrena-cta-7d" style="text-align:center;margin-top:28px;display:none">
+            <button onclick="window.open('https://soberana7d.josuecalderon.lat','_blank')" style="background:transparent;border:1px solid rgba(184,137,42,0.5);border-radius:40px;padding:13px 28px;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;color:#B8892A;cursor:pointer">
+              Desbloquear Entrenamiento 7D →
+            </button>
           </div>
         </div>
       </div>
@@ -2847,9 +2973,9 @@
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         Mi Progreso
       </button>
-      <button class="tab-btn" id="tab-btn-perfil" onclick="switchTab('perfil')">
-        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Mi Perfil
+      <button class="tab-btn" id="tab-btn-entrenamiento" onclick="switchTab('entrenamiento')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8.5" width="18" height="3" rx="1.5"/><rect x="0" y="6" width="3.5" height="8" rx="1.5"/><rect x="16.5" y="6" width="3.5" height="8" rx="1.5"/></svg>
+        Entrena
       </button>
     </div>
   </div>
@@ -3769,12 +3895,10 @@ function updateHeaderMode(mode) {
     header.style.borderBottom  = '0.5px solid rgba(184,137,42,0.22)';
     if (nameEl) nameEl.textContent = 'Soberana 7D';
     if (subEl) {
-      // Compute semana/día from completed7d
       const done7d = Object.keys(state.completed7d || {}).length;
-      const sem = Math.min(Math.floor(done7d / 7) + 1, 4);
       const dia = Math.min(done7d + 1, 30);
-      subEl.textContent = `semana ${sem} · día ${dia} de 30`;
-      subEl.style.color = 'rgba(150,199,179,0.75)';
+      subEl.textContent = `${dia}/30`;
+      subEl.style.color = 'rgba(150,199,179,0.7)';
     }
     if (streakEl) streakEl.style.color = '#96C7B3';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(42,92,66,0.55)';
@@ -3784,8 +3908,8 @@ function updateHeaderMode(mode) {
     if (nameEl) nameEl.textContent = 'Código Soberana';
     if (subEl) {
       const done = (state.completedSections || []).length;
-      subEl.textContent = `lección ${done} de 9`;
-      subEl.style.color = 'rgba(184,137,42,0.75)';
+      subEl.textContent = `${done}/9`;
+      subEl.style.color = 'rgba(184,137,42,0.7)';
     }
     if (streakEl) streakEl.style.color = '';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(184,137,42,0.55)';
@@ -3800,9 +3924,10 @@ function setupHeaderObserver() {
   _headerObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (state.user && state.user.tiene7d) return;
-      updateHeaderMode(entry.isIntersecting ? '7d' : 'workshop');
+      // abismo visible = en zona workshop; abismo fuera de viewport (abajo) = en zona 7D
+      updateHeaderMode(entry.isIntersecting ? 'workshop' : '7d');
     });
-  }, { threshold: 0.1 });
+  }, { threshold: 0.05 });
   _headerObserver.observe(target);
 }
 
@@ -3927,6 +4052,100 @@ function _makeCelebGemSVG(gemType, color, size) {
       <circle cx="${h}" cy="${h*0.7}" r="${h*0.35}" fill="${light}" opacity=".6"/>`;
   }
   return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" style="overflow:visible;filter:drop-shadow(0 0 12px ${color}aa)">${paths}</svg>`;
+}
+
+// ── Protocols drawer ─────────────────────────────────────────────
+const PROTOCOLS_DEF = [
+  { key:'s5',  label:'CÓDIGO SOBERANA', name:'Lo que Piensas',   sub:'Protocolo Mental',       gemColor:'#D4A843', gemType:'hexagon' },
+  { key:'s6',  label:null,              name:'Lo que Sientes',   sub:'Protocolo Emocional',    gemColor:'#D4A843', gemType:'hexagon' },
+  { key:'s7',  label:null,              name:'Lo que Sostienes', sub:'Protocolo del Carácter', gemColor:'#D4A843', gemType:'hexagon' },
+  { key:'7d1', label:'SOBERANA 7D',     name:'Arquitecta de Realidad', sub:'Semana 1',         gemColor:'#2A5C42', gemType:'hexagon' },
+  { key:'7d2', label:null,              name:'Gravedad Propia',  sub:'Semana 2',               gemColor:'#8B1A2F', gemType:'hexagon' },
+  { key:'7d3', label:null,              name:'Biología del Poder', sub:'Semana 3',             gemColor:'#D4A843', gemType:'hexagon' },
+  { key:'7d4', label:null,              name:'El Código Final',  sub:'Semana 4',               gemColor:'#1A3D2B', gemType:'hexagon' },
+];
+
+function _isProtocolEarned(key) {
+  if (['s5','s6','s7'].includes(key)) return state.completedSections && state.completedSections.includes(key);
+  const semNum = parseInt(key.replace('7d',''));
+  if (!state.completed7d) return false;
+  return [1,2,3,4,5,6,7].every(d => state.completed7d[`7d_s${semNum}_d${d}`]);
+}
+
+function showProtocolsDrawer() {
+  const existing = document.getElementById('protocols-drawer-overlay');
+  if (existing) existing.remove();
+
+  const earned = PROTOCOLS_DEF.filter(p => _isProtocolEarned(p.key)).length;
+
+  let rows = '';
+  let currentLabel = null;
+  PROTOCOLS_DEF.forEach(p => {
+    const done = _isProtocolEarned(p.key);
+    if (p.label && p.label !== currentLabel) {
+      currentLabel = p.label;
+      rows += `<div style="font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin:16px 0 8px">${p.label}</div>`;
+    }
+    const gemStyle = done ? '' : 'filter:saturate(0);opacity:0.28;';
+    const nameColor = done ? '#EDE3CE' : 'rgba(237,227,206,0.28)';
+    const subColor  = done ? 'rgba(184,137,42,0.6)' : 'rgba(237,227,206,0.18)';
+    const badge = done
+      ? `<span style="color:#D4A843;font-size:14px;flex-shrink:0">✓</span>`
+      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(150,150,150,0.5)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
+    rows += `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">
+        <div style="${gemStyle}flex-shrink:0">${_makeCelebGemSVG(p.gemType, p.gemColor, 32)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:${nameColor};line-height:1.2">${p.name}</div>
+          <div style="font-family:'Jost',sans-serif;font-size:10px;color:${subColor};margin-top:2px">${p.sub}</div>
+        </div>
+        ${badge}
+      </div>`;
+  });
+
+  const ov = document.createElement('div');
+  ov.id = 'protocols-drawer-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9400;background:rgba(15,6,9,0.78);display:flex;align-items:flex-end;justify-content:center';
+  ov.innerHTML = `
+    <div id="protocols-drawer" style="width:100%;max-width:480px;background:#0F0A0B;border-radius:20px 20px 0 0;border-top:1px solid rgba(184,137,42,0.2);padding:8px 20px 40px;max-height:82vh;overflow-y:auto;position:relative">
+      <div style="width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:4px;margin:8px auto 20px"></div>
+      <button onclick="document.getElementById('protocols-drawer-overlay').remove()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;color:rgba(237,227,206,0.4);cursor:pointer;line-height:1">×</button>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#EDE3CE;margin-bottom:4px">Mis Protocolos</div>
+      <div style="font-family:'Jost',sans-serif;font-size:11px;color:#B8892A;margin-bottom:14px">${earned} de 7 ganados</div>
+      <div style="height:0.5px;background:rgba(184,137,42,0.25);margin-bottom:4px"></div>
+      ${rows}
+    </div>`;
+
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+// ── Tab Entrenamiento ─────────────────────────────────────────────
+function showEntrenaTost() {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A1A2E;color:#EDE3CE;font-family:Jost,sans-serif;font-size:12px;padding:10px 20px;border-radius:40px;border:0.5px solid rgba(184,137,42,0.3);z-index:9999;white-space:nowrap';
+  t.textContent = 'Próximamente — contenido en construcción';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+function renderEntrenamientoTab() {
+  const tiene7d = state.user && state.user.tiene7d;
+  const cards = ['entrena-c3','entrena-c4','entrena-c5'];
+  cards.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (tiene7d) {
+      el.classList.remove('entrena-card-locked');
+      el.querySelector('.entrena-lock-sm') && (el.querySelector('.entrena-lock-sm').style.display = 'none');
+    }
+  });
+  const lockIcon = document.getElementById('entrena-lock-icon');
+  if (lockIcon) lockIcon.style.display = tiene7d ? 'none' : '';
+  const sub7d = document.getElementById('entrena-7d-sub');
+  if (sub7d) sub7d.style.display = tiene7d ? 'none' : '';
+  const cta = document.getElementById('entrena-cta-7d');
+  if (cta) cta.style.display = tiene7d ? 'none' : 'block';
 }
 
 function showCelebration(key) {
@@ -6792,6 +7011,7 @@ function switchTab(tab) {
   if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); }
   if (tab === 'novedades') { renderNovedades(); }
+  if (tab === 'entrenamiento') { renderEntrenamientoTab(); }
   // La pestaña ERES solo aparece en el tab Inicio
   const eresTabEl = document.getElementById('eres-tab');
   if (eresTabEl) {
@@ -6807,8 +7027,9 @@ function switchTab(tab) {
     const el7d = document.getElementById('journey-7d-start');
     if (el7d) {
       const rect = el7d.getBoundingClientRect();
-      const inView = rect.top < window.innerHeight && rect.bottom > 0;
-      updateHeaderMode(inView ? '7d' : 'workshop');
+      // abyss visible = workshop; abyss above viewport (rect.bottom ≤ 0) = 7d
+      const abyssAbove = rect.bottom <= 0;
+      updateHeaderMode(abyssAbove ? '7d' : 'workshop');
     } else {
       updateHeaderMode('workshop');
     }

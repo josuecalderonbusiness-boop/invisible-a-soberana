@@ -4249,8 +4249,8 @@ async function initApp() {
   applyStreakSemanaColor();
   updateGemCounter();
   renderSectionsList();
-  // Header mode — siempre empezar en workshop; el observer corrige según scroll
-  updateHeaderMode('workshop');
+  // Header mode — 7D si tiene acceso, workshop si no; el observer corrige según scroll en workshop
+  updateHeaderMode(state.user && state.user.tiene7d ? '7d' : 'workshop');
   setupHeaderObserver();
   updateProgressUI();
   renderInstallSection();
@@ -5206,12 +5206,10 @@ function showJourneyToast(msg) {
 }
 
 function computeSemanaActiva() {
-  if (!(state.user && state.user.tiene7d)) return 0;
-  if (state.user.fecha7d) {
-    const dias = Math.floor((Date.now() - new Date(state.user.fecha7d).getTime()) / 86400000);
-    return Math.min(Math.floor(dias / 7) + 1, 4);
-  }
-  return 1; // tiene7d pero sin fecha → semana 1
+  if (!(state.user && state.user.tiene7d)) return 1; // sin acceso 7D → fallback semana 1
+  if (!state.user.fecha7d) return 1; // tiene7d pero sin fecha → semana 1
+  const dias = Math.floor((Date.now() - new Date(state.user.fecha7d)) / (1000 * 60 * 60 * 24));
+  return Math.min(Math.max(Math.floor(dias / 7) + 1, 1), 4);
 }
 
 function renderSectionsList() {

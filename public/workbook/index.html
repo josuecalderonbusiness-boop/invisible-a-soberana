@@ -3248,23 +3248,35 @@ async function fsCargarProgreso(email) {
     if (!doc.exists) return;
     const remote = doc.data();
 
-    // Merge completedSections (union: localStorage + Firestore)
+    // completedSections — unión (ambas fuentes válidas)
     if (Array.isArray(remote.completedSections)) {
-      const merged = Array.from(new Set([
+      state.completedSections = [...new Set([
         ...(state.completedSections || []),
         ...remote.completedSections
-      ]));
-      state.completedSections = merged;
+      ])];
     }
 
-    // Merge completed7d (Firestore wins para claves nuevas, localStorage para las existentes)
+    // completed7d — Firestore gana (sobreescribe localStorage)
     if (remote.completed7d && typeof remote.completed7d === 'object') {
-      state.completed7d = Object.assign({}, remote.completed7d, state.completed7d || {});
+      state.completed7d = {
+        ...(state.completed7d || {}),
+        ...remote.completed7d
+      };
+    }
+
+    // completedWeeks — Firestore gana
+    if (remote.completedWeeks && typeof remote.completedWeeks === 'object') {
+      state.completedWeeks = {
+        ...(state.completedWeeks || {}),
+        ...remote.completedWeeks
+      };
     }
 
     saveState();
     console.log('[Firestore] progreso cargado y merged');
-  } catch(e) { console.warn('[Firestore] fsCargarProgreso:', e); }
+  } catch(e) {
+    console.warn('[Firestore] Sin conexión — usando localStorage como fallback:', e);
+  }
 }
 
 // ═══════════════════════════════════════════

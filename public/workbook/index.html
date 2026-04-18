@@ -10,7 +10,7 @@
 <title>Código Soberana — Workbook</title>
 <link rel="manifest" href="/workbook/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -2674,6 +2674,71 @@
   }
   .notif-ios-hint.visible { display: block; }
 
+/* ── Final Workshop celebration ──────────────────────────────── */
+.fw-particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.fw-star {
+  position:absolute; pointer-events:none; color:#B8892A;
+  animation: twinkleFW ease-in-out infinite; opacity:0;
+}
+.fw-dot {
+  position:absolute; pointer-events:none; background:#B8892A;
+  border-radius:50%; animation: driftFW ease-in-out infinite; opacity:0;
+}
+.fw-icons { position:absolute; inset:0; pointer-events:none; }
+.fw-icon {
+  position:absolute; opacity:0;
+  animation: iconDrift ease-in-out infinite;
+}
+.fw-content {
+  position:relative; z-index:2; display:flex;
+  flex-direction:column; align-items:center;
+  padding:0 24px; text-align:center; width:100%;
+}
+.fw-cup {
+  margin-bottom:20px;
+  filter:drop-shadow(0 0 20px #B8892A66) drop-shadow(0 0 40px #B8892A33);
+  animation:cupFloat 3s ease-in-out infinite;
+}
+.fw-eyebrow {
+  font-family:'Jost',sans-serif; font-size:13px; font-weight:400;
+  letter-spacing:0.25em; color:#EDE3CE; opacity:0;
+  text-transform:uppercase; margin-bottom:4px;
+}
+.fw-headline { opacity:0; margin-bottom:0; line-height:1.1; }
+.fw-phrase {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:16px; color:#EDE3CE; opacity:0;
+  line-height:1.7; text-align:center; margin-top:16px;
+}
+.fw-binary {
+  font-family:'Jost',sans-serif; font-size:12px;
+  letter-spacing:0.15em; color:#B8892A; opacity:0; margin-top:12px;
+}
+.fw-cta {
+  background:#B8892A; color:#0F0A0B;
+  font-family:'Jost',sans-serif; font-weight:700; font-size:15px;
+  padding:16px 48px; border-radius:50px;
+  box-shadow:0 4px 30px #B8892A55;
+  margin-top:32px; border:none; cursor:pointer; opacity:0;
+  -webkit-tap-highlight-color:transparent;
+}
+@keyframes twinkleFW {
+  0%,100% { opacity:0; transform:scale(0.5) rotate(0deg); }
+  50% { opacity:var(--op,0.5); transform:scale(1.2) rotate(180deg); }
+}
+@keyframes driftFW {
+  0%,100% { transform:translateY(0); opacity:var(--op,0.3); }
+  50% { transform:translateY(-20px); opacity:var(--op2,0.15); }
+}
+@keyframes iconDrift {
+  0%,100% { transform:translateY(0px) rotate(0deg); }
+  50% { transform:translateY(-8px) rotate(5deg); }
+}
+@keyframes cupFloat {
+  0%,100% { transform:translateY(0px); }
+  50% { transform:translateY(-12px); }
+}
+
 /* ── Debug Panel ──────────────────────────────────────────────── */
 #debug-fab {
   position: fixed;
@@ -4345,7 +4410,7 @@ const CELEBRATION_DATA = {
     protocolLabel: 'PROTOCOLO DEL CARÁCTER ACTIVADO',
     title: 'Lo que Sostienes',
     subtitle: 'Protocolo del Carácter',
-    phrase: 'La soberanía no es poder sobre él.\nEs poder sobre ti misma. Una mujer que se\ngoverna no necesita gobernar a nadie más\npara ser respetada.',
+    phrase: 'La soberanía no es poder sobre él.\nEs poder sobre ti misma. Una mujer que se\ngobierna no necesita gobernar a nadie más\npara ser respetada.',
     gemType: 'workshop',
     iconSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9.3 9 10 5-.7 9-5 9-10V7L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>',
     cta: 'Seguir avanzando'
@@ -4606,6 +4671,52 @@ function renderEntrenamientoTab() {
   if (cta) cta.style.display = tiene7d ? 'none' : 'block';
 }
 
+let _fwBinaryInterval = null;
+
+function playCelebrationSound(tipo) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const schedule = (freqs, stagger, vol, dur) => {
+      freqs.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.frequency.value = freq;
+        const t0 = ctx.currentTime + i * stagger;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(vol, t0 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+        osc.start(t0); osc.stop(t0 + dur + 0.05);
+      });
+    };
+    if (tipo === 'protocolo') {
+      schedule([523.25, 659.25, 783.99], 0.12, 0.15, 0.4);
+    } else if (tipo === 'final_workshop') {
+      schedule([523.25, 659.25, 783.99, 987.77], 0.08, 0.12, 1.5);
+    } else if (tipo === 'final_semana') {
+      schedule([659.25, 987.77], 0.2, 0.13, 1.0);
+    }
+  } catch(e) {}
+}
+
+function _animateBinaryFlip(el) {
+  const target = '01001011 · 01010011';
+  el.style.opacity = '1';
+  const run = () => {
+    const arr = Array.from(target).map(() => '·');
+    el.textContent = arr.join('');
+    Array.from(target).forEach((ch, i) => {
+      setTimeout(() => {
+        arr[i] = ch;
+        el.textContent = arr.join('');
+      }, i * 50);
+    });
+  };
+  run();
+  clearInterval(_fwBinaryInterval);
+  _fwBinaryInterval = setInterval(run, 10000);
+}
+
 function showCelebration(key) {
   const cfg = CELEBRATION_DATA[key];
   if (!cfg) return;
@@ -4646,44 +4757,166 @@ function showCelebration(key) {
 
     document.body.appendChild(ov);
 
-    // Vibraciones coordinadas con la animación
-    try { navigator.vibrate([30]); } catch(e) {}
-    setTimeout(() => { try { navigator.vibrate([60,30,60]); } catch(e) {} }, 200);
-    setTimeout(() => { try { navigator.vibrate([100,20,80]); } catch(e) {} }, 600);
+    try { navigator.vibrate([100, 50, 100, 50, 200]); } catch(e) {}
+    try { playCelebrationSound('protocolo'); } catch(e) {}
     return;
   }
 
-  // ── Variantes FINAL_WORKSHOP y FINAL_SEMANA ──────────────────────
-  const isFinalWorkshop = cfg.variant === 'final_workshop';
-  const isFinalSemana = cfg.variant === 'final_semana';
+  // ── Variante FINAL_WORKSHOP ──────────────────────────────────────
+  if (cfg.variant === 'final_workshop') {
+    document.body.style.overflow = 'hidden';
 
-  let orbitHTML = '';
-  if (isFinalWorkshop) {
-    const colors = ['#60C8A0','#7EB8E8','#E87E9A','#A87EE8','#D4A843'];
-    orbitHTML = colors.map((c,i) => {
-      const startDeg = i * 72;
-      return `<div class="celeb-orbit-wrap" style="--orbit-start:${startDeg}deg;animation:gemOrbit 4s linear ${i*-0.8}s infinite">${_makeCelebGemSVG('hexagon', c, 28)}</div>`;
+    const starsHTML = Array.from({length: 35}, () => {
+      const sz = 10 + Math.random()*10, x = Math.random()*100, y = Math.random()*100;
+      const dur = 2 + Math.random()*3, delay = Math.random()*4, op = (0.3 + Math.random()*0.5).toFixed(2);
+      return `<div class="fw-star" style="left:${x}%;top:${y}%;font-size:${sz}px;--op:${op};animation-duration:${dur}s;animation-delay:${delay}s">✦</div>`;
     }).join('');
+    const dotsHTML = Array.from({length: 15}, () => {
+      const sz = 3 + Math.random()*3, x = Math.random()*100, y = Math.random()*100;
+      const dur = 4 + Math.random()*4, delay = Math.random()*4;
+      const op = (0.2 + Math.random()*0.3).toFixed(2), op2 = (parseFloat(op)*0.5).toFixed(2);
+      return `<div class="fw-dot" style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;--op:${op};--op2:${op2};animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
+    }).join('');
+
+    const iconsData = [
+      { x:20, y:15, d:0,   svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+      { x:50, y: 8, d:0.5, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><circle cx="12" cy="12" r="9"/></svg>' },
+      { x:78, y:14, d:1,   svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+      { x:88, y:35, d:1.5, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>' },
+      { x: 8, y:40, d:2,   svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>' },
+      { x:85, y:58, d:0.8, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' },
+      { x:12, y:62, d:1.2, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>' },
+      { x:82, y:78, d:2.5, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>' },
+      { x:48, y:88, d:0.3, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M12 2L15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8z"/></svg>' },
+      { x:15, y:82, d:1.8, svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>' }
+    ];
+    const floatingIconsHTML = iconsData.map(ic =>
+      `<div class="fw-icon" style="left:${ic.x}%;top:${ic.y}%;animation-delay:${ic.d}s;animation-duration:${3 + ic.d % 3}s">${ic.svg}</div>`
+    ).join('');
+
+    const cupSVG = `<svg width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cupGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F5D060"/><stop offset="50%" stop-color="#E8A820"/><stop offset="100%" stop-color="#B8892A"/>
+        </linearGradient>
+        <linearGradient id="cupLight" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFF0A0"/><stop offset="100%" stop-color="#E8A820"/>
+        </linearGradient>
+        <linearGradient id="stemGold" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#B8892A"/><stop offset="50%" stop-color="#F0C040"/><stop offset="100%" stop-color="#B8892A"/>
+        </linearGradient>
+      </defs>
+      <rect x="52" y="22" width="96" height="12" rx="4" fill="url(#cupGold)"/>
+      <path d="M58,34 Q52,80 68,108 Q84,130 100,134 Q116,130 132,108 Q148,80 142,34 Z" fill="url(#cupGold)"/>
+      <path d="M70,34 Q66,70 76,96 Q86,116 100,120 Q88,110 82,88 Q74,64 76,34 Z" fill="url(#cupLight)" opacity="0.5"/>
+      <path d="M130,34 Q136,70 128,96 Q118,116 100,120 Q112,110 120,88 Q128,64 124,34 Z" fill="#8A6010" opacity="0.35"/>
+      <path d="M58,46 Q30,46 28,70 Q26,94 52,98 L62,90 Q44,86 46,68 Q48,54 60,54 Z" fill="url(#cupGold)"/>
+      <path d="M142,46 Q170,46 172,70 Q174,94 148,98 L138,90 Q156,86 154,68 Q152,54 140,54 Z" fill="url(#cupGold)"/>
+      <polygon points="100,60 105,75 122,75 108,85 114,100 100,90 86,100 92,85 78,75 95,75" fill="#F5D060"/>
+      <polygon points="100,60 105,75 100,80 95,75" fill="#FFF0A0" opacity="0.7"/>
+      <rect x="88" y="134" width="24" height="22" rx="3" fill="url(#stemGold)"/>
+      <rect x="68" y="154" width="64" height="12" rx="4" fill="url(#cupGold)"/>
+      <rect x="60" y="164" width="80" height="10" rx="4" fill="url(#stemGold)"/>
+      <path d="M136,32 L138,26 L140,32 L146,34 L140,36 L138,42 L136,36 L130,34 Z" fill="white"/>
+      <path d="M148,50 L149,46 L150,50 L154,51 L150,52 L149,56 L148,52 L144,51 Z" fill="white" opacity="0.8"/>
+      <path d="M118,28 L119,25 L120,28 L123,29 L120,30 L119,33 L118,30 L115,29 Z" fill="white" opacity="0.6"/>
+    </svg>`;
+
+    ov.innerHTML = `
+      <div class="fw-particles">${starsHTML}${dotsHTML}</div>
+      <div class="fw-icons">${floatingIconsHTML}</div>
+      <div class="fw-content">
+        <div class="fw-cup" id="fw-cup">${cupSVG}</div>
+        <div class="fw-eyebrow" id="fw-eyebrow">TIENES EL</div>
+        <div class="fw-headline" id="fw-headline"><span style="font-family:'Jost',sans-serif;font-weight:800;font-size:38px;color:#EDE3CE;letter-spacing:0.05em;">CÓDIGO </span><span style="font-family:'Playfair Display',serif;font-style:italic;font-size:38px;color:#B8892A;text-shadow:0 0 30px #B8892A88,0 0 60px #B8892A44;">Soberana</span></div>
+        <div class="fw-phrase" id="fw-phrase">Lo que aprendiste aquí no es información.<br>Es el sistema que ya vive en ti.</div>
+        <div class="fw-binary" id="fw-binary">01001011 · 01010011</div>
+        <button class="fw-cta" id="fw-cta" onclick="closeCelebration('${key}');setTimeout(()=>switchTab('progreso'),250)">Ver mi Progreso →</button>
+      </div>`;
+
+    document.body.appendChild(ov);
+
+    const cup = ov.querySelector('#fw-cup');
+    const eyebrow = ov.querySelector('#fw-eyebrow');
+    const headline = ov.querySelector('#fw-headline');
+    const phrase = ov.querySelector('#fw-phrase');
+    const binaryEl = ov.querySelector('#fw-binary');
+    const ctaEl = ov.querySelector('#fw-cta');
+
+    // t=0: copa cae desde arriba
+    try { navigator.vibrate([50]); } catch(e) {}
+    cup.animate([
+      { transform:'translateY(-120px)', opacity:0 },
+      { transform:'translateY(0px)', opacity:1 }
+    ], { duration:600, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' });
+
+    // t=300: íconos fade in uno por uno
+    setTimeout(() => {
+      ov.querySelectorAll('.fw-icon').forEach((el, i) => {
+        el.animate([{ opacity:0 },{ opacity:0.6 }],
+          { duration:400, delay:i*60, easing:'ease-out', fill:'forwards' });
+      });
+    }, 300);
+
+    // t=800: eyebrow
+    setTimeout(() => {
+      eyebrow.animate([
+        { opacity:0, transform:'translateY(10px)' },
+        { opacity:0.7, transform:'translateY(0)' }
+      ], { duration:400, easing:'ease-out', fill:'forwards' });
+    }, 800);
+
+    // t=1000: headline slam
+    setTimeout(() => {
+      headline.animate([
+        { opacity:0, letterSpacing:'0.4em', transform:'translateY(8px)' },
+        { opacity:1, letterSpacing:'0em', transform:'translateY(0)' }
+      ], { duration:500, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' });
+    }, 1000);
+
+    // t=1300: frase
+    setTimeout(() => {
+      phrase.animate([
+        { opacity:0, transform:'translateY(12px)' },
+        { opacity:0.6, transform:'translateY(0)' }
+      ], { duration:500, easing:'ease-out', fill:'forwards' });
+    }, 1300);
+
+    // t=1500: binario
+    setTimeout(() => { _animateBinaryFlip(binaryEl); }, 1500);
+
+    // t=1800: botón
+    setTimeout(() => {
+      ctaEl.animate([
+        { opacity:0, transform:'translateY(20px)' },
+        { opacity:1, transform:'translateY(0)' }
+      ], { duration:500, easing:'cubic-bezier(0.34,1.56,0.64,1)', fill:'forwards' });
+    }, 1800);
+
+    try { navigator.vibrate([200, 80, 200, 80, 200, 80, 400]); } catch(e) {}
+    try { playCelebrationSound('final_workshop'); } catch(e) {}
+    return;
   }
 
+  // ── Variante FINAL_SEMANA ────────────────────────────────────────
+  const isFinalSemana = cfg.variant === 'final_semana';
+
   let particlesHTML = '';
-  if (isFinalWorkshop || isFinalSemana) {
+  if (isFinalSemana) {
     const pColors = ['#60C8A0','#D4A843','#7EB8E8','#E87E9A','#A87EE8','#ffffff'];
-    particlesHTML = Array.from({length: isFinalWorkshop ? 20 : 12}, (_,i) => {
+    particlesHTML = Array.from({length: 12}, (_,i) => {
       const c = pColors[i % pColors.length];
       const x = 10 + Math.random()*80, dur = 1.2 + Math.random()*1.6, delay = Math.random()*0.8;
       return `<div class="celeb-particle" style="left:${x}%;background:${c};animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
     }).join('');
   }
 
-  const gemSize = isFinalSemana ? 120 : 72;
   ov.innerHTML = `
     <div class="celeb-bg"></div>
     ${particlesHTML}
-    ${orbitHTML ? `<div class="celeb-orbit-container">${orbitHTML}</div>` : ''}
     <div class="celeb-content">
       <div class="celeb-gem-wrap" id="celeb-gem-wrap">
-        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor || '#D4A843', gemSize)}
+        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor || '#D4A843', 120)}
       </div>
       <div class="celeb-title">${cfg.title}</div>
       <div class="celeb-subtitle">${cfg.subtitle}</div>
@@ -4692,28 +4925,32 @@ function showCelebration(key) {
 
   document.body.appendChild(ov);
 
-  if (isFinalWorkshop || isFinalSemana) {
-    try { navigator.vibrate([100, 60, 100, 60, 200]); } catch(e) {}
+  if (isFinalSemana) {
+    try { navigator.vibrate([150, 60, 150, 60, 300]); } catch(e) {}
+    try { playCelebrationSound('final_semana'); } catch(e) {}
   }
 }
 
 function closeCelebration(key) {
   const ov = document.getElementById('celebration-overlay');
   if (!ov) return;
+  clearInterval(_fwBinaryInterval);
+  _fwBinaryInterval = null;
+  document.body.style.overflow = '';
   ov.style.animation = 'celebFadeOut .2s forwards';
   setTimeout(() => {
     if (ov.parentNode) ov.remove();
-    // Volar gema al contador
     const cfg = CELEBRATION_DATA[key] || {};
     if (cfg.variant === 'protocolo') {
       launchGemToCounter(key);
     } else {
       updateGemCounter();
     }
-    // Cambio 4: volver a tab inicio
-    const activeTab = document.querySelector('.tab-content.active');
-    if (!activeTab || activeTab.id !== 'tab-inicio') {
-      switchTab('inicio');
+    if (cfg.variant !== 'final_workshop') {
+      const activeTab = document.querySelector('.tab-content.active');
+      if (!activeTab || activeTab.id !== 'tab-inicio') {
+        switchTab('inicio');
+      }
     }
   }, 200);
 }
@@ -4729,13 +4966,14 @@ function launchGemToCounter(key) {
   const destY = rect.top + rect.height / 2;
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
+  const deltaX = destX - cx;
+  const deltaY = destY - cy;
 
-  // Buscar el ícono del protocolo
   const pDef = PROTOCOLS_DEF.find(p => key === 'workshop_' + p.key);
   const iconSvg = pDef ? pDef.iconSvg : (cfg.iconSvg || '');
 
   const flyDiv = document.createElement('div');
-  flyDiv.style.cssText = `position:fixed;z-index:9700;pointer-events:none;width:72px;height:72px;left:${cx-36}px;top:${cy-36}px;perspective:400px`;
+  flyDiv.style.cssText = `position:fixed;z-index:9700;pointer-events:none;width:72px;height:72px;left:${cx-36}px;top:${cy-36}px;perspective:600px`;
   flyDiv.innerHTML = `
     <div style="position:relative;width:72px;height:72px">
       ${makeGemSVG(cfg.gemType || 'workshop', 'done')}
@@ -4743,31 +4981,32 @@ function launchGemToCounter(key) {
     </div>`;
   document.body.appendChild(flyDiv);
 
-  // Fase 1: escalar + girar (400ms)
-  const phase1 = flyDiv.animate([
-    { transform: 'scale(1) rotateY(0deg)', opacity: 1 },
-    { transform: 'scale(1.3) rotateY(360deg)', opacity: 1 }
-  ], { duration: 400, easing: 'cubic-bezier(0.34,1.56,0.64,1)' });
+  // Vuelo en arco: escala grande visible → gira → arco hacia counter → impacto
+  const flight = flyDiv.animate([
+    { transform: 'translate(-50%,-50%) scale(1.4) rotateY(0deg)',   opacity: 1,   offset: 0 },
+    { transform: 'translate(-50%,-50%) scale(1.4) rotateY(360deg)', opacity: 1,   offset: 0.3 },
+    { transform: `translate(calc(-50% + ${deltaX * 0.5}px), calc(-50% + ${deltaY * 0.5 - 60}px)) scale(1.0) rotateY(540deg)`, opacity: 1, offset: 0.7 },
+    { transform: `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.4) rotateY(720deg)`, opacity: 0.9, offset: 1 }
+  ], { duration: 1200, easing: 'cubic-bezier(0.25,0.1,0.25,1)', fill: 'forwards' });
 
-  phase1.onfinish = () => {
-    // Fase 2: volar al gem-counter (600ms)
-    const dx = destX - cx;
-    const dy = destY - cy;
-    const phase2 = flyDiv.animate([
-      { transform: 'scale(1)', opacity: 1 },
-      { transform: `translate(${dx}px, ${dy}px) scale(0) rotateY(720deg)`, opacity: 0 }
-    ], { duration: 600, easing: 'cubic-bezier(0.4,0,0.2,1)', fill: 'forwards' });
+  // Ajustar origen del transform al centro del elemento
+  flyDiv.style.left = `${cx}px`;
+  flyDiv.style.top = `${cy}px`;
 
-    phase2.onfinish = () => {
-      flyDiv.remove();
-      try { navigator.vibrate([40]); } catch(e) {}
-      gemCounter.animate([
-        { transform: 'scale(1)' },
-        { transform: 'scale(1.4)' },
-        { transform: 'scale(1)' }
-      ], { duration: 300, easing: 'cubic-bezier(0.34,1.56,0.64,1)' });
-      updateGemCounter();
-    };
+  flight.onfinish = () => {
+    flyDiv.remove();
+    try { navigator.vibrate([80, 40, 80]); } catch(e) {}
+    // Flash dorado
+    gemCounter.style.transition = 'box-shadow 0.1s';
+    gemCounter.style.boxShadow = '0 0 20px #B8892A';
+    setTimeout(() => { gemCounter.style.boxShadow = ''; gemCounter.style.transition = ''; }, 300);
+    // Scale bounce
+    gemCounter.animate([
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.5)' },
+      { transform: 'scale(1)' }
+    ], { duration: 400, easing: 'cubic-bezier(0.34,1.56,0.64,1)' });
+    updateGemCounter();
   };
 }
 

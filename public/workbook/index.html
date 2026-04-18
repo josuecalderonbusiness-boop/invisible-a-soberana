@@ -5530,6 +5530,7 @@ function updateSectionPill(mode) {
   const pillLabel = document.getElementById('pill-label');
   const pillTitle = document.getElementById('pill-title');
   const weekSep   = document.getElementById('week-separator');
+  console.log('[PILL DOM]', { pill: !!pill, pillLabel: !!pillLabel, pillTitle: !!pillTitle, weekSep: !!weekSep, mode });
   if (!pill) return;
 
   if (mode === '7d' && state.user && state.user.tiene7d) {

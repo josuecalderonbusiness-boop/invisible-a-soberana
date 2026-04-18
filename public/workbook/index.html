@@ -5291,15 +5291,11 @@ function renderSectionsList() {
 
   bannerWrap.appendChild(wsBanner);
 
-  // Insert pill as first direct child of #tab-inicio (the scroll container's immediate child)
-  // so that position:sticky works correctly even when .app-main has overflow-x:hidden
-  const tabInicio = document.getElementById('tab-inicio');
+  // Insert pill at top of #sections-list — just before first journey node, after hero-banner
   const existingWrap = document.querySelector('.journey-banner-wrapper');
   if (existingWrap) existingWrap.remove();
-  if (tabInicio && tabInicio.firstChild) {
-    tabInicio.insertBefore(bannerWrap, tabInicio.firstChild);
-  } else if (tabInicio) {
-    tabInicio.appendChild(bannerWrap);
+  if (list.firstChild) {
+    list.insertBefore(bannerWrap, list.firstChild);
   } else {
     list.appendChild(bannerWrap);
   }
@@ -8083,22 +8079,11 @@ function switchTab(tab) {
   if (eresTabEl) {
     eresTabEl.style.display = (tab === 'inicio' && state.completedSections.includes('s6')) ? 'flex' : 'none';
   }
-  // Header mode
-  if (state.user && state.user.tiene7d) {
-    updateHeaderMode('7d');
-  } else if (tab !== 'inicio') {
-    updateHeaderMode('workshop');
-  } else {
-    // Re-check scroll position: if 7d section visible, stay in 7d mode
-    const el7d = document.getElementById('journey-7d-start');
-    if (el7d) {
-      const rect = el7d.getBoundingClientRect();
-      // abismo por encima del viewport (top < 0) = estamos en zona 7D
-      updateHeaderMode(rect.top < 0 ? '7d' : 'workshop');
-    } else {
-      updateHeaderMode('workshop');
-    }
+  // Header: solo tab inicio usa el header dinámico 7D; el resto siempre workshop
+  if (tab === 'inicio') {
     setupHeaderObserver();
+  } else {
+    updateHeaderMode('workshop');
   }
 }
 

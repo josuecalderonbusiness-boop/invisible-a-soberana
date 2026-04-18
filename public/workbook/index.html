@@ -1341,35 +1341,132 @@
     color: #D4AF6A;
   }
 
-  /* ── Duolingo-style section banner ── */
-  .journey-banner {
-    width: 100%;
-    background: var(--burgundy);
-    border-radius: 12px;
-    padding: 14px 20px;
-    margin: 20px 0;
+  /* ── Section pill banner ── */
+  .journey-banner-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    padding: 10px 16px 6px;
+    background: var(--burgundy-deep);
+  }
+  .journey-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 50px;
+    padding: 8px 20px 8px 16px;
+    position: relative;
   }
   .journey-banner-icon {
     flex-shrink: 0;
-    color: var(--gold);
+    color: rgba(237,227,206,0.85);
     display: flex; align-items: center;
   }
   .journey-banner-label {
     font-size: 9px;
     font-weight: 700;
-    color: var(--gold);
+    color: rgba(237,227,206,0.7);
     letter-spacing: .18em;
     text-transform: uppercase;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
   .journey-banner-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--cream);
     line-height: 1.2;
+  }
+  .journey-key-btn {
+    background: none;
+    border: none;
+    padding: 0 0 0 6px;
+    font-size: 15px;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .journey-key-btn:active { opacity: 1; transform: scale(1.15); }
+  .journey-week-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  /* ── Methodology modal ── */
+  .methodology-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .methodology-modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .methodology-modal {
+    background: rgba(15,10,11,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(184,137,42,0.3);
+    border-radius: 20px;
+    padding: 36px 28px 28px;
+    max-width: 360px;
+    width: 100%;
+    position: relative;
+    transform: scale(0.94);
+    transition: transform 0.25s;
+  }
+  .methodology-modal-overlay.open .methodology-modal {
+    transform: scale(1);
+  }
+  .methodology-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: rgba(237,227,206,0.45);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .methodology-modal-close:active { color: #EDE3CE; }
+  .methodology-modal-icon {
+    text-align: center;
+    font-size: 38px;
+    margin-bottom: 14px;
+  }
+  .methodology-modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #B8892A;
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .methodology-modal-text {
+    font-size: 14px;
+    color: rgba(237,227,206,0.78);
+    line-height: 1.75;
+    text-align: center;
   }
 
   /* ── 7D Journey section ── */
@@ -5099,21 +5196,55 @@ function renderSectionsList() {
   list.innerHTML = '';
   list.style.height = ''; // allow natural height for 7D content below
 
-  // ── Banner del Workshop (estilo Duolingo) ────────────────────
+  // ── Banner del Workshop (pill sticky) ────────────────────────
+  const tiene7d = state.user && state.user.tiene7d;
+  const semanaActiva = tiene7d ? 1 : 0; // TODO: calcular desde fecha7d en producción
+
+  // Color de la pill según semana activa
+  let pillBg = '#8B1A2F';
+  let pillBgImg = '';
+  if (tiene7d) {
+    if      (semanaActiva === 1) pillBg = '#2A5C42';
+    else if (semanaActiva === 2) pillBg = '#6B1A2A';
+    else if (semanaActiva === 3) pillBg = '#B8892A';
+    else if (semanaActiva === 4) { pillBg = ''; pillBgImg = 'linear-gradient(135deg, #B8892A, #1A3D2B)'; }
+  }
+
+  const bannerWrap = document.createElement('div');
+  bannerWrap.className = 'journey-banner-wrapper';
+
   const wsBanner = document.createElement('div');
   wsBanner.className = 'journey-banner';
-  wsBanner.style.margin = '0 16px 0';
+  if (pillBg)    wsBanner.style.background = pillBg;
+  if (pillBgImg) wsBanner.style.backgroundImage = pillBgImg;
+
+  const keyBtn = tiene7d
+    ? `<button class="journey-key-btn" onclick="openMethodologyModal(${semanaActiva})" title="Metodología de la semana">🗝️</button>`
+    : '';
+
   wsBanner.innerHTML = `
     <div class="journey-banner-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
         <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
       </svg>
     </div>
     <div>
       <div class="journey-banner-label">WORKSHOP</div>
       <div class="journey-banner-title">Código Soberana</div>
-    </div>`;
-  list.appendChild(wsBanner);
+    </div>
+    ${keyBtn}`;
+
+  bannerWrap.appendChild(wsBanner);
+
+  if (tiene7d && semanaActiva >= 1 && semanaActiva <= 4) {
+    const weekNames = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
+    const subtitle = document.createElement('div');
+    subtitle.className = 'journey-week-subtitle';
+    subtitle.textContent = `— ${weekNames[semanaActiva - 1]} —`;
+    bannerWrap.appendChild(subtitle);
+  }
+
+  list.appendChild(bannerWrap);
 
   // ── Workshop journey sub-container ───────────────────────────
   const workshopMap = document.createElement('div');
@@ -5315,6 +5446,60 @@ function renderSectionsList() {
 
   // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
   render7dJourney(list);
+}
+
+// ── Methodology modal ─────────────────────────────────────────────
+const METHODOLOGY_DATA = [
+  {
+    weekNum: '01',
+    title: 'Arquitecta de Realidad',
+    text: 'Esta semana tu mente deja de ser tu enemiga. Vas a descubrir que los conflictos que has tenido no nacieron en él — nacieron en el sistema de predicción que tu cerebro construyó sin pedirte permiso. Al terminar el domingo, vas a interpretar las mismas situaciones de una manera completamente diferente. Eso no se puede desaprender.'
+  },
+  {
+    weekNum: '02',
+    title: 'Gravedad Propia',
+    text: 'Esta semana trabajas lo que ninguna técnica de comunicación puede reemplazar: tu presencia. Las mujeres que generan respeto no lo piden. Lo proyectan desde un lugar interno que esta semana vas a identificar y a activar. Al terminar el domingo, sabrás exactamente desde dónde has estado operando — y desde dónde vas a operar de ahora en adelante.'
+  },
+  {
+    weekNum: '03',
+    title: 'Biología del Poder',
+    text: 'Esta semana el entrenamiento se vuelve concreto. Tu cuerpo, tus hormonas y tu relación con el dinero no son temas separados — son el mismo tema visto desde tres ángulos. Lo que descubras aquí va a explicar patrones que llevas años sin entender. Prepárate para respuestas incómodas y liberadoras al mismo tiempo.'
+  },
+  {
+    weekNum: '04',
+    title: 'El Código Final',
+    text: 'Esta es la semana que sostiene todo lo demás cuando todo lo demás falla. No es la más técnica. Es la más honesta. Vamos a trabajar propósito, perdón y la pregunta que más da miedo responder. El video de esta semana es el más personal que he grabado. No porque sea difícil — sino porque es verdad.'
+  }
+];
+
+function openMethodologyModal(semanaActiva) {
+  const data = METHODOLOGY_DATA[semanaActiva - 1];
+  if (!data) return;
+
+  let overlay = document.getElementById('methodology-modal-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'methodology-modal-overlay';
+    overlay.className = 'methodology-modal-overlay';
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeMethodologyModal(); });
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div class="methodology-modal">
+      <button class="methodology-modal-close" onclick="closeMethodologyModal()">×</button>
+      <div class="methodology-modal-icon">🗝️</div>
+      <div class="methodology-modal-title">Semana ${data.weekNum} — ${data.title}</div>
+      <div class="methodology-modal-text">${data.text}</div>
+    </div>`;
+
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeMethodologyModal() {
+  const overlay = document.getElementById('methodology-modal-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
 }
 
 // ── 7D Journey data ───────────────────────────────────────────────

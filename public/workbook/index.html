@@ -912,6 +912,47 @@
     animation: particleFall linear infinite;
   }
 
+  /* ── Masterclass screen ── */
+  #masterclass-screen {
+    position: fixed; inset: 0; z-index: 8000;
+    background: #0F0A0B;
+    display: none; flex-direction: column;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  #masterclass-screen.open { display: flex; }
+  .mc-screen-header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 14px 20px;
+    background: #0F0A0B;
+  }
+  .mc-close-btn {
+    background: none; border: none;
+    color: rgba(237,227,206,0.45); font-size: 26px;
+    cursor: pointer; padding: 4px 8px; line-height: 1;
+    font-family: 'Jost', sans-serif;
+  }
+  #masterclass-screen textarea::placeholder { color: rgba(237,227,206,0.2); }
+
+  /* ── Masterclass popup (desbloqueo) ── */
+  #masterclass-popup {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(0,0,0,0.92);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 24px;
+  }
+  #masterclass-popup.open { display: flex; }
+
+  @keyframes slideOutLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to   { transform: translateX(-100%); opacity: 0; }
+  }
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
   /* ── Celebration overlay ── */
   .celebration-overlay {
     position: fixed; inset: 0;
@@ -3135,6 +3176,19 @@
   </div>
 </div>
 
+<!-- ══ MASTERCLASS SCREEN ══ -->
+<div id="masterclass-screen">
+  <div class="mc-screen-header">
+    <button class="mc-close-btn" onclick="closeMasterclassScreen()">×</button>
+  </div>
+  <div id="masterclass-content"></div>
+</div>
+
+<!-- ══ MASTERCLASS POPUP (desbloqueo desde push) ══ -->
+<div id="masterclass-popup">
+  <div id="masterclass-popup-content"></div>
+</div>
+
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -3949,6 +4003,17 @@ async function initApp() {
 
   // Community toast — 1 vez por sesión, 1.5s después de entrar
   setTimeout(() => showCommunityToast(), 1500);
+
+  // URL param ?masterclass=N — desde notificación push de desbloqueo
+  const _mcParams = new URLSearchParams(window.location.search);
+  const _mcParam = _mcParams.get('masterclass');
+  if (_mcParam) {
+    const _mcN = parseInt(_mcParam);
+    history.replaceState({}, '', '/workbook');
+    if (_mcN >= 1 && _mcN <= 4 && localStorage.getItem(`soberana_popup_mc_s${_mcN}`) !== 'visto') {
+      setTimeout(() => popupDesbloqueoMasterclass(_mcN), 800);
+    }
+  }
 }
 
 function apply7dAccess() {
@@ -5291,186 +5356,321 @@ function mark7dDone(nodeKey) {
   renderSectionsList();
 }
 
-// ── Masterclass fullscreen (FIX 5) ───────────────────────────────
+// ── Masterclass system ───────────────────────────────────────────
 let _masterclassCountdown = null;
+let _mcCurrentEjIdx = 0;
+let _mcData = null;
+let _mcSemanaNum = null;
+let _mcNodeKey = null;
 
-function openMasterclassFullscreen({ dia, semana, nodeKey }) {
-  // Use lesson-view overlay reused as masterclass screen
-  const lv = document.getElementById('lesson-view');
-
-  // Header
-  document.getElementById('lesson-eyebrow').textContent = `LUNES · SEMANA 1 · MASTERCLASS`;
-  document.getElementById('lesson-eyebrow').style.color = semana.color;
-  document.getElementById('lesson-title-h').textContent = 'Arquitecta de Realidad';
-  document.querySelector('.lesson-header').style.background = '#0D1A14';
-  document.querySelector('.lesson-header').style.borderBottom = `1px solid ${semana.color}33`;
-  document.querySelector('.lesson-progress-bar').style.background = semana.bannerBg;
-  document.getElementById('lesson-prog-fill').style.background = semana.color;
-
-  // Determine if masterclass is available
-  // For now: available if tienen7d, else show countdown to a future date
-  // Using fecha7d day 1 = first Monday. If no fecha7d, show as coming soon.
-  const tiene7d = state.user && state.user.tiene7d;
-  let unlockDate = null;
-  if (tiene7d && state.user.fecha7d) {
-    // day 0 of program = fecha7d, masterclass day 1 = same day or next monday
-    unlockDate = new Date(state.user.fecha7d);
+async function openMasterclass(semanaNum, nodeKey) {
+  _mcSemanaNum = semanaNum;
+  _mcNodeKey = nodeKey;
+  const screen = document.getElementById('masterclass-screen');
+  const content = document.getElementById('masterclass-content');
+  content.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:200px;color:rgba(237,227,206,0.35);font-family:'Jost',sans-serif;font-size:13px;">Cargando…</div>`;
+  screen.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  try {
+    const snap = await db.collection('masterclasses').doc(`semana${semanaNum}`).get();
+    if (!snap.exists) {
+      content.innerHTML = `<div style="padding:40px;text-align:center;color:rgba(237,227,206,0.4);font-family:'Jost',sans-serif;font-size:13px;">Sin datos para esta semana.</div>`;
+      return;
+    }
+    _mcData = snap.data();
+    if (_mcData.activada) {
+      await showMasterclassActiva(_mcData, semanaNum, nodeKey);
+    } else {
+      showMasterclassBloqueada(_mcData, semanaNum);
+    }
+  } catch(e) {
+    console.warn('[MC] openMasterclass error:', e);
+    content.innerHTML = `<div style="padding:40px;text-align:center;color:rgba(237,227,206,0.4);font-family:'Jost',sans-serif;font-size:13px;">Sin conexión. Inténtalo de nuevo.</div>`;
   }
-  // For testing: masterclass is available if tiene7d (simplified)
-  const isAvailable = tiene7d;
+}
+
+function closeMasterclassScreen() {
+  clearInterval(_masterclassCountdown);
+  _masterclassCountdown = null;
+  document.getElementById('masterclass-screen').classList.remove('open');
+  document.getElementById('masterclass-content').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+function showMasterclassBloqueada(data, semanaNum) {
+  const activaEl = data.activaEl ? data.activaEl.toDate() : new Date(Date.now() + 7 * 86400000);
+  const fechaFmt = activaEl.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+  const yaAviso = localStorage.getItem(`soberana_aviso_s${semanaNum}`) === 'true';
+  document.getElementById('masterclass-content').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 24px 60px;">
+      <div style="width:100%;aspect-ratio:16/9;background:#1A1A1A;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:28px;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5" stroke-linecap="round" opacity="0.3" style="margin-bottom:12px;">
+          <rect x="2" y="7" width="15" height="11" rx="2"/><path d="M17 9l4-2v10l-4-2"/>
+        </svg>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:rgba(237,227,206,0.4);margin-bottom:6px;">Semana ${semanaNum} · ${data.titulo}</div>
+        <div style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(184,137,42,0.4);">Disponible el ${fechaFmt}</div>
+      </div>
+
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:36px;">
+        <div style="text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#EDE3CE;line-height:1" id="mc-cd-dd">--</div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;color:rgba(237,227,206,0.27);text-transform:uppercase;letter-spacing:.1em;margin-top:4px">días</div>
+        </div>
+        <div style="color:rgba(184,137,42,0.27);font-size:22px;padding-bottom:18px">·</div>
+        <div style="text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#EDE3CE;line-height:1" id="mc-cd-hh">--</div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;color:rgba(237,227,206,0.27);text-transform:uppercase;letter-spacing:.1em;margin-top:4px">horas</div>
+        </div>
+        <div style="color:rgba(184,137,42,0.27);font-size:22px;padding-bottom:18px">·</div>
+        <div style="text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#EDE3CE;line-height:1" id="mc-cd-mm">--</div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;color:rgba(237,227,206,0.27);text-transform:uppercase;letter-spacing:.1em;margin-top:4px">min</div>
+        </div>
+        <div style="color:rgba(184,137,42,0.27);font-size:22px;padding-bottom:18px">·</div>
+        <div style="text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#EDE3CE;line-height:1" id="mc-cd-ss">--</div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;color:rgba(237,227,206,0.27);text-transform:uppercase;letter-spacing:.1em;margin-top:4px">seg</div>
+        </div>
+      </div>
+
+      <button id="mc-aviso-btn" onclick="requestMasterclassNotify(this,${semanaNum})" style="
+        border:1px solid ${yaAviso ? 'transparent' : '#B8892A55'};
+        background:transparent;
+        color:${yaAviso ? '#96C7B3' : '#B8892A'};
+        font-family:'Jost',sans-serif;font-size:12px;
+        padding:14px 28px;border-radius:40px;
+        cursor:${yaAviso ? 'default' : 'pointer'};
+        margin-top:8px;
+      " ${yaAviso ? 'disabled' : ''}>
+        ${yaAviso ? '✓ Te avisaremos cuando esté lista' : 'Avisarme cuando esté disponible'}
+      </button>
+    </div>
+  `;
+
+  clearInterval(_masterclassCountdown);
+  const pad = n => String(n).padStart(2,'0');
+  function updateCD() {
+    const diff = activaEl - new Date();
+    if (diff <= 0) { clearInterval(_masterclassCountdown); return; }
+    const dd = document.getElementById('mc-cd-dd');
+    const hh = document.getElementById('mc-cd-hh');
+    const mm = document.getElementById('mc-cd-mm');
+    const ss = document.getElementById('mc-cd-ss');
+    if (dd) dd.textContent = pad(Math.floor(diff / 86400000));
+    if (hh) hh.textContent = pad(Math.floor((diff % 86400000) / 3600000));
+    if (mm) mm.textContent = pad(Math.floor((diff % 3600000) / 60000));
+    if (ss) ss.textContent = pad(Math.floor((diff % 60000) / 1000));
+  }
+  updateCD();
+  _masterclassCountdown = setInterval(updateCD, 1000);
+}
+
+async function requestMasterclassNotify(btn, semanaNum) {
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const email = state.user && state.user.email;
+  if (email) {
+    try {
+      await db.collection('notif_masterclass').doc(email).set({
+        semana: semanaNum, email,
+        solicitadoEn: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch(e) { console.warn('[MC] notif_masterclass write:', e); }
+  }
+  localStorage.setItem(`soberana_aviso_s${semanaNum}`, 'true');
+  btn.textContent = '✓ Te avisaremos cuando esté lista';
+  btn.style.color = '#96C7B3';
+  btn.style.borderColor = 'transparent';
+  if (typeof saveFcmToken === 'function') saveFcmToken();
+}
+
+async function showMasterclassActiva(data, semanaNum, nodeKey) {
+  _mcCurrentEjIdx = 0;
+  const ejercicios = (data.ejercicios || []).slice().sort((a, b) => a.orden - b.orden);
+  const email = state.user && state.user.email;
+  const respuestasPrevias = {};
+
+  if (email) {
+    try {
+      const snap = await db.collection('progreso').doc(email).collection('masterclassRespuestas').get();
+      snap.forEach(doc => {
+        const d = doc.data();
+        if (d.semana === semanaNum) respuestasPrevias[d.ejercicioId] = d.respuesta;
+      });
+    } catch(e) { console.warn('[MC] cargar respuestas:', e); }
+  }
+
+  let startIdx = ejercicios.findIndex(ej => !respuestasPrevias[ej.id]);
+  if (startIdx < 0) startIdx = ejercicios.length - 1;
+  _mcCurrentEjIdx = Math.max(0, startIdx);
+
   const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
 
-  const body = document.getElementById('lesson-body');
-  body.style.background = '#0D1A14';
-  body.style.minHeight = '100%';
-  body.style.padding = '24px 20px 40px';
-
-  if (!isAvailable) {
-    // ── Cuenta regresiva ──────────────────────────────────────────
-    const targetDate = unlockDate || new Date(Date.now() + 7 * 86400000);
-    body.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:40px">
-        <div style="color:#B8892A;margin-bottom:20px">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:8px">
-          Esta clase se activa el ${targetDate.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'})}
-        </div>
-        <div id="mc-countdown" style="display:flex;gap:16px;margin:24px 0 32px">
-          <div style="text-align:center"><div class="mc-cd-num" id="mc-dd">--</div><div class="mc-cd-label">días</div></div>
-          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
-          <div style="text-align:center"><div class="mc-cd-num" id="mc-hh">--</div><div class="mc-cd-label">horas</div></div>
-          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
-          <div style="text-align:center"><div class="mc-cd-num" id="mc-mm">--</div><div class="mc-cd-label">min</div></div>
-          <div style="text-align:center;color:#B8892A;font-size:28px;padding-top:4px">:</div>
-          <div style="text-align:center"><div class="mc-cd-num" id="mc-ss">--</div><div class="mc-cd-label">seg</div></div>
-        </div>
-        <div style="width:60px;height:1px;background:rgba(184,137,42,0.4);margin-bottom:24px"></div>
-        <div style="font-size:13px;color:rgba(237,227,206,0.7);margin-bottom:20px">¿Te avisamos cuando esté lista?</div>
-        <button id="mc-notify-btn" onclick="requestMasterclassNotify(this)" style="
-          width:100%;max-width:320px;
-          background:#2A5C42;border:none;border-radius:14px;
-          color:#fff;font-family:'Jost',sans-serif;
-          font-size:15px;font-weight:600;padding:16px 24px;cursor:pointer;
-        ">Sí, avísame cuando se active →</button>
+  document.getElementById('masterclass-content').innerHTML = `
+    <div style="padding-bottom:60px;">
+      <div style="width:100%;background:#000;overflow:hidden;">
+        <iframe
+          src="https://iframe.mediadelivery.net/embed/${data.bunnyLibraryId}/${data.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+          width="100%" style="aspect-ratio:16/9;display:block;border:none;"
+          allow="autoplay; fullscreen" loading="lazy"
+        ></iframe>
       </div>
-      <style>
-        .mc-cd-num{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#D4AF6A;line-height:1}
-        .mc-cd-label{font-size:10px;color:rgba(237,227,206,0.5);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
-      </style>
-    `;
-    // Check if already subscribed
-    if (localStorage.getItem('soberana_notify_masterclass_s1') === 'true') {
-      const btn = document.getElementById('mc-notify-btn');
-      if (btn) { btn.disabled = true; btn.textContent = '✓ Te avisaremos cuando esté disponible'; btn.style.opacity = '.6'; }
-    }
-    // Start countdown
-    clearInterval(_masterclassCountdown);
-    function updateCountdown() {
-      const diff = targetDate - Date.now();
-      if (diff <= 0) { clearInterval(_masterclassCountdown); return; }
-      const dd = Math.floor(diff / 86400000);
-      const hh = Math.floor((diff % 86400000) / 3600000);
-      const mm = Math.floor((diff % 3600000) / 60000);
-      const ss = Math.floor((diff % 60000) / 1000);
-      const pad = n => String(n).padStart(2,'0');
-      const el = (id) => document.getElementById(id);
-      if (el('mc-dd')) el('mc-dd').textContent = pad(dd);
-      if (el('mc-hh')) el('mc-hh').textContent = pad(hh);
-      if (el('mc-mm')) el('mc-mm').textContent = pad(mm);
-      if (el('mc-ss')) el('mc-ss').textContent = pad(ss);
-    }
-    updateCountdown();
-    _masterclassCountdown = setInterval(updateCountdown, 1000);
-
-  } else {
-    // ── Masterclass disponible ─────────────────────────────────────
-    body.innerHTML = `
-      <!-- Video placeholder -->
-      <div style="
-        width:100%;aspect-ratio:16/9;
-        background:#0D2418;
-        border:1px solid ${semana.color}55;
-        border-radius:14px;
-        display:flex;align-items:center;justify-content:center;
-        margin-bottom:24px;
-      ">
-        <div style="
-          width:64px;height:64px;border-radius:50%;
-          background:rgba(184,137,42,0.15);border:2px solid rgba(184,137,42,0.5);
-          display:flex;align-items:center;justify-content:center;
-        ">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <polygon points="5,3 19,12 5,21" fill="#B8892A"/>
-          </svg>
-        </div>
+      <div style="padding:16px 20px 0;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#EDE3CE;">${data.titulo}</div>
+        <div style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,0.27);margin-top:4px;">~${data.duracionMin || 40} min</div>
       </div>
-
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:6px">
-        Semana 1 — Masterclass
+      <div style="text-align:center;padding:28px 20px 12px;">
+        <span style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;text-transform:uppercase;letter-spacing:.15em;">✦ Ejercicios de refuerzo</span>
       </div>
-      <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">
-        ${dia.desc}
+      <div id="mc-ejercicios-wrap" style="overflow:hidden;position:relative;">
+        <div id="mc-ejercicio-card"></div>
       </div>
+    </div>
+  `;
 
-      <div style="margin-bottom:20px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${semana.color};margin-bottom:8px">Mis notas</div>
-        <textarea id="mc-notes" style="
-          width:100%;min-height:100px;
-          background:rgba(255,255,255,0.04);
-          border:1px solid rgba(255,255,255,0.1);
-          border-radius:12px;color:#EDE3CE;
-          font-family:'Jost',sans-serif;font-size:13px;
-          padding:12px 14px;resize:none;
-        " placeholder="Lo que más me impactó de esta masterclass...">${state.answers && state.answers['7d_mc_s1_notes'] || ''}</textarea>
+  mcRenderEjercicio(ejercicios, _mcCurrentEjIdx, respuestasPrevias, semanaNum, nodeKey, isDone);
+}
+
+function mcRenderEjercicio(ejercicios, idx, respuestasPrevias, semanaNum, nodeKey, isDone) {
+  const card = document.getElementById('mc-ejercicio-card');
+  if (!card) return;
+  const ejercicio = ejercicios[idx];
+  const total = ejercicios.length;
+  const esUltimo = idx === total - 1;
+  const localKey = `mc_s${semanaNum}_e${ejercicio.id}`;
+  const respGuardada = respuestasPrevias[ejercicio.id] || localStorage.getItem(localKey) || '';
+
+  card.innerHTML = `
+    <div style="background:rgba(255,255,255,0.03);border:0.5px solid rgba(184,137,42,0.13);border-radius:12px;padding:20px;margin:0 16px;">
+      <div style="font-family:'Jost',sans-serif;font-size:10px;color:rgba(237,227,206,0.27);margin-bottom:8px;">Ejercicio ${idx + 1} de ${total}</div>
+      <div style="background:rgba(184,137,42,0.13);height:2px;border-radius:1px;margin-bottom:16px;">
+        <div style="background:#B8892A;height:2px;border-radius:1px;width:${((idx + 1) / total * 100).toFixed(0)}%;transition:width .3s"></div>
       </div>
-
-      <button onclick="completeMasterclassS1('${nodeKey}')" style="
-        width:100%;background:${semana.color};border:none;border-radius:14px;
-        color:#fff;font-family:'Jost',sans-serif;
-        font-size:15px;font-weight:600;padding:16px;cursor:pointer;
-        ${isDone ? 'opacity:.6' : ''}
-      " ${isDone ? 'disabled' : ''}>
-        ${isDone ? '✓ Masterclass completada' : 'Completar Masterclass ✓'}
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:#EDE3CE;line-height:1.6;margin-bottom:16px;">${ejercicio.pregunta}</div>
+      <textarea id="mc-ta-${idx}" style="
+        background:rgba(255,255,255,0.04);border:0.5px solid rgba(184,137,42,0.2);border-radius:8px;
+        padding:12px;color:#EDE3CE;font-family:'Jost',sans-serif;font-size:14px;
+        min-height:100px;width:100%;resize:none;outline:none;box-sizing:border-box;
+      " placeholder="${ejercicio.placeholder || 'Escribe aquí...'}">${respGuardada}</textarea>
+      <button
+        onclick="_mcHandleNext(${idx})"
+        style="
+          margin-top:16px;width:100%;
+          ${esUltimo && !isDone
+            ? 'background:#B8892A;color:#0F0A0B;border:none;font-weight:600;'
+            : 'background:transparent;color:#B8892A;border:1px solid rgba(184,137,42,0.34);'}
+          font-family:\'Jost\',sans-serif;font-size:12px;
+          padding:12px 24px;border-radius:40px;cursor:pointer;
+        "
+      >
+        ${esUltimo ? (isDone ? '✓ Masterclass completada' : 'Completar Masterclass ✓') : 'Siguiente ejercicio →'}
       </button>
-    `;
-    // Persist notes on change
-    const notesEl = document.getElementById('mc-notes');
-    if (notesEl) notesEl.addEventListener('input', () => {
-      if (!state.answers) state.answers = {};
-      state.answers['7d_mc_s1_notes'] = notesEl.value;
-      saveState();
-    });
-  }
+    </div>
+  `;
 
-  lv.classList.add('open');
-  document.querySelector('.lesson-scroll').scrollTop = 0;
+  const ta = document.getElementById(`mc-ta-${idx}`);
+  if (ta) ta.addEventListener('input', () => localStorage.setItem(localKey, ta.value));
 }
 
-function requestMasterclassNotify(btn) {
-  if ('Notification' in window) {
-    Notification.requestPermission().then(perm => {
-      if (perm === 'granted') {
-        localStorage.setItem('soberana_notify_masterclass_s1', 'true');
-        btn.disabled = true;
-        btn.textContent = '✓ Te avisaremos cuando esté disponible';
-        btn.style.opacity = '.6';
-      }
-    });
+function _mcHandleNext(idx) {
+  const ta = document.getElementById(`mc-ta-${idx}`);
+  const texto = ta ? ta.value.trim() : '';
+  const ejercicios = (_mcData.ejercicios || []).slice().sort((a, b) => a.orden - b.orden);
+  const total = ejercicios.length;
+  const esUltimo = idx === total - 1;
+  const ejercicio = ejercicios[idx];
+  if (esUltimo) {
+    mcCompletar(_mcSemanaNum, ejercicio, texto, _mcNodeKey);
   } else {
-    localStorage.setItem('soberana_notify_masterclass_s1', 'true');
-    btn.disabled = true;
-    btn.textContent = '✓ Te avisaremos cuando esté disponible';
-    btn.style.opacity = '.6';
+    mcSiguiente(_mcSemanaNum, ejercicio, texto, idx, total, _mcNodeKey);
   }
 }
 
-function completeMasterclassS1(nodeKey) {
-  clearInterval(_masterclassCountdown);
+async function mcSiguiente(semanaNum, ejercicio, texto, idx, total, nodeKey) {
+  const email = state.user && state.user.email;
+  if (email) {
+    try {
+      await db.collection('progreso').doc(email).collection('masterclassRespuestas')
+        .doc(`s${semanaNum}_${ejercicio.id}`).set({
+          respuesta: texto, semana: semanaNum, ejercicioId: ejercicio.id,
+          guardadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch(e) { console.warn('[MC] guardar respuesta:', e); }
+  }
+
+  const card = document.getElementById('mc-ejercicio-card');
+  if (!card) return;
+  card.style.animation = 'slideOutLeft 300ms ease forwards';
+  await new Promise(r => setTimeout(r, 280));
+  _mcCurrentEjIdx = idx + 1;
+  const ejercicios = (_mcData.ejercicios || []).slice().sort((a, b) => a.orden - b.orden);
+  const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
+  mcRenderEjercicio(ejercicios, _mcCurrentEjIdx, {}, semanaNum, nodeKey, isDone);
+  card.style.animation = 'slideInRight 300ms ease forwards';
+  setTimeout(() => { if (card) card.style.animation = ''; }, 300);
+}
+
+async function mcCompletar(semanaNum, ejercicio, texto, nodeKey) {
+  const email = state.user && state.user.email;
+  if (email) {
+    try {
+      await db.collection('progreso').doc(email).collection('masterclassRespuestas')
+        .doc(`s${semanaNum}_${ejercicio.id}`).set({
+          respuesta: texto, semana: semanaNum, ejercicioId: ejercicio.id,
+          guardadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch(e) { console.warn('[MC] guardar última respuesta:', e); }
+  }
+  closeMasterclassScreen();
   mark7dDone(nodeKey);
-  closeLesson();
+}
+
+async function popupDesbloqueoMasterclass(semanaNum) {
+  const popup = document.getElementById('masterclass-popup');
+  const content = document.getElementById('masterclass-popup-content');
+  let titulo = `Semana ${semanaNum}`;
+  if (!_mcData || _mcData.semana !== semanaNum) {
+    try {
+      const snap = await db.collection('masterclasses').doc(`semana${semanaNum}`).get();
+      if (snap.exists) { _mcData = snap.data(); titulo = _mcData.titulo; }
+    } catch(e) {}
+  } else {
+    titulo = _mcData.titulo;
+  }
+  const gemTypes = ['sem1','sem2','sem3','sem4'];
+  const gemType = gemTypes[semanaNum - 1] || 'sem1';
+  const semana = SEMANAS_7D[semanaNum - 1];
+  const glowColor = semana ? semana.color : '#B8892A';
+  const gemHtml = makeGemSVG(gemType, 'current')
+    .replace('width="72"','width="100"').replace('height="72"','height="100"');
+
+  content.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 24px;">
+      <div class="gem-spin-wrap" style="width:100px;height:100px;margin-bottom:24px;filter:drop-shadow(0 0 24px ${glowColor}66);">
+        <div class="gem-spin-inner" style="width:100px;height:100px;">${gemHtml}</div>
+      </div>
+      <div style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px;">SEMANA ${semanaNum} DESBLOQUEADA</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#EDE3CE;margin-bottom:8px;">${titulo}</div>
+      <div style="font-family:'Jost',sans-serif;font-size:12px;color:#96C7B3;margin-bottom:32px;">Tu masterclass está lista</div>
+      <button onclick="_mcPopupAbrir(${semanaNum})" style="
+        background:#B8892A;color:#0F0A0B;border:none;
+        font-family:'Jost',sans-serif;font-size:13px;font-weight:600;
+        padding:16px 32px;border-radius:40px;cursor:pointer;
+      ">Ver mi Masterclass →</button>
+      <button onclick="document.getElementById('masterclass-popup').classList.remove('open')" style="
+        background:none;border:none;color:rgba(237,227,206,0.27);
+        font-family:'Jost',sans-serif;font-size:12px;
+        margin-top:16px;cursor:pointer;padding:8px;
+      ">Más tarde</button>
+    </div>
+  `;
+  popup.classList.add('open');
+}
+
+function _mcPopupAbrir(semanaNum) {
+  localStorage.setItem(`soberana_popup_mc_s${semanaNum}`, 'visto');
+  document.getElementById('masterclass-popup').classList.remove('open');
+  openMasterclass(semanaNum, `s${semanaNum}_lun`);
 }
 
 function render7dJourney(container) {
@@ -5635,11 +5835,11 @@ function render7dJourney(container) {
       stars7d.textContent = isDone ? '★★★' : '☆☆☆';
       wrap.appendChild(stars7d);
 
-      // FIX 1+5: Semana 1 lunes → fullscreen masterclass. Otras: drawer o modal.
+      // Lunes → masterclass screen (Firestore). Otros días → drawer.
       wrap.addEventListener('click', () => {
         bounceNode(node);
-        if (semNum === 1 && dia.key === 'lun' && semUnlocked) {
-          openMasterclassFullscreen({ dia, semana, nodeKey });
+        if (dia.key === 'lun' && semUnlocked) {
+          openMasterclass(semNum, nodeKey);
         } else {
           open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });
         }

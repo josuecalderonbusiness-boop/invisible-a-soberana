@@ -1,6 +1,7 @@
 const { setGlobalOptions } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, Timestamp } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
@@ -370,6 +371,105 @@ exports.checkAndNotify = onRequest({ maxInstances: 10 }, (req, res) => {
     }
   });
 });
+
+// ── activarMasterclassSemanal ────────────────────────────────────────────────
+
+exports.activarMasterclassSemanal = onSchedule(
+  { schedule: "0 8 * * 1", timeZone: "America/Bogota", maxInstances: 1 },
+  async () => {
+    const db = getFirestore();
+    const messaging = getMessaging();
+    const ahora = Timestamp.now();
+
+    const masterclassesSnap = await db
+      .collection("masterclasses")
+      .where("activada", "==", false)
+      .where("activaEl", "<=", ahora)
+      .get();
+
+    if (masterclassesSnap.empty) {
+      console.log("[activarMasterclassSemanal] Ninguna masterclass pendiente de activar.");
+      return;
+    }
+
+    for (const doc of masterclassesSnap.docs) {
+      const data = doc.data();
+      const semana = data.semana;
+      const titulo = data.titulo || `Semana ${semana}`;
+
+      // 1. Marcar como activada
+      await doc.ref.update({ activada: true });
+
+      // 2. Leer tokens
+      const tokensSnap = await db.collection("tokens").get();
+      const tokens = tokensSnap.docs.map(d => d.data().token).filter(Boolean);
+
+      if (tokens.length === 0) {
+        console.log(`[activarMasterclassSemanal] Semana ${semana} activada — 0 tokens.`);
+        continue;
+      }
+
+      // 3. Enviar push en batches de 500
+      const message = {
+        data: {
+          tipo: "masterclass",
+          title: `Tu Masterclass está lista 🎬`,
+          body: `Semana ${semana} · ${titulo} — Ya puedes verla`,
+          tag: `masterclass_s${semana}`,
+          url: `/workbook?masterclass=${semana}`,
+          icon: "/workbook/icon-192.png",
+          badge: "/workbook/icon-192.png"
+        },
+        android: {
+          priority: "high",
+          notification: { color: "#B8892A", channelId: "masterclass" }
+        },
+        apns: { payload: { aps: { sound: "default" } } },
+        webpush: { headers: { Urgency: "high" } }
+      };
+
+      const BATCH = 500;
+      let enviadas = 0;
+      const invalidIds = [];
+
+      for (let i = 0; i < tokens.length; i += BATCH) {
+        const batch = tokensSnap.docs
+          .slice(i, i + BATCH)
+          .map(d => ({ docId: d.id, token: d.data().token }))
+          .filter(t => !!t.token);
+
+        const resp = await messaging.sendEachForMulticast({
+          ...message,
+          tokens: batch.map(t => t.token)
+        });
+
+        resp.responses.forEach((r, idx) => {
+          if (r.success) {
+            enviadas++;
+          } else {
+            const code = r.error && r.error.code;
+            if (
+              code === "messaging/registration-token-not-registered" ||
+              code === "messaging/invalid-registration-token" ||
+              code === "messaging/invalid-argument"
+            ) {
+              invalidIds.push(batch[idx].docId);
+            }
+          }
+        });
+      }
+
+      // 4. Limpiar tokens inválidos
+      if (invalidIds.length > 0) {
+        await Promise.all(
+          invalidIds.map(id => db.collection("tokens").doc(id).delete())
+        );
+      }
+
+      console.log(`[activarMasterclassSemanal] Semana ${semana} activada. Push: ${enviadas}/${tokens.length}.`);
+    }
+  }
+);
 
 // ── onEventoProgreso ──────────────────────────────────────────────────────────
 

@@ -2,20 +2,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Tokens FCM — solo lectura/escritura desde el propio cliente
+    match /rachas/{email} {
+      allow read, write: if true;
+    }
+
+    match /comunidad/{docId} {
+      allow read: if true;
+      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    }
+
+    match /logros/{email} {
+      allow read, write: if true;
+    }
+
     match /tokens/{email} {
       allow read, write: if true;
     }
 
-    // Log de notificaciones — solo admin/functions
-    match /notif_log/{email} {
-      allow read, write: if false;
-    }
-
-    // Eventos de progreso — trigger de Cloud Function
     match /eventos/{email}/secciones/{seccionId} {
       allow read, write: if true;
     }
 
+    match /notif_log/{email} {
+      allow read, write: if true;
+    }
+
+    match /progreso/{email} {
+      allow read, write: if true;
+    }
+
+    match /progreso/{email}/masterclassRespuestas/{docId} {
+      allow read, write: if true;
+    }
+
+    match /notif_masterclass/{email} {
+      allow read, write: if true;
+    }
+
+    match /masterclasses/{semanaId} {
+      allow read: if true;
+      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    }
+
+    match /cohortes/{cohorteId} {
+      allow read: if true;
+      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    }
   }
 }

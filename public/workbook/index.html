@@ -3203,6 +3203,70 @@ async function fsReadLogros(email) {
   return null;
 }
 
+// ── Progreso persistente en Firestore ────────────────────────────
+
+async function fsGuardarSeccion(email, secId, tipo) {
+  if (!email) return;
+  try {
+    await db.collection('progreso').doc(email).set({
+      completedSections: firebase.firestore.FieldValue.arrayUnion(secId),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    console.log('[Firestore] seccion guardada:', secId);
+  } catch(e) { console.warn('[Firestore] fsGuardarSeccion:', e); }
+}
+
+async function fsGuardarDia7d(email, semana, diaKey) {
+  if (!email) return;
+  try {
+    await db.collection('progreso').doc(email).set({
+      [`completed7d.${diaKey}`]: new Date().toISOString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    console.log('[Firestore] dia 7D guardado:', diaKey);
+  } catch(e) { console.warn('[Firestore] fsGuardarDia7d:', e); }
+}
+
+async function fsGuardarSemana7d(email, semanaNum, diasCompletados) {
+  if (!email) return;
+  try {
+    await db.collection('progreso').doc(email).set({
+      [`completedWeeks.s${semanaNum}`]: {
+        completedAt: new Date().toISOString(),
+        diasCompletados
+      },
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    console.log('[Firestore] semana 7D guardada:', semanaNum);
+  } catch(e) { console.warn('[Firestore] fsGuardarSemana7d:', e); }
+}
+
+async function fsCargarProgreso(email) {
+  if (!email) return;
+  try {
+    const doc = await db.collection('progreso').doc(email).get();
+    if (!doc.exists) return;
+    const remote = doc.data();
+
+    // Merge completedSections (union: localStorage + Firestore)
+    if (Array.isArray(remote.completedSections)) {
+      const merged = Array.from(new Set([
+        ...(state.completedSections || []),
+        ...remote.completedSections
+      ]));
+      state.completedSections = merged;
+    }
+
+    // Merge completed7d (Firestore wins para claves nuevas, localStorage para las existentes)
+    if (remote.completed7d && typeof remote.completed7d === 'object') {
+      state.completed7d = Object.assign({}, remote.completed7d, state.completed7d || {});
+    }
+
+    saveState();
+    console.log('[Firestore] progreso cargado y merged');
+  } catch(e) { console.warn('[Firestore] fsCargarProgreso:', e); }
+}
+
 // ═══════════════════════════════════════════
 // FCM — NOTIFICACIONES PUSH
 // ═══════════════════════════════════════════
@@ -3812,24 +3876,28 @@ function showAccesoDenegado(email) {
 // ═══════════════════════════════════════════
 // APP INIT
 // ═══════════════════════════════════════════
-function initApp() {
+async function initApp() {
   document.getElementById('screen-splash').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
-  
+
   const first = state.user.name.split(' ')[0];
   const initial = first[0].toUpperCase();
-  
+
   document.getElementById('hero-name').textContent = first;
   document.getElementById('avatar-btn').textContent = initial;
   document.getElementById('profile-avatar').textContent = initial;
   document.getElementById('profile-name').textContent = state.user.name;
   document.getElementById('profile-email').textContent = state.user.email;
-  
+
   // Random daily quote
   const q = CONFRONTATION_QUOTES[Math.floor(Math.random() * CONFRONTATION_QUOTES.length)];
   document.querySelector('#daily-quote .confrontation-text').textContent = q.text;
   document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
-  
+
+  // Merge progreso remoto con localStorage antes de renderizar
+  const _initEmail = state.user && state.user.email;
+  if (_initEmail) await fsCargarProgreso(_initEmail);
+
   updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
   applyStreakSemanaColor();
   updateGemCounter();
@@ -5192,12 +5260,18 @@ function mark7dDone(nodeKey) {
   if (drawer) drawer.style.display = 'none';
   if (isNew) {
     publish7dAutoPost(nodeKey);
-    // Detectar si se completó una semana completa
-    const match = nodeKey.match(/7d_s(\d+)_d\d+/);
+    const _fsEmail = state.user && state.user.email;
+    // Persistir día en Firestore
+    const match = nodeKey.match(/7d_s(\d+)_d(\d+)/);
     if (match) {
       const sem = parseInt(match[1]);
+      const dia = parseInt(match[2]);
+      if (_fsEmail) fsGuardarDia7d(_fsEmail, sem, nodeKey);
+      // Detectar si se completó una semana completa
       const weekDone = [1,2,3,4,5,6,7].every(d => state.completed7d[`7d_s${sem}_d${d}`]);
       if (weekDone) {
+        const diasCompletados = Object.keys(state.completed7d).filter(k => k.startsWith(`7d_s${sem}_`));
+        if (_fsEmail) fsGuardarSemana7d(_fsEmail, sem, diasCompletados);
         setTimeout(() => showCelebration(`semana${sem}_final`), 600);
       }
     }
@@ -6592,6 +6666,9 @@ function saveLesson(secId) {
   if (isNewCompletion) {
     state.completedSections.push(secId);
     publishAutoPost(secId); // post automático en comunidad
+    // Persistir en Firestore (fuente de verdad)
+    const _fsEmail = state.user && state.user.email;
+    if (_fsEmail) fsGuardarSeccion(_fsEmail, secId, 'workshop');
   }
 
   saveState();

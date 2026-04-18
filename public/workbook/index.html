@@ -8786,6 +8786,13 @@ if ('serviceWorker' in navigator) {
       <button class="debug-btn" onclick="dbgAct('header_workshop')">Header modo Workshop</button>
       <button class="debug-btn" onclick="dbgAct('header_7d')">Header modo 7D</button>
 
+      <div class="debug-section-label">── PILL DE SECCIÓN ──</div>
+      <button class="debug-btn" onclick="dbgAct('pill_workshop')">Pill → Workshop</button>
+      <button class="debug-btn" onclick="dbgAct('pill_s1')">Pill → Semana 1 (verde)</button>
+      <button class="debug-btn" onclick="dbgAct('pill_s2')">Pill → Semana 2 (vino)</button>
+      <button class="debug-btn" onclick="dbgAct('pill_s3')">Pill → Semana 3 (dorado)</button>
+      <button class="debug-btn" onclick="dbgAct('pill_s4')">Pill → Semana 4 (gradiente)</button>
+
       <div class="debug-section-label">── SISTEMA ──</div>
       <button class="debug-btn" style="color:#E87E9A;border-color:#E87E9A22;" onclick="dbgAct('close_debug')">Cerrar debug</button>
     `;
@@ -8865,6 +8872,32 @@ if ('serviceWorker' in navigator) {
       case 'header_7d':
         updateHeaderMode('7d');
         break;
+
+      case 'pill_workshop':
+        updateSectionPill('workshop');
+        showToast('Pill → Workshop');
+        break;
+
+      case 'pill_s1':
+      case 'pill_s2':
+      case 'pill_s3':
+      case 'pill_s4': {
+        const semNum = parseInt(action.slice(-1));
+        const s = _SEMANAS_PILL[semNum];
+        const pill = document.getElementById('section-pill');
+        const pillLabel = document.getElementById('pill-label');
+        const pillTitle = document.getElementById('pill-title');
+        const weekSep = document.getElementById('week-separator');
+        if (pill && s) {
+          pill.style.background = s.bg || 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
+          pill.dataset.mode = 'semana' + semNum;
+          if (pillLabel) pillLabel.textContent = s.label;
+          if (pillTitle) pillTitle.textContent = s.titulo;
+          if (weekSep) { weekSep.style.display = 'flex'; weekSep.textContent = s.sep; }
+        }
+        showToast(`Pill → Semana ${semNum}`);
+        break;
+      }
 
       case 'close_debug':
         localStorage.removeItem('soberana_debug');

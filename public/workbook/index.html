@@ -706,8 +706,8 @@
     100% { transform: rotateY(360deg); }
   }
   @keyframes gemGlowPulse {
-    0%,100% { filter: drop-shadow(0 0 4px currentColor); opacity: 1; }
-    50%     { filter: drop-shadow(0 0 18px currentColor); opacity: 0.88; }
+    0%,100% { filter: drop-shadow(0 0 8px var(--glow)); }
+    50%      { filter: drop-shadow(0 0 20px var(--glow)) drop-shadow(0 0 40px var(--glow2)); }
   }
   .gem-spin-wrap {
     perspective: 400px;
@@ -2716,8 +2716,6 @@
 }
 .fw-cup {
   margin-bottom:20px;
-  filter:drop-shadow(0 0 20px #B8892A66) drop-shadow(0 0 40px #B8892A33);
-  animation:cupFloat 3s ease-in-out infinite;
 }
 .fw-eyebrow {
   font-family:'Jost',sans-serif; font-size:13px; font-weight:400;
@@ -4781,39 +4779,11 @@ function showCelebration(key) {
       `<div class="fw-icon" style="left:${ic.x}%;top:${ic.y}%;animation-delay:${ic.d}s;animation-duration:${3 + ic.d % 3}s">${ic.svg}</div>`
     ).join('');
 
-    const cupSVG = `<svg width="140" height="140" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="cupGold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#F5D060"/><stop offset="50%" stop-color="#E8A820"/><stop offset="100%" stop-color="#B8892A"/>
-        </linearGradient>
-        <linearGradient id="cupLight" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FFF0A0"/><stop offset="100%" stop-color="#E8A820"/>
-        </linearGradient>
-        <linearGradient id="stemGold" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#B8892A"/><stop offset="50%" stop-color="#F0C040"/><stop offset="100%" stop-color="#B8892A"/>
-        </linearGradient>
-      </defs>
-      <rect x="52" y="22" width="96" height="12" rx="4" fill="url(#cupGold)"/>
-      <path d="M58,34 Q52,80 68,108 Q84,130 100,134 Q116,130 132,108 Q148,80 142,34 Z" fill="url(#cupGold)"/>
-      <path d="M70,34 Q66,70 76,96 Q86,116 100,120 Q88,110 82,88 Q74,64 76,34 Z" fill="url(#cupLight)" opacity="0.5"/>
-      <path d="M130,34 Q136,70 128,96 Q118,116 100,120 Q112,110 120,88 Q128,64 124,34 Z" fill="#8A6010" opacity="0.35"/>
-      <path d="M58,46 Q30,46 28,70 Q26,94 52,98 L62,90 Q44,86 46,68 Q48,54 60,54 Z" fill="url(#cupGold)"/>
-      <path d="M142,46 Q170,46 172,70 Q174,94 148,98 L138,90 Q156,86 154,68 Q152,54 140,54 Z" fill="url(#cupGold)"/>
-      <polygon points="100,60 105,75 122,75 108,85 114,100 100,90 86,100 92,85 78,75 95,75" fill="#F5D060"/>
-      <polygon points="100,60 105,75 100,80 95,75" fill="#FFF0A0" opacity="0.7"/>
-      <rect x="88" y="134" width="24" height="22" rx="3" fill="url(#stemGold)"/>
-      <rect x="68" y="154" width="64" height="12" rx="4" fill="url(#cupGold)"/>
-      <rect x="60" y="164" width="80" height="10" rx="4" fill="url(#stemGold)"/>
-      <path d="M136,32 L138,26 L140,32 L146,34 L140,36 L138,42 L136,36 L130,34 Z" fill="white"/>
-      <path d="M148,50 L149,46 L150,50 L154,51 L150,52 L149,56 L148,52 L144,51 Z" fill="white" opacity="0.8"/>
-      <path d="M118,28 L119,25 L120,28 L123,29 L120,30 L119,33 L118,30 L115,29 Z" fill="white" opacity="0.6"/>
-    </svg>`;
-
     ov.innerHTML = `
       <div class="fw-particles">${starsHTML}${dotsHTML}</div>
       <div class="fw-icons">${floatingIconsHTML}</div>
       <div class="fw-content">
-        <div class="fw-cup" id="fw-cup">${cupSVG}</div>
+        <div class="fw-cup" id="fw-cup"><img src="/workbook/assets/gemas/copa-soberana.png" style="width:140px;height:140px;object-fit:contain;filter:drop-shadow(0 0 20px #B8892A88) drop-shadow(0 0 40px #B8892A44);animation:gemFloat 3s ease-in-out infinite;" /></div>
         <div class="fw-headline" id="fw-headline"><span style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:42px;color:#EDE3CE;letter-spacing:0.05em;display:block;text-align:center;">CÓDIGO</span><span style="font-family:'Playfair Display',serif;font-style:italic;font-size:44px;color:#B8892A;text-shadow:0 0 30px #B8892A88,0 0 60px #B8892A44;display:block;text-align:center;">Soberana</span></div>
         <div class="fw-phrase" id="fw-phrase">Lo que aprendiste aquí no es información.<br>Es el sistema que ya vive en ti.</div>
         <div class="fw-binary" id="fw-binary">01001011 · 01010011</div>
@@ -6198,6 +6168,22 @@ function _protocoloEstado(p) {
   return done ? 'unlocked' : 'locked-7d-pending';
 }
 
+function _protocolGemImg(p, isUnlocked) {
+  const _pgMap = {
+    workshop: { file:'gema-workshop.png', glow:'#B8892A' },
+    sem1:     { file:'gema-semana1.png',  glow:'#96C7B3' },
+    sem2:     { file:'gema-semana2.png',  glow:'#F9B95C' },
+    sem3:     { file:'gema-semana3.png',  glow:'#B8892A' },
+    sem4:     { file:'gema-corona.png',   glow:'#B8892A' }
+  };
+  const key = p.tipo === 'workshop' ? 'workshop' : `sem${p.semNum}`;
+  const m = _pgMap[key] || _pgMap.workshop;
+  if (isUnlocked) {
+    return `<img src="/workbook/assets/gemas/${m.file}" style="width:56px;height:56px;object-fit:contain;--glow:${m.glow}88;--glow2:${m.glow}44;filter:drop-shadow(0 0 10px ${m.glow}88) drop-shadow(0 0 20px ${m.glow}44);animation:gemGlowPulse 2s ease-in-out infinite;" />`;
+  }
+  return `<img src="/workbook/assets/gemas/${m.file}" style="width:56px;height:56px;object-fit:contain;filter:saturate(0) brightness(0.25);" />`;
+}
+
 function renderProtocolos() {
   const container = document.getElementById('protocolos-list');
   if (!container) return;
@@ -6236,7 +6222,7 @@ function renderProtocolos() {
 
     html += `
       <div class="${cardClass}" ${onClick}>
-        <div class="protocolo-icon">${p.icon}</div>
+        <div class="protocolo-icon">${_protocolGemImg(p, isUnlocked)}</div>
         <div class="protocolo-info">
           <div class="protocolo-titulo">${p.titulo}</div>
           <div class="protocolo-sub">${p.subtitulo}</div>

@@ -60,7 +60,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // ── Cache (PWA) ───────────────────────────────────────────────────
-const CACHE_NAME = 'soberana-v28';
+const CACHE_NAME = 'soberana-v29';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',
@@ -88,7 +88,24 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const req = event.request;
+
+  // Network First para index.html — siempre sirve versión nueva si hay red
+  if (req.url.includes('index.html') || req.destination === 'document') {
+    event.respondWith(
+      fetch(req)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
+          return response;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Cache First para el resto de assets
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(req).then(response => response || fetch(req))
   );
 });

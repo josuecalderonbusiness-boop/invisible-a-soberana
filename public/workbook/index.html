@@ -259,6 +259,24 @@
     color: var(--cream);
     line-height: 1;
     transition: color 300ms ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: default;
+  }
+  #header-program-name {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    display: block;
   }
   .header-title-sub {
     font-size: 9px;
@@ -2655,6 +2673,86 @@
     display: none;
   }
   .notif-ios-hint.visible { display: block; }
+
+/* ── Debug Panel ──────────────────────────────────────────────── */
+#debug-fab {
+  position: fixed;
+  bottom: 80px;
+  left: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1a0a0f;
+  border: 1px solid #B8892A55;
+  z-index: 8500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#debug-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 8550;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+#debug-backdrop.open { opacity: 1; pointer-events: all; }
+#debug-drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #0F0A0B;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid #B8892A33;
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 8600;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(0.32,0.72,0,1);
+}
+#debug-drawer.open { transform: translateY(0); }
+.debug-drag-bar {
+  width: 36px; height: 4px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.debug-panel-title {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  color: #B8892A;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+.debug-section-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  color: rgba(184,137,42,0.5);
+  letter-spacing: 0.08em;
+  margin: 16px 0 8px;
+}
+.debug-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid #B8892A22;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #EDE3CE;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+}
+.debug-btn:active { background: rgba(255,255,255,0.08); }
 </style>
 </head>
 <body>
@@ -2697,7 +2795,7 @@
     <!-- Header -->
     <div class="app-header" id="app-header">
       <div class="header-brand">
-        <span class="header-title-main" id="header-program-name">Código Soberana</span>
+        <button class="header-title-main" id="header-program-name">Código Soberana</button>
         <span class="header-title-sub" id="header-program-sub">0/9</span>
       </div>
       <div class="header-right">
@@ -3943,6 +4041,15 @@ function showAccesoDenegado(email) {
 // APP INIT
 // ═══════════════════════════════════════════
 async function initApp() {
+  const _urlParams = new URLSearchParams(window.location.search);
+  if (_urlParams.get('debug') === 'true') {
+    localStorage.setItem('soberana_debug', 'true');
+    history.replaceState({}, '', '/workbook');
+  }
+  if (localStorage.getItem('soberana_debug') === 'true' && window.initDebugPanel) {
+    window.initDebugPanel();
+  }
+
   document.getElementById('screen-splash').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
 
@@ -8266,6 +8373,152 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
+
+// ═══════════════════════════════════════════
+// DEBUG PANEL — debe estar ANTES del boot
+// ═══════════════════════════════════════════
+(function() {
+  function _createFab() {
+    if (document.getElementById('debug-fab')) return;
+    const fab = document.createElement('button');
+    fab.id = 'debug-fab';
+    fab.textContent = '🧪';
+    fab.setAttribute('aria-label', 'Panel de pruebas');
+    fab.addEventListener('click', _openDrawer);
+    document.body.appendChild(fab);
+  }
+
+  function _removeFab() {
+    const fab = document.getElementById('debug-fab');
+    if (fab) fab.remove();
+  }
+
+  function _openDrawer() {
+    if (document.getElementById('debug-backdrop')) return;
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'debug-backdrop';
+    backdrop.addEventListener('click', _closeDrawer);
+    document.body.appendChild(backdrop);
+
+    const drawer = document.createElement('div');
+    drawer.id = 'debug-drawer';
+    drawer.innerHTML = `
+      <div class="debug-drag-bar"></div>
+      <div class="debug-panel-title">Panel de pruebas</div>
+
+      <div class="debug-section-label">── CELEBRACIONES WORKSHOP ──</div>
+      <button class="debug-btn" onclick="dbgAct('workshop_s5')">Protocolo Mental (s5)</button>
+      <button class="debug-btn" onclick="dbgAct('workshop_s6')">Protocolo Emocional (s6)</button>
+      <button class="debug-btn" onclick="dbgAct('workshop_s7')">Protocolo del Carácter (s7)</button>
+      <button class="debug-btn" onclick="dbgAct('workshop_final')">Workshop completo (s9)</button>
+
+      <div class="debug-section-label">── CELEBRACIONES 7D ──</div>
+      <button class="debug-btn" onclick="dbgAct('gema_dia_s1')">Gema día — Semana 1</button>
+      <button class="debug-btn" onclick="dbgAct('semana1_final')">Protocolo Semana 1</button>
+      <button class="debug-btn" onclick="dbgAct('semana2_final')">Protocolo Semana 2</button>
+      <button class="debug-btn" onclick="dbgAct('semana3_final')">Protocolo Semana 3</button>
+      <button class="debug-btn" onclick="dbgAct('semana4_final')">Protocolo Semana 4</button>
+
+      <div class="debug-section-label">── MASTERCLASS ──</div>
+      <button class="debug-btn" onclick="dbgAct('mc_bloqueada_s1')">Masterclass bloqueada — Semana 1</button>
+      <button class="debug-btn" onclick="dbgAct('mc_activa_s1')">Masterclass activa — Semana 1</button>
+
+      <div class="debug-section-label">── HEADER ──</div>
+      <button class="debug-btn" onclick="dbgAct('header_workshop')">Header modo Workshop</button>
+      <button class="debug-btn" onclick="dbgAct('header_7d')">Header modo 7D</button>
+
+      <div class="debug-section-label">── SISTEMA ──</div>
+      <button class="debug-btn" style="color:#E87E9A;border-color:#E87E9A22;" onclick="dbgAct('close_debug')">Cerrar debug</button>
+    `;
+
+    let _swipeStartY = 0;
+    drawer.addEventListener('touchstart', e => { _swipeStartY = e.touches[0].clientY; }, { passive: true });
+    drawer.addEventListener('touchmove', e => {
+      if (e.touches[0].clientY - _swipeStartY > 60) _closeDrawer();
+    }, { passive: true });
+
+    document.body.appendChild(drawer);
+    requestAnimationFrame(() => {
+      backdrop.classList.add('open');
+      drawer.classList.add('open');
+    });
+  }
+
+  function _closeDrawer() {
+    const backdrop = document.getElementById('debug-backdrop');
+    const drawer = document.getElementById('debug-drawer');
+    if (!backdrop || !drawer) return;
+    backdrop.classList.remove('open');
+    drawer.classList.remove('open');
+    setTimeout(() => { backdrop.remove(); drawer.remove(); }, 300);
+  }
+
+  window.dbgAct = async function(action) {
+    switch (action) {
+      case 'workshop_s5':
+      case 'workshop_s6':
+      case 'workshop_s7':
+      case 'workshop_final':
+      case 'semana1_final':
+      case 'semana2_final':
+      case 'semana3_final':
+      case 'semana4_final':
+        showCelebration(action);
+        break;
+
+      case 'gema_dia_s1': {
+        const base = CELEBRATION_DATA['gema_dia_generico'];
+        CELEBRATION_DATA['_dbg_gema'] = { ...base, title: 'Semana 1 · Lunes', gemColor: '#2A5C42' };
+        showCelebration('_dbg_gema');
+        delete CELEBRATION_DATA['_dbg_gema'];
+        break;
+      }
+
+      case 'mc_bloqueada_s1':
+      case 'mc_activa_s1': {
+        _closeDrawer();
+        const screen = document.getElementById('masterclass-screen');
+        const content = document.getElementById('masterclass-content');
+        content.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:200px;color:rgba(237,227,206,0.35);font-family:\'Jost\',sans-serif;font-size:13px;">Cargando…</div>';
+        screen.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        try {
+          const snap = await db.collection('masterclasses').doc('semana1').get();
+          if (!snap.exists) {
+            content.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(237,227,206,0.4);font-family:\'Jost\',sans-serif;font-size:13px;">Sin datos para semana 1.</div>';
+            break;
+          }
+          if (action === 'mc_bloqueada_s1') {
+            showMasterclassBloqueada(snap.data(), 1);
+          } else {
+            await showMasterclassActiva(snap.data(), 1, null);
+          }
+        } catch(e) {
+          content.innerHTML = `<div style="padding:40px;text-align:center;color:rgba(237,227,206,0.4);font-family:'Jost',sans-serif;font-size:13px;">Error: ${e.message}</div>`;
+        }
+        break;
+      }
+
+      case 'header_workshop':
+        updateHeaderMode('workshop');
+        break;
+
+      case 'header_7d':
+        updateHeaderMode('7d');
+        break;
+
+      case 'close_debug':
+        localStorage.removeItem('soberana_debug');
+        _removeFab();
+        _closeDrawer();
+        showToast('Modo debug desactivado');
+        break;
+    }
+  };
+
+  window.initDebugPanel = function() { _createFab(); };
+})();
 
 if (loadState() && state.user) {
   maybeShowNotifScreen();

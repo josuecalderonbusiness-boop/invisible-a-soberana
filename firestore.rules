@@ -29,10 +29,9 @@ service cloud.firestore {
 
     match /progreso/{email} {
       allow read, write: if true;
-    }
-
-    match /progreso/{email}/masterclassRespuestas/{docId} {
-      allow read, write: if true;
+      match /{subcollection}/{docId} {
+        allow read, write: if true;
+      }
     }
 
     match /notif_masterclass/{email} {

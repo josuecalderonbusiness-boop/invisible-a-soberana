@@ -4245,6 +4245,29 @@ async function initApp() {
   const _initEmail = state.user && state.user.email;
   if (_initEmail) await fsCargarProgreso(_initEmail);
 
+  // ── Reconciliar tiene7d ──────────────────────────────────────
+  // Fix para usuarios que compraron 7D después de su primer login:
+  // su localStorage tiene tiene7d:false pero Firestore ya tiene progreso 7D.
+  if (state.user && !state.user.tiene7d) {
+    // 1. Inmediato: si hay progreso 7D en Firestore, ya tienen acceso
+    if (state.completed7d && Object.keys(state.completed7d).length > 0) {
+      console.log('[BOOT] tiene7d reconciliado vía completed7d');
+      state.user.tiene7d = true;
+      saveState();
+    } else if (_initEmail) {
+      // 2. Re-verificar con Sheets (usuarios nuevos en 7D sin progreso aún)
+      try {
+        const _r7d = await fetch(`${SHEETS_URL}?action=verificar7d&email=${encodeURIComponent(_initEmail)}`);
+        const _j7d = await _r7d.json();
+        if (_j7d.ok) {
+          console.log('[BOOT] tiene7d reconciliado vía Sheets');
+          state.user.tiene7d = true;
+          saveState();
+        }
+      } catch(e) { /* silently fail — usar valor cacheado */ }
+    }
+  }
+
   updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
   applyStreakSemanaColor();
   updateGemCounter();

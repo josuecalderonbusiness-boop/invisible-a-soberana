@@ -5526,28 +5526,35 @@ const _SEMANAS_PILL = {
 };
 
 function updateSectionPill(mode) {
-  const pill      = document.getElementById('section-pill');
-  const pillLabel = document.getElementById('pill-label');
-  const pillTitle = document.getElementById('pill-title');
-  const weekSep   = document.getElementById('week-separator');
-  console.log('[PILL DOM]', { pill: !!pill, pillLabel: !!pillLabel, pillTitle: !!pillTitle, weekSep: !!weekSep, mode });
+  const pill        = document.getElementById('section-pill');
+  const pillLabel   = document.getElementById('pill-label');
+  const pillTitle   = document.getElementById('pill-title');
+  const weekSep     = document.getElementById('week-separator');
   if (!pill) return;
 
-  if (mode === '7d' && state.user && state.user.tiene7d) {
-    const sem = computeSemanaActiva();
-    const s = _SEMANAS_PILL[sem] || _SEMANAS_PILL[1];
-    pill.style.background = s.bg || 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
-    if (pillLabel) pillLabel.textContent = s.label;
-    if (pillTitle) pillTitle.textContent = s.titulo;
-    pill.dataset.mode = 'semana' + sem;
-    if (weekSep) { weekSep.style.display = 'flex'; weekSep.textContent = s.sep; }
-  } else {
-    pill.style.background = '#8B1A2F';
-    if (pillLabel) pillLabel.textContent = 'WORKSHOP · CÓDIGO SOBERANA';
-    if (pillTitle) pillTitle.textContent = 'Código Soberana';
-    pill.dataset.mode = 'workshop';
-    if (weekSep) weekSep.style.display = 'none';
+  const configs = {
+    'workshop': { bg: '#8B1A2F',  label: 'WORKSHOP · CÓDIGO SOBERANA',  title: 'Código Soberana',        sep: null },
+    'semana1':  { bg: '#2A5C42',  label: 'SEMANA 1 · SOBERANA 7D',       title: 'Arquitecta de Realidad', sep: '— Arquitecta de Realidad —' },
+    'semana2':  { bg: '#6B1A2A',  label: 'SEMANA 2 · SOBERANA 7D',       title: 'Gravedad Propia',        sep: '— Gravedad Propia —' },
+    'semana3':  { bg: '#B8892A',  label: 'SEMANA 3 · SOBERANA 7D',       title: 'Biología del Poder',     sep: '— Biología del Poder —' },
+    'semana4':  { bg: null, gradient: 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)',
+                  label: 'SEMANA 4 · SOBERANA 7D', title: 'El Código Final', sep: '— El Código Final —' },
+  };
+
+  const cfg = configs[mode] || configs['workshop'];
+
+  pill.style.background = cfg.gradient || cfg.bg;
+  pill.dataset.mode = mode;
+
+  if (pillLabel) pillLabel.textContent = cfg.label;
+  if (pillTitle) pillTitle.textContent = cfg.title;
+
+  if (weekSep) {
+    weekSep.style.display = cfg.sep ? 'flex' : 'none';
+    if (cfg.sep) weekSep.textContent = cfg.sep;
   }
+
+  console.log('[PILL APLICADO]', mode, cfg.gradient || cfg.bg);
 }
 
 // ── Methodology modal ─────────────────────────────────────────────

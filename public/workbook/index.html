@@ -4295,6 +4295,12 @@ async function initApp() {
       setTimeout(() => popupDesbloqueoMasterclass(_mcN), 800);
     }
   }
+
+  // Pill — forzar estado correcto al final del boot, después de que el observer puede haber interferido
+  const _bootPillMode = (state.user && state.user.tiene7d)
+    ? 'semana' + computeSemanaActiva()
+    : 'workshop';
+  updateSectionPill(_bootPillMode);
 }
 
 function apply7dAccess() {
@@ -4440,7 +4446,11 @@ function updateHeaderMode(mode) {
     if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-workshop.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #B8892A88)'; }
     if (gemLabel) gemLabel.style.color = '#B8892A';
   }
-  updateSectionPill(mode);
+  // Pill siempre sigue al estado real del usuario, no al modo del header
+  const _pillMode = (state.user && state.user.tiene7d)
+    ? 'semana' + computeSemanaActiva()
+    : 'workshop';
+  updateSectionPill(_pillMode);
 }
 
 function setupHeaderObserver() {
@@ -8041,6 +8051,12 @@ function switchTab(tab) {
   if (tab === 'progreso') { updateProgressUI(); }
   if (tab === 'novedades') { renderNovedades(); }
   if (tab === 'entrenamiento') { renderEntrenamientoTab(); }
+  if (tab === 'inicio') {
+    const _tabPillMode = (state.user && state.user.tiene7d)
+      ? 'semana' + computeSemanaActiva()
+      : 'workshop';
+    updateSectionPill(_tabPillMode);
+  }
   // La pestaña ERES solo aparece en el tab Inicio
   const eresTabEl = document.getElementById('eres-tab');
   if (eresTabEl) {

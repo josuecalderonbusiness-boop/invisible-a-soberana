@@ -4440,6 +4440,7 @@ function updateHeaderMode(mode) {
     if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-workshop.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #B8892A88)'; }
     if (gemLabel) gemLabel.style.color = '#B8892A';
   }
+  updateSectionPill(mode);
 }
 
 function setupHeaderObserver() {
@@ -5204,6 +5205,15 @@ function showJourneyToast(msg) {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+function computeSemanaActiva() {
+  if (!(state.user && state.user.tiene7d)) return 0;
+  if (state.user.fecha7d) {
+    const dias = Math.floor((Date.now() - new Date(state.user.fecha7d).getTime()) / 86400000);
+    return Math.min(Math.floor(dias / 7) + 1, 4);
+  }
+  return 1; // tiene7d pero sin fecha → semana 1
+}
+
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
   list.innerHTML = '';
@@ -5211,59 +5221,65 @@ function renderSectionsList() {
 
   // ── Banner del Workshop (pill sticky) ────────────────────────
   const tiene7d = state.user && state.user.tiene7d;
-  const semanaActiva = tiene7d ? 1 : 0; // TODO: calcular desde fecha7d en producción
+  const semanaActiva = computeSemanaActiva();
 
-  // Color de la pill según semana activa
+  // Color inicial de la pill (workshop por defecto; updateSectionPill ajusta según scroll)
   let pillBg = '#8B1A2F';
   if (tiene7d) {
     if      (semanaActiva === 1) pillBg = '#2A5C42';
     else if (semanaActiva === 2) pillBg = '#6B1A2A';
     else if (semanaActiva === 3) pillBg = '#B8892A';
-    else if (semanaActiva === 4) pillBg = 'linear-gradient(135deg, #B8892A, #1A3D2B)';
+    else if (semanaActiva === 4) pillBg = 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
   }
 
   const keySVG = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
     <defs>
-      <linearGradient id="keyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="keyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
         <stop offset="100%" stop-color="rgba(255,255,255,0.35)"/>
       </linearGradient>
     </defs>
-    <path fill="url(#keyGradient)" d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+    <path fill="url(#keyGrad)" d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
   </svg>`;
 
   const weekNames7d = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
-  const pillLabel = tiene7d && semanaActiva >= 1
-    ? `SEMANA 0${semanaActiva} · SOBERANA 7D`
+  const initLabel = tiene7d && semanaActiva >= 1
+    ? `SEMANA ${semanaActiva} · SOBERANA 7D`
     : 'WORKSHOP · CÓDIGO SOBERANA';
-  const pillTitle = tiene7d && semanaActiva >= 1
+  const initTitle = tiene7d && semanaActiva >= 1
     ? weekNames7d[semanaActiva - 1]
     : 'Código Soberana';
+  const initMode = tiene7d && semanaActiva >= 1 ? `semana${semanaActiva}` : 'workshop';
 
   const bannerWrap = document.createElement('div');
   bannerWrap.className = 'journey-banner-wrapper';
 
   const wsBanner = document.createElement('div');
+  wsBanner.id = 'section-pill';
   wsBanner.className = 'journey-banner';
   wsBanner.style.background = pillBg;
+  wsBanner.dataset.mode = initMode;
 
   wsBanner.innerHTML = `
     <div class="journey-banner-text">
-      <div class="journey-banner-label">${pillLabel}</div>
-      <div class="journey-banner-title">${pillTitle}</div>
+      <div id="pill-label" class="journey-banner-label">${initLabel}</div>
+      <div id="pill-title" class="journey-banner-title">${initTitle}</div>
     </div>
-    <button class="journey-key-btn" onclick="openMethodologyModal(${semanaActiva})" title="Metodología">
+    <button class="journey-key-btn" onclick="openMethodologyModal()" title="Metodología">
       ${keySVG}
     </button>`;
 
   bannerWrap.appendChild(wsBanner);
 
+  const subtitle = document.createElement('div');
+  subtitle.id = 'week-separator';
+  subtitle.className = 'journey-week-subtitle';
   if (tiene7d && semanaActiva >= 1 && semanaActiva <= 4) {
-    const subtitle = document.createElement('div');
-    subtitle.className = 'journey-week-subtitle';
     subtitle.textContent = `— ${weekNames7d[semanaActiva - 1]} —`;
-    bannerWrap.appendChild(subtitle);
+  } else {
+    subtitle.style.display = 'none';
   }
+  bannerWrap.appendChild(subtitle);
 
   list.appendChild(bannerWrap);
 
@@ -5469,34 +5485,61 @@ function renderSectionsList() {
   render7dJourney(list);
 }
 
-// ── Methodology modal ─────────────────────────────────────────────
-const METHODOLOGY_DATA = [
-  {
-    label: null,
-    title: 'Código Soberana',
-    text: 'Este es tu punto de partida. Lo que estás a punto de descubrir no es información nueva — es un sistema que ya vive en ti. Esta semana vas a nombrar lo que siempre supiste pero nunca pudiste articular.'
-  },
-  {
-    label: 'Semana 01',
-    title: 'Arquitecta de Realidad',
-    text: 'Esta semana tu mente deja de ser tu enemiga. Vas a descubrir que los conflictos que has tenido no nacieron en él — nacieron en el sistema de predicción que tu cerebro construyó sin pedirte permiso. Al terminar el domingo, vas a interpretar las mismas situaciones de una manera completamente diferente. Eso no se puede desaprender.'
-  },
-  {
-    label: 'Semana 02',
-    title: 'Gravedad Propia',
-    text: 'Esta semana trabajas lo que ninguna técnica de comunicación puede reemplazar: tu presencia. Las mujeres que generan respeto no lo piden. Lo proyectan desde un lugar interno que esta semana vas a identificar y a activar. Al terminar el domingo, sabrás exactamente desde dónde has estado operando — y desde dónde vas a operar de ahora en adelante.'
-  },
-  {
-    label: 'Semana 03',
-    title: 'Biología del Poder',
-    text: 'Esta semana el entrenamiento se vuelve concreto. Tu cuerpo, tus hormonas y tu relación con el dinero no son temas separados — son el mismo tema visto desde tres ángulos. Lo que descubras aquí va a explicar patrones que llevas años sin entender. Prepárate para respuestas incómodas y liberadoras al mismo tiempo.'
-  },
-  {
-    label: 'Semana 04',
-    title: 'El Código Final',
-    text: 'Esta es la semana que sostiene todo lo demás cuando todo lo demás falla. No es la más técnica. Es la más honesta. Vamos a trabajar propósito, perdón y la pregunta que más da miedo responder. El video de esta semana es el más personal que he grabado. No porque sea difícil — sino porque es verdad.'
+// ── updateSectionPill ─────────────────────────────────────────────
+const _SEMANAS_PILL = {
+  1: { label: 'SEMANA 1 · SOBERANA 7D', titulo: 'Arquitecta de Realidad', bg: '#2A5C42',      sep: '— Arquitecta de Realidad —' },
+  2: { label: 'SEMANA 2 · SOBERANA 7D', titulo: 'Gravedad Propia',         bg: '#6B1A2A',      sep: '— Gravedad Propia —' },
+  3: { label: 'SEMANA 3 · SOBERANA 7D', titulo: 'Biología del Poder',       bg: '#B8892A',      sep: '— Biología del Poder —' },
+  4: { label: 'SEMANA 4 · SOBERANA 7D', titulo: 'El Código Final',          bg: null,           sep: '— El Código Final —' },
+};
+
+function updateSectionPill(mode) {
+  const pill      = document.getElementById('section-pill');
+  const pillLabel = document.getElementById('pill-label');
+  const pillTitle = document.getElementById('pill-title');
+  const weekSep   = document.getElementById('week-separator');
+  if (!pill) return;
+
+  if (mode === '7d' && state.user && state.user.tiene7d) {
+    const sem = computeSemanaActiva();
+    const s = _SEMANAS_PILL[sem] || _SEMANAS_PILL[1];
+    pill.style.background = s.bg || 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)';
+    if (pillLabel) pillLabel.textContent = s.label;
+    if (pillTitle) pillTitle.textContent = s.titulo;
+    pill.dataset.mode = 'semana' + sem;
+    if (weekSep) { weekSep.style.display = 'flex'; weekSep.textContent = s.sep; }
+  } else {
+    pill.style.background = '#8B1A2F';
+    if (pillLabel) pillLabel.textContent = 'WORKSHOP · CÓDIGO SOBERANA';
+    if (pillTitle) pillTitle.textContent = 'Código Soberana';
+    pill.dataset.mode = 'workshop';
+    if (weekSep) weekSep.style.display = 'none';
   }
-];
+}
+
+// ── Methodology modal ─────────────────────────────────────────────
+const METODOLOGIA_TEXTOS = {
+  workshop: {
+    titulo: 'Código Soberana',
+    texto: 'Este es tu punto de partida. Lo que estás a punto de descubrir no es información nueva — es un sistema que ya vive en ti. Esta semana vas a nombrar lo que siempre supiste pero nunca pudiste articular.'
+  },
+  semana1: {
+    titulo: 'Semana 1 — Arquitecta de Realidad',
+    texto: 'Esta semana tu mente deja de ser tu enemiga. Vas a descubrir que los conflictos que has tenido no nacieron en él — nacieron en el sistema de predicción que tu cerebro construyó sin pedirte permiso. Al terminar el domingo, vas a interpretar las mismas situaciones de una manera completamente diferente. Eso no se puede desaprender.'
+  },
+  semana2: {
+    titulo: 'Semana 2 — Gravedad Propia',
+    texto: 'Esta semana trabajas lo que ninguna técnica de comunicación puede reemplazar: tu presencia. Las mujeres que generan respeto no lo piden. Lo proyectan desde un lugar interno que esta semana vas a identificar y a activar. Al terminar el domingo, sabrás exactamente desde dónde has estado operando — y desde dónde vas a operar de ahora en adelante.'
+  },
+  semana3: {
+    titulo: 'Semana 3 — Biología del Poder',
+    texto: 'Esta semana el entrenamiento se vuelve concreto. Tu cuerpo, tus hormonas y tu relación con el dinero no son temas separados — son el mismo tema visto desde tres ángulos. Lo que descubras aquí va a explicar patrones que llevas años sin entender. Prepárate para respuestas incómodas y liberadoras al mismo tiempo.'
+  },
+  semana4: {
+    titulo: 'Semana 4 — El Código Final',
+    texto: 'Esta es la semana que sostiene todo lo demás cuando todo lo demás falla. No es la más técnica. Es la más honesta. Vamos a trabajar propósito, perdón y la pregunta que más da miedo responder. El video de esta semana es el más personal que he grabado. No porque sea difícil — sino porque es verdad.'
+  }
+};
 
 const _KEY_SVG_MODAL = `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24">
   <defs>
@@ -5508,9 +5551,10 @@ const _KEY_SVG_MODAL = `<svg xmlns="http://www.w3.org/2000/svg" width="40" heigh
   <path fill="url(#keyGradientModal)" d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
 </svg>`;
 
-function openMethodologyModal(semanaActiva) {
-  const data = METHODOLOGY_DATA[semanaActiva];
-  if (!data) return;
+function openMethodologyModal() {
+  const pill = document.getElementById('section-pill');
+  const mode = (pill && pill.dataset.mode) || 'workshop';
+  const data = METODOLOGIA_TEXTOS[mode] || METODOLOGIA_TEXTOS.workshop;
 
   let overlay = document.getElementById('methodology-modal-overlay');
   if (!overlay) {
@@ -5521,16 +5565,14 @@ function openMethodologyModal(semanaActiva) {
     document.body.appendChild(overlay);
   }
 
-  const titleText = data.label ? `${data.label} — ${data.title}` : data.title;
-
   overlay.innerHTML = `
     <div class="methodology-modal">
       <div class="methodology-modal-header">
         <div class="methodology-modal-icon">${_KEY_SVG_MODAL}</div>
         <button class="methodology-modal-close" onclick="closeMethodologyModal()">×</button>
       </div>
-      <div class="methodology-modal-title">${titleText}</div>
-      <div class="methodology-modal-text">${data.text}</div>
+      <div class="methodology-modal-title">${data.titulo}</div>
+      <div class="methodology-modal-text">${data.texto}</div>
     </div>`;
 
   requestAnimationFrame(() => overlay.classList.add('open'));

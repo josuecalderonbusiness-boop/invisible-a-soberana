@@ -5519,6 +5519,53 @@ let _mcData = null;
 let _mcSemanaNum = null;
 let _mcNodeKey = null;
 
+const EJERCICIOS_FALLBACK = {
+  1: [
+    { id:'s1_e1', tipo:'textarea', orden:1,
+      pregunta:'¿Cuál es la creencia sobre tu relación que más trabajo te cuesta cuestionar?',
+      placeholder:'Escribe sin filtros...' },
+    { id:'s1_e2', tipo:'textarea', orden:2,
+      pregunta:'Describe una situación reciente donde reaccionaste desde el historial en lugar del hecho real.',
+      placeholder:'La situación fue...' },
+    { id:'s1_e3', tipo:'textarea', orden:3,
+      pregunta:'¿Qué mapa nuevo quieres construir esta semana?',
+      placeholder:'Esta semana decido ver...' }
+  ],
+  2: [
+    { id:'s2_e1', tipo:'textarea', orden:1,
+      pregunta:'¿En qué momentos sientes que pierdes tu centro gravitacional?',
+      placeholder:'Cuando él...' },
+    { id:'s2_e2', tipo:'textarea', orden:2,
+      pregunta:'¿Qué necesita la versión de ti con gravedad propia que la actual todavía no tiene?',
+      placeholder:'Necesita...' },
+    { id:'s2_e3', tipo:'textarea', orden:3,
+      pregunta:'Escribe una declaración de tu centro esta semana.',
+      placeholder:'Mi centro esta semana es...' }
+  ],
+  3: [
+    { id:'s3_e1', tipo:'textarea', orden:1,
+      pregunta:'¿Cómo describe tu cuerpo el estrés relacional? ¿Dónde lo sientes físicamente?',
+      placeholder:'Lo siento en...' },
+    { id:'s3_e2', tipo:'textarea', orden:2,
+      pregunta:'¿Qué hábito físico esta semana vas a proteger como acto soberano?',
+      placeholder:'Esta semana protejo...' },
+    { id:'s3_e3', tipo:'textarea', orden:3,
+      pregunta:'¿Qué le dirías a tu cuerpo si pudiera escucharte ahora mismo?',
+      placeholder:'Cuerpo, quiero decirte que...' }
+  ],
+  4: [
+    { id:'s4_e1', tipo:'textarea', orden:1,
+      pregunta:'¿Cuál es el para qué de tu relación más allá de la comodidad y los hijos?',
+      placeholder:'Mi para qué es...' },
+    { id:'s4_e2', tipo:'textarea', orden:2,
+      pregunta:'Si supieras que la relación no va a cambiar en 5 años, ¿qué elegirías?',
+      placeholder:'Elegiría...' },
+    { id:'s4_e3', tipo:'textarea', orden:3,
+      pregunta:'Escribe tu Código Soberana Personal — una frase que define quién eres.',
+      placeholder:'Soy la mujer que...' }
+  ]
+};
+
 async function openMasterclass(semanaNum, nodeKey) {
   _mcSemanaNum = semanaNum;
   _mcNodeKey = nodeKey;
@@ -5534,6 +5581,9 @@ async function openMasterclass(semanaNum, nodeKey) {
       return;
     }
     _mcData = snap.data();
+    if (!_mcData.ejercicios || _mcData.ejercicios.length === 0) {
+      _mcData.ejercicios = EJERCICIOS_FALLBACK[semanaNum] || [];
+    }
     if (_mcData.activada) {
       await showMasterclassActiva(_mcData, semanaNum, nodeKey);
     } else {
@@ -5690,7 +5740,15 @@ async function showMasterclassActiva(data, semanaNum, nodeKey) {
 function mcRenderEjercicio(ejercicios, idx, respuestasPrevias, semanaNum, nodeKey, isDone) {
   const card = document.getElementById('mc-ejercicio-card');
   if (!card) return;
+  if (!ejercicios || ejercicios.length === 0) {
+    console.error('[MC] Sin ejercicios para renderizar');
+    return;
+  }
   const ejercicio = ejercicios[idx];
+  if (!ejercicio) {
+    console.error('[MC] Ejercicio índice ' + idx + ' no existe');
+    return;
+  }
   const total = ejercicios.length;
   const esUltimo = idx === total - 1;
   const localKey = `mc_s${semanaNum}_e${ejercicio.id}`;

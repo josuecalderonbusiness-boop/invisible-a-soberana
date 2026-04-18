@@ -827,6 +827,91 @@
     to   { transform: translateY(0); }
   }
 
+  /* ── Celebration protocol animations ── */
+  @keyframes particleFall {
+    0%   { transform: translateY(-20px) scale(1); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.8; }
+    100% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+  }
+  @keyframes labelReveal {
+    from { opacity:0; transform:scale(0.5); filter:blur(8px); }
+    to   { opacity:1; transform:scale(1);   filter:blur(0); }
+  }
+  @keyframes gemDrop {
+    from { opacity:0; transform:translateY(-80px) scale(0.5); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  @keyframes titleSlam {
+    from { opacity:0; letter-spacing:0.5em; transform:translateY(10px); }
+    to   { opacity:1; letter-spacing:normal; transform:translateY(0); }
+  }
+  @keyframes phraseReveal {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes btnRise {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  /* Protocol overlay elements */
+  .celeb-proto-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: .22em;
+    text-transform: uppercase; color: #B8892A;
+    margin-bottom: 24px;
+    opacity: 0; animation: labelReveal 400ms cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .celeb-proto-gem {
+    position: relative; width: 72px; height: 72px;
+    margin-bottom: 28px; perspective: 400px;
+    opacity: 0; animation: gemDrop 600ms cubic-bezier(0.34,1.56,0.64,1) both;
+    animation-delay: 200ms;
+  }
+  .celeb-proto-gem .gem-spin-inner { animation: gemSpin 6s linear 1000ms infinite; }
+  .celeb-proto-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600; color: #EDE3CE;
+    text-align: center; line-height: 1.2;
+    margin-bottom: 6px;
+    opacity: 0; animation: titleSlam 500ms cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 600ms;
+  }
+  .celeb-proto-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: rgba(184,137,42,0.75);
+    margin-bottom: 20px;
+    opacity: 0; animation: phraseReveal 300ms ease both;
+    animation-delay: 900ms;
+  }
+  .celeb-proto-phrase {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; font-size: 15px; line-height: 1.75;
+    color: rgba(237,227,206,0.72);
+    text-align: center; max-width: 280px; white-space: pre-line;
+    margin-bottom: 0;
+    opacity: 0; animation: phraseReveal 500ms ease both;
+    animation-delay: 1000ms;
+  }
+  .celeb-proto-cta {
+    margin-top: 40px;
+    background: transparent;
+    border: 1px solid rgba(184,137,42,0.45);
+    border-radius: 40px; padding: 13px 36px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 500; color: #B8892A;
+    cursor: pointer;
+    opacity: 0; animation: btnRise 400ms ease both;
+    animation-delay: 1400ms;
+  }
+  .celeb-particle-new {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFall linear infinite;
+  }
+
   /* ── Celebration overlay ── */
   .celebration-overlay {
     position: fixed; inset: 0;
@@ -3985,26 +4070,32 @@ function updateGemCounter() {
 const CELEBRATION_DATA = {
   workshop_s5: {
     variant: 'protocolo',
-    title: '¡Protocolo desbloqueado!',
-    subtitle: 'Has completado el Protocolo de Encendido',
-    gemColor: '#60C8A0',
-    gemType: 'hexagon',
+    protocolLabel: 'PROTOCOLO MENTAL ACTIVADO',
+    title: 'Lo que Piensas',
+    subtitle: 'Protocolo Mental',
+    phrase: 'Tu mente es el primer territorio que gobiernas.\nLas batallas se ganan o se pierden ahí, antes de\nque se pronuncie la primera palabra.',
+    gemType: 'workshop',
+    iconSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6l-1 2H9l-1-2C6.5 13.5 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="12" y1="15" x2="12" y2="18"/></svg>',
     cta: 'Seguir avanzando'
   },
   workshop_s6: {
     variant: 'protocolo',
-    title: '¡Protocolo desbloqueado!',
-    subtitle: 'Has completado el Protocolo de Claridad',
-    gemColor: '#60C8A0',
-    gemType: 'hexagon',
+    protocolLabel: 'PROTOCOLO EMOCIONAL ACTIVADO',
+    title: 'Lo que Sientes',
+    subtitle: 'Protocolo Emocional',
+    phrase: 'El problema nunca fue que sientes demasiado.\nFue que nadie te enseñó a convertir lo que\nsientes en tu mayor ventaja.',
+    gemType: 'workshop',
+    iconSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
     cta: 'Seguir avanzando'
   },
   workshop_s7: {
     variant: 'protocolo',
-    title: '¡Protocolo desbloqueado!',
-    subtitle: 'Has completado el Protocolo de Integración',
-    gemColor: '#60C8A0',
-    gemType: 'hexagon',
+    protocolLabel: 'PROTOCOLO DEL CARÁCTER ACTIVADO',
+    title: 'Lo que Sostienes',
+    subtitle: 'Protocolo del Carácter',
+    phrase: 'La soberanía no es poder sobre él.\nEs poder sobre ti misma. Una mujer que se\ngoverna no necesita gobernar a nadie más\npara ser respetada.',
+    gemType: 'workshop',
+    iconSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9.3 9 10 5-.7 9-5 9-10V7L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>',
     cta: 'Seguir avanzando'
   },
   workshop_final: {
@@ -4091,19 +4182,19 @@ const PROTOCOLS_DEF = [
     key:'s5',  gemType:'workshop', shortName:'Mental',   fullName:'Lo que Piensas',
     phrase:'Tu mente es el primer territorio que gobiernas.',
     locked7d: false,
-    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M8 2C5 2 3 4 3 6.5c0 1.5.7 2.8 1.8 3.6V12h6.4v-1.9C12.3 9.3 13 8 13 6.5 13 4 11 2 8 2z"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="6.5" y1="14" x2="9.5" y2="14"/></svg>'
+    iconSvg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6l-1 2H9l-1-2C6.5 13.5 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="12" y1="15" x2="12" y2="18"/></svg>'
   },
   {
     key:'s6',  gemType:'workshop', shortName:'Emocional', fullName:'Lo que Sientes',
     phrase:'Lo que sientes es información estratégica.',
     locked7d: false,
-    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M8 13s-6-4-6-7.5a3.5 3.5 0 0 1 7 0 3.5 3.5 0 0 1 7 0C16 9 10 13 8 13z"/></svg>'
+    iconSvg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
   },
   {
     key:'s7',  gemType:'workshop', shortName:'Carácter',  fullName:'Lo que Sostienes',
     phrase:'La soberanía es poder sobre ti misma.',
     locked7d: false,
-    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="9,2 5,8 8,8 7,14 11,8 8,8"/></svg>'
+    iconSvg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9.3 9 10 5-.7 9-5 9-10V7L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>'
   },
   {
     key:'7d1', gemType:'sem1',     shortName:'Realidad',  fullName:'Arquitecta de Realidad',
@@ -4273,6 +4364,44 @@ function showCelebration(key) {
   ov.id = 'celebration-overlay';
   ov.className = 'celebration-overlay';
 
+  // ── Variante PROTOCOLO (workshop s5/s6/s7) ──────────────────────
+  if (cfg.variant === 'protocolo') {
+    const pColors = ['#B8892A','#EDE3CE','#D4A843','#ffffff','#F0C060'];
+    const particlesHTML = Array.from({length:30}, (_,i) => {
+      const c = pColors[i % pColors.length];
+      const x = Math.random()*100, sz = 2 + Math.random()*4;
+      const dur = 2 + Math.random()*3, delay = Math.random()*3;
+      const shadow = sz >= 5 ? `box-shadow:0 0 4px ${c}` : '';
+      return `<div class="celeb-particle-new" style="left:${x}%;width:${sz}px;height:${sz}px;background:${c};${shadow};animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
+    }).join('');
+
+    ov.innerHTML = `
+      <div class="celeb-bg"></div>
+      ${particlesHTML}
+      <div class="celeb-content" style="gap:0">
+        <div class="celeb-proto-label">${cfg.protocolLabel || 'PROTOCOLO ACTIVADO'}</div>
+        <div class="celeb-proto-gem" id="celeb-gem-wrap">
+          <div class="gem-spin-inner" style="position:relative;width:72px;height:72px">
+            ${makeGemSVG(cfg.gemType || 'workshop', 'done')}
+          </div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2">${cfg.iconSvg || ''}</div>
+        </div>
+        <div class="celeb-proto-title">${cfg.title}</div>
+        <div class="celeb-proto-sub">${cfg.subtitle}</div>
+        <div class="celeb-proto-phrase">${cfg.phrase || ''}</div>
+        <button class="celeb-proto-cta" onclick="closeCelebration('${key}')">${cfg.cta}</button>
+      </div>`;
+
+    document.body.appendChild(ov);
+
+    // Vibraciones coordinadas con la animación
+    try { navigator.vibrate([30]); } catch(e) {}
+    setTimeout(() => { try { navigator.vibrate([60,30,60]); } catch(e) {} }, 200);
+    setTimeout(() => { try { navigator.vibrate([100,20,80]); } catch(e) {} }, 600);
+    return;
+  }
+
+  // ── Variantes FINAL_WORKSHOP y FINAL_SEMANA ──────────────────────
   const isFinalWorkshop = cfg.variant === 'final_workshop';
   const isFinalSemana = cfg.variant === 'final_semana';
 
@@ -4302,7 +4431,7 @@ function showCelebration(key) {
     ${orbitHTML ? `<div class="celeb-orbit-container">${orbitHTML}</div>` : ''}
     <div class="celeb-content">
       <div class="celeb-gem-wrap" id="celeb-gem-wrap">
-        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor, gemSize)}
+        ${_makeCelebGemSVG(cfg.gemType, cfg.gemColor || '#D4A843', gemSize)}
       </div>
       <div class="celeb-title">${cfg.title}</div>
       <div class="celeb-subtitle">${cfg.subtitle}</div>
@@ -4312,50 +4441,81 @@ function showCelebration(key) {
   document.body.appendChild(ov);
 
   if (isFinalWorkshop || isFinalSemana) {
-    if (navigator.vibrate) navigator.vibrate([100, 60, 100, 60, 200]);
+    try { navigator.vibrate([100, 60, 100, 60, 200]); } catch(e) {}
   }
 }
 
 function closeCelebration(key) {
   const ov = document.getElementById('celebration-overlay');
   if (!ov) return;
-  ov.style.animation = 'celebFadeOut .35s forwards';
+  ov.style.animation = 'celebFadeOut .2s forwards';
   setTimeout(() => {
     if (ov.parentNode) ov.remove();
-    launchGemToTab();
-  }, 350);
+    // Volar gema al contador
+    const cfg = CELEBRATION_DATA[key] || {};
+    if (cfg.variant === 'protocolo') {
+      launchGemToCounter(key);
+    } else {
+      updateGemCounter();
+    }
+    // Cambio 4: volver a tab inicio
+    const activeTab = document.querySelector('.tab-content.active');
+    if (!activeTab || activeTab.id !== 'tab-inicio') {
+      switchTab('inicio');
+    }
+  }, 200);
 }
 
-function launchGemToTab() {
-  updateGemCounter();
-  const tabBtn = document.querySelector('.nav-tab[data-tab="progreso"]') ||
-                 document.getElementById('tab-btn-progreso') ||
-                 [...document.querySelectorAll('.nav-tab')].find(el => el.textContent.includes('Progreso'));
-  if (!tabBtn) return;
+// ── CAMBIO 3: Gema vuela al gem-counter ──────────────────────────
+function launchGemToCounter(key) {
+  const cfg = CELEBRATION_DATA[key] || {};
+  const gemCounter = document.getElementById('gem-counter');
+  if (!gemCounter) { updateGemCounter(); return; }
 
-  const gem = document.createElement('div');
-  gem.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;';
-  gem.innerHTML = _makeCelebGemSVG('hexagon', '#60C8A0', 28);
-  document.body.appendChild(gem);
+  const rect = gemCounter.getBoundingClientRect();
+  const destX = rect.left + rect.width / 2;
+  const destY = rect.top + rect.height / 2;
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
 
-  const startX = window.innerWidth / 2 - 14;
-  const startY = window.innerHeight / 2 - 14;
-  const tabRect = tabBtn.getBoundingClientRect();
-  const endX = tabRect.left + tabRect.width / 2 - 14;
-  const endY = tabRect.top + tabRect.height / 2 - 14;
+  // Buscar el ícono del protocolo
+  const pDef = PROTOCOLS_DEF.find(p => key === 'workshop_' + p.key);
+  const iconSvg = pDef ? pDef.iconSvg : (cfg.iconSvg || '');
 
-  gem.style.left = startX + 'px';
-  gem.style.top = startY + 'px';
+  const flyDiv = document.createElement('div');
+  flyDiv.style.cssText = `position:fixed;z-index:9700;pointer-events:none;width:72px;height:72px;left:${cx-36}px;top:${cy-36}px;perspective:400px`;
+  flyDiv.innerHTML = `
+    <div style="position:relative;width:72px;height:72px">
+      ${makeGemSVG(cfg.gemType || 'workshop', 'done')}
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0.85">${iconSvg}</div>
+    </div>`;
+  document.body.appendChild(flyDiv);
 
-  const anim = gem.animate([
-    { transform: 'translate(0,0) scale(1)', opacity: 1 },
-    { transform: `translate(${endX-startX}px,${endY-startY}px) scale(0.3)`, opacity: 0.7 }
-  ], { duration: 600, easing: 'cubic-bezier(0.4,0,0.2,1)', fill: 'forwards' });
+  // Fase 1: escalar + girar (400ms)
+  const phase1 = flyDiv.animate([
+    { transform: 'scale(1) rotateY(0deg)', opacity: 1 },
+    { transform: 'scale(1.3) rotateY(360deg)', opacity: 1 }
+  ], { duration: 400, easing: 'cubic-bezier(0.34,1.56,0.64,1)' });
 
-  anim.onfinish = () => {
-    gem.remove();
-    tabBtn.classList.add('tab-gem-flash');
-    setTimeout(() => tabBtn.classList.remove('tab-gem-flash'), 700);
+  phase1.onfinish = () => {
+    // Fase 2: volar al gem-counter (600ms)
+    const dx = destX - cx;
+    const dy = destY - cy;
+    const phase2 = flyDiv.animate([
+      { transform: 'scale(1)', opacity: 1 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0) rotateY(720deg)`, opacity: 0 }
+    ], { duration: 600, easing: 'cubic-bezier(0.4,0,0.2,1)', fill: 'forwards' });
+
+    phase2.onfinish = () => {
+      flyDiv.remove();
+      try { navigator.vibrate([40]); } catch(e) {}
+      gemCounter.animate([
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.4)' },
+        { transform: 'scale(1)' }
+      ], { duration: 300, easing: 'cubic-bezier(0.34,1.56,0.64,1)' });
+      updateGemCounter();
+    };
   };
 }
 
@@ -4424,7 +4584,7 @@ const SECTION_ICONS = {
   s2: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M15 9H9l-2 6h10l-2-6z"/><path d="M12 9v-3"/></svg>`,
   s3: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
   s4: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>`,
-  s5: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96.44L4 10a4 4 0 014-4h.5A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96.44L20 10a4 4 0 00-4-4h-.5A2.5 2.5 0 0114.5 2z"/></svg>`,
+  s5: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6l-1 2H9l-1-2C6.5 13.5 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="12" y1="15" x2="12" y2="18"/></svg>`,
   s6: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
   s7: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
   s8: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
@@ -5491,17 +5651,17 @@ function renderHiloCards() {
 }
 
 const PROTOCOLOS_DATA = [
-  { id:'mental',   tipo:'workshop', desbloqueo:'s5', icon:'🧠', color:'#9B6FD4',
+  { id:'mental',   tipo:'workshop', desbloqueo:'s5', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M12 2a7 7 0 0 1 7 7c0 2.5-1.5 4.5-3 6l-1 2H9l-1-2C6.5 13.5 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="12" y1="15" x2="12" y2="18"/></svg>', color:'#9B6FD4',
     titulo:'Protocolo Mental',       subtitulo:'Lo que Piensas',
     desc:'Aprende a identificar y reconfigurar los patrones de pensamiento que generan conflicto antes de que se conviertan en palabras.',
     cuando:'Cuando tu mente entra en bucle, anticipa conflictos o construye narrativas negativas sin evidencia.',
     pasos:['Pausa y observa el pensamiento sin juzgarlo','Pregúntate: ¿esto es un hecho o una interpretación?','Elige la narrativa que te da más poder de acción'] },
-  { id:'emocional', tipo:'workshop', desbloqueo:'s6', icon:'❤️', color:'#8B1A2F',
+  { id:'emocional', tipo:'workshop', desbloqueo:'s6', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>', color:'#8B1A2F',
     titulo:'Protocolo Emocional',    subtitulo:'Lo que Sientes',
     desc:'El Sistema ERES: cuatro pasos para procesar lo que sientes antes de reaccionar. Tu botón de emergencia emocional activa en menos de 2 minutos.',
     cuando:'En el momento del secuestro emocional, antes de responder algo que puedes lamentar.',
     pasos:['E — Escúchate: ¿qué estoy sintiendo exactamente?','R — Reconócete: tiene sentido que me sienta así porque...','E — Elige tu momento: ¿es este el momento de actuar?','S — Sostén tu necesidad: lo que necesito comunicar es...'] },
-  { id:'caracter',  tipo:'workshop', desbloqueo:'s7', icon:'🤝', color:'#2A5C42',
+  { id:'caracter',  tipo:'workshop', desbloqueo:'s7', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9.3 9 10 5-.7 9-5 9-10V7L12 2z"/><polyline points="9 12 11 14 15 10"/></svg>', color:'#2A5C42',
     titulo:'Protocolo del Carácter', subtitulo:'Lo que Sostienes',
     desc:'Aprende a sostener tus estándares cuando la presión sube. El protocolo que diferencia a la mujer que cede de la mujer que elige.',
     cuando:'Cuando sientas presión para ceder, cuando tus palabras y tus acciones se empiezan a desalinear.',

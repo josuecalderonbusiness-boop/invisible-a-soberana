@@ -515,7 +515,7 @@
   .app-main {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
@@ -5316,7 +5316,18 @@ function renderSectionsList() {
   }
   bannerWrap.appendChild(subtitle);
 
-  list.appendChild(bannerWrap);
+  // Insert pill as first direct child of #tab-inicio (the scroll container's immediate child)
+  // so that position:sticky works correctly even when .app-main has overflow-x:hidden
+  const tabInicio = document.getElementById('tab-inicio');
+  const existingWrap = document.querySelector('.journey-banner-wrapper');
+  if (existingWrap) existingWrap.remove();
+  if (tabInicio && tabInicio.firstChild) {
+    tabInicio.insertBefore(bannerWrap, tabInicio.firstChild);
+  } else if (tabInicio) {
+    tabInicio.appendChild(bannerWrap);
+  } else {
+    list.appendChild(bannerWrap);
+  }
 
   // ── Workshop journey sub-container ───────────────────────────
   const workshopMap = document.createElement('div');

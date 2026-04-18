@@ -687,6 +687,18 @@
     0%   { transform: rotateY(0deg); }
     100% { transform: rotateY(360deg); }
   }
+  @keyframes gemGlowPulse {
+    0%,100% { filter: drop-shadow(0 0 4px currentColor); opacity: 1; }
+    50%     { filter: drop-shadow(0 0 18px currentColor); opacity: 0.88; }
+  }
+  .gem-spin-wrap {
+    perspective: 400px;
+    position: relative; width: 72px; height: 72px;
+  }
+  .gem-spin-wrap .gem-spin-inner {
+    animation: gemSpin 6s linear infinite;
+    transform-origin: 36px 36px;
+  }
   @keyframes crownPulse {
     0%,100% { filter: drop-shadow(0 0 8px #FFD060); }
     50%     { filter: drop-shadow(0 0 24px #FFD060) drop-shadow(0 0 48px #FFB020); }
@@ -2567,19 +2579,22 @@
           <svg id="gem-counter-icon" width="22" height="22" viewBox="0 0 44 44" style="overflow:visible">
             <defs>
               <filter id="gcGlow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
                 <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
             </defs>
-            <polygon points="22,2 38,11 38,33 22,42 6,33 6,11" fill="#1a1a2e" filter="url(#gcGlow)"/>
-            <polygon points="22,2 38,11 30,11 22,5" fill="#a0e8c8"/>
-            <polygon points="38,11 38,33 32,22" fill="#4cc898"/>
-            <polygon points="22,42 38,33 32,22 22,38" fill="#2da870"/>
-            <polygon points="22,42 6,33 12,22 22,38" fill="#3dc090"/>
-            <polygon points="6,11 6,33 12,22" fill="#5dd8a8"/>
-            <polygon points="22,2 6,11 14,11 22,5" fill="#c0f4e0"/>
-            <polygon points="30,11 6,11 14,11 22,16 30,11" fill="#80e0b8" opacity="0.9"/>
-            <polygon points="22,16 30,11 32,22 22,38 12,22 14,11" fill="#60c8a0"/>
+            <!-- outer hex (glow base) -->
+            <polygon id="gem-counter-shape" points="22,2 38,11 38,33 22,42 6,33 6,11" fill="#B8892A" filter="url(#gcGlow)" opacity="0.55"/>
+            <!-- facets top -->
+            <polygon id="gem-counter-top"   points="22,2 38,11 30,11 22,5" fill="#E8C060"/>
+            <!-- facets sides -->
+            <polygon points="38,11 38,33 32,22" fill="#C8A040"/>
+            <polygon points="22,42 38,33 32,22 22,38" fill="#7A5218"/>
+            <polygon points="22,42 6,33 12,22 22,38" fill="#8C6424"/>
+            <polygon points="6,11 6,33 12,22" fill="#D4A830"/>
+            <polygon points="22,2 6,11 14,11 22,5" fill="#F0D060"/>
+            <!-- inner hex -->
+            <polygon id="gem-counter-inner" points="22,16 30,11 32,22 22,38 12,22 14,11" fill="#7A5C1E"/>
           </svg>
           <span id="gem-counter-label">0/7</span>
         </div>
@@ -3734,13 +3749,9 @@ function initApp() {
   applyStreakSemanaColor();
   updateGemCounter();
   renderSectionsList();
-  // Header mode — must run after renderSectionsList so #journey-7d-start exists
-  if (state.user && state.user.tiene7d) {
-    updateHeaderMode('7d');
-  } else {
-    updateHeaderMode('workshop');
-    setupHeaderObserver();
-  }
+  // Header mode — siempre empezar en workshop; el observer corrige según scroll
+  updateHeaderMode('workshop');
+  setupHeaderObserver();
   updateProgressUI();
   renderInstallSection();
   setupInstallPrompt();
@@ -3888,6 +3899,10 @@ function updateHeaderMode(mode) {
   const subEl     = document.getElementById('header-program-sub');
   const streakEl  = document.getElementById('streak-counter');
   const avatarEl  = document.getElementById('avatar-btn');
+  const gemShape  = document.getElementById('gem-counter-shape');
+  const gemTop    = document.getElementById('gem-counter-top');
+  const gemInner  = document.getElementById('gem-counter-inner');
+  const gemLabel  = document.getElementById('gem-counter-label');
   if (!header) return;
 
   if (mode === '7d') {
@@ -3902,6 +3917,11 @@ function updateHeaderMode(mode) {
     }
     if (streakEl) streakEl.style.color = '#96C7B3';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(42,92,66,0.55)';
+    // Gem icon → verde
+    if (gemShape) { gemShape.setAttribute('fill', '#2A5C42'); }
+    if (gemTop)   { gemTop.setAttribute('fill', '#60C8A0'); }
+    if (gemInner) { gemInner.setAttribute('fill', '#1A3D2B'); }
+    if (gemLabel) { gemLabel.style.color = '#96C7B3'; }
   } else {
     header.style.background    = 'var(--burgundy-deep)';
     header.style.borderBottom  = '1px solid rgba(212,175,106,0.1)';
@@ -3911,23 +3931,34 @@ function updateHeaderMode(mode) {
       subEl.textContent = `${done}/9`;
       subEl.style.color = 'rgba(184,137,42,0.7)';
     }
-    if (streakEl) streakEl.style.color = '';
+    if (streakEl) streakEl.style.color = '#B8892A';
     if (avatarEl) avatarEl.style.borderColor = 'rgba(184,137,42,0.55)';
+    // Gem icon → dorado
+    if (gemShape) { gemShape.setAttribute('fill', '#B8892A'); }
+    if (gemTop)   { gemTop.setAttribute('fill', '#E8C060'); }
+    if (gemInner) { gemInner.setAttribute('fill', '#7A5C1E'); }
+    if (gemLabel) { gemLabel.style.color = '#B8892A'; }
   }
 }
 
 function setupHeaderObserver() {
   if (_headerObserver) { _headerObserver.disconnect(); _headerObserver = null; }
-  if (state.user && state.user.tiene7d) return; // fixed to 7d mode
   const target = document.getElementById('journey-7d-start');
   if (!target) return;
   _headerObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (state.user && state.user.tiene7d) return;
-      // abismo visible = en zona workshop; abismo fuera de viewport (abajo) = en zona 7D
-      updateHeaderMode(entry.isIntersecting ? 'workshop' : '7d');
+      if (entry.isIntersecting) {
+        // El abismo está visible — todavía en zona Workshop
+        updateHeaderMode('workshop');
+      } else if (entry.boundingClientRect.top < 0) {
+        // El abismo ya pasó hacia arriba — estamos en la zona 7D
+        updateHeaderMode('7d');
+      } else {
+        // El abismo está abajo del viewport — aún no llegamos, sigue Workshop
+        updateHeaderMode('workshop');
+      }
     });
-  }, { threshold: 0.05 });
+  }, { threshold: 0.1, rootMargin: '0px' });
   _headerObserver.observe(target);
 }
 
@@ -4056,13 +4087,48 @@ function _makeCelebGemSVG(gemType, color, size) {
 
 // ── Protocols drawer ─────────────────────────────────────────────
 const PROTOCOLS_DEF = [
-  { key:'s5',  label:'CÓDIGO SOBERANA', name:'Lo que Piensas',   sub:'Protocolo Mental',       gemColor:'#D4A843', gemType:'hexagon' },
-  { key:'s6',  label:null,              name:'Lo que Sientes',   sub:'Protocolo Emocional',    gemColor:'#D4A843', gemType:'hexagon' },
-  { key:'s7',  label:null,              name:'Lo que Sostienes', sub:'Protocolo del Carácter', gemColor:'#D4A843', gemType:'hexagon' },
-  { key:'7d1', label:'SOBERANA 7D',     name:'Arquitecta de Realidad', sub:'Semana 1',         gemColor:'#2A5C42', gemType:'hexagon' },
-  { key:'7d2', label:null,              name:'Gravedad Propia',  sub:'Semana 2',               gemColor:'#8B1A2F', gemType:'hexagon' },
-  { key:'7d3', label:null,              name:'Biología del Poder', sub:'Semana 3',             gemColor:'#D4A843', gemType:'hexagon' },
-  { key:'7d4', label:null,              name:'El Código Final',  sub:'Semana 4',               gemColor:'#1A3D2B', gemType:'hexagon' },
+  {
+    key:'s5',  gemType:'workshop', shortName:'Mental',   fullName:'Lo que Piensas',
+    phrase:'Tu mente es el primer territorio que gobiernas.',
+    locked7d: false,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M8 2C5 2 3 4 3 6.5c0 1.5.7 2.8 1.8 3.6V12h6.4v-1.9C12.3 9.3 13 8 13 6.5 13 4 11 2 8 2z"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="6.5" y1="14" x2="9.5" y2="14"/></svg>'
+  },
+  {
+    key:'s6',  gemType:'workshop', shortName:'Emocional', fullName:'Lo que Sientes',
+    phrase:'Lo que sientes es información estratégica.',
+    locked7d: false,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M8 13s-6-4-6-7.5a3.5 3.5 0 0 1 7 0 3.5 3.5 0 0 1 7 0C16 9 10 13 8 13z"/></svg>'
+  },
+  {
+    key:'s7',  gemType:'workshop', shortName:'Carácter',  fullName:'Lo que Sostienes',
+    phrase:'La soberanía es poder sobre ti misma.',
+    locked7d: false,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="9,2 5,8 8,8 7,14 11,8 8,8"/></svg>'
+  },
+  {
+    key:'7d1', gemType:'sem1',     shortName:'Realidad',  fullName:'Arquitecta de Realidad',
+    phrase:'Rediseñaste el mapa antes del primer paso.',
+    locked7d: true,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><polygon points="8,2 14,8 8,14 2,8"/></svg>'
+  },
+  {
+    key:'7d2', gemType:'sem2',     shortName:'Gravedad',  fullName:'Gravedad Propia',
+    phrase:'Tu centro es suficiente.',
+    locked7d: true,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4"><circle cx="8" cy="8" r="5"/></svg>'
+  },
+  {
+    key:'7d3', gemType:'sem3',     shortName:'Biología',  fullName:'Biología del Poder',
+    phrase:'Tu cuerpo es el instrumento.',
+    locked7d: true,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round"><path d="M8 2l1.5 4H14l-3.5 2.5 1.5 4L8 10l-4 2.5 1.5-4L2 6h4.5z"/></svg>'
+  },
+  {
+    key:'7d4', gemType:'sem4',     shortName:'Código',    fullName:'El Código Final',
+    phrase:'Treinta días. Siete dimensiones. Tuyo para siempre.',
+    locked7d: true,
+    iconSvg:'<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13l2-7 4 4 4-4 2 7H2z"/><line x1="2" y1="13" x2="14" y2="13"/></svg>'
+  },
 ];
 
 function _isProtocolEarned(key) {
@@ -4072,49 +4138,98 @@ function _isProtocolEarned(key) {
   return [1,2,3,4,5,6,7].every(d => state.completed7d[`7d_s${semNum}_d${d}`]);
 }
 
+function openProtocolDetail(key) {
+  const p = PROTOCOLS_DEF.find(x => x.key === key);
+  if (!p) return;
+  const earned = _isProtocolEarned(p.key);
+  const tiene7d = state.user && state.user.tiene7d;
+
+  const existing = document.getElementById('protocol-detail-modal');
+  if (existing) existing.remove();
+
+  const gemState = earned ? 'done' : 'locked';
+  const lockedLabel = p.locked7d && !tiene7d ? 'Disponible en Soberana 7D' : 'Completa la sección en el Workshop';
+  const ctaBtn = (p.locked7d && !tiene7d && !earned)
+    ? `<button onclick="window.open('https://soberana7d.josuecalderon.lat','_blank')" style="margin-top:16px;background:transparent;border:1px solid rgba(184,137,42,0.5);border-radius:40px;padding:11px 28px;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;color:#B8892A;cursor:pointer">Ver Soberana 7D →</button>`
+    : '';
+
+  const modal = document.createElement('div');
+  modal.id = 'protocol-detail-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px)';
+  modal.innerHTML = `
+    <div style="background:#0F0609;border:0.5px solid rgba(184,137,42,0.25);border-radius:20px;padding:32px 24px;max-width:320px;width:100%;text-align:center;position:relative">
+      <button onclick="document.getElementById('protocol-detail-modal').remove()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:22px;color:rgba(237,227,206,0.35);cursor:pointer;line-height:1">×</button>
+      <div style="font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:${earned ? '#B8892A' : 'rgba(150,150,150,0.5)'};margin-bottom:20px">
+        ${earned ? 'PROTOCOLO GANADO' : 'AÚN NO GANADO'}
+      </div>
+      <div class="${earned ? 'gem-spin-wrap' : ''}" style="margin:0 auto 20px;position:relative;width:72px;height:72px">
+        <div class="${earned ? 'gem-spin-inner' : ''}" style="position:relative;width:72px;height:72px">
+          ${makeGemSVG(p.gemType, gemState)}
+        </div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:${earned ? 0.75 : 0.2};pointer-events:none">${p.iconSvg}</div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:${earned ? '#EDE3CE' : 'rgba(237,227,206,0.3)'};line-height:1.2;margin-bottom:10px">${p.fullName}</div>
+      <div style="font-family:'Jost',sans-serif;font-style:italic;font-size:12px;line-height:1.7;color:${earned ? 'rgba(237,227,206,0.65)' : 'rgba(237,227,206,0.25)'};max-width:240px;margin:0 auto">
+        ${earned ? p.phrase : lockedLabel}
+      </div>
+      ${ctaBtn}
+    </div>`;
+
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
 function showProtocolsDrawer() {
   const existing = document.getElementById('protocols-drawer-overlay');
   if (existing) existing.remove();
 
   const earned = PROTOCOLS_DEF.filter(p => _isProtocolEarned(p.key)).length;
 
-  let rows = '';
-  let currentLabel = null;
-  PROTOCOLS_DEF.forEach(p => {
+  // Construir celdas del grid
+  let cells = '';
+  PROTOCOLS_DEF.forEach((p, i) => {
     const done = _isProtocolEarned(p.key);
-    if (p.label && p.label !== currentLabel) {
-      currentLabel = p.label;
-      rows += `<div style="font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin:16px 0 8px">${p.label}</div>`;
-    }
-    const gemStyle = done ? '' : 'filter:saturate(0);opacity:0.28;';
-    const nameColor = done ? '#EDE3CE' : 'rgba(237,227,206,0.28)';
-    const subColor  = done ? 'rgba(184,137,42,0.6)' : 'rgba(237,227,206,0.18)';
-    const badge = done
-      ? `<span style="color:#D4A843;font-size:14px;flex-shrink:0">✓</span>`
-      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(150,150,150,0.5)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
-    rows += `
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)">
-        <div style="${gemStyle}flex-shrink:0">${_makeCelebGemSVG(p.gemType, p.gemColor, 32)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:${nameColor};line-height:1.2">${p.name}</div>
-          <div style="font-family:'Jost',sans-serif;font-size:10px;color:${subColor};margin-top:2px">${p.sub}</div>
+    const gemState = done ? 'done' : 'locked';
+    const nameColor = done ? '#EDE3CE' : 'rgba(237,227,206,0.3)';
+    const lockIcon = done ? '' : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(237,227,206,0.25)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>`;
+    // gem wrapper: gem-spin-wrap adds perspective for rotateY; inner div gets the spin
+    cells += `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer" onclick="openProtocolDetail('${p.key}')">
+        <div class="${done ? 'gem-spin-wrap' : ''}" style="${done ? '' : 'position:relative;width:72px;height:72px'}">
+          <div class="${done ? 'gem-spin-inner' : ''}">
+            ${makeGemSVG(p.gemType, gemState)}
+          </div>
+          ${lockIcon}
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:${done ? 0.7 : 0.15};pointer-events:none">${p.iconSvg}</div>
         </div>
-        ${badge}
+        <div style="font-family:'Jost',sans-serif;font-size:10px;font-weight:600;color:${nameColor};letter-spacing:.04em;text-align:center">${p.shortName}</div>
       </div>`;
   });
 
   const ov = document.createElement('div');
   ov.id = 'protocols-drawer-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9400;background:rgba(15,6,9,0.78);display:flex;align-items:flex-end;justify-content:center';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9400;background:rgba(15,6,9,0.82);display:flex;align-items:flex-end;justify-content:center';
+
   ov.innerHTML = `
-    <div id="protocols-drawer" style="width:100%;max-width:480px;background:#0F0A0B;border-radius:20px 20px 0 0;border-top:1px solid rgba(184,137,42,0.2);padding:8px 20px 40px;max-height:82vh;overflow-y:auto;position:relative">
-      <div style="width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:4px;margin:8px auto 20px"></div>
-      <button onclick="document.getElementById('protocols-drawer-overlay').remove()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;color:rgba(237,227,206,0.4);cursor:pointer;line-height:1">×</button>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#EDE3CE;margin-bottom:4px">Mis Protocolos</div>
-      <div style="font-family:'Jost',sans-serif;font-size:11px;color:#B8892A;margin-bottom:14px">${earned} de 7 ganados</div>
-      <div style="height:0.5px;background:rgba(184,137,42,0.25);margin-bottom:4px"></div>
-      ${rows}
+    <div id="protocols-drawer" style="width:100%;max-width:480px;background:#0F0A0B;border-radius:24px 24px 0 0;border-top:1px solid rgba(184,137,42,0.2);padding:10px 20px 44px;max-height:85vh;overflow-y:auto;position:relative;touch-action:pan-y">
+      <div style="width:40px;height:4px;background:rgba(184,137,42,0.2);border-radius:2px;margin:0 auto 20px"></div>
+      <button onclick="document.getElementById('protocols-drawer-overlay').remove()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:22px;color:rgba(237,227,206,0.3);cursor:pointer;line-height:1">×</button>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:4px">Mis Protocolos</div>
+      <div style="font-family:'Jost',sans-serif;font-size:11px;color:#B8892A;letter-spacing:.08em;margin-bottom:14px">${earned} de 7 ganados</div>
+      <div style="height:0.5px;background:rgba(184,137,42,0.18);margin-bottom:24px"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;justify-items:center">
+        ${cells}
+      </div>
     </div>`;
+
+  // Swipe-down to close
+  const drawer = ov.querySelector('#protocols-drawer');
+  let touchStartY = 0;
+  drawer.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  drawer.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (dy > 80) ov.remove();
+  }, { passive: true });
 
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
   document.body.appendChild(ov);
@@ -7027,9 +7142,8 @@ function switchTab(tab) {
     const el7d = document.getElementById('journey-7d-start');
     if (el7d) {
       const rect = el7d.getBoundingClientRect();
-      // abyss visible = workshop; abyss above viewport (rect.bottom ≤ 0) = 7d
-      const abyssAbove = rect.bottom <= 0;
-      updateHeaderMode(abyssAbove ? '7d' : 'workshop');
+      // abismo por encima del viewport (top < 0) = estamos en zona 7D
+      updateHeaderMode(rect.top < 0 ? '7d' : 'workshop');
     } else {
       updateHeaderMode('workshop');
     }

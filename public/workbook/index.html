@@ -5506,7 +5506,7 @@ function renderSectionsList() {
 
   // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
   render7dJourney(list);
-  setupSemanaObservers();
+  setupSemanaObservers(); // scroll-based pill updates
 }
 
 // ── updateSectionPill ─────────────────────────────────────────────
@@ -6298,29 +6298,43 @@ function render7dJourney(container) {
 }
 
 function setupSemanaObservers() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const mode = entry.target.dataset.semanaMode;
-        if (mode) updateSectionPill(mode);
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+
+  const bloqueIds = [
+    { id: 'journey-workshop', mode: 'workshop' },
+    { id: 'semana-block-1',   mode: 'semana1'  },
+    { id: 'semana-block-2',   mode: 'semana2'  },
+    { id: 'semana-block-3',   mode: 'semana3'  },
+    { id: 'semana-block-4',   mode: 'semana4'  },
+  ];
+
+  // Only include 7D blocks when user has access
+  const bloques = bloqueIds
+    .filter(b => b.mode === 'workshop' || (state.user && state.user.tiene7d))
+    .map(b => ({ ...b, el: document.getElementById(b.id) }))
+    .filter(b => b.el);
+
+  let currentMode = 'workshop';
+
+  scrollEl.addEventListener('scroll', () => {
+    const containerRect = scrollEl.getBoundingClientRect();
+    // Trigger point: 30% down from the top of the scroll container
+    const triggerY = containerRect.top + scrollEl.clientHeight * 0.3;
+
+    // Last block whose top is above the trigger wins
+    let activeMode = 'workshop';
+    for (const bloque of bloques) {
+      if (bloque.el.getBoundingClientRect().top <= triggerY) {
+        activeMode = bloque.mode;
       }
-    });
-  }, {
-    threshold: 0.05,
-    rootMargin: '0px 0px -85% 0px'
-  });
+    }
 
-  // Workshop block always observed — pill returns to workshop when scrolled back up
-  const workshopEl = document.getElementById('journey-workshop');
-  if (workshopEl) observer.observe(workshopEl);
-
-  // 7D semana blocks only observed when user has 7D access
-  if (state.user && state.user.tiene7d) {
-    [1, 2, 3, 4].forEach(n => {
-      const el = document.getElementById(`semana-block-${n}`);
-      if (el) observer.observe(el);
-    });
-  }
+    if (activeMode !== currentMode) {
+      currentMode = activeMode;
+      updateSectionPill(activeMode);
+    }
+  }, { passive: true });
 }
 
 // ═══════════════════════════════════════════

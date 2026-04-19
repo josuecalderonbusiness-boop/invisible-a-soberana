@@ -754,6 +754,132 @@
     box-shadow: 0 0 20px rgba(184,137,42,0.4);
   }
 
+  /* ─── NODO SÁBADO — SESIÓN EN VIVO ──────────────────────────── */
+  @keyframes pulseLive {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(0.96); }
+  }
+
+  @keyframes pulseRedDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(200,50,50,0.6); }
+    60%       { box-shadow: 0 0 0 6px rgba(200,50,50,0); }
+  }
+
+  .sabado-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(180,30,30,0.18);
+    border: 1px solid rgba(200,60,60,0.4);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #ff6b6b;
+    margin-bottom: 14px;
+  }
+
+  .sabado-live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4444;
+    animation: pulseRedDot 1.4s ease-in-out infinite;
+  }
+
+  .sabado-countdown {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 18px 0;
+  }
+
+  .sabado-countdown-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 48px;
+  }
+
+  .sabado-countdown-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #D4AF6A;
+    line-height: 1;
+  }
+
+  .sabado-countdown-num.pulse {
+    animation: pulseLive 1s ease-in-out infinite;
+  }
+
+  .sabado-countdown-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(212,175,106,0.45);
+  }
+
+  .sabado-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 50px;
+    border-radius: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    text-decoration: none;
+    margin-top: 20px;
+  }
+
+  .sabado-btn:active { transform: scale(0.97); }
+
+  .sabado-btn-primary {
+    background: linear-gradient(135deg, #B8892A, #8B6520);
+    color: #0F0A0B;
+  }
+
+  .sabado-btn-outline {
+    background: transparent;
+    color: #D4AF6A;
+    border: 1.5px solid rgba(184,137,42,0.5);
+  }
+
+  .sabado-btn-disabled {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.25);
+    cursor: default;
+  }
+
+  .sabado-bunny-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    margin-top: 16px;
+  }
+
+  .sabado-bunny-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
   /* Main content area */
   .app-main {
     flex: 1;
@@ -3812,6 +3938,18 @@ async function fsGuardarSemana7d(email, semanaNum, diasCompletados) {
   } catch(e) { console.warn('[Firestore] fsGuardarSemana7d:', e); }
 }
 
+async function fsCargarSesionLive(semana) {
+  try {
+    const snap = await db.collection('config').doc('sesiones_live').get();
+    if (!snap.exists) return null;
+    const data = snap.data();
+    return data[`semana${semana}`] || null;
+  } catch(e) {
+    console.warn('[Firestore] fsCargarSesionLive:', e);
+    return null;
+  }
+}
+
 async function fsCargarProgreso(email) {
   if (!email) return;
   try {
@@ -5826,6 +5964,251 @@ function closeMethodologyModal() {
   overlay.classList.remove('open');
 }
 
+// ── Nodo Sábado — Sesión en Vivo ─────────────────────────────────
+let _sabadoCountdownInterval = null;
+
+function _formatFechaSabado(fechaISO) {
+  const f = new Date(fechaISO);
+  const dias  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const h = f.getHours(), m = f.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  const mm = m.toString().padStart(2, '0');
+  return `${dias[f.getDay()]} ${f.getDate()} de ${meses[f.getMonth()]} · ${h12}:${mm} ${ampm}`;
+}
+
+function _googleCalendarLink(sesion, semNum) {
+  const start = new Date(sesion.fecha_iso);
+  const end   = new Date(start.getTime() + 90 * 60000);
+  const fmt   = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  const p = new URLSearchParams({
+    action: 'TEMPLATE',
+    text:   `Sesión en Vivo · Soberana 7D Semana ${semNum}`,
+    dates:  `${fmt(start)}/${fmt(end)}`,
+    details: sesion.zoom_link ? `Entrar: ${sesion.zoom_link}` : '',
+    location: sesion.zoom_link || ''
+  });
+  return `https://calendar.google.com/calendar/render?${p.toString()}`;
+}
+
+function iniciarCountdown(fechaSesion, containerId, pulse) {
+  if (_sabadoCountdownInterval) clearInterval(_sabadoCountdownInterval);
+  _sabadoCountdownInterval = setInterval(() => {
+    const diff = new Date(fechaSesion) - new Date();
+    const el = document.getElementById(containerId);
+    if (!el || diff <= 0) { clearInterval(_sabadoCountdownInterval); return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000)  / 60000);
+    const s = Math.floor((diff % 60000)    / 1000);
+    const cls = pulse ? ' pulse' : '';
+    el.innerHTML = `
+      <div class="sabado-countdown-unit">
+        <div class="sabado-countdown-num${cls}">${d}</div>
+        <div class="sabado-countdown-label">días</div>
+      </div>
+      <div class="sabado-countdown-unit">
+        <div class="sabado-countdown-num${cls}">${h}</div>
+        <div class="sabado-countdown-label">horas</div>
+      </div>
+      <div class="sabado-countdown-unit">
+        <div class="sabado-countdown-num${cls}">${m}</div>
+        <div class="sabado-countdown-label">min</div>
+      </div>
+      <div class="sabado-countdown-unit">
+        <div class="sabado-countdown-num${cls}">${s}</div>
+        <div class="sabado-countdown-label">seg</div>
+      </div>`;
+  }, 1000);
+}
+
+async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
+  bounceNode && bounceNode();
+  let drawer = document.getElementById('drawer-sabado');
+  if (!drawer) {
+    drawer = document.createElement('div');
+    drawer.id = 'drawer-sabado';
+    drawer.className = 'modal-overlay';
+    drawer.setAttribute('data-testid', 'nodo-sabado-modal');
+    drawer.style.display = 'none';
+    drawer.onclick = e => { if (e.target === drawer) cerrarSabadoModal(); };
+    document.body.appendChild(drawer);
+  }
+
+  // Mostrar loading
+  drawer.innerHTML = `
+    <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
+      <div class="modal-drag-bar"></div>
+      <div style="padding:24px 20px 36px;text-align:center;color:rgba(237,227,206,0.35);font-family:'Jost',sans-serif;font-size:13px;">
+        Cargando sesión…
+      </div>
+    </div>`;
+  drawer.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (!semUnlocked) {
+    drawer.innerHTML = `
+      <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
+        <div class="modal-drag-bar"></div>
+        <div style="padding:24px 20px 36px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.18em;color:${semana.color};text-transform:uppercase;margin-bottom:6px">SÁBADO · SEMANA ${semNum}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#F0E6EA;margin-bottom:4px">Sesión en Vivo</div>
+          <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">${dia.desc}</div>
+          <div style="text-align:center;background:${semana.bannerBg};border:1px solid ${semana.bannerBorder};border-radius:12px;padding:18px;color:${semana.color};font-size:14px;font-weight:600">Disponible en Semana ${semNum}</div>
+          <button onclick="cerrarSabadoModal()" style="width:100%;margin-top:12px;background:none;border:none;color:rgba(196,160,178,0.4);font-size:13px;cursor:pointer;padding:8px">Cerrar</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const sesion = await fsCargarSesionLive(semNum);
+
+  // Determinar estado
+  let estado = 'upcoming';
+  let minutos = null;
+  if (sesion && sesion.fecha_iso) {
+    const ahora       = new Date();
+    const fechaSesion = new Date(sesion.fecha_iso);
+    const minutosAntes   = (fechaSesion - ahora) / 60000;
+    const minutesDespues = (ahora - fechaSesion) / 60000;
+    minutos = minutosAntes;
+    if      (minutosAntes  >  60) estado = 'upcoming';
+    else if (minutosAntes  >   0) estado = 'soon';
+    else if (minutesDespues < 180) estado = 'live';
+    else                           estado = 'ended';
+  }
+
+  const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
+  const LIBRARY = '636956';
+
+  let bodyHTML = '';
+
+  if (!sesion || !sesion.fecha_iso) {
+    // Sin datos
+    bodyHTML = `
+      <div style="text-align:center;padding:16px 0 8px">
+        <div style="font-size:36px;margin-bottom:12px">📅</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:8px">Sesión en Vivo · Sábado</div>
+        <div style="font-size:13px;color:rgba(237,227,206,0.45);line-height:1.5">Fecha próximamente.<br>Te avisaremos cuando esté programada.</div>
+      </div>`;
+
+  } else if (estado === 'upcoming') {
+    bodyHTML = `
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:6px">Sesión en Vivo · Sábado</div>
+      <div style="font-size:12px;color:rgba(212,175,106,0.6);margin-bottom:18px">${_formatFechaSabado(sesion.fecha_iso)}</div>
+      <div class="sabado-countdown" id="sabado-countdown-wrap"></div>
+      <a href="${_googleCalendarLink(sesion, semNum)}" target="_blank" rel="noopener" class="sabado-btn sabado-btn-outline">
+        Agregar al calendario
+      </a>
+      <div style="text-align:center;font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,0.3);margin-top:12px">
+        Recibirás el link 15 minutos antes
+      </div>`;
+
+  } else if (estado === 'soon') {
+    const minsLeft = Math.ceil(minutos);
+    bodyHTML = `
+      <div class="sabado-live-badge">
+        <div class="sabado-live-dot"></div>
+        EN VIVO EN ${minsLeft} MIN
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:6px">Sesión en Vivo · Sábado</div>
+      <div style="font-size:12px;color:rgba(212,175,106,0.6);margin-bottom:18px">${_formatFechaSabado(sesion.fecha_iso)}</div>
+      <div class="sabado-countdown" id="sabado-countdown-wrap"></div>
+      ${sesion.zoom_link ? `
+        <a href="${sesion.zoom_link}" target="_blank" rel="noopener"
+          class="sabado-btn sabado-btn-primary"
+          onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
+          Unirme a la sesión →
+        </a>` : ''}`;
+
+  } else if (estado === 'live') {
+    const minPasados = Math.floor((new Date() - new Date(sesion.fecha_iso)) / 60000);
+    bodyHTML = `
+      <div class="sabado-live-badge">
+        <div class="sabado-live-dot"></div>
+        EN VIVO AHORA
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:6px">Sesión en Vivo · Sábado</div>
+      <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">
+        La sesión está en curso. Únete cuando puedas.
+        ${minPasados >= 90 ? `<br><span style="color:rgba(237,227,206,0.35)">Si te perdiste el inicio, entra igual — la sesión continúa.</span>` : ''}
+      </div>
+      ${sesion.zoom_link ? `
+        <a href="${sesion.zoom_link}" target="_blank" rel="noopener"
+          class="sabado-btn sabado-btn-primary"
+          onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
+          Entrar a la sesión →
+        </a>` : ''}`;
+
+  } else { // ended
+    const tieneGrabacion = sesion.grabacion_url || sesion.grabacion_bunny_id;
+    bodyHTML = `
+      <div style="font-size:36px;margin-bottom:12px">✓</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#F0E6EA;margin-bottom:8px">Sesión completada</div>
+      ${!tieneGrabacion ? `
+        <div style="font-size:13px;color:rgba(237,227,206,0.45);line-height:1.5;margin-bottom:8px">La grabación estará disponible pronto.</div>
+        <button class="sabado-btn sabado-btn-disabled" disabled>Grabación en proceso...</button>
+      ` : sesion.grabacion_bunny_id ? `
+        <div style="font-size:13px;color:rgba(237,227,206,0.45);margin-bottom:4px">Grabación disponible:</div>
+        <div class="sabado-bunny-wrap">
+          <iframe
+            src="https://iframe.mediadelivery.net/embed/${LIBRARY}/${sesion.grabacion_bunny_id}?autoplay=false&responsive=true"
+            allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        ${!isDone ? `
+          <button class="sabado-btn sabado-btn-primary" style="margin-top:16px"
+            onclick="if(navigator.vibrate)navigator.vibrate(10); mark7dDone('${nodeKey}')">
+            Marcar como completado
+          </button>` : `<div style="text-align:center;font-size:13px;color:rgba(212,175,106,0.5);margin-top:14px">✓ Completado</div>`}
+      ` : `
+        <a href="${sesion.grabacion_url}" target="_blank" rel="noopener"
+          class="sabado-btn sabado-btn-primary"
+          onclick="if(navigator.vibrate)navigator.vibrate(10); ${!isDone ? `mark7dDone('${nodeKey}')` : ''}">
+          Ver grabación →
+        </a>
+      `}`;
+  }
+
+  drawer.innerHTML = `
+    <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
+      <div class="modal-drag-bar"></div>
+      <div style="padding:24px 20px 36px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.18em;color:${semana.color};text-transform:uppercase;margin-bottom:16px">
+          SÁBADO · SEMANA ${semNum}
+        </div>
+        ${bodyHTML}
+        <button onclick="cerrarSabadoModal()"
+          style="width:100%;margin-top:16px;background:none;border:none;color:rgba(196,160,178,0.4);font-size:13px;cursor:pointer;padding:8px">
+          Cerrar
+        </button>
+      </div>
+    </div>`;
+
+  if ((estado === 'upcoming' || estado === 'soon') && sesion && sesion.fecha_iso) {
+    iniciarCountdown(sesion.fecha_iso, 'sabado-countdown-wrap', estado === 'soon');
+  }
+}
+
+window._marcarSabadoVisitado = function(nodeKey, semNum) {
+  if (!state.completed7d) state.completed7d = {};
+  if (!state.completed7d[nodeKey]) {
+    state.completed7d[nodeKey + '_visited'] = new Date().toISOString();
+    saveState();
+    const email = state.user && state.user.email;
+    if (email) fsGuardarDia7d(email, semNum, nodeKey + '_visited');
+  }
+};
+
+window.cerrarSabadoModal = function() {
+  if (_sabadoCountdownInterval) { clearInterval(_sabadoCountdownInterval); _sabadoCountdownInterval = null; }
+  const drawer = document.getElementById('drawer-sabado');
+  if (!drawer) return;
+  drawer.style.display = 'none';
+  document.body.style.overflow = '';
+};
+
 // ── 7D Cajita (botón + modal) ─────────────────────────────────────
 function render7dCajita() {
   const tiene7d = state.user?.tiene7d === true;
@@ -6632,11 +7015,13 @@ function render7dJourney(container) {
       stars7d.textContent = isDone ? '★★★' : '☆☆☆';
       wrap.appendChild(stars7d);
 
-      // Lunes → masterclass screen (Firestore). Otros días → drawer.
+      // Lunes → masterclass. Sábado → modal live. Otros → drawer.
       wrap.addEventListener('click', () => {
         bounceNode(node);
         if (dia.key === 'lun' && semUnlocked) {
           openMasterclass(semNum, nodeKey);
+        } else if (dia.isLive) {
+          openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked);
         } else {
           open7dDrawer({ dia, semana, nodeKey, semUnlocked, semNum });
         }

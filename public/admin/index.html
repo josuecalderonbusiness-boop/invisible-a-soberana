@@ -369,6 +369,90 @@
     font-size: 12px;
     color: var(--muted);
   }
+
+  /* ── SESIONES EN VIVO ── */
+  .sesion-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+  }
+
+  .sesion-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .sesion-week-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold-lt);
+    padding-top: 2px;
+  }
+
+  .sesion-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sesion-field-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sesion-field-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sesion-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  .sesion-input:focus { border-color: var(--gold); }
+  .sesion-input:disabled { opacity: .35; cursor: not-allowed; }
+
+  .btn-save-sesion {
+    margin-top: 10px;
+    background: none;
+    border: 1px solid rgba(184,137,42,0.4);
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: background .15s, border-color .15s;
+    align-self: flex-start;
+  }
+
+  .btn-save-sesion:hover { background: rgba(184,137,42,0.1); border-color: var(--gold); }
+  .btn-save-sesion:disabled { opacity: .4; cursor: default; }
+
+  .sesion-status {
+    font-size: 12px;
+    color: var(--gold);
+    margin-top: 6px;
+    min-height: 16px;
+  }
+
+  .sesion-status.error { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -428,6 +512,17 @@
     <div class="publish-status" id="publish-status"></div>
   </div>
 
+  <!-- Sesiones en Vivo -->
+  <div class="card">
+    <div class="card-title">
+      <span>🔴</span> Sesiones en Vivo
+    </div>
+
+    <div id="sesiones-list">
+      <div class="posts-loading">Cargando sesiones…</div>
+    </div>
+  </div>
+
   <!-- Posts publicados -->
   <div class="card">
     <div class="card-actions">
@@ -474,6 +569,7 @@ function doLogin() {
     document.getElementById('gate').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     loadPosts();
+    cargarSesionesAdmin();
   } else {
     err.textContent = 'Contraseña incorrecta.';
     document.getElementById('pwd-input').value = '';
@@ -625,6 +721,113 @@ async function deletePost(docId) {
     }
   } catch(e) {
     alert('Error al eliminar: ' + e.message);
+  }
+}
+
+// ── Sesiones en Vivo ──────────────────────────────────────────────
+const SEMANAS_NOMBRES = ['Arquitecta de Realidad', 'Gravedad Propia', 'Biología del Poder', 'El Código Final'];
+
+async function cargarSesionesAdmin() {
+  const listEl = document.getElementById('sesiones-list');
+  listEl.innerHTML = '<div class="posts-loading">Cargando sesiones…</div>';
+  let data = {};
+  try {
+    const snap = await db.collection('config').doc('sesiones_live').get();
+    if (snap.exists) data = snap.data();
+  } catch(e) {
+    console.warn('cargarSesionesAdmin:', e);
+  }
+  renderSesionesAdmin(data);
+}
+
+function renderSesionesAdmin(data) {
+  const listEl = document.getElementById('sesiones-list');
+  const ahora = new Date();
+  listEl.innerHTML = '';
+
+  [1, 2, 3, 4].forEach(semNum => {
+    const s = data[`semana${semNum}`] || {};
+    const fechaPasada = s.fecha_iso ? new Date(s.fecha_iso) < ahora : false;
+
+    const row = document.createElement('div');
+    row.className = 'sesion-row';
+    row.innerHTML = `
+      <div class="sesion-week-label">S${semNum}</div>
+      <div class="sesion-fields">
+        <div style="font-size:11px;color:rgba(212,175,106,0.5);letter-spacing:0.08em;margin-bottom:2px">${SEMANAS_NOMBRES[semNum-1]}</div>
+
+        <div class="sesion-field-row">
+          <span class="sesion-field-label">Fecha ISO</span>
+          <input class="sesion-input" id="s${semNum}-fecha" type="text"
+            placeholder="2025-05-10T15:00:00-06:00"
+            value="${esc(s.fecha_iso || '')}">
+        </div>
+
+        <div class="sesion-field-row">
+          <span class="sesion-field-label">Zoom Link</span>
+          <input class="sesion-input" id="s${semNum}-zoom" type="url"
+            placeholder="https://zoom.us/j/…"
+            value="${esc(s.zoom_link || '')}">
+        </div>
+
+        <div class="sesion-field-row">
+          <span class="sesion-field-label">URL Grabación</span>
+          <input class="sesion-input" id="s${semNum}-grab-url" type="url"
+            placeholder="https://…"
+            value="${esc(s.grabacion_url || '')}"
+            ${!fechaPasada ? 'disabled title="Disponible cuando ya pasó la sesión"' : ''}>
+        </div>
+
+        <div class="sesion-field-row">
+          <span class="sesion-field-label">Bunny ID</span>
+          <input class="sesion-input" id="s${semNum}-grab-bunny" type="text"
+            placeholder="ID del video en Bunny"
+            value="${esc(s.grabacion_bunny_id || '')}"
+            ${!fechaPasada ? 'disabled title="Disponible cuando ya pasó la sesión"' : ''}>
+        </div>
+
+        <button class="btn-save-sesion" id="s${semNum}-btn" onclick="guardarSesion(${semNum})">
+          Guardar Semana ${semNum}
+        </button>
+        <div class="sesion-status" id="s${semNum}-status"></div>
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+async function guardarSesion(semNum) {
+  const btn    = document.getElementById(`s${semNum}-btn`);
+  const status = document.getElementById(`s${semNum}-status`);
+  const fecha  = document.getElementById(`s${semNum}-fecha`).value.trim();
+  const zoom   = document.getElementById(`s${semNum}-zoom`).value.trim();
+  const grabUrl  = document.getElementById(`s${semNum}-grab-url`).value.trim();
+  const grabBunny = document.getElementById(`s${semNum}-grab-bunny`).value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  status.textContent = '';
+  status.className = 'sesion-status';
+
+  try {
+    await db.collection('config').doc('sesiones_live').set({
+      [`semana${semNum}`]: {
+        fecha_iso: fecha,
+        zoom_link: zoom,
+        grabacion_url: grabUrl,
+        grabacion_bunny_id: grabBunny
+      }
+    }, { merge: true });
+
+    status.textContent = '✓ Guardado';
+    // Refrescar para habilitar/deshabilitar campos de grabación según fecha
+    setTimeout(cargarSesionesAdmin, 600);
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    status.className = 'sesion-status error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = `Guardar Semana ${semNum}`;
   }
 }
 

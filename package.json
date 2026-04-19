@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo ok"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.8.0"
   }
 }

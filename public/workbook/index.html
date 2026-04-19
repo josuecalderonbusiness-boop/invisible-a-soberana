@@ -511,6 +511,249 @@
     color: rgba(237,227,206,.5);
   }
 
+  /* ─── BOTÓN 7D CON BORDE GIRATORIO ─────────────────────────── */
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes rotateBorder {
+    to { --border-angle: 360deg; }
+  }
+
+  @keyframes btn7dGlow {
+    0%, 100% { box-shadow: 0 0 18px rgba(184,137,42,0.2); }
+    50% { box-shadow: 0 0 32px rgba(184,137,42,0.45); }
+  }
+
+  .btn-7d-wrapper {
+    position: relative;
+    border-radius: 16px;
+    padding: 2px;
+    background: conic-gradient(
+      from var(--border-angle),
+      #0D2418 0%,
+      #0D2418 40%,
+      #D4AF6A 50%,
+      #B8892A 55%,
+      #0D2418 65%,
+      #0D2418 100%
+    );
+    animation: rotateBorder 3s linear infinite, btn7dGlow 3s ease-in-out infinite;
+  }
+
+  .btn-7d-inner {
+    background: linear-gradient(160deg, #0D2418 0%, #0A1810 60%, #061008 100%);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 44px;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-7d-inner:active {
+    transform: scale(0.98);
+  }
+
+  .btn-7d-inner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212,175,106,0.06), transparent);
+    animation: shimmerBtn 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmerBtn {
+    0% { left: -100%; }
+    50%, 100% { left: 200%; }
+  }
+
+  .btn-7d-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(212,175,106,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(184,137,42,0.1);
+  }
+
+  .btn-7d-text { flex: 1; }
+
+  .btn-7d-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(212,175,106,0.7);
+    margin-bottom: 3px;
+  }
+
+  .btn-7d-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #EDE3CE;
+    line-height: 1.15;
+  }
+
+  .btn-7d-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    color: rgba(212,175,106,0.55);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .btn-7d-arrow {
+    width: 32px;
+    height: 32px;
+    background: rgba(184,137,42,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ─── MODAL BIENVENIDA / PERSUASIÓN 7D ─────────────────────── */
+  #modal-7d-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 3, 2, 0.92);
+    z-index: 9000;
+    display: none;
+    flex-direction: column;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  #modal-7d-overlay.open {
+    display: flex;
+  }
+
+  .modal-7d-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 52px 20px 16px;
+    flex-shrink: 0;
+  }
+
+  .modal-7d-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(184,137,42,0.3);
+    background: rgba(184,137,42,0.08);
+    color: #D4AF6A;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  .modal-7d-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 40px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bienvenida-nombre {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 600;
+    font-style: italic;
+    color: #EDE3CE;
+    line-height: 1.1;
+    text-align: center;
+    padding: 8px 0 20px;
+  }
+
+  .bienvenida-nombre span {
+    color: #D4AF6A;
+    display: block;
+  }
+
+  .bunny-frame-wrap {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(184,137,42,0.25);
+    margin-bottom: 24px;
+  }
+
+  .bunny-frame-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  .persuasion-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(184,137,42,0.1);
+    align-items: flex-start;
+  }
+
+  .persuasion-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .persuasion-text {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: rgba(237,227,206,0.75);
+    line-height: 1.55;
+  }
+
+  .persuasion-text strong {
+    color: #D4AF6A;
+    font-weight: 600;
+  }
+
+  .cta-compra {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 28px;
+    background: linear-gradient(135deg, #B8892A, #8B6520);
+    color: #0F0A0B;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 14px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cta-compra:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 20px rgba(184,137,42,0.4);
+  }
+
   /* Main content area */
   .app-main {
     flex: 1;
@@ -5478,26 +5721,7 @@ function renderSectionsList() {
     padding:60px 20px 60px;
     background:linear-gradient(to bottom,var(--burgundy-deep) 0%,#0D1A14 50%,#0F0A0B 100%);
   `;
-  abyssWrap.innerHTML = `
-    <div style="
-      width:85%;margin:0 auto;
-      background:transparent;
-      border:1.5px solid rgba(184,137,42,0.3);
-      border-radius:16px;
-      padding:20px 24px;
-      display:flex;align-items:center;gap:14px
-    ">
-      <div style="flex-shrink:0;color:#B8892A">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
-        </svg>
-      </div>
-      <div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#B8892A;margin-bottom:4px">ENTRENAMIENTO</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#EDE3CE;line-height:1.1;margin-bottom:3px">Soberana 7D</div>
-        <div style="font-size:11px;color:rgba(237,227,206,0.6)">30 días · 4 semanas · Tu caso en vivo</div>
-      </div>
-    </div>`;
+  abyssWrap.innerHTML = render7dCajita();
   list.appendChild(abyssWrap);
 
   // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
@@ -5601,6 +5825,139 @@ function closeMethodologyModal() {
   if (!overlay) return;
   overlay.classList.remove('open');
 }
+
+// ── 7D Cajita (botón + modal) ─────────────────────────────────────
+function render7dCajita() {
+  const tiene7d = state.user?.tiene7d === true;
+  const nombre  = state.user?.nombre || 'Soberana';
+  const LIBRARY = '636956';
+  const VIDEO_BIENVENIDA = 'BUNNY_VIDEO_ID_AQUI';
+  const VIDEO_TOUR = 'a24ce52e-4395-4b7c-8b6b-50a154ec746c';
+
+  const labelTop  = tiene7d ? 'BIENVENIDA AL' : 'ENTRENAMIENTO';
+  const titulo    = tiene7d ? 'Sistema 7D'    : 'Soberana 7D';
+  const subtitulo = tiene7d
+    ? 'Tu video de inicio y dinámica'
+    : '30 días · 4 semanas · Tu caso en vivo';
+
+  const iconoSVG = tiene7d
+    ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="2" stroke-linecap="round">
+         <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+       </svg>`
+    : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="1.5">
+         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+       </svg>`;
+
+  return `
+    <div class="btn-7d-wrapper" onclick="abrir7dModal()" style="margin: 0 0 4px;">
+      <div class="btn-7d-inner">
+        <div class="btn-7d-icon">${iconoSVG}</div>
+        <div class="btn-7d-text">
+          <div class="btn-7d-label">${labelTop}</div>
+          <div class="btn-7d-title">${titulo}</div>
+          <div class="btn-7d-sub">${subtitulo}</div>
+        </div>
+        <div class="btn-7d-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-7d-overlay">
+      <div class="modal-7d-header">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF6A;font-weight:600;">
+          ${tiene7d ? 'Tu Bienvenida' : 'Soberana 7D'}
+        </div>
+        <div class="modal-7d-close" onclick="cerrar7dModal()">✕</div>
+      </div>
+
+      <div class="modal-7d-body">
+        ${tiene7d ? `
+          <div class="bienvenida-nombre">
+            Bienvenida,<span>${nombre}</span>
+          </div>
+
+          <div class="bunny-frame-wrap">
+            <iframe
+              src="https://iframe.mediadelivery.net/embed/${LIBRARY}/${VIDEO_BIENVENIDA}?autoplay=true&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+
+          <div style="text-align:center;font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,0.5);line-height:1.6;padding:0 8px 8px;">
+            Este es tu centro de mando.<br>Lo que empieza aquí no termina.
+          </div>
+
+          <button onclick="cerrar7dModal(); switchTab('inicio');" class="cta-compra" style="background:linear-gradient(135deg,#2A5C42,#1A3D2B);color:#D4AF6A;">
+            Ir a mi entrenamiento →
+          </button>
+
+        ` : `
+          <div style="text-align:center;padding:4px 0 20px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#EDE3CE;">
+              Soberana 7D
+            </div>
+            <div style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(212,175,106,0.6);margin-top:4px;letter-spacing:0.06em;">
+              LO QUE EL WORKSHOP NO PUEDE DARTE
+            </div>
+          </div>
+
+          <div class="bunny-frame-wrap">
+            <iframe
+              src="https://iframe.mediadelivery.net/embed/${LIBRARY}/${VIDEO_TOUR}?autoplay=false&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+
+          <div style="margin:4px 0 8px;">
+            ${[
+              ['🧠', '<strong>4 semanas</strong> de entrenamiento racional profundo'],
+              ['⚡', 'Tu caso en vivo — no teoría, tu situación real'],
+              ['🔒', 'Acceso a las 4 dimensiones bloqueadas que viste en el camino'],
+              ['🎯', 'Sesiones en vivo cada semana con retroalimentación directa'],
+              ['♾️', 'El sistema que funciona cuando ya no estás en modo crisis'],
+            ].map(([ic, tx]) => `
+              <div class="persuasion-item">
+                <div class="persuasion-icon">${ic}</div>
+                <div class="persuasion-text">${tx}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <a href="https://soberana7d.josuecalderon.lat" class="cta-compra">
+            Quiero el entrenamiento completo →
+          </a>
+
+          <div style="text-align:center;font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,0.3);margin-top:14px;padding-bottom:8px;">
+            Acceso inmediato al comprar
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+window.abrir7dModal = function() {
+  const overlay = document.getElementById('modal-7d-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (navigator.vibrate) navigator.vibrate(30);
+};
+
+window.cerrar7dModal = function() {
+  const overlay = document.getElementById('modal-7d-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  const iframe = overlay.querySelector('iframe');
+  if (iframe) iframe.src = iframe.src;
+};
 
 // ── 7D Journey data ───────────────────────────────────────────────
 const SEMANAS_7D = [

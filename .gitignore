@@ -67,6 +67,10 @@ node_modules/
 
 # Firebase service account key (never commit)
 serviceAccountKey.json
+serviceAccountKey.json.json
+
+# Scripts de prueba local
+test-notif.js
 
 # dataconnect generated files
 .dataconnect

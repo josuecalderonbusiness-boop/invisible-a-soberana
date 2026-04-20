@@ -563,3 +563,283 @@ exports.onEventoProgreso = onDocumentWritten(
     }
   }
 );
+
+// ── HELPERS SESIÓN EN VIVO SÁBADO ─────────────────────────────────────────────
+
+async function getSesionActiva(db) {
+  const snap = await db.collection("config").doc("sesiones_live").get();
+  if (!snap.exists) return null;
+  const data = snap.data();
+
+  // Buscar la semana cuya fecha_iso sea la más próxima (futura o reciente)
+  const ahora = Date.now();
+  let sesionActiva = null;
+  let menorDiff = Infinity;
+
+  for (const key of Object.keys(data)) {
+    const semana = data[key];
+    if (!semana || !semana.fecha_iso) continue;
+    const fechaMs = new Date(semana.fecha_iso).getTime();
+    const diff = Math.abs(ahora - fechaMs);
+    if (diff < menorDiff) {
+      menorDiff = diff;
+      sesionActiva = { key, ...semana, fechaMs };
+    }
+  }
+  return sesionActiva;
+}
+
+async function enviarPushCohorte(db, messaging, payload) {
+  const tokensSnap = await db.collection("tokens").get();
+  const allDocs = tokensSnap.docs.filter(d => !!d.data().token);
+  if (allDocs.length === 0) return 0;
+
+  const BATCH = 500;
+  let enviadas = 0;
+  const invalidIds = [];
+
+  for (let i = 0; i < allDocs.length; i += BATCH) {
+    const batch = allDocs.slice(i, i + BATCH);
+    const resp = await messaging.sendEachForMulticast({
+      tokens: batch.map(d => d.data().token),
+      ...payload
+    });
+    resp.responses.forEach((r, idx) => {
+      if (r.success) {
+        enviadas++;
+      } else {
+        const code = r.error?.code;
+        if (
+          code === "messaging/registration-token-not-registered" ||
+          code === "messaging/invalid-registration-token" ||
+          code === "messaging/invalid-argument"
+        ) invalidIds.push(batch[idx].id);
+      }
+    });
+  }
+
+  if (invalidIds.length > 0) {
+    await Promise.all(invalidIds.map(id => db.collection("tokens").doc(id).delete()));
+  }
+  return enviadas;
+}
+
+// ── notifSabado24h ─────────────────────────────────────────────────────────────
+// Corre viernes 7:00 PM Colombia — notifica 24h antes de la sesión
+
+exports.notifSabado24h = onSchedule(
+  { schedule: "0 19 * * 5", timeZone: "America/Bogota", maxInstances: 1 },
+  async () => {
+    const db = getFirestore();
+    const messaging = getMessaging();
+
+    const sesion = await getSesionActiva(db);
+    if (!sesion) {
+      console.log("[notifSabado24h] Sin sesión configurada.");
+      return;
+    }
+
+    // Solo enviar si la sesión es mañana (entre 20h y 28h desde ahora)
+    const horasHasta = (sesion.fechaMs - Date.now()) / (1000 * 60 * 60);
+    if (horasHasta < 0 || horasHasta > 28) {
+      console.log(`[notifSabado24h] Sesión en ${horasHasta.toFixed(1)}h — fuera de ventana.`);
+      return;
+    }
+
+    const enviadas = await enviarPushCohorte(db, messaging, {
+      data: {
+        tipo: "live_pronto",
+        title: "Mañana — Sesión en Vivo Soberana 🗓",
+        body: "La sesión del sábado es mañana. Reserva tu espacio de 2 horas.",
+        tag: "sabado_24h",
+        url: "/workbook/#tab-inicio",
+        icon: "/workbook/icon-192.png",
+        badge: "/workbook/icon-192.png"
+      },
+      android: { priority: "high", notification: { color: "#B8892A" } },
+      webpush: { headers: { Urgency: "high" } }
+    });
+
+    console.log(`[notifSabado24h] Enviadas: ${enviadas}`);
+  }
+);
+
+// ── notifSabado1h ──────────────────────────────────────────────────────────────
+// Se dispara cada sábado hora a hora — envía si la sesión es en 55–65 min
+
+exports.notifSabado1h = onSchedule(
+  { schedule: "0 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
+  async () => {
+    const db = getFirestore();
+    const messaging = getMessaging();
+
+    const sesion = await getSesionActiva(db);
+    if (!sesion) return;
+
+    // Ventana: entre 55 y 65 minutos antes de la sesión
+    const minutosHasta = (sesion.fechaMs - Date.now()) / (1000 * 60);
+    if (minutosHasta < 55 || minutosHasta > 65) {
+      console.log(`[notifSabado1h] Sesión en ${minutosHasta.toFixed(0)} min — no es la ventana.`);
+      return;
+    }
+
+    const enviadas = await enviarPushCohorte(db, messaging, {
+      data: {
+        tipo: "live_pronto",
+        title: "En 1 hora — Sesión en Vivo ⏰",
+        body: "La sesión comienza en 60 minutos. Prepara tu espacio y tu energía.",
+        tag: "sabado_1h",
+        url: "/workbook/#tab-inicio",
+        icon: "/workbook/icon-192.png",
+        badge: "/workbook/icon-192.png"
+      },
+      android: { priority: "high", notification: { color: "#B8892A" } },
+      webpush: { headers: { Urgency: "high" } }
+    });
+
+    console.log(`[notifSabado1h] Enviadas: ${enviadas}`);
+  }
+);
+
+// ── notifSabadoLive ────────────────────────────────────────────────────────────
+// Se dispara cada sábado hora a hora — detecta inicio exacto y publica en Novedades
+
+exports.notifSabadoLive = onSchedule(
+  { schedule: "0 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
+  async () => {
+    const db = getFirestore();
+    const messaging = getMessaging();
+
+    const sesion = await getSesionActiva(db);
+    if (!sesion) return;
+
+    // Ventana: entre -5 y +5 minutos del inicio exacto
+    const minutosDesde = (Date.now() - sesion.fechaMs) / (1000 * 60);
+    if (minutosDesde < -5 || minutosDesde > 5) {
+      console.log(`[notifSabadoLive] Sesión en ${(-minutosDesde).toFixed(0)} min — no es ahora.`);
+      return;
+    }
+
+    // Anti-duplicado
+    const semanaKey = `live_${sesion.key}_${new Date().toISOString().slice(0, 10)}`;
+    const lockRef = db.collection("notif_locks").doc(semanaKey);
+    const lockSnap = await lockRef.get();
+    if (lockSnap.exists) {
+      console.log("[notifSabadoLive] Ya enviada esta semana.");
+      return;
+    }
+    await lockRef.set({ enviadaEl: Timestamp.now() });
+
+    // 1. Publicar post en Novedades
+    await db.collection("comunidad").add({
+      adminKey: ADMIN_KEY,
+      autor: "Josué Calderón",
+      avatarLetra: "J",
+      tipo: "live",
+      emoji: "🔴",
+      titulo: "Estamos en vivo ahora mismo",
+      texto: "La sesión en vivo del Sábado ha comenzado. Entra ahora y únete a la comunidad.",
+      cta: "Entrar a la sesión →",
+      ctaUrl: sesion.zoom_link || "/workbook/#tab-inicio",
+      hearts: 0,
+      timestamp: Timestamp.now(),
+      esLive: true
+    });
+
+    // 2. Push a toda la cohorte
+    const enviadas = await enviarPushCohorte(db, messaging, {
+      data: {
+        tipo: "live_ahora",
+        title: "🔴 Estamos en vivo — Entra ahora",
+        body: "La sesión del sábado acaba de comenzar. Tu lugar te está esperando.",
+        tag: "sabado_live",
+        url: sesion.zoom_link || "/workbook/#tab-inicio",
+        icon: "/workbook/icon-192.png",
+        badge: "/workbook/icon-192.png"
+      },
+      android: { priority: "high", notification: { color: "#C94040" } },
+      webpush: { headers: { Urgency: "high" } }
+    });
+
+    console.log(`[notifSabadoLive] Post publicado. Push enviadas: ${enviadas}`);
+  }
+);
+
+// ── notifSabadoAusentes ────────────────────────────────────────────────────────
+// 30 min después del inicio — notifica solo a quienes NO registraron entrada
+
+exports.notifSabadoAusentes = onSchedule(
+  { schedule: "30 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
+  async () => {
+    const db = getFirestore();
+    const messaging = getMessaging();
+
+    const sesion = await getSesionActiva(db);
+    if (!sesion) return;
+
+    // Ventana: entre 25 y 35 minutos después del inicio
+    const minutosDesde = (Date.now() - sesion.fechaMs) / (1000 * 60);
+    if (minutosDesde < 25 || minutosDesde > 35) {
+      console.log(`[notifSabadoAusentes] Sesión hace ${minutosDesde.toFixed(0)} min — fuera de ventana.`);
+      return;
+    }
+
+    // Leer quiénes SÍ entraron
+    const asistenciaSnap = await db
+      .collection("sesion_asistencia")
+      .doc(sesion.key)
+      .collection("entradas")
+      .get();
+    const quienesEntraron = new Set(asistenciaSnap.docs.map(d => d.id));
+
+    // Filtrar ausentes
+    const tokensSnap = await db.collection("tokens").get();
+    const ausentes = tokensSnap.docs.filter(d => d.data().token && !quienesEntraron.has(d.id));
+
+    if (ausentes.length === 0) {
+      console.log("[notifSabadoAusentes] Todas asistieron 🎉");
+      return;
+    }
+
+    let enviadas = 0;
+    const invalidIds = [];
+    const BATCH = 500;
+
+    for (let i = 0; i < ausentes.length; i += BATCH) {
+      const batch = ausentes.slice(i, i + BATCH);
+      const resp = await messaging.sendEachForMulticast({
+        tokens: batch.map(d => d.data().token),
+        data: {
+          tipo: "live_ausente",
+          title: "La clase sigue en vivo sin ti 🔴",
+          body: "Aún estás a tiempo de unirte. La sesión continúa ahora mismo.",
+          tag: "sabado_ausente",
+          url: sesion.zoom_link || "/workbook/#tab-inicio",
+          icon: "/workbook/icon-192.png",
+          badge: "/workbook/icon-192.png"
+        },
+        android: { priority: "high", notification: { color: "#C94040" } },
+        webpush: { headers: { Urgency: "high" } }
+      });
+
+      resp.responses.forEach((r, idx) => {
+        if (r.success) {
+          enviadas++;
+        } else {
+          const code = r.error?.code;
+          if (
+            code === "messaging/registration-token-not-registered" ||
+            code === "messaging/invalid-registration-token" ||
+            code === "messaging/invalid-argument"
+          ) invalidIds.push(batch[idx].id);
+        }
+      });
+    }
+
+    if (invalidIds.length > 0) {
+      await Promise.all(invalidIds.map(id => db.collection("tokens").doc(id).delete()));
+    }
+
+    console.log(`[notifSabadoAusentes] Ausentes: ${ausentes.length}. Push enviadas: ${enviadas}`);
+  }
+);

@@ -10196,7 +10196,7 @@ if (loadState() && state.user) {
     }
   };
 
-  async window.checkSesionLive = async function() {
+  window.checkSesionLive = async function() {
     try {
       const db = window._db || (window.firebase && firebase.firestore && firebase.firestore());
       if (!db) return;
@@ -10258,4 +10258,5 @@ if (loadState() && state.user) {
 
 </body>
 </html>
+
 

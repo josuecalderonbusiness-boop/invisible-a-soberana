@@ -71,7 +71,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
         sistema: {
           title: data.nombre ? `${data.nombre}` : 'Soberana · Sistema',
           body: data.mensaje || 'Establece tu estandar para hoy.',
-          tag: 'sistema',
+          tag: 'soberana_' + Date.now(),
           data: { url: '/workbook/#tab-inicio', tipo: 'sistema' }
         },
         inactividad: {
@@ -846,5 +846,6 @@ exports.notifSabadoAusentes = onSchedule(
     console.log(`[notifSabadoAusentes] Ausentes: ${ausentes.length}. Push enviadas: ${enviadas}`);
   }
 );
+
 
 

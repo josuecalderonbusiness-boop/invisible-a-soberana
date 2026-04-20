@@ -4174,7 +4174,7 @@ const firebaseConfig = {
   appId: "1:30025552803:web:eb47af86c1898b99e94016"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.firestore(); window._db = db;
 
 // ── Helpers Firestore ────────────────────────────────────────────
 async function fsReadStreak(email) {
@@ -10258,5 +10258,6 @@ if (loadState() && state.user) {
 
 </body>
 </html>
+
 
 

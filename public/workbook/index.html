@@ -7239,6 +7239,17 @@ function _mcPopupAbrir(semanaNum) {
 
 function render7dJourney(container) {
   const tiene7d = state.user && state.user.tiene7d;
+  const _debugUser = ((state.user && state.user.email) || '').includes('josuecalderon') ||
+                     localStorage.getItem('debugMode') === 'true';
+
+  // Log días desde inicio para diagnóstico
+  if (state.user && state.user.fecha7d) {
+    const diasDesdeInicio = Math.floor((Date.now() - new Date(state.user.fecha7d)) / (1000*60*60*24));
+    console.log('[DEBUG] diasDesdeInicio:', diasDesdeInicio, '— fecha7d:', state.user.fecha7d);
+  } else {
+    console.log('[DEBUG] diasDesdeInicio: N/A — fecha7d no existe. _debugUser:', _debugUser);
+  }
+
   // TODO: remover para producción — forzar semana 1 activa para prueba visual
   let semanaActiva = tiene7d ? 1 : 0;
 
@@ -7317,9 +7328,10 @@ function render7dJourney(container) {
 
       // Solo el siguiente sin hacer gira; done brilla; resto → gris
       let gemState7d;
-      if (isDone)           gemState7d = 'done';
-      else if (isSiguiente) gemState7d = 'current';
-      else                  gemState7d = 'locked';
+      if (isDone)                                    gemState7d = 'done';
+      else if (isSiguiente)                          gemState7d = 'current';
+      else if (_debugUser && dia.isLive && !isDone)  gemState7d = 'current'; // debug: sábado siempre visible
+      else                                           gemState7d = 'locked';
 
       node.insertAdjacentHTML('afterbegin', makeGemSVG('sem' + semNum, gemState7d));
       if (gemState7d === 'current') node.style.perspective = '400px';

@@ -768,31 +768,109 @@
   .sabado-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
     z-index: 1000;
-    display: flex;
-    align-items: flex-end;
-    padding: 16px;
+    background: #0F0A0B;
+    overflow-y: auto;
+    display: block;
   }
 
   .sabado-modal {
     width: 100%;
-    background: rgba(26,10,15,0.92);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(184,137,42,0.2);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(184,137,42,0.1);
+    min-height: 100vh;
+    background: #0F0A0B;
     font-family: 'Jost', sans-serif;
     color: #F4ECD8;
+    position: relative;
   }
 
-  .sabado-modal .modal-header {
-    padding: 28px 28px 0;
+  .sabado-modal::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(139,26,47,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(184,137,42,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .sabado-app-header {
+    position: relative;
+    z-index: 1;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid rgba(184,137,42,0.08);
+  }
+
+  .sabado-app-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: #D4AF6A;
+  }
+
+  .sabado-app-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(244,236,216,0.55);
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sabado-debug-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 6px;
+    padding: 10px 24px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .sabado-debug-btn {
+    flex: 1;
+    padding: 7px 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    color: rgba(244,236,216,0.35);
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sabado-debug-btn.active {
+    background: rgba(184,137,42,0.15);
+    border-color: rgba(184,137,42,0.4);
+    color: #D4AF6A;
+  }
+
+  .sabado-content {
+    position: relative;
+    z-index: 1;
+    padding: 0 24px 56px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .sabado-badge-row {
+    padding: 28px 0 0;
+    display: flex;
+    align-items: center;
   }
 
   .sabado-modal .modal-badge {
@@ -824,23 +902,15 @@
     animation: badge-pulse 2s infinite;
   }
 
-  .sabado-modal .modal-close {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: rgba(244,236,216,0.55);
-    font-size: 16px;
-    flex-shrink: 0;
+  .sabado-modal .modal-badge.badge-ended {
+    background: rgba(184,137,42,0.1);
+    border: 1px solid rgba(184,137,42,0.25);
+    color: #B8892A;
   }
 
   .sabado-modal .modal-body {
-    padding: 24px 28px 32px;
+    padding: 0;
+    margin-top: 20px;
   }
 
   .sabado-modal .modal-week-tag {
@@ -854,11 +924,11 @@
 
   .sabado-modal .modal-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 400;
-    line-height: 1.2;
+    line-height: 1.15;
     color: #F4ECD8;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .sabado-modal .modal-date {
@@ -1027,6 +1097,8 @@
   }
 
   .sabado-modal .live-status-bar {
+    position: relative;
+    z-index: 1;
     background: linear-gradient(90deg, rgba(139,26,47,0.6), rgba(139,26,47,0.3));
     border-bottom: 1px solid rgba(224,85,85,0.2);
     padding: 10px 28px;
@@ -6237,138 +6309,104 @@ function iniciarCountdown(fechaSesion, containerId, pulse) {
   }, 1000);
 }
 
-async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
-  console.log('[DIAG] Click nodo sábado — semNum:', semNum, 'nodeKey:', nodeKey, 'semUnlocked:', semUnlocked);
-  let drawer = document.getElementById('drawer-sabado');
-  if (!drawer) {
-    drawer = document.createElement('div');
-    drawer.id = 'drawer-sabado';
-    drawer.className = 'sabado-overlay';
-    drawer.setAttribute('data-testid', 'nodo-sabado-modal');
-    drawer.style.display = 'none';
-    drawer.onclick = e => { if (e.target === drawer) cerrarSabadoModal(); };
-    document.body.appendChild(drawer);
-  }
+let _sabadoCurrentData = null;
 
-  // Mostrar loading
-  drawer.innerHTML = `
-    <div class="sabado-modal">
-      <div class="modal-body" style="text-align:center;color:rgba(244,236,216,0.3);font-size:13px;padding:40px 28px;">
-        Cargando sesión…
-      </div>
-    </div>`;
-  drawer.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+function _sabadoRenderConEstado(estado) {
+  const drawer = document.getElementById('drawer-sabado');
+  if (!drawer || !_sabadoCurrentData) return;
+  if (_sabadoCountdownInterval) { clearInterval(_sabadoCountdownInterval); _sabadoCountdownInterval = null; }
 
-  if (!semUnlocked) {
-    drawer.innerHTML = `
-      <div class="modal-sheet" style="border-top:3px solid ${semana.color}">
-        <div class="modal-drag-bar"></div>
-        <div style="padding:24px 20px 36px">
-          <div style="font-size:9px;font-weight:700;letter-spacing:.18em;color:${semana.color};text-transform:uppercase;margin-bottom:6px">SÁBADO · SEMANA ${semNum}</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#F0E6EA;margin-bottom:4px">Sesión en Vivo</div>
-          <div style="font-size:13px;color:rgba(237,227,206,0.55);line-height:1.5;margin-bottom:20px">${dia.desc}</div>
-          <div style="text-align:center;background:${semana.bannerBg};border:1px solid ${semana.bannerBorder};border-radius:12px;padding:18px;color:${semana.color};font-size:14px;font-weight:600">Disponible en Semana ${semNum}</div>
-          <button onclick="cerrarSabadoModal()" style="width:100%;margin-top:12px;background:none;border:none;color:rgba(196,160,178,0.4);font-size:13px;cursor:pointer;padding:8px">Cerrar</button>
-        </div>
-      </div>`;
-    return;
-  }
-
-  const sesion = await fsCargarSesionLive(semNum);
-
-  // Determinar estado
-  let estado = 'upcoming';
-  let minutos = null;
-  if (sesion && sesion.fecha_iso) {
-    const ahora       = new Date();
-    const fechaSesion = new Date(sesion.fecha_iso);
-    console.log('[DIAG] Calcular estado — fecha_iso:', sesion.fecha_iso, '— fechaSesion:', fechaSesion.toISOString(), '— ahora:', ahora.toISOString());
-    const minutosAntes   = (fechaSesion - ahora) / 60000;
-    const minutesDespues = (ahora - fechaSesion) / 60000;
-    minutos = minutosAntes;
-    if      (minutosAntes  >  60) estado = 'upcoming';
-    else if (minutosAntes  >   0) estado = 'soon';
-    else if (minutesDespues < 180) estado = 'live';
-    else                           estado = 'ended';
-    console.log('[DIAG] Estado calculado:', estado, '— minutosAntes:', minutosAntes?.toFixed(1), '— minutesDespues:', minutesDespues?.toFixed(1));
-  }
-
-  const isDone = !!(state.completed7d && state.completed7d[nodeKey]);
+  const { sesion, semNum, nodeKey, semana, isDone } = _sabadoCurrentData;
   const LIBRARY = '636956';
+  const isDebug = ((state.user && state.user.email || '').includes('josuecalderon')) ||
+                  localStorage.getItem('debugMode') === 'true';
+
+  const minutos = (sesion && sesion.fecha_iso)
+    ? (new Date(sesion.fecha_iso) - new Date()) / 60000
+    : null;
 
   let statusBar = '';
-  let badge = '';
-  let bodyHTML = '';
+  let badge     = '';
+  let bodyHTML  = '';
 
   if (!sesion || !sesion.fecha_iso) {
-    badge = `<div class="modal-badge">📅 · Sábado</div>`;
+    badge = `<span class="modal-badge">📅 · Sábado</span>`;
     bodyHTML = `
       <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
-      <div class="modal-title">Sesión en Vivo</div>
+      <div class="modal-title">Sesión<br>en Vivo</div>
       <div class="modal-date">Fecha próximamente</div>
       <div class="modal-desc">Te avisaremos cuando esté programada la próxima sesión.</div>`;
 
   } else if (estado === 'upcoming') {
-    badge = `<div class="modal-badge">🗓 · Próxima sesión</div>`;
+    badge = `<span class="modal-badge">⟡ Sesión programada</span>`;
     bodyHTML = `
       <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
-      <div class="modal-title">Sesión en Vivo</div>
+      <div class="modal-title">Sesión<br>en Vivo</div>
       <div class="modal-date">${_formatFechaSabado(sesion.fecha_iso)}</div>
       <div class="countdown-wrap" id="sabado-countdown-wrap"></div>
       <div class="modal-divider"></div>
+      <p class="modal-desc">"${sesion.descripcion || 'Análisis de casos reales. El espejo soberano en tiempo real.'}"</p>
       <div class="modal-info">
-        <div class="info-row">📍 Zoom — link 15 min antes</div>
-        <div class="info-row">⏱ 90 minutos aprox.</div>
+        <div class="info-row"><span style="width:20px;text-align:center">📅</span>${_formatFechaSabado(sesion.fecha_iso)}</div>
+        <div class="info-row"><span style="width:20px;text-align:center">⏱</span>90 minutos aproximadamente</div>
+        <div class="info-row"><span style="width:20px;text-align:center">🔒</span>Solo compradoras Soberana 7D</div>
       </div>
       <a href="${_googleCalendarLink(sesion, semNum)}" target="_blank" rel="noopener" class="btn-secondary">
         🗓 Agregar al calendario
       </a>
-      <div class="modal-note">Recibirás el link 15 minutos antes de la sesión</div>`;
+      <p class="modal-note">Recibirás el acceso directo a la sesión 15 minutos antes del inicio.</p>`;
 
   } else if (estado === 'soon') {
-    const minsLeft = Math.ceil(minutos);
-    badge = `<div class="modal-badge badge-soon">⚡ En vivo en ${minsLeft} min</div>`;
+    const minsLeft = Math.max(1, Math.ceil(minutos));
+    badge = `<span class="modal-badge badge-soon">⚡ En ${minsLeft} minutos</span>`;
     bodyHTML = `
       <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
-      <div class="modal-title">Sesión en Vivo</div>
-      <div class="modal-date">${_formatFechaSabado(sesion.fecha_iso)}</div>
+      <div class="modal-title">Sesión<br>en Vivo</div>
+      <div class="modal-date">Hoy · ${_formatFechaSabado(sesion.fecha_iso).split('·')[1].trim()}</div>
       <div class="countdown-wrap" id="sabado-countdown-wrap"></div>
+      <div class="modal-divider"></div>
+      <p class="modal-desc">"La sala estará abierta desde 5 minutos antes. Ten el workbook de esta semana a la mano."</p>
       ${sesion.zoom_link ? `
         <a href="${sesion.zoom_link}" target="_blank" rel="noopener" class="btn-primary"
           onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
-          Unirme a la sesión →
-        </a>` : ''}`;
+          ▶ Unirme a la sesión en vivo
+        </a>
+        <p class="modal-note">Al tocar, se abre Zoom. Asegúrate de tener la app instalada.</p>` : ''}`;
 
   } else if (estado === 'live') {
     const minPasados = Math.floor((new Date() - new Date(sesion.fecha_iso)) / 60000);
     statusBar = `
       <div class="live-status-bar">
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;letter-spacing:0.1em;color:#FF8080">
-          <div class="live-dot"></div>EN VIVO AHORA
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#FF9090;font-weight:400;letter-spacing:0.06em">
+          <div class="live-dot"></div>SESIÓN EN CURSO
         </div>
-        <div style="font-size:11px;color:rgba(244,236,216,0.35)">${minPasados} min transcurridos</div>
+        <div style="font-size:11px;color:rgba(244,236,216,0.3)">${minPasados} min transcurridos</div>
       </div>`;
-    badge = `<div class="modal-badge badge-live"><div class="live-dot"></div> En Vivo</div>`;
+    badge = `<span class="modal-badge badge-live"><span class="live-dot"></span> En vivo ahora</span>`;
     bodyHTML = `
       <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
-      <div class="modal-title">Sesión en Vivo</div>
-      <div class="modal-desc">La sesión está en curso. Únete cuando puedas.${minPasados >= 90 ? '<br>Si te perdiste el inicio, entra igual — la sesión continúa.' : ''}</div>
+      <div class="modal-title">La sesión<br>está en curso</div>
+      <div class="modal-date">Inició · ${_formatFechaSabado(sesion.fecha_iso).split('·')[1].trim()} · ${minPasados} min transcurridos</div>
+      <div class="modal-divider"></div>
+      <p class="modal-desc">"${minPasados >= 90 ? 'Josué está en la recta final. Únete y participa.' : 'Únete cuando puedas — la dinámica sigue activa durante toda la sesión.'}"</p>
       ${sesion.zoom_link ? `
         <a href="${sesion.zoom_link}" target="_blank" rel="noopener" class="btn-primary live-btn"
           onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
-          Entrar a la sesión →
-        </a>` : ''}`;
+          🔴 Entrar a la sesión ahora
+        </a>
+        <p class="modal-note">Si llegas tarde, la dinámica sigue activa. Entra y participa.</p>` : ''}`;
 
   } else { // ended
     const tieneGrabacion = sesion.grabacion_url || sesion.grabacion_bunny_id;
-    badge = `<div class="modal-badge">✓ Sesión completada</div>`;
+    badge = `<span class="modal-badge badge-ended">✓ Sesión completada</span>`;
     bodyHTML = `
+      ${isDone ? `<div class="completion-chip">✓ Semana ${semNum} · Sábado completado</div>` : ''}
       <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
-      <div class="modal-title">Sesión en Vivo</div>
-      ${isDone ? `<div class="completion-chip">✓ Completado</div>` : ''}
+      <div class="modal-title">Grabación<br>disponible</div>
+      <div class="modal-date">${_formatFechaSabado(sesion.fecha_iso)} · 90 minutos</div>
+      <div class="modal-divider"></div>
       ${!tieneGrabacion ? `
-        <div class="modal-desc">La grabación estará disponible pronto.</div>
+        <p class="modal-desc">La grabación estará disponible pronto.</p>
         <div class="btn-disabled">⏳ Grabación en proceso...</div>
       ` : sesion.grabacion_bunny_id ? `
         <div class="recording-player">
@@ -6380,25 +6418,41 @@ async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
         ${!isDone ? `
           <button class="btn-primary"
             onclick="if(navigator.vibrate)navigator.vibrate(10); mark7dDone('${nodeKey}')">
-            Marcar como completado
-          </button>` : ''}
+            ▶ Ver grabación completa
+          </button>` : `
+          <button class="btn-primary"
+            onclick="if(navigator.vibrate)navigator.vibrate(10)">
+            ▶ Ver grabación completa
+          </button>`}
       ` : `
         <a href="${sesion.grabacion_url}" target="_blank" rel="noopener" class="btn-primary"
           onclick="if(navigator.vibrate)navigator.vibrate(10); ${!isDone ? `mark7dDone('${nodeKey}')` : ''}">
-          Ver grabación →
+          ▶ Ver grabación completa
         </a>
-      `}`;
+      `}
+      <p class="modal-note">La grabación estará disponible durante todo el programa.</p>`;
   }
+
+  const debugBar = isDebug ? `
+    <div class="sabado-debug-bar">
+      ${['upcoming','soon','live','ended'].map(e => `
+        <button class="sabado-debug-btn${estado === e ? ' active' : ''}"
+          onclick="_sabadoRenderConEstado('${e}')">
+          ${e === 'upcoming' ? 'Próxima' : e === 'soon' ? 'Pronto' : e === 'live' ? 'En vivo' : 'Terminó'}
+        </button>`).join('')}
+    </div>` : '';
 
   drawer.innerHTML = `
     <div class="sabado-modal">
-      ${statusBar}
-      <div class="modal-header">
-        ${badge}
-        <button class="modal-close" onclick="cerrarSabadoModal()">✕</button>
+      <div class="sabado-app-header">
+        <div class="sabado-app-logo">SOBERANA</div>
+        <button class="sabado-app-close" onclick="cerrarSabadoModal()">✕</button>
       </div>
-      <div class="modal-body">
-        ${bodyHTML}
+      ${debugBar}
+      ${statusBar}
+      <div class="sabado-content">
+        <div class="sabado-badge-row">${badge}</div>
+        <div class="modal-body">${bodyHTML}</div>
       </div>
     </div>`;
 
@@ -6406,6 +6460,84 @@ async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
     iniciarCountdown(sesion.fecha_iso, 'sabado-countdown-wrap', estado === 'soon');
   }
 }
+
+async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
+  console.log('[DIAG] Click nodo sábado — semNum:', semNum, 'nodeKey:', nodeKey, 'semUnlocked:', semUnlocked);
+  let drawer = document.getElementById('drawer-sabado');
+  if (!drawer) {
+    drawer = document.createElement('div');
+    drawer.id = 'drawer-sabado';
+    drawer.className = 'sabado-overlay';
+    drawer.setAttribute('data-testid', 'nodo-sabado-modal');
+    drawer.style.display = 'none';
+    document.body.appendChild(drawer);
+  }
+
+  // Mostrar loading fullscreen
+  drawer.innerHTML = `
+    <div class="sabado-modal">
+      <div class="sabado-app-header">
+        <div class="sabado-app-logo">SOBERANA</div>
+        <button class="sabado-app-close" onclick="cerrarSabadoModal()">✕</button>
+      </div>
+      <div class="sabado-content" style="display:flex;align-items:center;justify-content:center;min-height:60vh">
+        <div style="color:rgba(244,236,216,0.25);font-size:13px;letter-spacing:0.08em">Cargando sesión…</div>
+      </div>
+    </div>`;
+  drawer.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  if (!semUnlocked) {
+    drawer.innerHTML = `
+      <div class="sabado-modal">
+        <div class="sabado-app-header">
+          <div class="sabado-app-logo">SOBERANA</div>
+          <button class="sabado-app-close" onclick="cerrarSabadoModal()">✕</button>
+        </div>
+        <div class="sabado-content">
+          <div class="sabado-badge-row"><span class="modal-badge">🔒 · Bloqueado</span></div>
+          <div class="modal-body">
+            <div class="modal-week-tag">SÁBADO · SEMANA ${semNum}</div>
+            <div class="modal-title">Sesión<br>en Vivo</div>
+            <div class="modal-date">${dia.desc || ''}</div>
+            <div class="modal-divider"></div>
+            <div class="modal-info">
+              <div class="info-row" style="justify-content:center;color:rgba(244,236,216,0.35)">
+                Disponible cuando desbloquees la Semana ${semNum}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const sesion = await fsCargarSesionLive(semNum);
+
+  // Determinar estado
+  let estado = 'upcoming';
+  if (sesion && sesion.fecha_iso) {
+    const minutosAntes   = (new Date(sesion.fecha_iso) - new Date()) / 60000;
+    const minutesDespues = (new Date() - new Date(sesion.fecha_iso)) / 60000;
+    console.log('[DIAG] Calcular estado — fecha_iso:', sesion.fecha_iso, '— minutosAntes:', minutosAntes.toFixed(1));
+    if      (minutosAntes  >  60) estado = 'upcoming';
+    else if (minutosAntes  >   0) estado = 'soon';
+    else if (minutesDespues < 180) estado = 'live';
+    else                           estado = 'ended';
+    console.log('[DIAG] Estado calculado:', estado);
+  }
+
+  _sabadoCurrentData = {
+    sesion,
+    semNum,
+    nodeKey,
+    semana,
+    isDone: !!(state.completed7d && state.completed7d[nodeKey])
+  };
+  _sabadoRenderConEstado(estado);
+}
+
+window._sabadoRenderConEstado = _sabadoRenderConEstado;
 
 window._marcarSabadoVisitado = function(nodeKey, semNum) {
   if (!state.completed7d) state.completed7d = {};

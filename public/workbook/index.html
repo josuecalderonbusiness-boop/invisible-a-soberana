@@ -10126,7 +10126,7 @@ if (loadState() && state.user) {
 
 <script>
 (function() {
-  let _popupShown = { pre: false, live: false };
+  window._popupShown = { pre: false, live: false };
   let _liveZoomLink = null;
   let _checkInterval = null;
 
@@ -10137,7 +10137,7 @@ if (loadState() && state.user) {
     return tag === 'TEXTAREA' || tag === 'INPUT' || active.isContentEditable;
   }
 
-  function showLivePopup(tipo, sesion) {
+  window.showLivePopup = function(tipo, sesion) {
     if (estaEscribiendo()) return;
 
     const popup   = document.getElementById('live-popup');
@@ -10222,13 +10222,13 @@ if (loadState() && state.user) {
       const minHasta  = (sesionActiva.fechaMs - ahora) / 60000;
       const minDesde  = (ahora - sesionActiva.fechaMs) / 60000;
 
-      if (minHasta >= 10 && minHasta <= 20 && !_popupShown.pre) {
-        _popupShown.pre = true;
+      if (minHasta >= 10 && minHasta <= 20 && !window._popupShown.pre) {
+        window._popupShown.pre = true;
         showLivePopup('pre', sesionActiva);
       }
 
-      if (minDesde >= 0 && minDesde <= 180 && !_popupShown.live) {
-        _popupShown.live = true;
+      if (minDesde >= 0 && minDesde <= 180 && !window._popupShown.live) {
+        window._popupShown.live = true;
         showLivePopup('live', sesionActiva);
       }
 
@@ -10258,6 +10258,7 @@ if (loadState() && state.user) {
 
 </body>
 </html>
+
 
 
 

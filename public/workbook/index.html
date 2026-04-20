@@ -6311,15 +6311,18 @@ function iniciarCountdown(fechaSesion, containerId, pulse) {
 
 let _sabadoCurrentData = null;
 
-function _sabadoRenderConEstado(estado) {
+function renderSabadoEstado(estado) {
   const drawer = document.getElementById('drawer-sabado');
   if (!drawer || !_sabadoCurrentData) return;
   if (_sabadoCountdownInterval) { clearInterval(_sabadoCountdownInterval); _sabadoCountdownInterval = null; }
 
   const { sesion, semNum, nodeKey, semana, isDone } = _sabadoCurrentData;
   const LIBRARY = '636956';
-  const isDebug = ((state.user && state.user.email || '').includes('josuecalderon')) ||
-                  localStorage.getItem('debugMode') === 'true';
+
+  const userEmail = (state && state.user && state.user.email) ? state.user.email : '';
+  const isDebug   = userEmail.includes('josuecalderon') ||
+                    localStorage.getItem('debugMode') === 'true';
+  console.log('[DIAG] renderSabadoEstado — estado:', estado, 'isDebug:', isDebug, 'email:', userEmail, 'debugMode:', localStorage.getItem('debugMode'));
 
   const minutos = (sesion && sesion.fecha_iso)
     ? (new Date(sesion.fecha_iso) - new Date()) / 60000
@@ -6433,12 +6436,16 @@ function _sabadoRenderConEstado(estado) {
       <p class="modal-note">La grabación estará disponible durante todo el programa.</p>`;
   }
 
+  const debugLabels = { upcoming: 'Próxima', soon: 'Pronto', live: 'En vivo', ended: 'Terminó' };
   const debugBar = isDebug ? `
-    <div class="sabado-debug-bar">
+    <div style="display:flex;gap:8px;padding:8px 20px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(184,137,42,0.1)">
       ${['upcoming','soon','live','ended'].map(e => `
-        <button class="sabado-debug-btn${estado === e ? ' active' : ''}"
-          onclick="_sabadoRenderConEstado('${e}')">
-          ${e === 'upcoming' ? 'Próxima' : e === 'soon' ? 'Pronto' : e === 'live' ? 'En vivo' : 'Terminó'}
+        <button onclick="renderSabadoEstado('${e}')"
+          style="padding:6px 12px;border-radius:8px;font-size:11px;font-family:'Jost',sans-serif;cursor:pointer;
+                 ${estado === e
+                   ? 'background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.4);color:#D4AF6A'
+                   : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(244,236,216,0.5)'}">
+          ${debugLabels[e]}
         </button>`).join('')}
     </div>` : '';
 
@@ -6534,10 +6541,10 @@ async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
     semana,
     isDone: !!(state.completed7d && state.completed7d[nodeKey])
   };
-  _sabadoRenderConEstado(estado);
+  renderSabadoEstado(estado);
 }
 
-window._sabadoRenderConEstado = _sabadoRenderConEstado;
+window.renderSabadoEstado = renderSabadoEstado;
 
 window._marcarSabadoVisitado = function(nodeKey, semNum) {
   if (!state.completed7d) state.completed7d = {};

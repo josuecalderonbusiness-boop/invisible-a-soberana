@@ -2988,8 +2988,8 @@
   /* Install banner */
   .install-banner {
     margin: 0 16px;
-    background: linear-gradient(135deg, #F5F0FF, #EDE8FA);
-    border: 1.5px solid rgba(107,79,176,.2);
+    background: #6B1A2A;
+    border: 1.5px solid rgba(184,137,42,.3);
     border-radius: 16px;
     padding: 18px 20px;
     display: flex;
@@ -2997,17 +2997,48 @@
     gap: 14px;
   }
   .install-banner .ib-icon { font-size: 32px; flex-shrink: 0; }
-  .install-banner .ib-text h4 { font-size: 15px; font-weight: 600; color: #3D2980; margin-bottom: 3px; }
-  .install-banner .ib-text p { font-size: 12px; color: #6B4FB0; line-height: 1.4; }
+  .install-banner .ib-text h4 { font-size: 15px; font-weight: 600; color: #EDE3CE; margin-bottom: 3px; }
+  .install-banner .ib-text p { font-size: 12px; color: rgba(237,227,206,.75); line-height: 1.4; }
   .install-banner .ib-btn {
     margin-top: 10px;
-    background: #6B4FB0;
+    background: #B8892A;
     border: none; border-radius: 8px;
     padding: 8px 14px;
-    color: white; font-family: 'Jost', sans-serif;
+    color: #fff; font-family: 'Jost', sans-serif;
     font-size: 12px; font-weight: 600;
     cursor: pointer;
   }
+
+  /* Install float bar */
+  #install-float {
+    display: none;
+    position: fixed; bottom: 72px; left: 0; right: 0; z-index: 1000;
+    padding: 0 16px;
+    animation: slideUp .35s ease;
+  }
+  #install-float.visible { display: block; }
+  #install-float .if-inner {
+    background: #6B1A2A;
+    border: 1.5px solid rgba(184,137,42,.4);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.45);
+  }
+  #install-float .if-text { font-size: 13px; color: #EDE3CE; font-family: 'Jost', sans-serif; flex: 1; }
+  #install-float .if-text strong { display: block; font-weight: 600; margin-bottom: 1px; }
+  #install-float .if-text span { font-size: 11px; opacity: .75; }
+  #install-float .if-btn {
+    background: #B8892A; border: none; border-radius: 8px;
+    padding: 9px 16px; color: #fff;
+    font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  }
+  #install-float .if-close {
+    background: none; border: none; color: rgba(237,227,206,.5);
+    font-size: 18px; cursor: pointer; padding: 4px; flex-shrink: 0;
+  }
+  @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
   /* Modal */
   .modal-overlay {
@@ -3600,6 +3631,19 @@
 </style>
 </head>
 <body>
+
+<!-- ══ INSTALL FLOAT BANNER ══ -->
+<div id="install-float">
+  <div class="if-inner">
+    <div class="if-text">
+      <strong>Instalar App</strong>
+      <span>Accede desde tu pantalla de inicio</span>
+    </div>
+    <button class="if-btn" onclick="installApp()">Instalar</button>
+    <button class="if-close" onclick="document.getElementById('install-float').classList.remove('visible')" aria-label="Cerrar">✕</button>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ══ SPLASH / LOGIN ══ -->
@@ -9340,9 +9384,19 @@ function closeInstallPopup() {
 }
 
 function setupInstallPrompt() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (isStandalone) return;
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredPrompt = e;
+    renderInstallSection();
+    const float = document.getElementById('install-float');
+    if (float) float.classList.add('visible');
+  });
+  window.addEventListener('appinstalled', () => {
+    const float = document.getElementById('install-float');
+    if (float) float.classList.remove('visible');
+    deferredPrompt = null;
     renderInstallSection();
   });
 }
@@ -9383,7 +9437,13 @@ async function installApp() {
   if (!deferredPrompt) { showInstallInstructions(); return; }
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') { showToast('✅ App instalada correctamente'); deferredPrompt = null; renderInstallSection(); }
+  if (outcome === 'accepted') {
+    showToast('✅ App instalada correctamente');
+    deferredPrompt = null;
+    const float = document.getElementById('install-float');
+    if (float) float.classList.remove('visible');
+    renderInstallSection();
+  }
 }
 
 function showInstallInstructions() {

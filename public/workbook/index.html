@@ -3948,7 +3948,7 @@ async function fsCargarSesionLive(semana) {
     console.log('[DIAG] fsCargarSesionLive — clave buscada:', `semana${semana}`, '— resultado:', result);
     return result;
   } catch(e) {
-    console.error('[DIAG] fsCargarSesionLive ERROR:', e);
+    console.error('[DIAG] fsCargarSesionLive ERROR — code:', e.code, 'msg:', e.message, e);
     return null;
   }
 }

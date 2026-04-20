@@ -47,5 +47,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
     }
+
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    }
   }
 }

@@ -3941,11 +3941,14 @@ async function fsGuardarSemana7d(email, semanaNum, diasCompletados) {
 async function fsCargarSesionLive(semana) {
   try {
     const snap = await db.collection('config').doc('sesiones_live').get();
+    console.log('[DIAG] fsCargarSesionLive — snap.exists:', snap.exists, 'data:', snap.exists ? snap.data() : 'N/A');
     if (!snap.exists) return null;
     const data = snap.data();
-    return data[`semana${semana}`] || null;
+    const result = data[`semana${semana}`] || null;
+    console.log('[DIAG] fsCargarSesionLive — clave buscada:', `semana${semana}`, '— resultado:', result);
+    return result;
   } catch(e) {
-    console.warn('[Firestore] fsCargarSesionLive:', e);
+    console.error('[DIAG] fsCargarSesionLive ERROR:', e);
     return null;
   }
 }
@@ -6024,7 +6027,7 @@ function iniciarCountdown(fechaSesion, containerId, pulse) {
 }
 
 async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
-  bounceNode && bounceNode();
+  console.log('[DIAG] Click nodo sábado — semNum:', semNum, 'nodeKey:', nodeKey, 'semUnlocked:', semUnlocked);
   let drawer = document.getElementById('drawer-sabado');
   if (!drawer) {
     drawer = document.createElement('div');
@@ -6070,6 +6073,7 @@ async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
   if (sesion && sesion.fecha_iso) {
     const ahora       = new Date();
     const fechaSesion = new Date(sesion.fecha_iso);
+    console.log('[DIAG] Calcular estado — fecha_iso:', sesion.fecha_iso, '— fechaSesion:', fechaSesion.toISOString(), '— ahora:', ahora.toISOString());
     const minutosAntes   = (fechaSesion - ahora) / 60000;
     const minutesDespues = (ahora - fechaSesion) / 60000;
     minutos = minutosAntes;
@@ -6077,6 +6081,7 @@ async function openSabadoModal(semNum, nodeKey, dia, semana, semUnlocked) {
     else if (minutosAntes  >   0) estado = 'soon';
     else if (minutesDespues < 180) estado = 'live';
     else                           estado = 'ended';
+    console.log('[DIAG] Estado calculado:', estado, '— minutosAntes:', minutosAntes?.toFixed(1), '— minutesDespues:', minutesDespues?.toFixed(1));
   }
 
   const isDone = !!(state.completed7d && state.completed7d[nodeKey]);

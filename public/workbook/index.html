@@ -10379,7 +10379,7 @@ function setupMinCharsGuard(secId) {
   const textEjs = cfg.ejercicios.filter(e => e.tipo === 'textarea' || e.tipo === 'multifield');
   if (textEjs.length === 0) { btn.disabled = false; btn.style.opacity = '1'; return; }
   const check = () => {
-    const allOk = textEjs.every(e => {
+    const allOk = textEjs.some(e => {
       const el = document.getElementById('field-' + e.id);
       return el && el.value.trim().length >= (e.minChars || 80);
     });
@@ -10396,6 +10396,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

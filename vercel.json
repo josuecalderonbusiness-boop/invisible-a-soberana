@@ -8,6 +8,7 @@
     { "source": "/workbook/:path*", "destination": "/public/workbook/:path*" },
     { "source": "/soberana7d", "destination": "/public/soberana7d/index.html" },
     { "source": "/soberana7d/:path*", "destination": "/public/soberana7d/:path*" },
+    { "source": "/instalar", "destination": "/public/instalar/index.html" },
     { "source": "/:path*", "destination": "/public/index.html" }
   ]
 }

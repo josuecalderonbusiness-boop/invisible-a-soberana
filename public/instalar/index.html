@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#8B1A2F">
+<link rel="manifest" href="/workbook/manifest.json">
 <title>Instala tu Herramienta — Código Soberana</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
@@ -432,25 +433,56 @@
   }
 
   const ua = navigator.userAgent.toLowerCase();
-  const isIOS       = /iphone|ipad|ipod/.test(ua);
-  const isAndroid   = /android/.test(ua);
-  const isSafari    = /safari/.test(ua) && !/chrome/.test(ua) && !/crios/.test(ua);
+  const isIOS        = /iphone|ipad|ipod/.test(ua);
+  const isAndroid    = /android/.test(ua);
+  const isSafari     = /safari/.test(ua) && !/chrome/.test(ua) && !/crios/.test(ua);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  const isInApp     = /wv|fbav|fb_iab|instagram|whatsapp/.test(ua) ||
-                      (isAndroid && /version\//.test(ua) && !/chrome/.test(ua));
+  const isInApp      = /wv|fbav|fb_iab|instagram|whatsapp/.test(ua) ||
+                       (isAndroid && /version\//.test(ua) && !/chrome/.test(ua));
 
   let deferredPrompt = null;
+  let uiReady = false;  // DOM listo
+  let promptReady = false; // prompt recibido o timeout pasó
 
+  // Captura el prompt nativo de Chrome Android
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredPrompt = e;
-    setupUI();
+    promptReady = true;
+    if (uiReady) setupUI(); // si el DOM ya estaba listo, actualiza ahora
   });
 
   window.addEventListener('appinstalled', () => {
     showToast('Instalación completa — ábrela desde tu pantalla de inicio');
     document.getElementById('btn-install').style.display = 'none';
     document.getElementById('install-hint').textContent = 'Ya puedes cerrar esta página';
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    uiReady = true;
+
+    // iOS y casos especiales: renderizar de inmediato
+    if (!isAndroid || isInApp || isStandalone) {
+      setupUI();
+      return;
+    }
+
+    // Android Chrome: mostrar botón de inmediato
+    // El prompt llegará en milisegundos y quedará capturado en deferredPrompt
+    // Si no llega en 3s → mostrar pasos manuales como fallback
+    document.getElementById('install-title').textContent = 'Instalar aplicación';
+    document.getElementById('btn-install').style.display = 'flex';
+    document.getElementById('install-hint').textContent  = 'Solo tarda unos segundos';
+
+    setTimeout(() => {
+      if (!deferredPrompt) {
+        // No hubo prompt — mostrar pasos manuales
+        document.getElementById('btn-install').style.display  = 'none';
+        document.getElementById('install-hint').style.display = 'none';
+        document.getElementById('android-steps').style.display = 'flex';
+        document.getElementById('install-title').textContent   = 'Cómo instalarla en Android';
+      }
+    }, 3000);
   });
 
   function setupUI() {
@@ -460,6 +492,11 @@
     const inappWarning = document.getElementById('inapp-warning');
     const iosSteps     = document.getElementById('ios-steps');
     const androidSteps = document.getElementById('android-steps');
+
+    // Resetear estado por si setupUI se llama dos veces
+    [inappWarning, iosSteps, androidSteps].forEach(el => el.style.display = 'none');
+    btn.style.display  = 'flex';
+    hint.style.display = 'block';
 
     if (isStandalone) {
       btn.style.display = 'none';
@@ -490,12 +527,18 @@
       title.textContent  = 'Necesitas Safari';
       return;
     }
-    if (!deferredPrompt && isAndroid) {
-      androidSteps.style.display = 'flex';
-      btn.style.display  = 'none';
-      hint.style.display = 'none';
-      title.textContent  = 'Cómo instalarla en Android';
+    // Android con prompt disponible → botón nativo
+    if (deferredPrompt) {
+      btn.style.display = 'flex';
+      hint.textContent  = 'Chrome te pedirá confirmación';
+      title.textContent = 'Instalar aplicación';
+      return;
     }
+    // Android sin prompt → pasos manuales
+    androidSteps.style.display = 'flex';
+    btn.style.display  = 'none';
+    hint.style.display = 'none';
+    title.textContent  = 'Cómo instalarla en Android';
   }
 
   async function handleInstall() {
@@ -512,8 +555,6 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
-
-  window.addEventListener('DOMContentLoaded', setupUI);
 </script>
 </body>
 </html>

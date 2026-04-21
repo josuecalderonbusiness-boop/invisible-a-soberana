@@ -10410,10 +10410,45 @@ function setupMinCharsGuard(secId) {
   });
   check();
 }
+
+// ── AUTO-UPDATE INTELIGENTE ──────────────────────────────────────
+(function initAutoUpdate() {
+  if (!('serviceWorker' in navigator)) return;
+  let _updateReady = false;
+  function estaEnEjercicio() {
+    const el = document.activeElement;
+    return el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
+  }
+  function aplicarActualizacion() {
+    if (_updateReady) { _updateReady = false; window.location.reload(); }
+  }
+  navigator.serviceWorker.ready.then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const nuevoSW = reg.installing;
+      nuevoSW.addEventListener('statechange', () => {
+        if (nuevoSW.state === 'installed' && navigator.serviceWorker.controller) {
+          _updateReady = true;
+          if (!estaEnEjercicio()) { setTimeout(aplicarActualizacion, 1500); }
+        }
+      });
+    });
+  });
+  document.addEventListener('blur', function(e) {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+      if (_updateReady) { setTimeout(aplicarActualizacion, 2000); }
+    }
+  }, true);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && _updateReady && !estaEnEjercicio()) {
+      setTimeout(aplicarActualizacion, 1000);
+    }
+  });
+})();
 </script>
 
 </body>
 </html>
+
 
 
 

@@ -8544,7 +8544,7 @@ function saveLesson(secId) {
     const _fsEmail = state.user && state.user.email;
     if (_fsEmail) {
         fsGuardarSeccion(_fsEmail, secId, 'workshop');
-        renderCamino();
+        renderSectionsList();
       }
   }
 
@@ -10396,6 +10396,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

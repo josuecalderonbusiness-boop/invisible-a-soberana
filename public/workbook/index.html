@@ -7449,9 +7449,14 @@ function render7dJourney(container) {
   });
 }
 
+let _semanaScrollHandler = null;
 function setupSemanaObservers() {
   const scrollEl = document.getElementById('app-main');
   if (!scrollEl) return;
+  if (_semanaScrollHandler) {
+    scrollEl.removeEventListener('scroll', _semanaScrollHandler);
+    _semanaScrollHandler = null;
+  }
 
   const bloqueIds = [
     { id: 'journey-workshop', mode: 'workshop' },
@@ -7486,7 +7491,9 @@ function setupSemanaObservers() {
       currentMode = activeMode;
       updateSectionPill(activeMode);
     }
-  }, { passive: true });
+  };
+  _semanaScrollHandler = arguments.callee;
+  scrollEl.addEventListener('scroll', _semanaScrollHandler, { passive: true });
 }
 
 // ═══════════════════════════════════════════
@@ -10349,6 +10356,7 @@ function getInsigniaWorkshop(total) {
 
 </body>
 </html>
+
 
 
 

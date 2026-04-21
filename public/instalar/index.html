@@ -410,7 +410,7 @@
       <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
 
       <!-- Paso 2: Notificaciones -->
-      <div id="notif-step" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid rgba(212,175,106,0.12);">
+      <div id="notif-step" style="display:block;margin-top:20px;padding-top:20px;border-top:1px solid rgba(212,175,106,0.12);">
         <p class="install-title" style="margin-bottom:14px;">Activa las notificaciones</p>
         <p style="font-size:13px;color:rgba(249,244,236,0.6);font-weight:300;line-height:1.65;margin-bottom:18px;text-align:left;">Para avisarte cuando hay contenido nuevo, sesiones en vivo y tu progreso semanal.</p>
         <button class="btn-install" id="btn-notif" onclick="requestNotifPermission()" style="margin-bottom:8px;">
@@ -570,16 +570,30 @@
       showToast('Tu navegador no soporta notificaciones');
       return;
     }
+    // Si ya están concedidas, confirmarlo
+    if (Notification.permission === 'granted') {
+      document.getElementById('notif-hint').textContent = '✓ Notificaciones ya activadas';
+      document.getElementById('notif-hint').style.color = 'rgba(212,175,106,0.7)';
+      showToast('Las notificaciones ya están activadas');
+      return;
+    }
     const permission = await Notification.requestPermission();
-    const btn   = document.getElementById('btn-notif');
-    const hint  = document.getElementById('notif-hint');
+    const btn  = document.getElementById('btn-notif');
+    const hint = document.getElementById('notif-hint');
     if (permission === 'granted') {
-      btn.style.display = 'none';
-      hint.textContent  = '✓ Notificaciones activadas — ya puedes abrir la app';
-      hint.style.color  = 'rgba(212,175,106,0.7)';
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--gold-light);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(212,175,106,0.65));flex-shrink:0;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Notificaciones activadas</span>`;
+      btn.style.opacity = '0.6';
+      btn.style.cursor  = 'default';
+      btn.onclick = null;
+      hint.textContent = 'Todo listo — abre la app desde tu pantalla de inicio';
+      hint.style.color = 'rgba(212,175,106,0.6)';
       showToast('Notificaciones activadas');
     } else {
-      hint.textContent = 'Puedes activarlas después desde ajustes del celular';
+      hint.textContent = 'Sin notificaciones — puedes activarlas después en ajustes';
       showToast('Puedes activarlas después si cambias de opinión');
     }
   }

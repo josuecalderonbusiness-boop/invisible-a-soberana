@@ -409,6 +409,20 @@
 
       <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
 
+      <!-- Paso 2: Notificaciones -->
+      <div id="notif-step" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid rgba(212,175,106,0.12);">
+        <p class="install-title" style="margin-bottom:14px;">Activa las notificaciones</p>
+        <p style="font-size:13px;color:rgba(249,244,236,0.6);font-weight:300;line-height:1.65;margin-bottom:18px;text-align:left;">Para avisarte cuando hay contenido nuevo, sesiones en vivo y tu progreso semanal.</p>
+        <button class="btn-install" id="btn-notif" onclick="requestNotifPermission()" style="margin-bottom:8px;">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--gold-light);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(212,175,106,0.65));flex-shrink:0;">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span>Activar notificaciones</span>
+        </button>
+        <p id="notif-hint" style="font-size:11.5px;color:rgba(249,244,236,0.28);text-align:center;font-weight:300;">Puedes cambiarlo después desde la app</p>
+      </div>
+
     </div>
   </div>
 
@@ -456,6 +470,8 @@
     showToast('Instalación completa — ábrela desde tu pantalla de inicio');
     document.getElementById('btn-install').style.display = 'none';
     document.getElementById('install-hint').textContent = 'Ya puedes cerrar esta página';
+    // Mostrar paso de notificaciones
+    document.getElementById('notif-step').style.display = 'block';
   });
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -547,6 +563,25 @@
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
     showToast(outcome === 'accepted' ? 'Instalando...' : 'Puedes instalarla cuando quieras');
+  }
+
+  async function requestNotifPermission() {
+    if (!('Notification' in window)) {
+      showToast('Tu navegador no soporta notificaciones');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    const btn   = document.getElementById('btn-notif');
+    const hint  = document.getElementById('notif-hint');
+    if (permission === 'granted') {
+      btn.style.display = 'none';
+      hint.textContent  = '✓ Notificaciones activadas — ya puedes abrir la app';
+      hint.style.color  = 'rgba(212,175,106,0.7)';
+      showToast('Notificaciones activadas');
+    } else {
+      hint.textContent = 'Puedes activarlas después desde ajustes del celular';
+      showToast('Puedes activarlas después si cambias de opinión');
+    }
   }
 
   function showToast(msg) {

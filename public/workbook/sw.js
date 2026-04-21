@@ -1,6 +1,6 @@
-self.console.log('[SW] sw.js cargado correctamente');
+﻿self.console.log('[SW] sw.js cargado correctamente');
 
-// ── Firebase Messaging (background) ──────────────────────────────
+// â”€â”€ Firebase Messaging (background) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 try {
   importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
   self.console.log('[SW] firebase-app-compat cargado');
@@ -41,7 +41,7 @@ try {
   self.console.error('[SW] Error inicializando Firebase:', e);
 }
 
-// ── Deep linking al tocar la notificación ────────────────────────
+// â”€â”€ Deep linking al tocar la notificaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/workbook/';
@@ -59,8 +59,8 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// ── Cache (PWA) ───────────────────────────────────────────────────
-const CACHE_NAME = 'soberana-v362';
+// â”€â”€ Cache (PWA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const CACHE_NAME = 'soberana-v363';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',
@@ -76,7 +76,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  self.console.log('[SW] install — cacheando recursos');
+  self.console.log('[SW] install â€” cacheando recursos');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
@@ -84,7 +84,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  self.console.log('[SW] activate — limpiando caches viejos');
+  self.console.log('[SW] activate â€” limpiando caches viejos');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
@@ -96,7 +96,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
 
-  // Network First para index.html — siempre sirve versión nueva si hay red
+  // Network First para index.html â€” siempre sirve versiÃ³n nueva si hay red
   if (req.url.includes('index.html') || req.destination === 'document') {
     event.respondWith(
       fetch(req)

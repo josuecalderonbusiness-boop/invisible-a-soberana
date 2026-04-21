@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#8B1A2F">
+<title>Instala tu Herramienta — Código Soberana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --burgundy: #8B1A2F;
+    --burgundy-dark: #5C1020;
+    --burgundy-deep: #1a0a0f;
+    --gold: #D4AF6A;
+    --gold-light: #E8C97E;
+    --gold-pale: #F5E6C8;
+    --cream: #F9F4EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    min-height: 100dvh;
+    font-family: 'Jost', sans-serif;
+    background: var(--burgundy-deep);
+    color: var(--cream);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(139,26,47,0.45) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(212,175,106,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .particles {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .particle {
+    position: absolute; width: 2px; height: 2px;
+    background: var(--gold); border-radius: 50%; opacity: 0;
+    animation: float-up var(--dur, 8s) ease-in infinite var(--delay, 0s);
+  }
+  @keyframes float-up {
+    0%   { opacity: 0; transform: translateY(0) scale(1); }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.15; }
+    100% { opacity: 0; transform: translateY(-100vh) scale(0.3); }
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 0 52px;
+  }
+
+  /* HEADER */
+  .header {
+    width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 52px 24px 28px;
+    text-align: center;
+    animation: fade-down 0.7s ease both;
+  }
+  @keyframes fade-down {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-s {
+    width: 68px; height: 68px; border-radius: 18px;
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
+    border: 1.5px solid rgba(212,175,106,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 32px rgba(139,26,47,0.5), 0 0 40px rgba(212,175,106,0.07);
+  }
+  .logo-s span {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px; font-weight: 700; font-style: italic;
+    color: var(--gold); line-height: 1;
+  }
+
+  .header-eyebrow {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 3.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px; opacity: 0.7;
+  }
+
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px; font-weight: 400; line-height: 1.2;
+    color: var(--cream); margin-bottom: 14px;
+  }
+  .header-title .word-soberana {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+
+  .header-sub {
+    font-size: 14px; font-weight: 300;
+    color: rgba(249,244,236,0.55); line-height: 1.75;
+    max-width: 272px;
+  }
+
+  /* BENEFICIOS */
+  .benefits {
+    width: 100%; max-width: 360px; padding: 0 24px;
+    display: flex; flex-direction: column; gap: 11px;
+    margin-bottom: 28px;
+    animation: fade-up 0.7s 0.15s ease both;
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .benefit-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    background: rgba(139,26,47,0.13);
+    border: 1px solid rgba(212,175,106,0.1);
+    border-radius: 12px;
+  }
+
+  .benefit-icon {
+    width: 38px; height: 38px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(212,175,106,0.07);
+    border-radius: 10px;
+    border: 1px solid rgba(212,175,106,0.12);
+  }
+  .benefit-icon svg {
+    width: 18px; height: 18px;
+    stroke: var(--gold-light); fill: none; stroke-width: 1.6;
+    stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 5px rgba(212,175,106,0.55));
+  }
+
+  .benefit-text { flex: 1; }
+  .benefit-text strong {
+    display: block; font-size: 13px; font-weight: 500;
+    color: var(--cream); margin-bottom: 2px;
+  }
+  .benefit-text span {
+    font-size: 12px; color: rgba(249,244,236,0.42); font-weight: 300;
+  }
+
+  /* INSTALL CARD */
+  .install-section {
+    width: 100%; max-width: 360px; padding: 0 24px;
+    animation: fade-up 0.7s 0.3s ease both;
+  }
+
+  .install-card {
+    background: rgba(18,7,11,0.88);
+    border: 1px solid rgba(212,175,106,0.18);
+    border-radius: 20px; padding: 28px 22px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    position: relative; overflow: hidden;
+  }
+  .install-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,106,0.5), transparent);
+  }
+
+  .install-title {
+    font-size: 10.5px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 22px; opacity: 0.8;
+  }
+
+  /* Pasos */
+  .step-list {
+    display: none; flex-direction: column; gap: 13px;
+    margin-bottom: 22px; text-align: left;
+  }
+  .step-row { display: flex; align-items: flex-start; gap: 12px; }
+  .step-num {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(212,175,106,0.1);
+    border: 1px solid rgba(212,175,106,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: var(--gold);
+    margin-top: 1px;
+  }
+  .step-text {
+    font-size: 13.5px; color: rgba(249,244,236,0.76);
+    line-height: 1.55; font-weight: 300;
+  }
+  .step-text strong { color: var(--cream); font-weight: 500; }
+
+  .icon-inline {
+    display: inline-flex; align-items: center; justify-content: center;
+    vertical-align: middle; width: 18px; height: 18px;
+    margin: 0 2px; position: relative; top: -1px;
+  }
+  .icon-inline svg {
+    width: 15px; height: 15px;
+    stroke: var(--gold-light); fill: none; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 3px rgba(212,175,106,0.45));
+  }
+
+  /* Aviso in-app */
+  .inapp-warning {
+    display: none; padding: 15px 16px;
+    background: rgba(212,175,106,0.06);
+    border: 1px solid rgba(212,175,106,0.18);
+    border-radius: 12px; margin-bottom: 20px; text-align: left;
+  }
+  .inapp-warning p {
+    font-size: 13px; color: rgba(249,244,236,0.7);
+    line-height: 1.65; font-weight: 300;
+  }
+  .inapp-warning p strong { color: var(--gold-light); font-weight: 500; }
+
+  /* Botón */
+  .btn-install {
+    width: 100%; padding: 17px;
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
+    border: 1px solid rgba(212,175,106,0.28);
+    border-radius: 14px;
+    color: var(--gold-light);
+    font-family: 'Jost', sans-serif;
+    font-size: 15px; font-weight: 500; letter-spacing: 0.5px;
+    cursor: pointer; transition: all 0.25s ease;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 4px 28px rgba(139,26,47,0.45);
+    -webkit-appearance: none; margin-bottom: 10px;
+  }
+  .btn-install:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(139,26,47,0.3); }
+  .btn-install svg {
+    width: 18px; height: 18px;
+    stroke: var(--gold-light); fill: none; stroke-width: 1.7;
+    stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px rgba(212,175,106,0.65));
+    flex-shrink: 0;
+  }
+
+  .install-hint {
+    font-size: 11.5px; color: rgba(249,244,236,0.28);
+    text-align: center; font-weight: 300; line-height: 1.5;
+  }
+
+  /* FOOTER */
+  .footer-note {
+    margin-top: 28px; padding: 0 24px; text-align: center;
+    font-size: 11px; color: rgba(249,244,236,0.2);
+    font-weight: 300; line-height: 1.9; letter-spacing: 0.3px;
+    animation: fade-up 0.7s 0.45s ease both;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: rgba(18,7,11,0.96);
+    border: 1px solid rgba(212,175,106,0.28);
+    border-radius: 50px; padding: 12px 26px;
+    font-size: 13px; color: var(--gold-light); font-weight: 400;
+    white-space: nowrap;
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+    z-index: 100; backdrop-filter: blur(10px);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-s"><span>S</span></div>
+    <p class="header-eyebrow">Tu herramienta personal</p>
+    <h1 class="header-title">Código&nbsp;<span class="word-soberana">Soberana</span></h1>
+    <p class="header-sub">Tu espacio privado para trabajar el proceso. Instálalo en tu celular y tenlo siempre a mano.</p>
+  </div>
+
+  <!-- BENEFICIOS -->
+  <div class="benefits">
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="5" y="2" width="14" height="20" rx="3"/>
+          <circle cx="12" cy="18.5" r="0.8" fill="var(--gold-light)" stroke="none"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>En tu pantalla de inicio</strong>
+        <span>Accede como una app, sin buscar links</span>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="10" rx="2"/>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          <circle cx="12" cy="16" r="1.1" fill="var(--gold-light)" stroke="none"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>Tu proceso es tuyo</strong>
+        <span>Tus respuestas se guardan de forma segura</span>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M13 2L4.5 13.5H12L11 22L19.5 10.5H12L13 2Z"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>Rápida y sin interrupciones</strong>
+        <span>Funciona incluso con conexión lenta</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INSTALL CARD -->
+  <div class="install-section">
+    <div class="install-card">
+
+      <p class="install-title" id="install-title">Instalar aplicación</p>
+
+      <!-- Aviso in-app -->
+      <div class="inapp-warning" id="inapp-warning">
+        <p>Para instalar la app, <strong>ábrela en tu navegador.</strong> Toca los 3 puntos <strong>(⋮)</strong> y selecciona <strong>"Abrir en Chrome"</strong> o <strong>"Abrir en Safari"</strong>.</p>
+      </div>
+
+      <!-- Pasos iOS Safari -->
+      <div class="step-list" id="ios-steps">
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-text">Toca el botón compartir
+            <span class="icon-inline">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+            </span>
+            en la barra inferior de Safari
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-text">Desliza y toca <strong>"Añadir a pantalla de inicio"</strong></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-text">Toca <strong>Añadir</strong> en la esquina superior derecha</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">4</div>
+          <div class="step-text">Abre la app desde tu pantalla de inicio y regístrate ahí</div>
+        </div>
+      </div>
+
+      <!-- Pasos Android manual -->
+      <div class="step-list" id="android-steps">
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-text">Toca los 3 puntos <strong>(⋮)</strong> en la esquina superior derecha de Chrome</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-text">Toca <strong>"Instalar aplicación"</strong> o <strong>"Añadir a pantalla de inicio"</strong></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-text">Confirma tocando <strong>Instalar</strong></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">4</div>
+          <div class="step-text">Abre la app desde tu pantalla de inicio y regístrate ahí</div>
+        </div>
+      </div>
+
+      <!-- Botón -->
+      <button class="btn-install" id="btn-install" onclick="handleInstall()">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v13"/>
+          <path d="M7 11l5 5 5-5"/>
+          <path d="M5 20h14"/>
+        </svg>
+        <span id="btn-text">Instalar ahora</span>
+      </button>
+
+      <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <p class="footer-note">
+    Código Soberana · Josué Calderón<br>
+    Una vez instalada, regístrate desde la app
+  </p>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Partículas
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 16; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `left:${Math.random()*100}%;bottom:${Math.random()*15}%;--dur:${6+Math.random()*10}s;--delay:${Math.random()*9}s`;
+    container.appendChild(p);
+  }
+
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS       = /iphone|ipad|ipod/.test(ua);
+  const isAndroid   = /android/.test(ua);
+  const isSafari    = /safari/.test(ua) && !/chrome/.test(ua) && !/crios/.test(ua);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isInApp     = /wv|fbav|fb_iab|instagram|whatsapp/.test(ua) ||
+                      (isAndroid && /version\//.test(ua) && !/chrome/.test(ua));
+
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setupUI();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    showToast('Instalación completa — ábrela desde tu pantalla de inicio');
+    document.getElementById('btn-install').style.display = 'none';
+    document.getElementById('install-hint').textContent = 'Ya puedes cerrar esta página';
+  });
+
+  function setupUI() {
+    const title        = document.getElementById('install-title');
+    const btn          = document.getElementById('btn-install');
+    const hint         = document.getElementById('install-hint');
+    const inappWarning = document.getElementById('inapp-warning');
+    const iosSteps     = document.getElementById('ios-steps');
+    const androidSteps = document.getElementById('android-steps');
+
+    if (isStandalone) {
+      btn.style.display = 'none';
+      title.textContent = 'Ya está instalada';
+      hint.textContent  = 'Cierra esta página y úsala desde tu pantalla de inicio';
+      return;
+    }
+    if (isInApp) {
+      inappWarning.style.display = 'block';
+      btn.style.display  = 'none';
+      hint.style.display = 'none';
+      title.textContent  = 'Un paso antes';
+      return;
+    }
+    if (isIOS && isSafari) {
+      iosSteps.style.display = 'flex';
+      btn.style.display  = 'none';
+      hint.style.display = 'none';
+      title.textContent  = 'Cómo instalarla en tu iPhone';
+      return;
+    }
+    if (isIOS && !isSafari) {
+      inappWarning.style.display = 'block';
+      inappWarning.querySelector('p').innerHTML =
+        'Para instalar en iPhone necesitas abrirla en <strong>Safari</strong>. Toca los 3 puntos y selecciona <strong>"Abrir en Safari"</strong>.';
+      btn.style.display  = 'none';
+      hint.style.display = 'none';
+      title.textContent  = 'Necesitas Safari';
+      return;
+    }
+    if (!deferredPrompt && isAndroid) {
+      androidSteps.style.display = 'flex';
+      btn.style.display  = 'none';
+      hint.style.display = 'none';
+      title.textContent  = 'Cómo instalarla en Android';
+    }
+  }
+
+  async function handleInstall() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    showToast(outcome === 'accepted' ? 'Instalando...' : 'Puedes instalarla cuando quieras');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  window.addEventListener('DOMContentLoaded', setupUI);
+</script>
+</body>
+</html>

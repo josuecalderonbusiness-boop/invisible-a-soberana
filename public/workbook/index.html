@@ -3772,6 +3772,13 @@
             <div class="protocolos-divider"></div>
             <div id="protocolos-list"></div>
           </div>
+
+          <div class="depth-block" style="margin:20px 0 8px;padding:18px 16px;background:rgba(184,137,42,0.08);border-radius:16px;border:1px solid rgba(184,137,42,0.2);">
+            <div style="font-size:11px;letter-spacing:2px;color:#B8892A;margin-bottom:14px;">TU PROFUNDIDAD</div>
+            <div id="stars-workshop-display" style="margin-bottom:10px;"></div>
+            <div id="stars-7d-display" style="margin-bottom:14px;"></div>
+            <div id="insignia-display"></div>
+          </div>
         </div>
       </div>
 
@@ -4231,6 +4238,7 @@ async function fsGuardarSeccion(email, secId, tipo) {
   try {
     await db.collection('progreso').doc(email).set({
       completedSections: firebase.firestore.FieldValue.arrayUnion(secId),
+      ['estrellas_' + secId]: calcStarsForSec(secId),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
     console.log('[Firestore] seccion guardada:', secId);
@@ -7777,6 +7785,7 @@ function openLesson(sectionId) {
   document.querySelector('.lesson-scroll').scrollTop = 0;
   
   updateLessonProgress(sectionId);
+  setupMinCharsGuard(sectionId);
 }
 
 function buildExerciseBlock(ex, sec) {
@@ -8533,7 +8542,10 @@ function saveLesson(secId) {
     publishAutoPost(secId); // post automático en comunidad
     // Persistir en Firestore (fuente de verdad)
     const _fsEmail = state.user && state.user.email;
-    if (_fsEmail) fsGuardarSeccion(_fsEmail, secId, 'workshop');
+    if (_fsEmail) {
+        fsGuardarSeccion(_fsEmail, secId, 'workshop');
+        renderCamino();
+      }
   }
 
   saveState();
@@ -9226,7 +9238,7 @@ function switchTab(tab) {
   const btnEl = document.getElementById('tab-btn-' + tab);
   if (tabEl) tabEl.classList.add('active');
   if (btnEl) btnEl.classList.add('active');
-  if (tab === 'progreso') { updateProgressUI(); }
+  if (tab === 'progreso') { updateProgressUI(); renderStarsProgreso(); }
   if (tab === 'novedades') { renderNovedades(); }
   if (tab === 'entrenamiento') { renderEntrenamientoTab(); }
   if (tab === 'inicio') { syncPill(); }
@@ -10099,6 +10111,7 @@ if (loadState() && state.user) {
 } else {
   document.getElementById('screen-splash').classList.add('active');
 }
+
 </script>
 
 <!-- ── SISTEMA POPUPS SESIÓN EN VIVO ─────────────────────────────────────── -->
@@ -10345,10 +10358,52 @@ function getInsigniaWorkshop(total) {
   if (total >= 1) return { titulo: 'Mente Despierta', color: 'rgba(255,255,255,0.6)' };
   return null;
 }
+
+function renderStarsProgreso() {
+  const wsTotal = getTotalStarsWorkshop();
+  const d7Total = getTotalStars7D();
+  const insignia = getInsigniaWorkshop(wsTotal);
+  const wsEl = document.getElementById('stars-workshop-display');
+  if (wsEl) wsEl.innerHTML = '<div style="color:#E8C870;font-size:14px;margin-bottom:4px;">Workshop · ' + renderStarsStr(wsTotal, 27) + '</div><div style="color:#8a7060;font-size:12px;">' + wsTotal + ' de 27 estrellas posibles</div>';
+  const d7El = document.getElementById('stars-7d-display');
+  if (d7El) d7El.innerHTML = '<div style="color:#96C7B3;font-size:14px;margin-bottom:4px;">Soberana 7D · ' + renderStarsStr(d7Total, 56) + '</div><div style="color:#8a7060;font-size:12px;">' + d7Total + ' de 56 estrellas posibles</div>';
+  const insEl = document.getElementById('insignia-display');
+  if (insEl && insignia) insEl.innerHTML = '<div style="font-size:11px;letter-spacing:1px;color:#B8892A;">INSIGNIA ACTIVA</div><div style="color:#EDE3CE;font-size:18px;font-weight:600;margin-top:4px;">' + insignia.titulo + '</div>';
+}
+
+function setupMinCharsGuard(secId) {
+  const cfg = STARS_CONFIG[secId];
+  if (!cfg) return;
+  const btn = document.getElementById('lesson-save-btn');
+  if (!btn) return;
+  const textEjs = cfg.ejercicios.filter(e => e.tipo === 'textarea' || e.tipo === 'multifield');
+  if (textEjs.length === 0) { btn.disabled = false; btn.style.opacity = '1'; return; }
+  const check = () => {
+    const allOk = textEjs.every(e => {
+      const el = document.getElementById('field-' + e.id);
+      return el && el.value.trim().length >= (e.minChars || 80);
+    });
+    btn.disabled = !allOk;
+    btn.style.opacity = allOk ? '1' : '0.4';
+  };
+  textEjs.forEach(e => {
+    const el = document.getElementById('field-' + e.id);
+    if (el) el.addEventListener('input', check);
+  });
+  check();
+}
 </script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 

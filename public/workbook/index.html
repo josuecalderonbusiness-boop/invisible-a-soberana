@@ -8263,7 +8263,25 @@ function updateTripleSlider(exId) {
 
 function onFieldInput(id, el) {
   const cc = document.getElementById('cc-' + id);
-  if (cc) cc.textContent = el.value.length + ' caracteres';
+  if (cc) {
+    const n = el.value.length;
+    const secId = currentSectionId;
+    const cfg = STARS_CONFIG[secId];
+    const ej = cfg && cfg.ejercicios ? cfg.ejercicios.find(e => e.id === id) : null;
+    const min = ej && ej.minChars ? ej.minChars : null;
+    if (min) {
+      if (n >= min) {
+        cc.textContent = '⭐ Profundidad alcanzada · ' + n + ' caracteres';
+        cc.style.color = '#D4AF6A';
+      } else {
+        cc.textContent = '✦ ' + n + '/' + min + ' · escribe más para ganar ⭐';
+        cc.style.color = '#8a6575';
+      }
+    } else {
+      cc.textContent = n + ' caracteres';
+      cc.style.color = '';
+    }
+  }
   updateLessonProgress(currentSectionId);
 }
 
@@ -10396,6 +10414,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

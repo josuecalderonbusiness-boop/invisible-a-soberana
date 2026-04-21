@@ -10299,7 +10299,7 @@ const STARS_CONFIG = {
   s5: { posibles: 2, ejercicios: [{ id:'s5_e1', tipo:'multifield', minChars:40 }, { id:'s5_e3', tipo:'textarea', minChars:150 }] },
   s6: { posibles: 2, ejercicios: [{ id:'s6_e1', tipo:'textarea', minChars:100 }, { id:'s6_e2', tipo:'auto' }] },
   s7: { posibles: 3, ejercicios: [{ id:'s7_e1', tipo:'auto' }, { id:'s7_e2', tipo:'auto' }, { id:'s7_e3', tipo:'textarea', minChars:100 }] },
-  s8: { posibles: 4, ejercicios: [{ id:'s8_e1', tipo:'auto' }] },
+  s8: { posibles: 1, ejercicios: [{ id:'s8_e1', tipo:'auto' }] },
   s9: { posibles: 6, ejercicios: [{ id:'s9_e1', tipo:'auto' }, { id:'s9_e2', tipo:'auto' }, { id:'s9_e3', tipo:'textarea', minChars:100 }, { id:'s9_e4', tipo:'textarea', minChars:80 }, { id:'s9_e5', tipo:'textarea', minChars:150 }, { id:'s9_e6', tipo:'auto' }] }
 };
 const STARS_7D_CONFIG = {
@@ -10370,7 +10370,7 @@ function getTotalStars7D() {
   return Object.keys(state.completed7d).reduce(function(acc, nodeKey) { return acc + calc7dStars(nodeKey).ganadas; }, 0);
 }
 function getInsigniaWorkshop(total) {
-  if (total >= 27) return { titulo: 'Soberana Completa', color: '#D4AF6A' };
+  if (total >= 24) return { titulo: 'Soberana Completa', color: '#D4AF6A' };
   if (total >= 19) return { titulo: 'Codigo Activado', color: '#B8892A' };
   if (total >= 10) return { titulo: 'Arquitecta Emocional', color: '#A0748A' };
   if (total >= 1) return { titulo: 'Mente Despierta', color: 'rgba(255,255,255,0.6)' };
@@ -10382,7 +10382,7 @@ function renderStarsProgreso() {
   const d7Total = getTotalStars7D();
   const insignia = getInsigniaWorkshop(wsTotal);
   const wsEl = document.getElementById('stars-workshop-display');
-  if (wsEl) wsEl.innerHTML = '<div style="color:#E8C870;font-size:14px;margin-bottom:4px;">Workshop · ' + renderStarsStr(wsTotal, 27) + '</div><div style="color:#8a7060;font-size:12px;">' + wsTotal + ' de 27 estrellas posibles</div>';
+  if (wsEl) wsEl.innerHTML = '<div style="color:#E8C870;font-size:14px;margin-bottom:4px;">Workshop · ' + renderStarsStr(wsTotal, 24) + '</div><div style="color:#8a7060;font-size:12px;">' + wsTotal + ' de 24 estrellas posibles</div>';
   const d7El = document.getElementById('stars-7d-display');
   if (d7El) d7El.innerHTML = '<div style="color:#96C7B3;font-size:14px;margin-bottom:4px;">Soberana 7D · ' + renderStarsStr(d7Total, 56) + '</div><div style="color:#8a7060;font-size:12px;">' + d7Total + ' de 56 estrellas posibles</div>';
   const insEl = document.getElementById('insignia-display');
@@ -10414,6 +10414,10 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
+
+
 
 
 

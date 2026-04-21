@@ -9257,7 +9257,7 @@ function switchTab(tab) {
   if (tabEl) tabEl.classList.add('active');
   if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); renderStarsProgreso(); }
-  if (tab === 'novedades') { renderNovedades(); }
+  if (tab === 'novedades') { renderNovedades(); try { if ('clearAppBadge' in navigator) { navigator.clearAppBadge(); const db = window._db || (window.firebase && firebase.firestore && firebase.firestore()); if (db) { db.collection('comunidad').orderBy('createdAt', 'desc').limit(1).get().then(snap => { if (!snap.empty) { const ts = snap.docs[0].data().createdAt ? snap.docs[0].data().createdAt.toMillis() : null; if (ts) localStorage.setItem('soberana_ultimo_post_visto', ts.toString()); } }).catch(() => {}); } } } catch(e) {} }
   if (tab === 'entrenamiento') { renderEntrenamientoTab(); }
   if (tab === 'inicio') { syncPill(); }
   // La pestaña ERES solo aparece en el tab Inicio
@@ -10448,6 +10448,8 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
 
 
 

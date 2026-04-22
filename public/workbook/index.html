@@ -9488,45 +9488,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 }
 
-// ── SWIPE ENTRE TABS ──────────────────────────────────────────
-(function initSwipeGestures() {
-  let tsX = 0, tsY = 0;
-  document.addEventListener('touchstart', e => {
-    tsX = e.touches[0].clientX;
-    tsY = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - tsX;
-    const dy = e.changedTouches[0].clientY - tsY;
-    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    if (tsX < 15 || tsX > window.innerWidth - 15) return;
-    const tabs = TAB_ORDER;
-    const idx = tabs.indexOf(_currentTab);
-    if (dx < 0 && idx < tabs.length - 1) switchTab(tabs[idx + 1], 'right');
-    else if (dx > 0 && idx > 0) switchTab(tabs[idx - 1], 'left');
-  }, { passive: true });
-})();
 
-// ── SWIPE DOWN PARA CERRAR DRAWERS ────────────────────────────
-(function initDrawerSwipe() {
-  let sY = 0, sX = 0, activeSheet = null;
-  document.addEventListener('touchstart', e => {
-    const sheet = e.target.closest('.modal-sheet');
-    if (!sheet) return;
-    sY = e.touches[0].clientY;
-    sX = e.touches[0].clientX;
-    activeSheet = sheet;
-  }, { passive: true });
-  document.addEventListener('touchmove', e => {
-    if (!activeSheet) return;
-    const dy = e.touches[0].clientY - sY;
-    const dx = e.touches[0].clientX - sX;
-    if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) return;
-    activeSheet.classList.add('dragging');
-    activeSheet.style.transform = "translateY(" + dy + "px)";
-    const overlay = activeSheet.closest('.modal-overlay');
-    if (overlay) overlay.style.opacity = Math.max(0, 1 - dy / 350);
-  }, { passive: true });
   document.addEventListener('touchend', e => {
     if (!activeSheet) return;
     const dy = e.changedTouches[0].clientY - sY;

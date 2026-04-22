@@ -9466,50 +9466,50 @@ function scrollToCurrentNode() {
     }
   }
   scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const scrollEl = document.getElementById('app-main');
-  if (!scrollEl) return;
-  scrollEl.addEventListener('scroll', () => {
-    const btn = document.getElementById('scroll-to-current-btn');
-    if (!btn) return;
-    const allowed = (_scrollBtnTab === 'inicio' || _scrollBtnTab === 'novedades');
-    if (!allowed) { btn.classList.remove('visible'); return; }
-    if (_scrollBtnTab === 'novedades') {
-      btn.classList.toggle('visible', scrollEl.scrollTop > 200);
-    } else {
-      const nodeTop = getCurrentNodeTop();
-      const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
-      btn.classList.toggle('visible', pastNode);
-    }
 
 
 
 
 
 
-  document.addEventListener('touchend', e => {
-    if (!activeSheet) return;
-    const dy = e.changedTouches[0].clientY - sY;
-    activeSheet.classList.remove('dragging');
-    if (dy > 100) {
-      activeSheet.style.transform = 'translateY(100%)';
-      const overlay = activeSheet.closest('.modal-overlay');
-      if (overlay) { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; overlay.style.opacity = ''; }, 420); }
-      setTimeout(() => { activeSheet.style.transform = ''; }, 420);
-      if (navigator.vibrate) navigator.vibrate(15);
-    } else {
-      activeSheet.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
-      activeSheet.style.transform = 'translateY(0)';
-      setTimeout(() => { activeSheet.style.transition = ''; }, 310);
-      const overlay = activeSheet.closest('.modal-overlay');
-      if (overlay) overlay.style.opacity = '';
-    }
-    activeSheet = null;
-  }, { passive: true });
-})();
-// ═══════════════════════════════════════════
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // EXPORT
 // ═══════════════════════════════════════════
 function exportData() {
@@ -10688,7 +10688,6 @@ function setupMinCharsGuard(secId) {
 <script src="gestos.js"></script>
 </body>
 </html>
-
 
 
 

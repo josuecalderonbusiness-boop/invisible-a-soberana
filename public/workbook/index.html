@@ -9466,50 +9466,50 @@ function scrollToCurrentNode() {
     }
   }
   scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  scrollEl.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-to-current-btn');
+    if (!btn) return;
+    const allowed = (_scrollBtnTab === 'inicio' || _scrollBtnTab === 'novedades');
+    if (!allowed) { btn.classList.remove('visible'); return; }
+    if (_scrollBtnTab === 'novedades') {
+      btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+    } else {
+      const nodeTop = getCurrentNodeTop();
+      const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
+      btn.classList.toggle('visible', pastNode);
+    }
+
+  }, { passive: true });
+
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  document.addEventListener('touchend', e => {
+    if (!activeSheet) return;
+    const dy = e.changedTouches[0].clientY - sY;
+    activeSheet.classList.remove('dragging');
+    if (dy > 100) {
+      activeSheet.style.transform = 'translateY(100%)';
+      const overlay = activeSheet.closest('.modal-overlay');
+      if (overlay) { overlay.style.opacity = '0'; setTimeout(() => { overlay.style.display = 'none'; overlay.style.opacity = ''; }, 420); }
+      setTimeout(() => { activeSheet.style.transform = ''; }, 420);
+      if (navigator.vibrate) navigator.vibrate(15);
+    } else {
+      activeSheet.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
+      activeSheet.style.transform = 'translateY(0)';
+      setTimeout(() => { activeSheet.style.transition = ''; }, 310);
+      const overlay = activeSheet.closest('.modal-overlay');
+      if (overlay) overlay.style.opacity = '';
+    }
+    activeSheet = null;
+  }, { passive: true });
+})();
+// ═══════════════════════════════════════════
 // EXPORT
 // ═══════════════════════════════════════════
 function exportData() {
@@ -9575,60 +9575,6 @@ function exportData() {
   <div style="background:#1a0a0f;text-align:center;padding:24px;font-family:'Helvetica Neue',sans-serif">
     <p style="font-size:13px;color:#D4AF6A;letter-spacing:2px;text-transform:uppercase;margin:0">Código Soberana</p>
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </body>
 </html>`;
@@ -10197,60 +10143,6 @@ function runExport() {
   <div style="background:#1a0a0f;text-align:center;padding:24px;font-family:'Helvetica Neue',sans-serif">
     <p style="font-size:13px;color:#D4AF6A;letter-spacing:2px;text-transform:uppercase;margin:0">Código Soberana</p>
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </body></html>`;
 
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -10465,7 +10357,6 @@ if ('serviceWorker' in navigator) {
     }
   };
 
-
   window.initDebugPanel = function() { _createFab(); };
 })();
 
@@ -10474,10 +10365,8 @@ if (loadState() && state.user) {
 } else {
   document.getElementById('screen-splash').classList.add('active');
 }
+
 </script>
-
-
-
 
 <!-- ── SISTEMA POPUPS SESIÓN EN VIVO ─────────────────────────────────────── -->
 <div id="live-popup" style="display:none;position:fixed;inset:0;z-index:9999;align-items:flex-end;justify-content:center;padding:0 0 90px" aria-modal="true">
@@ -10793,109 +10682,20 @@ function setupMinCharsGuard(secId) {
 })();
 </script>
 
-
-<script>
-var TAB_ORDER = ['inicio','novedades','entrenamiento','progreso'];
-(function() {
-  var tsX = 0, tsY = 0;
-  document.addEventListener('touchstart', function(e) { tsX = e.touches[0].clientX; tsY = e.touches[0].clientY; }, { passive: true });
-  document.addEventListener('touchend', function(e) {
-    var dx = e.changedTouches[0].clientX - tsX;
-    var dy = e.changedTouches[0].clientY - tsY;
-    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    if (tsX < 15 || tsX > window.innerWidth - 15) return;
-    var idx = TAB_ORDER.indexOf(typeof _currentTab !== 'undefined' ? _currentTab : 'inicio');
-    if (dx < 0 && idx < TAB_ORDER.length - 1) switchTab(TAB_ORDER[idx + 1]);
-    else if (dx > 0 && idx > 0) switchTab(TAB_ORDER[idx - 1]);
-  }, { passive: true });
-}());
-(function() {
-  var sY = 0, sX = 0, activeSheet = null;
-  document.addEventListener('touchstart', function(e) {
-    var sheet = e.target.closest('.modal-sheet');
-    if (!sheet) return;
-    sY = e.touches[0].clientY; sX = e.touches[0].clientX; activeSheet = sheet;
-  }, { passive: true });
-  document.addEventListener('touchmove', function(e) {
-    if (!activeSheet) return;
-    var dy = e.touches[0].clientY - sY;
-    var dx = e.touches[0].clientX - sX;
-    if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) return;
-    activeSheet.classList.add('dragging');
-    activeSheet.style.transform = 'translateY(' + dy + 'px)';
-    var overlay = activeSheet.closest('.modal-overlay');
-    if (overlay) overlay.style.opacity = Math.max(0, 1 - dy / 350);
-  }, { passive: true });
-  document.addEventListener('touchend', function(e) {
-    if (!activeSheet) return;
-    var dy = e.changedTouches[0].clientY - sY;
-    activeSheet.classList.remove('dragging');
-    if (dy > 100) {
-      activeSheet.style.transform = 'translateY(100%)';
-      var overlay = activeSheet.closest('.modal-overlay');
-      if (overlay) { overlay.style.opacity = '0'; setTimeout(function() { overlay.style.display = 'none'; overlay.style.opacity = ''; }, 420); }
-      setTimeout(function() { activeSheet.style.transform = ''; }, 420);
-      if (navigator.vibrate) navigator.vibrate(15);
-    } else {
-      activeSheet.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
-      activeSheet.style.transform = 'translateY(0)';
-      setTimeout(function() { activeSheet.style.transition = ''; }, 310);
-      var overlay = activeSheet.closest('.modal-overlay');
-      if (overlay) overlay.style.opacity = '';
-    }
-    activeSheet = null;
-  }, { passive: true });
-}());
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -9312,7 +9312,80 @@ function switchTab(tab) {
   } else {
     updateHeaderMode('workshop');
   }
+  updateScrollBtn(tab);
+
+  // Tabs que NO son inicio van siempre al tope
+  const scrollEl = document.getElementById('app-main');
+  if (tab !== 'inicio' && scrollEl) {
+    scrollEl.scrollTop = 0;
+  }
+
+  // Tab inicio: scroll al nodo en progreso
+  if (tab === 'inicio' && scrollEl) {
+    setTimeout(() => {
+      const currentBadge = scrollEl.querySelector('.journey-node-badge');
+      if (currentBadge) {
+        const wrapEl = currentBadge.closest('.journey-node-wrap');
+        if (wrapEl) {
+          const containerTop = scrollEl.getBoundingClientRect().top;
+          const wrapTop = wrapEl.getBoundingClientRect().top;
+          const offset = wrapTop - containerTop + scrollEl.scrollTop - 120;
+          scrollEl.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+        }
+      } else {
+        scrollEl.scrollTop = 0;
+      }
+    }, 80);
+  }
 }
+
+// BOTÓN SCROLL-TO-CURRENT
+let _scrollBtnTab = 'inicio';
+
+function updateScrollBtn(tab) {
+  _scrollBtnTab = tab;
+  const btn = document.getElementById('scroll-to-current-btn');
+  if (!btn) return;
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  const allowed = (tab === 'inicio' || tab === 'novedades');
+  if (!allowed) { btn.classList.remove('visible'); return; }
+  btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+}
+
+function scrollToCurrentNode() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  if (navigator.vibrate) navigator.vibrate(20);
+  if (_scrollBtnTab === 'novedades') {
+    scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  const currentBadge = scrollEl.querySelector('.journey-node-badge');
+  if (currentBadge) {
+    const wrapEl = currentBadge.closest('.journey-node-wrap');
+    if (wrapEl) {
+      const containerTop = scrollEl.getBoundingClientRect().top;
+      const wrapTop = wrapEl.getBoundingClientRect().top;
+      const offset = wrapTop - containerTop + scrollEl.scrollTop - 120;
+      scrollEl.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      return;
+    }
+  }
+  scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  scrollEl.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-to-current-btn');
+    if (!btn) return;
+    const allowed = (_scrollBtnTab === 'inicio' || _scrollBtnTab === 'novedades');
+    if (!allowed) { btn.classList.remove('visible'); return; }
+    btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+  }, { passive: true });
+});
 
 // ═══════════════════════════════════════════
 // EXPORT

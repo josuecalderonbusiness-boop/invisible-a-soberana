@@ -9523,7 +9523,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dx = e.touches[0].clientX - sX;
     if (dy <= 0 || Math.abs(dx) > Math.abs(dy)) return;
     activeSheet.classList.add('dragging');
-    activeSheet.style.transform = `translateY(${dy}px)`;
+    activeSheet.style.transform = "translateY(" + dy + "px)";
     const overlay = activeSheet.closest('.modal-overlay');
     if (overlay) overlay.style.opacity = Math.max(0, 1 - dy / 350);
   }, { passive: true });

@@ -4789,7 +4789,19 @@ const SECTIONS = [
   },
 ];
 
-const VIDEO_7D_URL = 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=false&preload=true';
+const BUNNY_LIBRARY_ID = '636956';
+const BUNNY_VIDEO_PRUEBA = 'a24ce52e-4395-4b7c-8b6b-50a154ec746c';
+
+async function getBunnyUrl(videoId) {
+  try {
+    const fn = firebase.functions().httpsCallable('getSignedVideoUrl');
+    const result = await fn({ videoId: videoId });
+    return result.data.url;
+  } catch (e) {
+    console.error('[Bunny] Error obteniendo URL firmada:', e);
+    return 'https://iframe.mediadelivery.net/embed/' + BUNNY_LIBRARY_ID + '/' + videoId;
+  }
+}
 const CONFRONTATION_QUOTES = [
   {text: "El problema casi nunca es falta de amor. Es falta de desarrollo personal. Y eso tiene solución.", attr: "Código Soberana"},
   {text: "Si no tienes el poder de cambiarlo a él, tampoco tienes la responsabilidad de que él cambie. Y si no tienes esa responsabilidad, ¿qué te queda? Tu verdadero poder.", attr: "Josué Calderón"},
@@ -8733,13 +8745,7 @@ function openQueSigneAhora() {
     <div style="padding:32px 20px;background:#0F0A0B">
       <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">El siguiente paso</div>
 
-      ${VIDEO_7D_URL
-        ? `<iframe src="${VIDEO_7D_URL}" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>`
-        : `<div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(184,137,42,0.3);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="#B8892A"><path d="M5 3l14 9-14 9V3z"/></svg>
-            <div style="font-size:13px;color:#F0E6EA;font-weight:500">Josué Calderón — Soberana 7D</div>
-           </div>`
-      }
+      <div id="bunny-vsl-container"><div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(184,137,42,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#B8892A"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
     </div>
 
     <!-- SECCIÓN 3: Las 7 dimensiones -->
@@ -8790,6 +8796,10 @@ function openQueSigneAhora() {
   `;
 
   body.appendChild(content);
+  getBunnyUrl(BUNNY_VIDEO_PRUEBA).then(function(url) {
+    var c = document.getElementById('bunny-vsl-container');
+    if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
+  });
   document.getElementById('lesson-view').classList.add('open');
   document.getElementById('lesson-view').scrollTop = 0;
 }
@@ -10581,6 +10591,9 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
+
 
 
 

@@ -322,38 +322,36 @@
   }
 
   /* Tab Navigation */
-  /* ── Botón scroll-to-current ── */
+    @keyframes chevron-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+  }
   #scroll-to-current-btn {
     position: fixed;
-    bottom: 88px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 95;
-    background: rgba(26,10,15,0.92);
-    border: 1px solid rgba(212,175,106,0.5);
-    border-radius: 40px;
-    padding: 10px 20px 10px 16px;
+    bottom: 96px;
+    right: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(26,10,15,0.88);
+    border: 1.5px solid rgba(212,175,106,0.6);
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     cursor: pointer;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: opacity .3s ease, transform .3s ease;
-    font-family: 'Jost', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: #D4AF6A;
-    letter-spacing: .06em;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    white-space: nowrap;
+    z-index: 95;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, box-shadow .3s ease;
+    box-shadow: 0 0 0px rgba(212,175,106,0);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   #scroll-to-current-btn.visible {
     opacity: 1;
     pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
+    animation: chevron-float 2s ease-in-out infinite;
+    box-shadow: 0 0 16px rgba(212,175,106,0.45), 0 0 32px rgba(212,175,106,0.15);
   }
   #scroll-to-current-btn svg { flex-shrink: 0; }
 
@@ -4111,10 +4109,7 @@
 
     <!-- Tab Nav -->
     <!-- Botón flecha scroll-to-current -->
-    <button id="scroll-to-current-btn" onclick="scrollToCurrentNode()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      Ir a mi lección
-    </button>
+    <button id="scroll-to-current-btn" onclick="scrollToCurrentNode()" aria-label="Ir a mi leccion"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
 
     <div class="tab-nav">
       <button class="tab-btn active" id="tab-btn-inicio" onclick="switchTab('inicio')">

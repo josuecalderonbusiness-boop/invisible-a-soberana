@@ -1802,6 +1802,57 @@
     background: radial-gradient(ellipse at center, rgba(42,92,66,.18) 0%, #0F0609 70%);
   }
 
+    /* ═══════════════════════════════════════════
+     TRANSICIONES LÍQUIDAS + GESTOS
+  ═══════════════════════════════════════════ */
+  #tabs-container {
+    position: relative;
+    overflow: hidden;
+  }
+  .tab-content {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    will-change: transform, opacity;
+    transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity   380ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tab-content:not(.active) {
+    pointer-events: none;
+  }
+  /* Tab entrando desde la derecha */
+  .tab-enter-right {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  /* Tab entrando desde la izquierda */
+  .tab-enter-left {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  /* Tab saliendo hacia la izquierda */
+  .tab-exit-left {
+    transform: translateX(-30%) !important;
+    opacity: 0 !important;
+  }
+  /* Tab saliendo hacia la derecha */
+  .tab-exit-right {
+    transform: translateX(30%) !important;
+    opacity: 0 !important;
+  }
+  /* Estado activo — centrado */
+  .tab-content.active {
+    position: relative;
+    transform: translateX(0);
+    opacity: 1;
+  }
+  /* Drawer liquid close */
+  .modal-sheet {
+    transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .modal-sheet.dragging {
+    transition: none !important;
+  }
   /* Tab flash */
   .tab-gem-flash {
     animation: tabFlash .4s ease forwards;

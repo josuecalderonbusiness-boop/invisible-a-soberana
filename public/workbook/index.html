@@ -9337,6 +9337,18 @@ function switchTab(tab) {
 // BOTÓN SCROLL-TO-CURRENT
 let _scrollBtnTab = 'inicio';
 
+function getCurrentNodeTop() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return 0;
+  const currentBadge = scrollEl.querySelector('.journey-node-badge');
+  if (!currentBadge) return 0;
+  const wrapEl = currentBadge.closest('.journey-node-wrap');
+  if (!wrapEl) return 0;
+  const containerTop = scrollEl.getBoundingClientRect().top;
+  const wrapTop = wrapEl.getBoundingClientRect().top;
+  return wrapTop - containerTop + scrollEl.scrollTop;
+}
+
 function updateScrollBtn(tab) {
   _scrollBtnTab = tab;
   const btn = document.getElementById('scroll-to-current-btn');
@@ -9345,9 +9357,14 @@ function updateScrollBtn(tab) {
   if (!scrollEl) return;
   const allowed = (tab === 'inicio' || tab === 'novedades');
   if (!allowed) { btn.classList.remove('visible'); return; }
-  btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+  if (tab === 'novedades') {
+    btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+    return;
+  }
+  const nodeTop = getCurrentNodeTop();
+  const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
+  btn.classList.toggle('visible', pastNode);
 }
-
 function scrollToCurrentNode() {
   const scrollEl = document.getElementById('app-main');
   if (!scrollEl) return;
@@ -9378,8 +9395,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!btn) return;
     const allowed = (_scrollBtnTab === 'inicio' || _scrollBtnTab === 'novedades');
     if (!allowed) { btn.classList.remove('visible'); return; }
-    btn.classList.toggle('visible', scrollEl.scrollTop > 200);
-  }, { passive: true });
+    if (_scrollBtnTab === 'novedades') {
+      btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+    } else {
+      const nodeTop = getCurrentNodeTop();
+      const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
+      btn.classList.toggle('visible', pastNode);
+    }
 });
 
 // ═══════════════════════════════════════════

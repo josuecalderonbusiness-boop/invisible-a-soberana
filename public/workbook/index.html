@@ -9402,6 +9402,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
       btn.classList.toggle('visible', pastNode);
     }
+
+  }, { passive: true });
 });
 
 // ═══════════════════════════════════════════

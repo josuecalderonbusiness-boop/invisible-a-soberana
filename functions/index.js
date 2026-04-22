@@ -1,4 +1,4 @@
-const { setGlobalOptions } = require("firebase-functions");
+﻿const { setGlobalOptions } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
@@ -26,7 +26,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
     }
 
     if (req.method !== "POST") {
-      res.status(405).json({ error: "Método no permitido" });
+      res.status(405).json({ error: "MÃ©todo no permitido" });
       return;
     }
 
@@ -59,17 +59,17 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
         return;
       }
 
-      // 3. Construir payload según tipo
+      // 3. Construir payload segÃºn tipo
       const data = { nombre, mensaje };
       const configs = {
         novedades: {
-          title: data.nombre ? `${data.nombre}, Valentina` : 'Soberana � 7D Novedades',
+          title: data.nombre ? `${data.nombre}, Valentina` : 'Soberana · 7D Novedades',
           body: data.mensaje || 'Nuevo contenido publicado en Novedades.',
           tag: 'novedades',
           data: { url: '/workbook/#tab-novedades', tipo: 'novedades' }
         },
         sistema: {
-          title: data.nombre ? `${data.nombre}` : 'Soberana � Sistema',
+          title: data.nombre ? `${data.nombre}` : 'Soberana · Sistema',
           body: data.mensaje || 'Establece tu estandar para hoy.',
           tag: 'soberana_' + Date.now(),
           data: { url: '/workbook/#tab-inicio', tipo: 'sistema' }
@@ -85,7 +85,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
       const tipo = tipoRaw && configs[tipoRaw] ? tipoRaw : 'novedades';
       const cfg = configs[tipo];
 
-      // 4. Enviar en lotes de 500 (límite de FCM sendEachForMulticast)
+      // 4. Enviar en lotes de 500 (lÃ­mite de FCM sendEachForMulticast)
       const BATCH_SIZE = 500;
       let enviadas = 0;
       const invalidTokenDocIds = [];
@@ -113,7 +113,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
             }
           },
           webpush: { headers: { Urgency: 'high' } }
-          // Sin campo "notification" — el SW controla el render completo
+          // Sin campo "notification" â€” el SW controla el render completo
         });
 
         response.responses.forEach((r, idx) => {
@@ -132,7 +132,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
         });
       }
 
-      // 5. Borrar tokens inválidos de Firestore
+      // 5. Borrar tokens invÃ¡lidos de Firestore
       if (invalidTokenDocIds.length > 0) {
         await Promise.all(
           invalidTokenDocIds.map(docId =>
@@ -150,7 +150,7 @@ exports.sendPushNotification = onRequest({ maxInstances: 10 }, (req, res) => {
   });
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwr3Dtcs7ewrB8PGsdE0JRO7Ianw6FxFdN1KN12WQ_PGrzSseg98aUn0rr7T85uKs1K/exec";
@@ -177,7 +177,7 @@ function fetchEstado(email) {
   });
 }
 
-// "jessicatovarmoda" → "Jessica"
+// "jessicatovarmoda" â†’ "Jessica"
 function nombreDesdeEmail(email) {
   const parte = email.split("@")[0];
   const limpio = parte.split(/[\d._+-]/)[0];
@@ -199,7 +199,7 @@ function buildMensaje(nombre, estado, seccionesCompletadas, vioQueSigue, fechaRe
   const msDesdeRegistro = fechaMs ? ahora - fechaMs : Infinity;
   const horas24 = 24 * 60 * 60 * 1000;
 
-  // Caso: ya vio el CTA o completado+vioQueSigue → no enviar
+  // Caso: ya vio el CTA o completado+vioQueSigue â†’ no enviar
   if (vioQueSigue && estado !== "completado") return null;
   if (estado === "completado" && vioQueSigue) return null;
 
@@ -214,7 +214,7 @@ function buildMensaje(nombre, estado, seccionesCompletadas, vioQueSigue, fechaRe
 
   if (estado === "iniciando" || estado === "avanzando") {
     return {
-      title: `${nombre}, tu sistema está incompleto.`,
+      title: `${nombre}, tu sistema estÃ¡ incompleto.`,
       body: `Llevas ${seccionesCompletadas} de 11 secciones. Lo que construiste necesita base.`,
       url: "/workbook/",
       tipo: "sistema"
@@ -253,7 +253,7 @@ async function enviarNotifIndividual(messaging, token, msg) {
   });
 }
 
-// ── checkAndNotify ────────────────────────────────────────────────────────────
+// â”€â”€ checkAndNotify â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.checkAndNotify = onRequest({ maxInstances: 10 }, (req, res) => {
   cors(req, res, async () => {
@@ -296,7 +296,7 @@ exports.checkAndNotify = onRequest({ maxInstances: 10 }, (req, res) => {
 
         if (!token || !email) { skipped++; continue; }
 
-        // 1. Verificar throttle — máx 1 notif por 20 h
+        // 1. Verificar throttle â€” mÃ¡x 1 notif por 20 h
         const logRef = db.collection("notif_log").doc(email);
         const logSnap = await logRef.get();
         if (logSnap.exists) {
@@ -372,7 +372,7 @@ exports.checkAndNotify = onRequest({ maxInstances: 10 }, (req, res) => {
   });
 });
 
-// ── activarMasterclassSemanal ────────────────────────────────────────────────
+// â”€â”€ activarMasterclassSemanal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 exports.activarMasterclassSemanal = onSchedule(
   { schedule: "0 8 * * 1", timeZone: "America/Bogota", maxInstances: 1 },
@@ -405,7 +405,7 @@ exports.activarMasterclassSemanal = onSchedule(
       const tokens = tokensSnap.docs.map(d => d.data().token).filter(Boolean);
 
       if (tokens.length === 0) {
-        console.log(`[activarMasterclassSemanal] Semana ${semana} activada — 0 tokens.`);
+        console.log(`[activarMasterclassSemanal] Semana ${semana} activada â€” 0 tokens.`);
         continue;
       }
 
@@ -414,7 +414,7 @@ exports.activarMasterclassSemanal = onSchedule(
         data: {
           tipo: "masterclass",
           title: `Tu Masterclass esta lista`,
-          body: `Semana ${semana} · ${titulo} — Ya puedes verla`,
+          body: `Semana ${semana} Â· ${titulo} â€” Ya puedes verla`,
           tag: `masterclass_s${semana}`,
           url: `/workbook?masterclass=${semana}`,
           icon: "/workbook/icon-192.png",
@@ -459,7 +459,7 @@ exports.activarMasterclassSemanal = onSchedule(
         });
       }
 
-      // 4. Limpiar tokens inválidos
+      // 4. Limpiar tokens invÃ¡lidos
       if (invalidIds.length > 0) {
         await Promise.all(
           invalidIds.map(id => db.collection("tokens").doc(id).delete())
@@ -471,14 +471,14 @@ exports.activarMasterclassSemanal = onSchedule(
   }
 );
 
-// ── onEventoProgreso ──────────────────────────────────────────────────────────
+// â”€â”€ onEventoProgreso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const EVENTO_CONFIG = {
   s0:            { horas: 24, titulo: (n) => `${n}, el primer paso toma 3 minutos.`,                     cuerpo: "" },
-  s3:            { horas: 48, titulo: ()  => "Tu identidad Soberana está a medias.",                     cuerpo: "", checkActividad: true },
-  s5:            { horas: 2,  titulo: ()  => "Protocolo Mental activado. ¿Ya lo aplicaste hoy?",         cuerpo: "" },
-  s7:            { horas: 2,  titulo: ()  => "Los 3 protocolos están en ti. El sistema está completo.",  cuerpo: "" },
-  s9:            { horas: 1,  titulo: ()  => "Completaste el workshop. Hay una dimensión que esto no toca.", cuerpo: "" },
+  s3:            { horas: 48, titulo: ()  => "Tu identidad Soberana estÃ¡ a medias.",                     cuerpo: "", checkActividad: true },
+  s5:            { horas: 2,  titulo: ()  => "Protocolo Mental activado. Â¿Ya lo aplicaste hoy?",         cuerpo: "" },
+  s7:            { horas: 2,  titulo: ()  => "Los 3 protocolos estÃ¡n en ti. El sistema estÃ¡ completo.",  cuerpo: "" },
+  s9:            { horas: 1,  titulo: ()  => "Completaste el workshop. Hay una dimensiÃ³n que esto no toca.", cuerpo: "" },
   quesigue_visto:{ horas: 6,  titulo: ()  => "El 7D abre lo que el workshop no puede.",                  cuerpo: "" },
 };
 
@@ -503,24 +503,24 @@ exports.onEventoProgreso = onDocumentWritten(
     const { email, seccionId } = event.params;
     const seccion = data.seccion || seccionId;
     const cfg = EVENTO_CONFIG[seccion];
-    if (!cfg) return; // sección no monitoreada
+    if (!cfg) return; // secciÃ³n no monitoreada
 
     const tsMs = tsToMs(data.timestamp);
     const horasTranscurridas = tsMs ? (Date.now() - tsMs) / (1000 * 60 * 60) : Infinity;
 
-    if (horasTranscurridas < cfg.horas) return; // aún no es tiempo — se reintentará
+    if (horasTranscurridas < cfg.horas) return; // aÃºn no es tiempo â€” se reintentarÃ¡
 
     const db = getFirestore();
     const messaging = getMessaging();
 
-    // Para s3: verificar que no haya actividad más reciente en la colección
+    // Para s3: verificar que no haya actividad mÃ¡s reciente en la colecciÃ³n
     if (cfg.checkActividad && data.timestamp) {
       const recientes = await db
         .collection("eventos").doc(email).collection("secciones")
         .where("timestamp", ">", data.timestamp)
         .limit(1)
         .get();
-      if (!recientes.empty) return; // hay actividad más reciente — no enviar
+      if (!recientes.empty) return; // hay actividad mÃ¡s reciente â€” no enviar
     }
 
     // Buscar token FCM
@@ -564,14 +564,14 @@ exports.onEventoProgreso = onDocumentWritten(
   }
 );
 
-// ── HELPERS SESIÓN EN VIVO SÁBADO ─────────────────────────────────────────────
+// â”€â”€ HELPERS SESIÃ“N EN VIVO SÃBADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function getSesionActiva(db) {
   const snap = await db.collection("config").doc("sesiones_live").get();
   if (!snap.exists) return null;
   const data = snap.data();
 
-  // Buscar la semana cuya fecha_iso sea la más próxima (futura o reciente)
+  // Buscar la semana cuya fecha_iso sea la mÃ¡s prÃ³xima (futura o reciente)
   const ahora = Date.now();
   let sesionActiva = null;
   let menorDiff = Infinity;
@@ -627,8 +627,8 @@ async function enviarPushCohorte(db, messaging, payload) {
   return enviadas;
 }
 
-// ── notifSabado24h ─────────────────────────────────────────────────────────────
-// Corre viernes 7:00 PM Colombia — notifica 24h antes de la sesión
+// â”€â”€ notifSabado24h â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Corre viernes 7:00 PM Colombia â€” notifica 24h antes de la sesiÃ³n
 
 exports.notifSabado24h = onSchedule(
   { schedule: "0 19 * * 5", timeZone: "America/Bogota", maxInstances: 1 },
@@ -638,21 +638,21 @@ exports.notifSabado24h = onSchedule(
 
     const sesion = await getSesionActiva(db);
     if (!sesion) {
-      console.log("[notifSabado24h] Sin sesión configurada.");
+      console.log("[notifSabado24h] Sin sesiÃ³n configurada.");
       return;
     }
 
-    // Solo enviar si la sesión es mañana (entre 20h y 28h desde ahora)
+    // Solo enviar si la sesiÃ³n es maÃ±ana (entre 20h y 28h desde ahora)
     const horasHasta = (sesion.fechaMs - Date.now()) / (1000 * 60 * 60);
     if (horasHasta < 0 || horasHasta > 28) {
-      console.log(`[notifSabado24h] Sesión en ${horasHasta.toFixed(1)}h — fuera de ventana.`);
+      console.log(`[notifSabado24h] SesiÃ³n en ${horasHasta.toFixed(1)}h â€” fuera de ventana.`);
       return;
     }
 
     const enviadas = await enviarPushCohorte(db, messaging, {
       data: {
         tipo: "live_pronto",
-        title: "Mañana — Sesión en Vivo Soberana 🗓",
+        title: "MaÃ±ana â€” SesiÃ³n en Vivo Soberana ðŸ—“",
         body: "La sesion del sabado es manana. Reserva tu espacio de 2 horas.",
         tag: "sabado_24h",
         url: "/workbook/#tab-inicio",
@@ -667,8 +667,8 @@ exports.notifSabado24h = onSchedule(
   }
 );
 
-// ── notifSabado1h ──────────────────────────────────────────────────────────────
-// Se dispara cada sábado hora a hora — envía si la sesión es en 55–65 min
+// â”€â”€ notifSabado1h â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Se dispara cada sÃ¡bado hora a hora â€” envÃ­a si la sesiÃ³n es en 55â€“65 min
 
 exports.notifSabado1h = onSchedule(
   { schedule: "0 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
@@ -679,18 +679,18 @@ exports.notifSabado1h = onSchedule(
     const sesion = await getSesionActiva(db);
     if (!sesion) return;
 
-    // Ventana: entre 55 y 65 minutos antes de la sesión
+    // Ventana: entre 55 y 65 minutos antes de la sesiÃ³n
     const minutosHasta = (sesion.fechaMs - Date.now()) / (1000 * 60);
     if (minutosHasta < 55 || minutosHasta > 65) {
-      console.log(`[notifSabado1h] Sesión en ${minutosHasta.toFixed(0)} min — no es la ventana.`);
+      console.log(`[notifSabado1h] SesiÃ³n en ${minutosHasta.toFixed(0)} min â€” no es la ventana.`);
       return;
     }
 
     const enviadas = await enviarPushCohorte(db, messaging, {
       data: {
         tipo: "live_pronto",
-        title: "En 1 hora — Sesión en Vivo ⏰",
-        body: "La sesión comienza en 60 minutos. Prepara tu espacio y tu energía.",
+        title: "En 1 hora â€” SesiÃ³n en Vivo â°",
+        body: "La sesiÃ³n comienza en 60 minutos. Prepara tu espacio y tu energÃ­a.",
         tag: "sabado_1h",
         url: "/workbook/#tab-inicio",
         icon: "/workbook/icon-192.png",
@@ -704,8 +704,8 @@ exports.notifSabado1h = onSchedule(
   }
 );
 
-// ── notifSabadoLive ────────────────────────────────────────────────────────────
-// Se dispara cada sábado hora a hora — detecta inicio exacto y publica en Novedades
+// â”€â”€ notifSabadoLive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Se dispara cada sÃ¡bado hora a hora â€” detecta inicio exacto y publica en Novedades
 
 exports.notifSabadoLive = onSchedule(
   { schedule: "0 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
@@ -719,7 +719,7 @@ exports.notifSabadoLive = onSchedule(
     // Ventana: entre -5 y +5 minutos del inicio exacto
     const minutosDesde = (Date.now() - sesion.fechaMs) / (1000 * 60);
     if (minutosDesde < -5 || minutosDesde > 5) {
-      console.log(`[notifSabadoLive] Sesión en ${(-minutosDesde).toFixed(0)} min — no es ahora.`);
+      console.log(`[notifSabadoLive] SesiÃ³n en ${(-minutosDesde).toFixed(0)} min â€” no es ahora.`);
       return;
     }
 
@@ -736,13 +736,13 @@ exports.notifSabadoLive = onSchedule(
     // 1. Publicar post en Novedades
     await db.collection("comunidad").add({
       adminKey: ADMIN_KEY,
-      autor: "Josué Calderón",
+      autor: "JosuÃ© CalderÃ³n",
       avatarLetra: "J",
       tipo: "live",
-      emoji: "🔴",
+      emoji: "ðŸ”´",
       titulo: "Estamos en vivo ahora mismo",
-      texto: "La sesión en vivo del Sábado ha comenzado. Entra ahora y únete a la comunidad.",
-      cta: "Entrar a la sesión →",
+      texto: "La sesiÃ³n en vivo del SÃ¡bado ha comenzado. Entra ahora y Ãºnete a la comunidad.",
+      cta: "Entrar a la sesiÃ³n â†’",
       ctaUrl: sesion.zoom_link || "/workbook/#tab-inicio",
       hearts: 0,
       timestamp: Timestamp.now(),
@@ -753,7 +753,7 @@ exports.notifSabadoLive = onSchedule(
     const enviadas = await enviarPushCohorte(db, messaging, {
       data: {
         tipo: "live_ahora",
-        title: "🔴 Estamos en vivo — Entra ahora",
+        title: "ðŸ”´ Estamos en vivo â€” Entra ahora",
         body: "La sesion del sabado acaba de comenzar. Tu lugar te esta esperando.",
         tag: "sabado_live",
         url: sesion.zoom_link || "/workbook/#tab-inicio",
@@ -768,8 +768,8 @@ exports.notifSabadoLive = onSchedule(
   }
 );
 
-// ── notifSabadoAusentes ────────────────────────────────────────────────────────
-// 30 min después del inicio — notifica solo a quienes NO registraron entrada
+// â”€â”€ notifSabadoAusentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 30 min despuÃ©s del inicio â€” notifica solo a quienes NO registraron entrada
 
 exports.notifSabadoAusentes = onSchedule(
   { schedule: "30 * * * 6", timeZone: "America/Bogota", maxInstances: 1 },
@@ -780,14 +780,14 @@ exports.notifSabadoAusentes = onSchedule(
     const sesion = await getSesionActiva(db);
     if (!sesion) return;
 
-    // Ventana: entre 25 y 35 minutos después del inicio
+    // Ventana: entre 25 y 35 minutos despuÃ©s del inicio
     const minutosDesde = (Date.now() - sesion.fechaMs) / (1000 * 60);
     if (minutosDesde < 25 || minutosDesde > 35) {
-      console.log(`[notifSabadoAusentes] Sesión hace ${minutosDesde.toFixed(0)} min — fuera de ventana.`);
+      console.log(`[notifSabadoAusentes] SesiÃ³n hace ${minutosDesde.toFixed(0)} min â€” fuera de ventana.`);
       return;
     }
 
-    // Leer quiénes SÍ entraron
+    // Leer quiÃ©nes SÃ entraron
     const asistenciaSnap = await db
       .collection("sesion_asistencia")
       .doc(sesion.key)
@@ -800,7 +800,7 @@ exports.notifSabadoAusentes = onSchedule(
     const ausentes = tokensSnap.docs.filter(d => d.data().token && !quienesEntraron.has(d.id));
 
     if (ausentes.length === 0) {
-      console.log("[notifSabadoAusentes] Todas asistieron 🎉");
+      console.log("[notifSabadoAusentes] Todas asistieron ðŸŽ‰");
       return;
     }
 
@@ -814,7 +814,7 @@ exports.notifSabadoAusentes = onSchedule(
         tokens: batch.map(d => d.data().token),
         data: {
           tipo: "live_ausente",
-          title: "La clase sigue en vivo sin ti 🔴",
+          title: "La clase sigue en vivo sin ti ðŸ”´",
           body: "Aun estas a tiempo de unirte. La sesion continua ahora mismo.",
           tag: "sabado_ausente",
           url: sesion.zoom_link || "/workbook/#tab-inicio",
@@ -851,14 +851,12 @@ exports.notifSabadoAusentes = onSchedule(
 
 
 // ============================================
-// getSignedVideoUrl � Token firmado Bunny.net
+// getSignedVideoUrl — Token firmado Bunny.net
 // ============================================
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 
 exports.getSignedVideoUrl = onCall({ maxInstances: 10 }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesion.");
-  }
+  // Sin Firebase Auth - PWA usa Google Sheets
   const { videoId } = request.data;
   const libraryId = "636956";
   const securityKey = process.env.BUNNY_TOKEN_KEY;
@@ -870,7 +868,9 @@ exports.getSignedVideoUrl = onCall({ maxInstances: 10 }, async (request) => {
   }
   const expiration = Math.floor(Date.now() / 1000) + 7200;
   const crypto = require("crypto");
-  const token = crypto.createHash("sha256").update(securityKey + libraryId + expiration + videoId).digest("hex");
+  const token = crypto.createHash("sha256").update(securityKey + videoId + expiration).digest("hex");
   const signedUrl = "https://iframe.mediadelivery.net/embed/" + libraryId + "/" + videoId + "?token=" + token + "&expires=" + expiration;
   return { url: signedUrl };
 });
+
+

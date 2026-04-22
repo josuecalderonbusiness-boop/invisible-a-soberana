@@ -39,14 +39,14 @@
       "name": "Código Soberana",
       "short_name": "Workshop",
       "description": "Ir a mi camino Workshop",
-      "url": "/workbook/?shortcut=workshop",
+      "url": "/workbook/",
       "icons": [{ "src": "/workbook/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Soberana 7D",
       "short_name": "7D",
       "description": "Ir a mi entrenamiento 7D",
-      "url": "/workbook/?shortcut=7d",
+      "url": "/workbook/#7d",
       "icons": [{ "src": "/workbook/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
@@ -54,3 +54,5 @@
   "lang": "es",
   "gcm_sender_id": "30025552803"
 }
+
+

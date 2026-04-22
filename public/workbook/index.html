@@ -322,6 +322,39 @@
   }
 
   /* Tab Navigation */
+    @keyframes chevron-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+  }
+  #scroll-to-current-btn {
+    position: fixed;
+    bottom: 96px;
+    right: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(26,10,15,0.88);
+    border: 1.5px solid rgba(212,175,106,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 95;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, box-shadow .3s ease;
+    box-shadow: 0 0 0px rgba(212,175,106,0);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  #scroll-to-current-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    animation: chevron-float 2s ease-in-out infinite;
+    box-shadow: 0 0 16px rgba(212,175,106,0.45), 0 0 32px rgba(212,175,106,0.15);
+  }
+  #scroll-to-current-btn svg { flex-shrink: 0; }
+
   .tab-nav {
     background: var(--burgundy-deep);
     display: flex;
@@ -4075,6 +4108,9 @@
     </div>
 
     <!-- Tab Nav -->
+    <!-- Botón flecha scroll-to-current -->
+    <button id="scroll-to-current-btn" onclick="scrollToCurrentNode()" aria-label="Ir a mi leccion"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4AF6A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+
     <div class="tab-nav">
       <button class="tab-btn active" id="tab-btn-inicio" onclick="switchTab('inicio')">
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -9257,7 +9293,7 @@ function switchTab(tab) {
   if (tabEl) tabEl.classList.add('active');
   if (btnEl) btnEl.classList.add('active');
   if (tab === 'progreso') { updateProgressUI(); renderStarsProgreso(); }
-  if (tab === 'novedades') { renderNovedades(); }
+  if (tab === 'novedades') { renderNovedades(); try { if ('clearAppBadge' in navigator) { navigator.clearAppBadge(); const db = window._db || (window.firebase && firebase.firestore && firebase.firestore()); if (db) { db.collection('comunidad').orderBy('createdAt', 'desc').limit(1).get().then(snap => { if (!snap.empty) { const ts = snap.docs[0].data().createdAt ? snap.docs[0].data().createdAt.toMillis() : null; if (ts) localStorage.setItem('soberana_ultimo_post_visto', ts.toString()); } }).catch(() => {}); } } } catch(e) {} }
   if (tab === 'entrenamiento') { renderEntrenamientoTab(); }
   if (tab === 'inicio') { syncPill(); }
   // La pestaña ERES solo aparece en el tab Inicio
@@ -9271,7 +9307,104 @@ function switchTab(tab) {
   } else {
     updateHeaderMode('workshop');
   }
+  updateScrollBtn(tab);
+
+  // Tabs que NO son inicio van siempre al tope
+  const scrollEl = document.getElementById('app-main');
+  if (tab !== 'inicio' && scrollEl) {
+    scrollEl.scrollTop = 0;
+  }
+
+  // Tab inicio: scroll al nodo en progreso
+  if (tab === 'inicio' && scrollEl) {
+    setTimeout(() => {
+      const currentBadge = scrollEl.querySelector('.journey-node-badge');
+      if (currentBadge) {
+        const wrapEl = currentBadge.closest('.journey-node-wrap');
+        if (wrapEl) {
+          const containerTop = scrollEl.getBoundingClientRect().top;
+          const wrapTop = wrapEl.getBoundingClientRect().top;
+          const offset = wrapTop - containerTop + scrollEl.scrollTop - 120;
+          scrollEl.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+        }
+      } else {
+        scrollEl.scrollTop = 0;
+      }
+    }, 80);
+  }
 }
+
+// BOTÓN SCROLL-TO-CURRENT
+let _scrollBtnTab = 'inicio';
+
+function getCurrentNodeTop() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return 0;
+  const currentBadge = scrollEl.querySelector('.journey-node-badge');
+  if (!currentBadge) return 0;
+  const wrapEl = currentBadge.closest('.journey-node-wrap');
+  if (!wrapEl) return 0;
+  const containerTop = scrollEl.getBoundingClientRect().top;
+  const wrapTop = wrapEl.getBoundingClientRect().top;
+  return wrapTop - containerTop + scrollEl.scrollTop;
+}
+
+function updateScrollBtn(tab) {
+  _scrollBtnTab = tab;
+  const btn = document.getElementById('scroll-to-current-btn');
+  if (!btn) return;
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  const allowed = (tab === 'inicio' || tab === 'novedades');
+  if (!allowed) { btn.classList.remove('visible'); return; }
+  if (tab === 'novedades') {
+    btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+    return;
+  }
+  const nodeTop = getCurrentNodeTop();
+  const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
+  btn.classList.toggle('visible', pastNode);
+}
+function scrollToCurrentNode() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  if (navigator.vibrate) navigator.vibrate(20);
+  if (_scrollBtnTab === 'novedades') {
+    scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  const currentBadge = scrollEl.querySelector('.journey-node-badge');
+  if (currentBadge) {
+    const wrapEl = currentBadge.closest('.journey-node-wrap');
+    if (wrapEl) {
+      const containerTop = scrollEl.getBoundingClientRect().top;
+      const wrapTop = wrapEl.getBoundingClientRect().top;
+      const offset = wrapTop - containerTop + scrollEl.scrollTop - 120;
+      scrollEl.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      return;
+    }
+  }
+  scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const scrollEl = document.getElementById('app-main');
+  if (!scrollEl) return;
+  scrollEl.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-to-current-btn');
+    if (!btn) return;
+    const allowed = (_scrollBtnTab === 'inicio' || _scrollBtnTab === 'novedades');
+    if (!allowed) { btn.classList.remove('visible'); return; }
+    if (_scrollBtnTab === 'novedades') {
+      btn.classList.toggle('visible', scrollEl.scrollTop > 200);
+    } else {
+      const nodeTop = getCurrentNodeTop();
+      const pastNode = nodeTop > 0 && scrollEl.scrollTop > nodeTop + 80;
+      btn.classList.toggle('visible', pastNode);
+    }
+
+  }, { passive: true });
+});
 
 // ═══════════════════════════════════════════
 // EXPORT
@@ -10448,6 +10581,20 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1464,7 +1464,7 @@
 <text x="250" y="685" text-anchor="middle" font-family="'Jost',sans-serif" font-size="9.5" letter-spacing="3.5" fill="#B8892A" opacity="0.72" style="fill:rgb(184, 137, 42);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.72;font-family:Jost, sans-serif;font-size:9.5px;font-weight:400;text-anchor:middle;dominant-baseline:auto">ARQUITECTURA DE PODER</text>
 
 <!-- Tap target -->
-<circle cx="250" cy="305" r="202" fill="transparent" style="cursor: pointer; pointer-events: all;;fill:rgba(0, 0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto" onclick="&#10;  var m=document.getElementById('mec');&#10;  m.style.transform='rotate(180deg)';&#10;  this.style.pointerEvents='none';&#10;"/>
+<circle cx="250" cy="305" r="202" fill="transparent" style="cursor: pointer; pointer-events: all;;fill:rgba(0, 0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto" onclick="&#10;  var m=document.getElementById('mec');&#10;  m.style.transform='rotate(180deg)';this.style.pointerEvents='none';setTimeout(function(){abrirBoveda();},1300);"/>
 </svg>
     </div>
     <div id="resultados-boveda" style="opacity:0;transform:translateY(20px);transition:all .6s ease;margin-bottom:24px;">
@@ -2827,12 +2827,22 @@ function iniciarEscaner() {
 
 
 <script>
-function abrirBoveda() {
+  function abrirBoveda() {
+  var svg = document.querySelector('#boveda-svg svg');
   var res = document.getElementById('resultados-boveda');
   var btn = document.getElementById('btn-comenzar');
-  res.style.opacity = '1';
-  res.style.transform = 'translateY(0)';
+  if (svg) {
+    svg.style.transition = 'transform 0.8s ease, opacity 0.8s ease';
+    svg.style.transform = 'scale(1.08)';
+    svg.style.opacity = '0.3';
+  }
   setTimeout(function() {
+    if (svg) { svg.style.transform = 'scale(0.92)'; svg.style.opacity = '0'; }
+  }, 600);
+  setTimeout(function() {
+    document.getElementById('boveda-svg').style.display = 'none';
+    res.style.opacity = '1';
+    res.style.transform = 'translateY(0)';
     var items = ['ri1','ri2','ri3'];
     items.forEach(function(id, i) {
       setTimeout(function() {
@@ -2840,9 +2850,7 @@ function abrirBoveda() {
         if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
       }, i * 300);
     });
-  }, 200);
-  setTimeout(function() {
-    if (btn) btn.style.display = 'block';
-  }, 1200);
+    setTimeout(function() { if (btn) btn.style.display = 'block'; }, 1200);
+  }, 900);
 }
 </script>

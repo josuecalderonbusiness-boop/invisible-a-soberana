@@ -1,0 +1,22 @@
+<div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;align-items:center;justify-content:center;padding:24px;">
+  <div id="popup-box" style="background:#2A1C21;border:1px solid rgba(184,137,42,.4);border-radius:20px;padding:32px 28px;max-width:420px;width:100%;animation:fadeUp .4s ease both;position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="cerrarPopup()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(240,230,234,.4);font-size:22px;cursor:pointer;">&#x2715;</button>
+    <span style="font-size:10px;font-weight:600;letter-spacing:3px;color:#C97080;text-transform:uppercase;display:block;margin-bottom:18px;">ANTES DE EMPEZAR</span>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;line-height:1.2;margin-bottom:22px;color:#F0E6EA;">Este escaner es para ti <em style="color:#E8C870">si...</em></h2>
+    <div style="margin-bottom:22px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>Eres fuerte en todo — menos en esto.</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>Todavia crees que se puede hacer algo, pero no sabes como cambiar lo que vives.</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>No quieres abandonarlo todo — quieres recuperar tu lugar.</div>
+    </div>
+    <div style="background:rgba(61,12,17,.4);border:1px solid rgba(168,68,85,.2);border-radius:12px;padding:14px 16px;margin-bottom:24px;">
+      <span style="font-size:9px;font-weight:600;letter-spacing:2.5px;color:#C97080;text-transform:uppercase;display:block;margin-bottom:10px;">No es para ti si</span>
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(240,230,234,.55);margin-bottom:7px;"><span style="color:#C97080;">&#10007;</span>Ya decidiste que quieres separarte</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(240,230,234,.55);"><span style="color:#C97080;">&#10007;</span>Buscas que alguien te diga que el tiene toda la culpa</div>
+    </div>
+    <button onclick="cerrarPopup();show('s-qualify')" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">Es para mi &#8594;</button>
+  </div>
+</div>
+<script>
+function abrirPopup(){document.getElementById('popup-overlay').style.display='flex';}
+function cerrarPopup(){document.getElementById('popup-overlay').style.display='none';}
+</script>

@@ -1176,11 +1176,16 @@
       <div class="qualify-not-item"><span class="qualify-not-x">✗</span>Ya decidiste que quieres separarte</div>
       <div class="qualify-not-item"><span class="qualify-not-x">✗</span>Buscas que alguien te diga que él tiene toda la culpa</div>
     </div>
-    <div class="intro-discovers">
-      <span class="intro-discovers-lbl">Vas a descubrir</span>
-      <div class="intro-discovers-item"><div class="intro-discovers-dot"></div>Qué patrón exacto está bloqueando tu relación</div>
-      <div class="intro-discovers-item"><div class="intro-discovers-dot"></div>Cuál de las 3 frecuencias está activa en ti</div>
-      <div class="intro-discovers-item"><div class="intro-discovers-dot"></div>3 movimientos concretos para esta semana</div>
+    <div class="cofre-wrap">
+      <button class="cofre-btn" onclick="abrirCofre(this)">
+        <span class="cofre-icon">&#x2728;</span>
+        <span class="cofre-txt">Toca para ver lo que vas a descubrir</span>
+      </button>
+      <div class="cofre-items" id="cofre-items" style="display:none;">
+        <div class="cofre-item">Por que te sientes asi con el, aunque lo amas</div>
+        <div class="cofre-item">Que es lo que esta bloqueando la conexion entre los dos</div>
+        <div class="cofre-item">Que hacer esta semana para que algo cambie</div>
+      </div>
     </div>
     <button class="btn-cta" onclick="show('s-quiz'); renderQ(0)">
       Entendido. Comenzar →
@@ -2331,6 +2336,35 @@ show = function(id) {
 };
 
 // ── STICKY HEADER PRECIO ─────────────────────────────────
+function abrirCofre(btn) {
+  btn.classList.add('abierto');
+  btn.querySelector('.cofre-txt').textContent = 'Lo que vas a descubrir';
+  var items = document.getElementById('cofre-items');
+  items.style.display = 'flex';
+  var cards = items.querySelectorAll('.cofre-item');
+  cards.forEach(function(card, i) {
+    setTimeout(function() {
+      card.classList.add('visible');
+      if (i === cards.length - 1) lanzarEstrellas();
+    }, i * 300);
+  });
+}
+function lanzarEstrellas() {
+  for (var i = 0; i < 12; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        var s = document.createElement('div');
+        s.style.cssText = 'position:fixed;font-size:20px;pointer-events:none;z-index:9999;transition:all 1.2s ease-out;';
+        s.textContent = String.fromCharCode(10024);
+        s.style.left = (15 + Math.random() * 70) + '%';
+        s.style.top = '65%';
+        document.body.appendChild(s);
+        setTimeout(function() { s.style.top = '5%'; s.style.opacity = '0'; }, 50);
+        setTimeout(function() { s.remove(); }, 1400);
+      }, idx * 80);
+    })(i);
+  }
+}
 function initPrecioEffects() {
   const sticky = document.getElementById('sticky-precio');
   const screen = document.getElementById('s-precio');
@@ -2588,6 +2622,9 @@ showPrecio = function() {
   </div>
   <p class="copyright">© 2026 Código Soberana | Josué Calderón. Todos los derechos reservados.</p>
 </div>
+
+
+
 
 
 

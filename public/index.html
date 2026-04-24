@@ -2843,6 +2843,8 @@ function iniciarEscaner() {
     if (svg) { svg.style.transform = 'scale(0.92)'; svg.style.opacity = '0'; }
   }, 600);
   setTimeout(function() {
+    document.getElementById('s-qualify').style.transition = 'background 1s ease';
+document.getElementById('s-qualify').style.background = '#000000';
     document.getElementById('boveda-svg').style.display = 'none';
     res.style.opacity = '1';
     res.style.transform = 'translateY(0)';
@@ -2854,6 +2856,25 @@ function iniciarEscaner() {
       }, i * 300);
     });
     setTimeout(function() { if (btn) btn.style.display = 'block'; }, 1200);
+lanzarParticulasBoveda();
   }, 900);
+}
+function lanzarParticulasBoveda() {
+  var screen = document.getElementById('s-qualify');
+  for (var i = 0; i < 70; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        var p = document.createElement('div');
+        var size = Math.random() * 3 + 1.5;
+        p.style.cssText = 'position:fixed;border-radius:50%;pointer-events:none;z-index:5;background:#D4A843;box-shadow:0 0 ' + (size*2) + 'px rgba(212,168,67,0.8);width:' + size + 'px;height:' + size + 'px;left:' + (Math.random()*100) + '%;top:-10px;transition:top ' + (3+Math.random()*4) + 's linear,opacity 1s ease;opacity:' + (0.4+Math.random()*0.6) + ';';
+        document.body.appendChild(p);
+        setTimeout(function() {
+          p.style.top = '110%';
+          p.style.opacity = '0';
+        }, 100);
+        setTimeout(function() { p.remove(); }, 7000);
+      }, idx * 200);
+    })(i);
+  }
 }
 </script>

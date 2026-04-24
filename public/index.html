@@ -105,7 +105,7 @@
 
   /* PANTALLA 2 */
   .qualify-box {
-    display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 72px;
+    display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 110px;
   }
   .qualify-box .intro-for { text-align: left; width: 100%; }
   .qualify-box .qualify-not { text-align: left; width: 100%; }
@@ -412,6 +412,7 @@
   .final-q cite { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--gold-deep); text-transform: uppercase; font-style: normal; }
 
   /* ── KEYFRAMES ───────────────────────────── */
+  @keyframes starPop { 0% { transform:translateY(-50%) scale(0); opacity:0; } 60% { transform:translateY(-50%) scale(1.4); opacity:1; } 100% { transform:translateY(-50%) scale(1); opacity:1; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes qIn   { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes qOut  { to   { opacity: 0; transform: translateX(-32px); } }
@@ -1126,8 +1127,8 @@
 </head>
 <body>
 <!-- BARRA DE PROGRESO GLOBAL FIJA -->
-<div id="global-prog-bar" style="position:fixed;top:16px;left:0;right:0;height:4px;z-index:500;background:rgba(184,137,42,.1);">
-  <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);"></div>
+<div id="global-prog-bar" style="position:fixed;top:64px;left:16px;right:16px;height:14px;z-index:500;background:rgba(255,255,255,.08);border-radius:20px;">
+  <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;position:relative;"></div>
 </div>
 
 <!-- ──────────── INTRO ──────────── -->
@@ -2315,7 +2316,10 @@ const SCREEN_PROGRESS = {
 function setGlobalProgress(pct) {
   const fill = document.getElementById('p-fill');
   const lbl  = document.getElementById('p-lbl');
-  if (fill) fill.style.width = pct + '%';
+  if (fill) {
+    fill.style.width = pct + '%';
+    
+  }
   // Ocultar label de pregunta en pantallas post-quiz
   if (lbl && pct > 50) lbl.style.opacity = '0';
 }
@@ -2584,6 +2588,14 @@ showPrecio = function() {
   </div>
   <p class="copyright">© 2026 Código Soberana | Josué Calderón. Todos los derechos reservados.</p>
 </div>
+
+
+
+
+
+
+
+
 
 
 

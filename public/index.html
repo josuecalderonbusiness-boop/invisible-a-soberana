@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -68,7 +68,7 @@
   }
   .intro-title em { font-style: italic; color: var(--gold-light); display: block; }
   .intro-sub {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: clamp(16px, 3.5vw, 19px); font-style: italic;
     color: var(--text-muted); line-height: 1.6; margin-bottom: 36px;
   }
@@ -98,14 +98,14 @@
   }
   .intro-title-big em { font-style: italic; color: var(--gold-light); display: block; margin-top: 4px; }
   .intro-sub-small {
-    font-family: var(--font-elegant);
-    font-size: clamp(15px, 3.5vw, 18px); font-style: italic;
+    font-family: 'Jost', sans-serif;
+    font-size: 16px; font-style: normal; font-weight: 400;
     color: var(--text-muted); line-height: 1.65; margin-bottom: 36px;
   }
 
   /* PANTALLA 2 */
   .qualify-box {
-    display: flex; flex-direction: column; align-items: center; text-align: center;
+    display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 72px;
   }
   .qualify-box .intro-for { text-align: left; width: 100%; }
   .qualify-box .qualify-not { text-align: left; width: 100%; }
@@ -139,7 +139,7 @@
   .intro-for { margin-bottom: 20px; }
   .intro-for-line {
     display: flex; align-items: flex-start; gap: 10px;
-    font-family: var(--font-elegant); font-size: 17px; font-style: italic;
+    font-family: 'Jost', sans-serif; font-size: 17px; font-style: italic;
     color: rgba(240,230,234,.78); line-height: 1.55; margin-bottom: 10px;
   }
   .intro-for-line:last-child { margin-bottom: 0; }
@@ -164,7 +164,7 @@
   }
   .intro-for-line {
     display: flex; align-items: flex-start; gap: 10px;
-    font-family: var(--font-elegant); font-size: 17px; font-style: italic;
+    font-family: 'Jost', sans-serif; font-size: 17px; font-style: italic;
     color: rgba(240,230,234,.72); line-height: 1.55; margin-bottom: 8px;
   }
   .intro-for-line:last-child { margin-bottom: 0; }
@@ -228,7 +228,7 @@
   .q-num { font-size: 10px; font-weight: 600; letter-spacing: 3px; color: var(--wine-light); text-transform: uppercase; margin-bottom: 18px; display: block; }
   .q-text { font-family: var(--font-display); font-size: clamp(21px,5vw,31px); font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
   .q-text em { font-style: italic; color: var(--gold-light); }
-  .q-sub { font-family: var(--font-elegant); font-size: 15px; font-style: italic; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; }
+  .q-sub { font-family: 'Jost', sans-serif; font-size: 15px; font-style: italic; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; }
   .opts { display: flex; flex-direction: column; gap: 11px; }
   .opt {
     padding: 17px 22px;
@@ -281,7 +281,7 @@
   }
   .gate-title { font-family: var(--font-display); font-size: clamp(24px,6vw,34px); font-weight: 700; line-height: 1.2; text-align: center; margin-bottom: 10px; }
   .gate-title em { font-style: italic; color: var(--gold-light); }
-  .gate-sub { font-family: var(--font-elegant); font-size: 16px; font-style: italic; color: var(--text-muted); text-align: center; margin-bottom: 28px; line-height: 1.55; }
+  .gate-sub { font-family: 'Jost', sans-serif; font-size: 16px; font-style: italic; color: var(--text-muted); text-align: center; margin-bottom: 28px; line-height: 1.55; }
   .gate-receives {
     background: rgba(45,31,35,.5); border: 1px solid rgba(255,255,255,.06);
     border-radius: 12px; padding: 18px 20px; margin-bottom: 22px;
@@ -333,7 +333,7 @@
   .r-greeting { font-family: var(--font-display); font-size: clamp(24px,6vw,40px); font-weight: 900; line-height: 1.1; margin-bottom: 8px; animation: fadeUp .5s .2s both; }
   .r-greeting .hi { color: var(--gold-light); font-style: italic; }
   .r-type { font-family: var(--font-display); font-size: clamp(16px,3.8vw,22px); font-weight: 400; font-style: italic; color: var(--wine-pale); margin-bottom: 18px; animation: fadeUp .5s .3s both; }
-  .r-desc { font-family: var(--font-elegant); font-size: clamp(16px,3.5vw,19px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.76); max-width: 520px; margin: 0 auto; animation: fadeUp .5s .4s both; }
+  .r-desc { font-family: 'Jost', sans-serif; font-size: clamp(16px,3.5vw,19px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.76); max-width: 520px; margin: 0 auto; animation: fadeUp .5s .4s both; }
   .r-body { max-width: 600px; margin: 0 auto; padding: 56px 24px 80px; }
   .sec-label {
     font-size: 10px; font-weight: 600; letter-spacing: 3px; color: var(--gold-primary);
@@ -342,7 +342,7 @@
   }
   .sec-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(184,137,42,.24), transparent); }
   .mov-title-main { font-family: var(--font-display); font-size: clamp(21px,5vw,30px); font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
-  .mov-pain { font-family: var(--font-elegant); font-size: 16px; font-style: italic; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+  .mov-pain { font-family: 'Jost', sans-serif; font-size: 16px; font-style: italic; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
   .mc { margin-bottom: 14px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.06); animation: fadeUp .5s both; }
   .mc:nth-child(1) { animation-delay: .1s; }
   .mc:nth-child(2) { animation-delay: .2s; }
@@ -366,7 +366,7 @@
   .mc-content p { font-size: 14px; line-height: 1.7; color: rgba(240,230,234,.7); margin-bottom: 12px; font-weight: 300; }
   .mc-content p:last-child { margin-bottom: 0; }
   .mc-content strong { color: var(--gold-light); font-weight: 500; }
-  .mc-ex { background: rgba(184,137,42,.07); border-left: 2px solid var(--gold-primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px; font-family: var(--font-elegant); font-style: italic; font-size: 14px; color: rgba(240,230,234,.66); line-height: 1.55; }
+  .mc-ex { background: rgba(184,137,42,.07); border-left: 2px solid var(--gold-primary); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 12px; font-family: 'Jost', sans-serif; font-style: italic; font-size: 14px; color: rgba(240,230,234,.66); line-height: 1.55; }
 
   /* email badge */
   .email-badge {
@@ -393,7 +393,7 @@
   .bridge-ey { font-size: 9px; font-weight: 600; letter-spacing: 3px; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 14px; }
   .bridge-h { font-family: var(--font-display); font-size: clamp(22px,5vw,30px); font-weight: 700; line-height: 1.2; margin-bottom: 12px; }
   .bridge-h em { font-style: italic; color: var(--gold-light); }
-  .bridge-p { font-family: var(--font-elegant); font-size: 18px; font-style: italic; line-height: 1.6; color: var(--text-muted); max-width: 400px; margin: 0 auto 24px; }
+  .bridge-p { font-family: 'Jost', sans-serif; font-size: 18px; font-style: italic; line-height: 1.6; color: var(--text-muted); max-width: 400px; margin: 0 auto 24px; }
   .btn-vsl {
     display: inline-flex; align-items: center; gap: 10px;
     padding: 16px 32px;
@@ -408,7 +408,7 @@
 
   /* quote */
   .final-q { margin-top: 48px; padding: 26px 0; border-top: 1px solid rgba(255,255,255,.05); text-align: center; animation: fadeUp .5s .9s both; }
-  .final-q blockquote { font-family: var(--font-elegant); font-size: clamp(15px,3.5vw,18px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.42); max-width: 360px; margin: 0 auto 12px; }
+  .final-q blockquote { font-family: 'Jost', sans-serif; font-size: clamp(15px,3.5vw,18px); font-style: italic; line-height: 1.65; color: rgba(240,230,234,.42); max-width: 360px; margin: 0 auto 12px; }
   .final-q cite { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: var(--gold-deep); text-transform: uppercase; font-style: normal; }
 
   /* ── KEYFRAMES ───────────────────────────── */
@@ -448,7 +448,7 @@
   }
   .vsl-title em { font-style: italic; color: var(--gold-light); }
   .vsl-sub {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: 15px; font-style: italic;
     color: var(--text-muted); line-height: 1.5;
   }
@@ -498,7 +498,7 @@
   }
   .vsl-sound-ring svg { width: 28px; height: 28px; fill: var(--gold-primary); }
   #vsl-sound-overlay p {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: 15px; font-weight: 300; font-style: italic;
     color: var(--text-light); text-align: center; line-height: 1.5;
   }
@@ -539,7 +539,7 @@
     background: rgba(184,137,42,0.08);
   }
   .vsl-placeholder p {
-    font-family: var(--font-elegant); font-style: italic;
+    font-family: 'Jost', sans-serif; font-style: italic;
     font-size: 16px; color: var(--text-muted); line-height: 1.6;
     max-width: 280px;
   }
@@ -569,7 +569,7 @@
   }
   .vsl-cta-title em { color: var(--gold-light); font-style: italic; }
   .vsl-cta-sub {
-    font-family: var(--font-elegant); font-style: italic;
+    font-family: 'Jost', sans-serif; font-style: italic;
     font-size: 15px; color: var(--text-muted);
     margin-bottom: 20px; line-height: 1.5;
   }
@@ -594,7 +594,7 @@
   }
   .vsl-timer-msg {
     display: none;
-    font-family: var(--font-elegant); font-style: italic;
+    font-family: 'Jost', sans-serif; font-style: italic;
     font-size: 14px; color: var(--text-muted);
     margin-top: 16px; padding: 12px 16px;
     background: rgba(107,26,42,0.15);
@@ -717,7 +717,7 @@
     line-height: 1.25; margin-bottom: 14px;
   }
   .testi-result {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: 1.08rem; font-weight: 300; font-style: italic;
     line-height: 1.8; color: rgba(200,190,175,0.7);
   }
@@ -820,7 +820,7 @@
     margin-bottom: 14px;
   }
   .bridge-copy {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: clamp(16px,3vw,19px);
     font-style: italic; line-height: 1.65;
     color: rgba(240,230,234,.85);
@@ -874,7 +874,7 @@
   }
   .qha-title em { font-style: italic; color: var(--gold-light); }
   .qha-body {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: clamp(15px,3vw,18px);
     font-style: italic; line-height: 1.7;
     color: rgba(240,230,234,.75);
@@ -974,7 +974,7 @@
     line-height: 1.25; margin: 10px 0 10px;
   }
   .testi-p {
-    font-family: var(--font-elegant);
+    font-family: 'Jost', sans-serif;
     font-size: clamp(0.9rem,1.5vw,1rem);
     font-weight: 300; font-style: italic;
     line-height: 1.7; color: rgba(200,190,175,0.75);
@@ -1126,7 +1126,7 @@
 </head>
 <body>
 <!-- BARRA DE PROGRESO GLOBAL FIJA -->
-<div id="global-prog-bar" style="position:fixed;top:0;left:0;right:0;height:2px;z-index:500;background:rgba(184,137,42,.1);">
+<div id="global-prog-bar" style="position:fixed;top:16px;left:0;right:0;height:4px;z-index:500;background:rgba(184,137,42,.1);">
   <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);"></div>
 </div>
 
@@ -2584,4 +2584,9 @@ showPrecio = function() {
   </div>
   <p class="copyright">© 2026 Código Soberana | Josué Calderón. Todos los derechos reservados.</p>
 </div>
+
+
+
+
+
 

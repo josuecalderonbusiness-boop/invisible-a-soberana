@@ -1140,7 +1140,7 @@
   background: linear-gradient(180deg, #0f0408 0%, #1a0a0f 40%, #2a0510 70%, #3a0818 100%) !important;
 }
 </style>
-</head>
+<style>.quiz-star{font-size:24px;color:rgba(255,255,255,0.12);transition:color 0.3s,transform 0.4s;display:inline-block;}.quiz-star.active{color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.8);animation:starPop 0.4s ease;}@keyframes starPop{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}</style></head>
 <body>
 <!-- BARRA DE PROGRESO GLOBAL FIJA -->
 <div id="global-prog-bar" style="position:fixed;top:64px;left:16px;right:16px;height:14px;z-index:10000;background:rgba(255,255,255,.08);border-radius:20px;">
@@ -1501,8 +1501,8 @@
       <button class="btn-back" id="btn-back" onclick="prevQ()" title="Pregunta anterior">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <span class="prog-lbl" id="p-lbl">1 / 5</span>
-      <div class="prog-track"><div class="prog-fill" id="p-fill-quiz" style="width:20%"></div></div>
+      <span id="star-lbl" style="font-family:Jost,sans-serif;font-size:11px;color:rgba(196,168,176,0.5);letter-spacing:1px;min-width:32px;text-align:center;">0 / 5</span>
+      <div id="star-row" style="display:flex;gap:6px;align-items:center;"><span id="st1" class="quiz-star">&#9733;</span><span id="st2" class="quiz-star">&#9733;</span><span id="st3" class="quiz-star">&#9733;</span><span id="st4" class="quiz-star">&#9733;</span><span id="st5" class="quiz-star">&#9733;</span></div>
       <button class="btn-restart" onclick="restartQuiz()" title="Empezar de nuevo">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -2070,7 +2070,7 @@ function show(id) {
 function renderQ(idx) {
   const q = QS[idx];
   document.getElementById('p-fill').style.width = (10 + ((idx+1)/QS.length)*40)+'%'; // 10%→50%
-  document.getElementById('p-lbl').textContent = `${idx+1} / ${QS.length}`;
+  var lbl=document.getElementById('star-lbl'); if(lbl) lbl.textContent=(idx+1)+' / 5'; var lbl=document.getElementById('star-lbl'); if(lbl) lbl.textContent=(idx+1)+' / 5'; for(var i=1;i<=5;i++){var s=document.getElementById('st'+i); if(s){if(i<=idx+1){s.classList.add('active');}else{s.classList.remove('active');}}} var cur=document.getElementById('st'+(idx+1)); if(cur){cur.style.animation='none'; cur.offsetHeight; cur.style.animation='starPop 0.4s ease';}
 
   const w = document.getElementById('q-wrap');
   w.className = 'q-wrap';
@@ -2883,6 +2883,21 @@ function lanzarParticulasBoveda() {
   }
 }
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

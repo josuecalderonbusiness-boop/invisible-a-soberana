@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>De Invisible a Soberana — Test gratuito</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="cards.css">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1471,18 +1472,9 @@
 </svg>
     </div>
     <div id="resultados-boveda" style="opacity:0;transform:translateY(20px);transition:all .6s ease;margin-bottom:24px;">
-      <div class="res-item" id="ri1" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(70,40,50,.5);border:1px solid rgba(184,137,42,.2);border-radius:12px;margin-bottom:10px;opacity:0;transform:translateY(16px);transition:all .4s ease;">
-        <span style="color:#D4A843;font-size:18px;flex-shrink:0;">✦</span>
-        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.85);line-height:1.5;text-align:left;">Por que te sientes asi con el, aunque lo amas</span>
-      </div>
-      <div class="res-item" id="ri2" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(70,40,50,.5);border:1px solid rgba(184,137,42,.2);border-radius:12px;margin-bottom:10px;opacity:0;transform:translateY(16px);transition:all .4s ease;">
-        <span style="color:#D4A843;font-size:18px;flex-shrink:0;">✦</span>
-        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.85);line-height:1.5;text-align:left;">Que es lo que esta bloqueando la conexion entre los dos</span>
-      </div>
-      <div class="res-item" id="ri3" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(70,40,50,.5);border:1px solid rgba(184,137,42,.2);border-radius:12px;margin-bottom:10px;opacity:0;transform:translateY(16px);transition:all .4s ease;">
-        <span style="color:#D4A843;font-size:18px;flex-shrink:0;">✦</span>
-        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.85);line-height:1.5;text-align:left;">Que hacer esta semana para que algo cambie</span>
-      </div>
+      <div id="ri1" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">01</div><div class="gccat">Estructura Relacional</div><div class="gctxt">Por que te sientes asi con el, aunque lo amas</div><div class="gcbot">Frecuencia Relacional</div></div></div>
+      <div id="ri2" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">02</div><div class="gccat">Frecuencia Emocional</div><div class="gctxt">Que esta bloqueando la conexion entre los dos</div><div class="gcbot">Patron de Bloqueo</div></div></div>
+      <div id="ri3" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">03</div><div class="gccat">Autoridad Soberana</div><div class="gctxt">Que hacer esta semana para que algo cambie</div><div class="gcbot">Protocolo Soberana</div></div></div>
     </div>
     <button id="btn-comenzar" class="btn-cta" onclick="iniciarEscaner()" style="display:none;width:100%;">
       Entendido. Comenzar →
@@ -2852,7 +2844,7 @@ document.getElementById('s-qualify').style.background = '#000000';
     items.forEach(function(id, i) {
       setTimeout(function() {
         var el = document.getElementById(id);
-        if (el) { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }
+        if (el) { el.style.transition = 'opacity 0.9s ease, transform 1s cubic-bezier(.2,0,.15,1), filter 0.9s ease'; el.style.opacity = '1'; el.style.transform = 'scale(1)'; el.style.filter = 'blur(0)'; var glow = el.querySelector('.card-glow'); if(glow){ glow.style.transition = 'opacity 1.2s ease'; glow.style.opacity = '1'; } }
       }, i * 300);
     });
     setTimeout(function() { if (btn) btn.style.display = 'block'; }, 1200);
@@ -2878,3 +2870,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script>
+
+
+
+

@@ -2807,6 +2807,8 @@ function iniciarEscaner() {
     document.getElementById('scan-msg-2').style.transform = 'translateY(0)';
   }, 3200);
   setTimeout(function() {
+    renderQ(0);
+    show('s-quiz');
     overlay.style.transition = 'opacity 0.5s';
     overlay.style.opacity = '0';
     setTimeout(function() {
@@ -2823,8 +2825,6 @@ function iniciarEscaner() {
       document.getElementById('scan-msg-2').style.transform = 'translateY(10px)';
       document.getElementById('scan-pct').textContent = '0%';
       document.getElementById('scan-status').textContent = 'INICIANDO...';
-      renderQ(0);
-      show('s-quiz');
     }, 500);
   }, 4600);
 }
@@ -2882,6 +2882,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script>
+
 
 
 

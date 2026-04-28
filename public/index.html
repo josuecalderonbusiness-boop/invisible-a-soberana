@@ -2458,6 +2458,15 @@ const PROFILE_LABELS = {
 };
 function showVideoScreen() {
   show('s-video');
+  const wrap = document.getElementById('video-wrap');
+  if (wrap && VIDEO_URLS[topProfile]) {
+    const ifrm = document.createElement('iframe');
+    ifrm.src = VIDEO_URLS[topProfile];
+    ifrm.allow = 'autoplay; fullscreen';
+    ifrm.setAttribute('allowfullscreen','');
+    ifrm.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+    wrap.appendChild(ifrm);
+  }
   setGlobalProgress(55);
   // Personalizar eyebrow con perfil
   const eyebrow = document.getElementById('video-eyebrow');
@@ -2880,6 +2889,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return;var starIdx=(window._curQ||0)+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

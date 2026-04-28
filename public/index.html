@@ -2879,7 +2879,6 @@ function iniciarEscaner() {
 <script>
   function abrirBoveda() {
   const audioB = new Audio('/sonido-boveda.mp3'); audioB.volume = 0.8; audioB.play().catch(()=>{});
-  SoberanaAudio.bovedaGirando();
   var svg = document.querySelector('#boveda-svg svg');
   var res = document.getElementById('resultados-boveda');
   var btn = document.getElementById('btn-comenzar');
@@ -2895,13 +2894,11 @@ function iniciarEscaner() {
     document.getElementById('s-qualify').style.transition = 'background 1s ease';
 document.getElementById('s-qualify').style.background = '#000000';
     document.getElementById('boveda-svg').style.display = 'none';
-    SoberanaAudio.bovedaAbre();
     res.style.opacity = '1';
     res.style.transform = 'translateY(0)';
     var items = ['ri1','ri2','ri3'];
     items.forEach(function(id, i) {
       setTimeout(function() {
-        SoberanaAudio.card(i);
         var el = document.getElementById(id);
         if (el) { el.style.transition = 'opacity 0.9s ease, transform 1s cubic-bezier(.2,0,.15,1), filter 0.9s ease'; el.style.opacity = '1'; el.style.transform = 'scale(1)'; el.style.filter = 'blur(0)'; var glow = el.querySelector('.card-glow'); if(glow){ glow.style.transition = 'opacity 1.2s ease'; glow.style.opacity = '1'; } }
       }, i * 300);
@@ -2929,6 +2926,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return;var starIdx=(window._curQ||0)+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

@@ -14,21 +14,26 @@
     const PROFILE_LISTS = { S: 7, P: 8, D: 9 };
     const listId = PROFILE_LISTS[profile] || 7;
 
-    // 1. Crear/actualizar contacto en Brevo (sin SMS para no bloquear)
+    // 1. Crear/actualizar contacto en Brevo
     const contactRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
       body: JSON.stringify({
         email,
-        attributes: { NOMBRE: firstName, APELLIDOS: lastName || '', QUIZ_PROFILE: profile || '' },
+        attributes: {
+          NOMBRE: firstName,
+          APELLIDOS: lastName || '',
+          QUIZ_PROFILE: profile || ''
+        },
         listIds: [listId],
         updateEnabled: true
       })
     });
-    const contactData = await contactRes.json();
+    let contactData = {};
+    try { contactData = await contactRes.json(); } catch(_) {}
     console.log('Brevo contact response:', JSON.stringify(contactData));
 
-    // 2. Actualizar SMS por separado
+    // 2. Actualizar SMS por separado para no bloquear el perfil
     if (whatsapp) {
       await fetch('https://api.brevo.com/v3/contacts/' + encodeURIComponent(email), {
         method: 'PUT',
@@ -55,13 +60,17 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
 .btn{display:inline-block;background:#B8892A;color:#0F0A0B;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:16px 36px;}
 .btn-sec{display:inline-block;border:1px solid #B8892A;color:#B8892A;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;padding:14px 36px;}
 .div{height:1px;background:rgba(184,137,42,0.3);margin:32px 0;}
-.sig{padding:0 40px 44px;}.sig p{font-size:14px;line-height:1.8;color:#6B4050;margin:0;}
+.sig{padding:0 40px 44px;}
+.sig p{font-size:14px;line-height:1.8;color:#6B4050;margin:0;}
 .pd{font-size:13px;color:#6B4050;font-style:italic;}
 .foot{background:#1C1114;padding:20px 32px;text-align:center;}
 .foot p{font-size:11px;color:#3A2030;margin:0;}
 </style></head>
 <body><div class="wrap">
-  <div class="header"><p>Para ${firstName}</p><h1>Tu resultado está aquí</h1></div>
+  <div class="header">
+    <p>Para ${firstName}</p>
+    <h1>Tu resultado está aquí</h1>
+  </div>
   <div class="body">
     <p>Hola <strong>${firstName}</strong>,</p>
     <p>Hiciste el test. Y eso ya dice algo de ti.</p>
@@ -72,8 +81,13 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     <p>Eso es lo que encontrarás aquí:</p>
     <div class="btn-wrap"><a href="${vslUrl}" class="btn-sec">→ Quiero ver cómo funciona</a></div>
   </div>
-  <div class="sig"><p>— <strong>Josué Calderón</strong></p><p class="pd">P.D. Cuesta $577 pesos. Un precio intencional — la puerta de entrada no debería ser una barrera.</p></div>
-  <div class="foot"><p>© 2026 Josué Calderón · Código Soberana · josue@josuecalderon.lat</p></div>
+  <div class="sig">
+    <p>— <strong>Josué Calderón</strong></p>
+    <p class="pd">P.D. Cuesta $577 pesos. Un precio intencional — la puerta de entrada no debería ser una barrera.</p>
+  </div>
+  <div class="foot">
+    <p>© 2026 Josué Calderón · Código Soberana · josue@josuecalderon.lat</p>
+  </div>
 </div></body></html>`;
 
     const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -86,7 +100,8 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
         htmlContent: emailHtml
       })
     });
-    const emailData = await emailRes.json();
+    let emailData = {};
+    try { emailData = await emailRes.json(); } catch(_) {}
     console.log('Brevo email response:', JSON.stringify(emailData));
 
     // 4. Guardar en Sheets
@@ -97,7 +112,16 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
         await fetch(SHEETS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accion: 'nuevo_lead', fecha: ahoraCol, nombre: firstName, email, whatsapp: whatsapp || '', perfil: profile || '', lista: String(listId), mensaje: 'Lead desde quiz' })
+          body: JSON.stringify({
+            accion: 'nuevo_lead',
+            fecha: ahoraCol,
+            nombre: firstName,
+            email,
+            whatsapp: whatsapp || '',
+            perfil: profile || '',
+            lista: String(listId),
+            mensaje: 'Lead desde quiz'
+          })
         });
         console.log('Sheets lead guardado:', email);
       }

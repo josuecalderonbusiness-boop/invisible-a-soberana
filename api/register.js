@@ -32,7 +32,7 @@
         attributes: {
           NOMBRE: firstName,
           APELLIDOS: lastName || '',
-          QUIZ_PROFILE: profile || '', SMS: whatsapp || ''
+          QUIZ_PROFILE: profile || ''
         },
         listIds: [listId],
         updateEnabled: true
@@ -41,6 +41,15 @@
 
     const contactData = await contactRes.json();
     console.log('Brevo contact response:', JSON.stringify(contactData));
+
+    // Actualizar SMS por separado para no bloquear el perfil
+    if (whatsapp) {
+      await fetch(https://api.brevo.com/v3/contacts/ + encodeURIComponent(email), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
+        body: JSON.stringify({ attributes: { SMS: whatsapp } })
+      }).catch(()=>{});
+    }
 
     // 2. Enviar email de resultado via Brevo
     const vslUrl    = 'https://codigosoberana.josuecalderon.lat';
@@ -146,5 +155,7 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     return res.status(500).json({ error: err.message });
   }
 }
+
+
 
 

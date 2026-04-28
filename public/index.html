@@ -1627,7 +1627,7 @@ const SoberanaAudio = {
   </div>
 
   <!-- OVERLAY POPUP REDISEÑADO -->
-  <div id="video-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:flex-start;padding-top:15%;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
+  <div id="video-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:flex-start;justify-content:flex-start;padding-top:8%;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
     <div style="text-align:center;padding:24px 28px 48px;width:100%;animation:fadeUp .5s ease both;">
       <h1 id="video-nombre-titulo" style="font-family:'Cormorant Garamond',serif;font-size:42px;font-style:italic;color:#EDE3CE;line-height:1.1;margin:0 0 6px;font-weight:400;"></h1>
       <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,.45);letter-spacing:1px;margin:0 0 20px;">tus respuestas me dicen que eres</p>
@@ -2939,6 +2939,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

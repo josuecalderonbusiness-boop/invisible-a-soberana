@@ -1,10 +1,10 @@
-export default async function handler(req, res) {
+﻿export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const { email, firstName, lastName, profile } = req.body;
+    const { email, firstName, lastName, profile, whatsapp } = req.body;
 
     if (!email || !firstName) {
       return res.status(400).json({ error: 'Missing fields' });
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         attributes: {
           NOMBRE: firstName,
           APELLIDOS: lastName || '',
-          QUIZ_PROFILE: profile || ''
+          QUIZ_PROFILE: profile || '', SMS: whatsapp || ''
         },
         listIds: [listId],
         updateEnabled: true
@@ -122,7 +122,7 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
             fecha:    ahoraCol,
             nombre:   firstName,
             email:    email,
-            whatsapp: '',
+            whatsapp: whatsapp || '',
             perfil:   profile || '',
             lista:    String(listId),
             mensaje:  'Lead desde quiz'
@@ -146,3 +146,5 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     return res.status(500).json({ error: err.message });
   }
 }
+
+

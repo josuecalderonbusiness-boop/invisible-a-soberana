@@ -1168,13 +1168,14 @@ const SoberanaAudio = {
 </script>
 </head>
 <body>
-<!-- HEADER FIJO — visible desde s-video -->
-<div id="global-header" style="position:fixed;top:0;left:0;right:0;height:52px;z-index:10001;background:#1a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
-  <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#D4A843;"> Soberana</span>
-</div>
-<!-- BARRA DE PROGRESO GLOBAL — siempre visible -->
-<div id="global-prog-bar" style="position:fixed;top:62px;left:16px;right:16px;height:10px;z-index:10000;background:rgba(255,255,255,.08);border-radius:20px;">
-  <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;"></div>
+<!-- HEADER FIJO GLOBAL -->
+<div style="position:fixed;top:0;left:0;right:0;height:72px;z-index:10001;background:#1a0a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
+  <div style="text-align:center;">
+    <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#D4A843;"> Soberana</span>
+  </div>
+  <div id="global-prog-bar" style="width:100%;height:10px;background:rgba(255,255,255,.08);border-radius:20px;">
+    <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;"></div>
+  </div>
 </div>
 
 <!-- ──────────── INTRO ──────────── -->
@@ -1659,7 +1660,7 @@ const SoberanaAudio = {
 
 <!-- ──────────── QUIÉN ES JOSUÉ ──────────── -->
 <div id="s-josue" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:130px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:90px;">
     <div style="text-align:center;margin-bottom:18px;">
       <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#EDE3CE;letter-spacing:1px;">Código</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:#D4A843;letter-spacing:1px;"> Soberana</span>
     </div>
@@ -1682,7 +1683,7 @@ const SoberanaAudio = {
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <div id="s-workshop" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:130px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:80px;">
     <div style="text-align:center;margin-bottom:28px;">
       <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:#D4A843;"> Soberana</span>
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:#EDE3CE;line-height:1.4;margin-top:16px;margin-bottom:8px;">No te vendo informacion.<br>Te entrego el sistema.</p>
@@ -1732,105 +1733,28 @@ const SoberanaAudio = {
   </div>
 </div>
 
-<!-- ──────────── DEMO PWA ──────────── -->
+<!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">
-  <div style="animation:fadeUp .6s ease both;padding-top:130px;padding-bottom:32px;">
-    <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:10px;">Lo que recibes al acceder</p>
-    <h2 style="font-family:'Jost',sans-serif;font-size:26px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Asi se ve tu sistema<br>por dentro</h2>
-    <p style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.5);text-align:center;margin-bottom:24px;line-height:1.6;">Tu centro de mando personal. Disponible en tu telefono, sin apps, sin complicaciones.</p>
-
-    <div id="pwa-demo-shell" style="width:100%;max-width:360px;margin:0 auto 28px;background:#1a0a0f;border-radius:18px;overflow:hidden;border:1px solid rgba(212,175,106,.15);">
-
-      <div style="background:#1a0a0f;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(212,175,106,.1);">
-        <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#F9F4EC;line-height:1;">Codigo Soberana</div>
-          <div style="font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(184,137,42,.7);margin-top:2px;">Tu sistema personal</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="display:flex;align-items:center;gap:4px;background:rgba(184,137,42,.1);border:1px solid rgba(184,137,42,.2);border-radius:20px;padding:3px 9px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#D4A843"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8"/></svg>
-            <span style="font-size:10px;font-weight:600;color:#D4A843;">3 gemas</span>
-          </div>
-          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8B1A2F,#A0748A);border:1.5px solid #D4AF6A;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:#F9F4EC;">V</div>
-        </div>
-      </div>
-
-      <div style="padding:16px 18px;">
-        <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(184,137,42,.55);margin-bottom:12px;">Leccion activa</div>
-        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(212,175,106,.12);border-radius:12px;padding:14px;margin-bottom:16px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#F9F4EC;margin-bottom:10px;line-height:1.3;">El patron silencioso que crea distancia</div>
-          <div style="height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-bottom:6px;">
-            <div style="height:100%;width:35%;background:linear-gradient(90deg,#8B1A2F,#D4A843);border-radius:2px;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;">
-            <span style="font-size:10px;color:rgba(196,160,178,.4);">35% completado</span>
-            <span style="font-size:10px;color:#D4A843;cursor:pointer;" onclick="demoToast()">Continuar →</span>
-          </div>
-        </div>
-
-        <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(184,137,42,.55);margin-bottom:12px;">Tu ruta</div>
-
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
-          <div style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="demoToast()">
-            <div style="width:48px;height:48px;border-radius:50%;background:rgba(184,137,42,.15);border:2px solid rgba(184,137,42,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#D4A843"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"/></svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:12px;font-weight:600;color:#F9F4EC;">Modulo 1 — El origen</div>
-              <div style="font-size:10px;color:rgba(196,160,178,.5);">Completado · ★★★</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="demoToast()">
-            <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#8B1A2F,#C4384F);border:2px solid #D4AF6A;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(196,56,79,.35);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="#F9F4EC"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#F9F4EC" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:12px;font-weight:600;color:#F9F4EC;">Modulo 2 — El patron</div>
-              <span style="font-size:8px;background:#C4384F;color:#fff;padding:1px 7px;border-radius:8px;font-weight:700;letter-spacing:.5px;">EN CURSO</span>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;opacity:.4;cursor:pointer;" onclick="demoToast()">
-            <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.3);">Modulo 3 — La respuesta</div>
-              <div style="font-size:10px;color:rgba(196,160,178,.3);">Se desbloquea al completar M2</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;opacity:.4;cursor:pointer;" onclick="demoToast()">
-            <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.3);">Modulo 4 — El movimiento</div>
-              <div style="font-size:10px;color:rgba(196,160,178,.3);">Primeros resultados en 48h</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;border-top:1px solid rgba(212,175,106,.1);background:#1a0a0f;">
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px;color:#D4AF6A;font-size:8px;letter-spacing:1px;text-transform:uppercase;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Inicio
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px;color:rgba(196,160,178,.35);font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;" onclick="demoToast()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Avance
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px;color:rgba(196,160,178,.35);font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;" onclick="demoToast()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Comunidad
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px;gap:3px;color:rgba(196,160,178,.35);font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;" onclick="demoToast()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Perfil
-        </div>
-      </div>
-
-      <div style="text-align:center;padding:8px;background:rgba(184,137,42,.06);border-top:1px solid rgba(184,137,42,.1);">
-        <span style="font-size:9px;color:rgba(184,137,42,.5);letter-spacing:1.5px;text-transform:uppercase;">Vista previa · Acceso completo al comprar</span>
+  <div style="animation:fadeUp .6s ease both;padding-top:130px;padding-bottom:32px;position:relative;overflow:hidden;background:#F5EDE0;min-height:100vh;">
+    <div id="demo-particles"></div>
+    <p style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(139,101,32,.7);text-align:center;margin-bottom:20px;position:relative;z-index:1;">Mira el sistema por dentro</p>
+    <div style="width:200px;height:420px;background:#1a1a1a;border-radius:44px;margin:0 auto 24px;position:relative;border:2px solid #3a3a3a;box-shadow:0 0 0 1px #222,0 28px 70px rgba(0,0,0,.25);overflow:hidden;z-index:1;">
+      <div style="position:absolute;right:-3px;top:80px;width:3px;height:28px;background:#3a3a3a;border-radius:2px;"></div>
+      <div style="position:absolute;right:-3px;top:120px;width:3px;height:52px;background:#3a3a3a;border-radius:2px;"></div>
+      <div style="position:absolute;left:-3px;top:70px;width:3px;height:22px;background:#3a3a3a;border-radius:2px;"></div>
+      <div style="position:absolute;left:-3px;top:100px;width:3px;height:36px;background:#3a3a3a;border-radius:2px;"></div>
+      <div style="position:absolute;left:-3px;top:148px;width:3px;height:36px;background:#3a3a3a;border-radius:2px;"></div>
+      <div style="position:absolute;inset:3px;background:#000;border-radius:41px;overflow:hidden;">
+        <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:80px;height:22px;background:#000;border-radius:20px;z-index:10;"></div>
+        <iframe src="https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=true&muted=true&loop=true&preload=true" style="position:absolute;inset:0;width:100%;height:100%;border:none;" allow="autoplay;fullscreen" allowfullscreen></iframe>
       </div>
     </div>
-
-    <button class="btn-cta" style="width:calc(100% - 48px);margin:0 24px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder a esto →</button>
+    <div style="max-width:300px;margin:0 auto 28px;text-align:center;position:relative;z-index:1;">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:#2a1a0f;line-height:1.55;">No es un PDF. No es un Zoom.<br><strong style="font-style:normal;color:#8B6520;">Es un metodo funcional</strong><br>que vive en tu telefono.</p>
+    </div>
+    <div style="padding:0 24px;position:relative;z-index:1;">
+      <button class="btn-cta" style="width:100%;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
+    </div>
   </div>
 </div>
 
@@ -3032,9 +2956,6 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
-
-
-
 
 
 

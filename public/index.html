@@ -1168,14 +1168,13 @@ const SoberanaAudio = {
 </script>
 </head>
 <body>
-<!-- HEADER FIJO GLOBAL -->
-<div id="global-header" style="position:fixed;top:0;left:0;right:0;height:72px;z-index:10001;background:#1a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
-  <div style="text-align:center;">
-    <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#D4A843;"> Soberana</span>
-  </div>
-  <div id="global-prog-bar" style="width:100%;height:10px;background:rgba(255,255,255,.08);border-radius:20px;">
-    <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;"></div>
-  </div>
+<!-- HEADER FIJO — visible desde s-video -->
+<div id="global-header" style="position:fixed;top:0;left:0;right:0;height:52px;z-index:10001;background:#1a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
+  <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#D4A843;"> Soberana</span>
+</div>
+<!-- BARRA DE PROGRESO GLOBAL — siempre visible -->
+<div id="global-prog-bar" style="position:fixed;top:14px;left:16px;right:16px;height:10px;z-index:10000;background:rgba(255,255,255,.08);border-radius:20px;">
+  <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;"></div>
 </div>
 
 <!-- ──────────── INTRO ──────────── -->
@@ -2577,8 +2576,6 @@ const PROFILE_LABELS = {
   D: 'JOSUÉ CALDERÓN — TU FRECUENCIA: LA QUE CRECIÓ Y SE QUEDÓ SOLA'
 };
 function showVideoScreen() {
-  var h = document.getElementById('global-header');
-  if (h) h.style.display = 'flex';
   show('s-video');
   const wrap = document.getElementById('video-wrap');
   if (wrap && VIDEO_URLS[topProfile]) {
@@ -3035,7 +3032,6 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
-
 
 
 

@@ -2486,9 +2486,9 @@ function startLoading() {
 
 // ── VIDEO ─────────────────────────────────────────────────
 const VIDEO_URLS = {
-  S: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true',
-  P: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true',
-  D: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true'
+ S: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true',
+P: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true',
+D: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true'
 };
 const PROFILE_NAMES = {
   S: 'La Soberana Silenciosa',
@@ -2539,20 +2539,24 @@ function showVideoScreen() {
   }
 }
 function dismissVideoOverlay() {
+  const overlay = document.getElementById('video-overlay');
+  if (overlay) { overlay.style.opacity = '0'; }
+  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
+
+  // Reiniciar iframe desde 0 con audio activado
+  const wrap = document.getElementById('video-wrap');
+  const existingIframe = wrap ? wrap.querySelector('iframe') : null;
+  if (existingIframe) {
+    const src = existingIframe.src;
+    // Reemplazar muted=true por muted=false y forzar t=0
+    existingIframe.src = src.replace('muted=true', 'muted=false') + '&t=0';
+  }
+
+  // CTA después de 39 segundos
   setTimeout(() => {
     const cta = document.getElementById('video-cta');
     if (cta) { cta.style.display = 'block'; SoberanaAudio.continuar(); }
   }, 39000);
-  const overlay = document.getElementById('video-overlay');
-  if (overlay) overlay.style.opacity = '0';
-  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
-  // Iniciar video si existe
-  const vid = document.getElementById('vsl-video');
-  if (vid) { vid.muted = false; vid.play().catch(()=>{}); }
-}
-function playVideoSound() {
-  const vid = document.getElementById('vsl-video');
-  if (vid && vid.muted) { vid.muted = false; vid.play().catch(()=>{}); }
 }
 
 // ── TESTIMONIOS SWIPE ─────────────────────────────────────

@@ -1114,7 +1114,7 @@
 
 <style>
 /* Shimmer del botón sticky */
-@keyframes glowPulse{0%,100%{box-shadow:0 0 30px rgba(184,137,42,.4),0 0 60px rgba(184,137,42,.2)}50%{box-shadow:0 0 50px rgba(184,137,42,.7),0 0 90px rgba(184,137,42,.4)}}@keyframes shimmer {
+@keyframes ctaPulse{0%,100%{transform:scale(1);box-shadow:0 4px 20px rgba(107,26,42,.4)}50%{transform:scale(1.03);box-shadow:0 8px 32px rgba(107,26,42,.7)}}@keyframes glowPulse{0%,100%{box-shadow:0 0 30px rgba(184,137,42,.4),0 0 60px rgba(184,137,42,.2)}50%{box-shadow:0 0 50px rgba(184,137,42,.7),0 0 90px rgba(184,137,42,.4)}}@keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
@@ -1649,7 +1649,7 @@ const SoberanaAudio = {
   <!-- CTA post-video (aparece al terminar) -->
  <div id="video-cta" style="display:none;position:absolute;bottom:0;left:0;right:0;z-index:5;padding:16px 24px 100px;background:linear-gradient(to top,rgba(10,4,8,.92) 0%,rgba(10,4,8,.7) 55%,transparent 100%);">
     <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:rgba(237,227,206,.75);text-align:center;margin-bottom:16px;" id="video-cta-txt"></p>
-    <button class="btn-cta" style="width:100%;" onclick="show('s-josue')">Continuar →</button>
+    <button class="btn-cta" style="width:100%;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-josue')">Continuar →</button>
   </div>
 </div>
 
@@ -2564,7 +2564,7 @@ function dismissVideoOverlay() {
   // CTA después de 39 segundos
   setTimeout(() => {
     const cta = document.getElementById('video-cta');
-    if (cta) { cta.style.display = 'block'; SoberanaAudio.continuar(); }
+    if (cta) { cta.style.display = 'block'; }
   }, 39000);
 }
 
@@ -2959,6 +2959,10 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
+
+
 
 
 

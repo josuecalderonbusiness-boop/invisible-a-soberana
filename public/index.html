@@ -1655,13 +1655,16 @@ const SoberanaAudio = {
 
 <!-- ──────────── QUIÉN ES JOSUÉ ──────────── -->
 <div id="s-josue" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:160px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:90px;">
+    <div style="text-align:center;margin-bottom:18px;">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#EDE3CE;letter-spacing:1px;">Código</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:#D4A843;letter-spacing:1px;"> Soberana</span>
+    </div>
     <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Por qué puedes confiar en este sistema</p>
     <h2 style="font-family:'Jost',sans-serif;font-size:30px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:20px;">¿Y quién está<br>detrás de esto?</h2>
     <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(237,227,206,.8);text-align:center;line-height:1.75;margin-bottom:24px;">Durante 10 años acompañé parejas en crisis como pastor cristiano. Luego lo viví yo mismo como esposo. Lo que encontré no estaba en ningún libro de psicología &mdash; y es exactamente lo que estás a punto de aprender.</p>
     <p style="font-family:'Jost',sans-serif;font-size:13px;color:#B8892A;text-align:center;margin-bottom:6px;letter-spacing:.5px;">Déjame contarte</p>
     <p style="text-align:center;font-size:20px;color:#B8892A;margin-bottom:24px;animation:bounce-down 1.5s ease-in-out infinite;">↓</p>
-    <div style="margin:0 -24px 28px;overflow:hidden;">
+    <div style="margin:0 auto 28px;width:85%;overflow:hidden;border-radius:16px;">
       <img src="PERFIL_JOSUE.png" alt="Josue Calderon" style="width:100%;display:block;object-fit:cover;">
     </div>
     <div style="margin-bottom:32px;">
@@ -3027,6 +3030,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

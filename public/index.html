@@ -1633,7 +1633,10 @@ const SoberanaAudio = {
       
       <h2 id="video-eyebrow" style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#D4A843;line-height:1.2;margin:0 0 28px;font-weight:400;font-style:italic;"></h2>
       <div style="width:40px;height:1px;background:rgba(184,137,42,.3);margin:0 auto 24px;"></div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#EDE3CE;line-height:1.4;margin:0 0 36px;font-weight:400;">Hay algo que debes saber<br><em style="color:#D4A843;">antes de ver tu resultado.</em></h3>
+      <div style="width:100%;background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.18);border-radius:14px;padding:16px 18px;margin-bottom:28px;text-align:center;">
+        <span style="font-family:'Jost',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:#D4A843;text-transform:uppercase;display:block;margin-bottom:10px;">Lo que encontré en ti</span>
+        <p id="video-insight-txt" style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:rgba(237,227,206,.88);line-height:1.75;margin:0;"></p>
+      </div>
       <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
         <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
           <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
@@ -2512,12 +2515,20 @@ function showVideoScreen() {
     wrap.appendChild(ifrm);
   }
   setGlobalProgress(55);
-  // Personalizar eyebrow con perfil
   const eyebrow = document.getElementById('video-eyebrow');
   if (eyebrow) eyebrow.textContent = PROFILE_NAMES[topProfile] || '';
   const nombreTitulo = document.getElementById('video-nombre-titulo');
   if (nombreTitulo) nombreTitulo.textContent = uName ? uName + ',' : '';
-  // CTA text personalizado
+  const INSIGHT_TEXTS = {
+    S: 'identifiqué algo específico en tus respuestas.<br>Hay un patrón silencioso que está creando distancia sin que tú lo notes.<br>Este video te muestra exactamente qué es.',
+    P: 'vi algo en tus respuestas que pocas mujeres reconocen.<br>La forma en que buscas conexión está activando exactamente lo contrario.<br>Antes de ver tu resultado, necesitas saber por qué.',
+    D: 'lo que encontré en tu diagnóstico es poco común.<br>Creciste tanto que el vínculo no pudo seguirte el ritmo.<br>Este video te explica qué hacer con eso.'
+  };
+  const insightEl = document.getElementById('video-insight-txt');
+  if (insightEl) {
+    const nombre = uName ? uName + ', ' : '';
+    insightEl.innerHTML = nombre + (INSIGHT_TEXTS[topProfile] || '');
+  }
   const ctaTxt = document.getElementById('video-cta-txt');
   if (ctaTxt) ctaTxt.textContent = (uName ? uName + ', esto' : 'Esto') + ' que viste es lo que el Workshop Código Soberana trabaja contigo.';
   // Video real: cargar URL por perfil

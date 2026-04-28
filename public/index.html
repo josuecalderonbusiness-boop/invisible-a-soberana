@@ -1140,7 +1140,32 @@
   background: linear-gradient(180deg, #0f0408 0%, #1a0a0f 40%, #2a0510 70%, #3a0818 100%) !important;
 }
 </style>
-<style>.quiz-star{font-size:24px;color:rgba(255,255,255,0.12);transition:color 0.3s,transform 0.4s;display:inline-block;}.quiz-star.active{color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.8);animation:starPop 0.4s ease;}@keyframes starPop{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}</style></head>
+<style>.quiz-star{font-size:24px;color:rgba(255,255,255,0.12);transition:color 0.3s,transform 0.4s;display:inline-block;}.quiz-star.active{color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.8);animation:starPop 0.4s ease;}@keyframes starPop{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}</style>
+<script>
+const SoberanaAudio = {
+  ctx: null,
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); return this.ctx; },
+  vibrar(p) { if (navigator.vibrate) navigator.vibrate(p); },
+  tono(freq, dur, tipo='sine', vol=0.3, delay=0) {
+    const ctx = this.init();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = tipo; osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + dur + 0.05);
+  },
+  escaner() { this.tono(220,0.15,'sine',0.15); this.tono(440,0.15,'sine',0.2,0.1); this.tono(880,0.3,'sine',0.25,0.2); this.tono(1100,0.4,'sine',0.15,0.4); this.vibrar([50,30,80]); },
+  bovedaGirando() { this.tono(80,0.8,'sawtooth',0.12); this.tono(120,0.6,'square',0.08,0.2); this.tono(60,1.0,'sawtooth',0.1,0.4); this.vibrar([200,100,150,100,200]); },
+  bovedaAbre() { this.tono(40,0.5,'sine',0.4); this.tono(80,0.3,'sine',0.3,0.1); this.tono(200,0.8,'sine',0.15,0.2); this.tono(400,0.6,'sine',0.1,0.3); this.vibrar([300,50,100]); },
+  card(i) { const f=[1047,1319,1568]; this.tono(f[i]||1047,0.6,'sine',0.2); this.tono((f[i]||1047)*1.5,0.4,'sine',0.1,0.1); this.vibrar([80]); },
+  diagnosticoListo() { this.tono(523,0.3,'sine',0.2); this.tono(659,0.3,'sine',0.2,0.15); this.tono(784,0.5,'sine',0.25,0.3); this.vibrar([100,50,100,50,200]); },
+  continuar() { this.tono(784,0.4,'sine',0.15); this.tono(1047,0.6,'sine',0.12,0.2); this.vibrar([60,30,60]); }
+};
+</script>
+</head>
 <body>
 <!-- BARRA DE PROGRESO GLOBAL FIJA -->
 <div id="global-prog-bar" style="position:fixed;top:64px;left:16px;right:16px;height:14px;z-index:10000;background:rgba(255,255,255,.08);border-radius:20px;">
@@ -2893,6 +2918,8 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return;var starIdx=(window._curQ||0)+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
 
 
 

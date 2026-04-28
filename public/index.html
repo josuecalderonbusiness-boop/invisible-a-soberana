@@ -1616,7 +1616,7 @@ const SoberanaAudio = {
 <div id="s-video" class="screen" style="background:#000;padding:0;position:relative;overflow:hidden;">
 
   <!-- VIDEO FULLSCREEN (corre de fondo desde el inicio) -->
-  <div id="video-wrap" style="position:absolute;inset:0;top:52px;">
+  <div id="video-wrap" style="position:absolute;inset:0;top:90px;">
     <!-- Placeholder oscuro mientras no hay video -->
     <div id="video-placeholder" style="position:absolute;inset:0;background:#0a0408;"></div>
     <!-- Video real — descomentar cuando esté listo:
@@ -1627,17 +1627,20 @@ const SoberanaAudio = {
   </div>
 
   <!-- OVERLAY POPUP REDISEÑADO -->
-  <div id="video-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:flex-start;justify-content:flex-start;padding-top:0;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
-    <div style="text-align:center;padding:8px 28px 24px;width:100%;animation:fadeUp .5s ease both;">
-      <h1 id="video-nombre-titulo" style="font-family:'Cormorant Garamond',serif;font-size:42px;font-style:italic;color:#EDE3CE;line-height:1.1;margin:0 0 6px;font-weight:400;"></h1>
-      <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,.45);letter-spacing:1px;margin:0 0 20px;">tus respuestas me dicen que eres</p>
-      <h2 id="video-eyebrow" style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#D4A843;line-height:1.2;margin:0 0 28px;font-weight:400;font-style:italic;"></h2>
-      <div style="width:40px;height:1px;background:rgba(184,137,42,.3);margin:0 auto 24px;"></div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#EDE3CE;line-height:1.4;margin:0 0 36px;font-weight:400;">Hay algo que debes saber<br><em style="color:#D4A843;">antes de ver tu resultado.</em></h3>
-      <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
+<div style="background:#0a0408;padding:12px 28px 8px;text-align:center;">
+      <h1 id="video-nombre-titulo" style="font-family:'Cormorant Garamond',serif;font-size:46px;font-style:italic;color:#EDE3CE;line-height:1.05;margin:0 0 2px;font-weight:400;"></h1>
+      <p style="font-family:'Jost',sans-serif;font-size:10px;color:rgba(237,227,206,.4);letter-spacing:1.5px;margin:0;text-transform:uppercase;">tus respuestas me dicen que eres</p>
+    </div>
+    <div style="height:4px;background:linear-gradient(90deg,#D4A843,#8B6520);"></div>
+    <div style="padding:20px 28px 24px;text-align:center;background:linear-gradient(to bottom,rgba(10,4,8,.85) 0%,rgba(10,4,8,.4) 100%);">
+      <h2 id="video-eyebrow-top" style="font-family:'Cormorant Garamond',serif;font-size:38px;color:#EDE3CE;line-height:1.15;margin:0;font-weight:700;"></h2>
+      <h2 id="video-eyebrow" style="font-family:'Cormorant Garamond',serif;font-size:38px;color:#D4A843;line-height:1.15;margin:0 0 20px;font-weight:400;font-style:italic;"></h2>
+      <div style="width:40px;height:1px;background:rgba(184,137,42,.3);margin:0 auto 18px;"></div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#EDE3CE;line-height:1.4;margin:0 0 24px;font-weight:400;">Hay algo que debes saber<br><em style="color:#D4A843;">antes de ver tu resultado.</em></h3>
+      <div style="position:relative;width:110px;height:110px;margin:0 auto 10px;">
         <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
           <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#0f0408"><polygon points="7,3 21,12 7,21"/></svg>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="#0f0408"><polygon points="7,3 21,12 7,21"/></svg>
         </button>
       </div>
       <p style="font-family:'Jost',sans-serif;font-size:10px;color:rgba(184,137,42,.5);letter-spacing:1.5px;margin:0;text-transform:uppercase;">Reproducir · 7 min</p>
@@ -2507,7 +2510,11 @@ function showVideoScreen() {
   setGlobalProgress(55);
   // Personalizar eyebrow con perfil
   const eyebrow = document.getElementById('video-eyebrow');
-  if (eyebrow) eyebrow.textContent = PROFILE_NAMES[topProfile] || '';
+  const eyebrowTop = document.getElementById('video-eyebrow-top');
+  const profileParts = { S: ['La Soberana', 'Silenciosa'], P: ['La que Busca', 'Conexión'], D: ['La que Creció', 'y se Quedó Sola'] };
+  const parts = profileParts[topProfile] || ['', ''];
+  if (eyebrowTop) eyebrowTop.textContent = parts[0];
+  if (eyebrow) eyebrow.textContent = parts[1];
   const nombreTitulo = document.getElementById('video-nombre-titulo');
   if (nombreTitulo) nombreTitulo.textContent = uName ? uName + ',' : '';
   // CTA text personalizado
@@ -2939,6 +2946,11 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
+
+
+
 
 
 

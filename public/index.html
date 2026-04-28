@@ -1169,7 +1169,7 @@ const SoberanaAudio = {
 </head>
 <body>
 <!-- HEADER FIJO GLOBAL -->
-<div style="position:fixed;top:0;left:0;right:0;height:72px;z-index:10001;background:#1a0a0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
+<div id="global-header" style="position:fixed;top:0;left:0;right:0;height:72px;z-index:10001;background:#1a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-bottom:1px solid rgba(184,137,42,.1);padding:0 20px;">
   <div style="text-align:center;">
     <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;">Codigo</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#D4A843;"> Soberana</span>
   </div>
@@ -1726,7 +1726,7 @@ const SoberanaAudio = {
     </div>
     <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;text-align:center;margin-bottom:10px;">Mira el sistema por dentro</p>
     <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(237,227,206,.8);text-align:center;margin-bottom:16px;line-height:1.5;">Activa tu acceso de invitada</p>
-    <div style="border-radius:14px;overflow:hidden;margin-bottom:28px;position:relative;padding-top:177.78%;max-width:320px;margin-left:auto;margin-right:auto;">
+    <div style="border-radius:14px;overflow:hidden;margin-bottom:28px;position:relative;padding-top:56.25%;">
       <iframe src="https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=false&preload=true" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="fullscreen" allowfullscreen></iframe>
     </div>
     <button class="btn-cta" style="width:100%;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
@@ -2577,6 +2577,8 @@ const PROFILE_LABELS = {
   D: 'JOSUÉ CALDERÓN — TU FRECUENCIA: LA QUE CRECIÓ Y SE QUEDÓ SOLA'
 };
 function showVideoScreen() {
+  var h = document.getElementById('global-header');
+  if (h) h.style.display = 'flex';
   show('s-video');
   const wrap = document.getElementById('video-wrap');
   if (wrap && VIDEO_URLS[topProfile]) {

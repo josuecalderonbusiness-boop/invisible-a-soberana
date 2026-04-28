@@ -5,19 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>De Invisible a Soberana — Test gratuito</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<style>
-.card-glow{position:absolute;inset:-35px;border-radius:32px;background:radial-gradient(ellipse at 50% 65%,rgba(212,168,67,.7) 0%,rgba(212,168,67,.3) 35%,transparent 70%);filter:blur(22px);opacity:0;transition:opacity 1.4s ease;z-index:0;}
-@keyframes cardPulse{0%,100%{box-shadow:0 0 0 2.5px #D4A843,0 12px 40px rgba(0,0,0,.7),0 0 30px rgba(212,168,67,.15)}50%{box-shadow:0 0 0 2.5px #D4A843,0 12px 40px rgba(0,0,0,.7),0 0 55px rgba(212,168,67,.35)}}
-.gcard{position:relative;background:linear-gradient(155deg,#F5EED8,#EDE4C8,#E8DDB8);border-radius:16px;padding:18px 16px;overflow:hidden;box-shadow:0 0 0 2.5px #D4A843,0 12px 40px rgba(0,0,0,.7);animation:cardPulse 3s ease-in-out infinite;z-index:1;}
-.gcard::before{content:'';position:absolute;top:0;left:-120%;width:70%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.6) 50%,transparent 80%);animation:shimmerCard 4s ease-in-out infinite;z-index:10;pointer-events:none;}
-@keyframes shimmerCard{0%{left:-120%;opacity:0}10%{opacity:1}45%{left:150%;opacity:1}50%{opacity:0;left:150%}100%{left:150%;opacity:0}}
-.gcnum{font-family:Jost,sans-serif;font-size:9px;font-weight:700;letter-spacing:4px;color:#8B6520;margin-bottom:4px}
-.gccat{font-family:Jost,sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;color:#5E1224;text-transform:uppercase;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(94,18,36,.2)}
-.gctxt{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:700;line-height:1.3;color:#1A0810}
-.gctxt em{color:#5E1224;font-style:italic}
-.gcbot{margin-top:16px;padding-top:12px;border-top:1px solid rgba(94,18,36,.15);font-family:Jost,sans-serif;font-size:9px;letter-spacing:2.5px;color:#8B6520;text-transform:uppercase}
-
-</style>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1114,7 +1101,7 @@
 
 <style>
 /* Shimmer del botón sticky */
-@keyframes glowPulse{0%,100%{box-shadow:0 0 30px rgba(184,137,42,.4),0 0 60px rgba(184,137,42,.2)}50%{box-shadow:0 0 50px rgba(184,137,42,.7),0 0 90px rgba(184,137,42,.4)}}@keyframes shimmer {
+@keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
@@ -1140,36 +1127,10 @@
   background: linear-gradient(180deg, #0f0408 0%, #1a0a0f 40%, #2a0510 70%, #3a0818 100%) !important;
 }
 </style>
-<style>.quiz-star{font-size:24px;color:rgba(255,255,255,0.12);transition:color 0.3s,transform 0.4s;display:inline-block;}.quiz-star.active{color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.8);animation:starPop 0.4s ease;}@keyframes starPop{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}</style>
-<script>
-const SoberanaAudio = {
-  ctx: null,
-  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); return this.ctx; },
-  vibrar(p) { if (navigator.vibrate) navigator.vibrate(p); },
-  tono(freq, dur, tipo='sine', vol=0.3, delay=0) {
-    const ctx = this.init();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = tipo; osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-    gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
-    osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + dur + 0.05);
-  },
-  escaner() { const ctx = this.init(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(80, ctx.currentTime); osc.frequency.linearRampToValueAtTime(440, ctx.currentTime + 0.8); osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 1.2); osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 1.8); gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.1); gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.0); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 5.2); osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 5.5); },
-  bovedaGirando() { this.tono(80,0.8,'sawtooth',0.12); this.tono(120,0.6,'square',0.08,0.2); this.tono(60,1.0,'sawtooth',0.1,0.4); this.vibrar([200,100,150,100,200]); },
-  bovedaAbre() { this.tono(40,0.5,'sine',0.4); this.tono(80,0.3,'sine',0.3,0.1); this.tono(200,0.8,'sine',0.15,0.2); this.tono(400,0.6,'sine',0.1,0.3); this.vibrar([300,50,100]); },
-  card(i) { const f=[1047,1319,1568]; this.tono(f[i]||1047,0.6,'sine',0.2); this.tono((f[i]||1047)*1.5,0.4,'sine',0.1,0.1); this.vibrar([80]); },
-  diagnosticoListo() { this.tono(523,0.3,'sine',0.2); this.tono(659,0.3,'sine',0.2,0.15); this.tono(784,0.5,'sine',0.25,0.3); this.vibrar([100,50,100,50,200]); },
-  campanita() { this.tono(880,0.3,'sine',0.08); this.tono(1108,0.4,'sine',0.06,0.12); this.tono(1318,0.6,'sine',0.04,0.25); },
-  continuar() { this.tono(784,0.4,'sine',0.15); this.tono(1047,0.6,'sine',0.12,0.2); this.vibrar([60,30,60]); }
-};
-</script>
 </head>
 <body>
 <!-- BARRA DE PROGRESO GLOBAL FIJA -->
-<div id="global-prog-bar" style="position:fixed;top:64px;left:16px;right:16px;height:14px;z-index:10000;background:rgba(255,255,255,.08);border-radius:20px;">
+<div id="global-prog-bar" style="position:fixed;top:64px;left:16px;right:16px;height:14px;z-index:500;background:rgba(255,255,255,.08);border-radius:20px;">
   <div id="p-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);transition:width .6s cubic-bezier(.4,0,.2,1);border-radius:20px;position:relative;"></div>
 </div>
 
@@ -1509,10 +1470,23 @@ const SoberanaAudio = {
 <circle cx="250" cy="305" r="202" fill="transparent" style="cursor: pointer; pointer-events: all;;fill:rgba(0, 0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto" onclick="&#10;  var m=document.getElementById('mec');&#10;  m.style.transform='rotate(180deg)';this.style.pointerEvents='none';setTimeout(function(){abrirBoveda();},1300);"/>
 </svg>
     </div>
-    <div id="resultados-boveda" style="opacity:0;transform:translateY(20px);transition:all .6s ease;margin-bottom:24px;">
-      <div id="ri1" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">01</div><div class="gccat">Estructura Relacional</div><div class="gctxt">Por que te sientes asi con el, aunque lo amas</div><div class="gcbot">Frecuencia Relacional</div></div></div>
-      <div id="ri2" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">02</div><div class="gccat">Frecuencia Emocional</div><div class="gctxt">Que esta bloqueando la conexion entre los dos</div><div class="gcbot">Patron de Bloqueo</div></div></div>
-      <div id="ri3" class="card-wrap" style="position:relative;opacity:0;transform:scale(0.15);filter:blur(16px);margin-bottom:16px;"><div class="card-glow"></div><div class="gcard"><div class="gcnum">03</div><div class="gccat">Autoridad Soberana</div><div class="gctxt">Que hacer esta semana para que algo cambie</div><div class="gcbot">Protocolo Soberana</div></div></div>
+<div id="resultados-boveda" style="opacity:0;transform:translateY(20px);transition:all .6s ease;margin-bottom:24px;position:relative;">
+      <div id="revelacion-glow" style="position:fixed;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(184,137,42,0.18) 0%,rgba(107,26,42,0.12) 40%,transparent 70%);pointer-events:none;opacity:0;transition:opacity 1.2s ease;z-index:0;"></div>
+      <div style="position:relative;z-index:1;text-align:center;margin-bottom:20px;opacity:0;transform:translateY(8px);transition:all .6s ease;" id="rev-title">
+        <span style="font-size:9px;font-weight:600;letter-spacing:3px;color:#B8892A;text-transform:uppercase;">Descubrir&#225;s...</span>
+      </div>
+      <div class="res-item" id="ri1" style="position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:16px 18px;background:linear-gradient(135deg,rgba(70,40,50,.7),rgba(40,20,30,.8));border:1px solid rgba(184,137,42,.35);border-radius:14px;margin-bottom:12px;opacity:0;transform:translateY(20px) scale(0.97);transition:all .5s ease;box-shadow:0 0 24px rgba(184,137,42,.08);">
+        <span style="color:#D4A843;font-size:22px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(184,137,42,0.5));">✦</span>
+        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.92);line-height:1.55;text-align:left;">Por que te sientes asi con el, aunque lo amas</span>
+      </div>
+      <div class="res-item" id="ri2" style="position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:16px 18px;background:linear-gradient(135deg,rgba(70,40,50,.7),rgba(40,20,30,.8));border:1px solid rgba(184,137,42,.35);border-radius:14px;margin-bottom:12px;opacity:0;transform:translateY(20px) scale(0.97);transition:all .5s ease;box-shadow:0 0 24px rgba(184,137,42,.08);">
+        <span style="color:#D4A843;font-size:22px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(184,137,42,0.5));">✦</span>
+        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.92);line-height:1.55;text-align:left;">Que es lo que esta bloqueando la conexion entre los dos</span>
+      </div>
+      <div class="res-item" id="ri3" style="position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:16px 18px;background:linear-gradient(135deg,rgba(70,40,50,.7),rgba(40,20,30,.8));border:1px solid rgba(184,137,42,.35);border-radius:14px;margin-bottom:12px;opacity:0;transform:translateY(20px) scale(0.97);transition:all .5s ease;box-shadow:0 0 24px rgba(184,137,42,.08);">
+        <span style="color:#D4A843;font-size:22px;flex-shrink:0;filter:drop-shadow(0 0 6px rgba(184,137,42,0.5));">✦</span>
+        <span style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.92);line-height:1.55;text-align:left;">Que hacer esta semana para que algo cambie</span>
+      </div>
     </div>
     <button id="btn-comenzar" class="btn-cta" onclick="iniciarEscaner()" style="display:none;width:100%;">
       Entendido. Comenzar →
@@ -1527,8 +1501,8 @@ const SoberanaAudio = {
       <button class="btn-back" id="btn-back" onclick="prevQ()" title="Pregunta anterior">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <span id="star-lbl" style="font-family:Jost,sans-serif;font-size:11px;color:rgba(196,168,176,0.5);letter-spacing:1px;min-width:32px;text-align:center;">0 / 5</span>
-      <div id="star-row" style="display:flex;gap:6px;align-items:center;"><span id="st1" class="quiz-star">&#9733;</span><span id="st2" class="quiz-star">&#9733;</span><span id="st3" class="quiz-star">&#9733;</span><span id="st4" class="quiz-star">&#9733;</span><span id="st5" class="quiz-star">&#9733;</span></div>
+      <span class="prog-lbl" id="p-lbl">1 / 5</span>
+      <div class="prog-track"><div class="prog-fill" id="p-fill-quiz" style="width:20%"></div></div>
       <button class="btn-restart" onclick="restartQuiz()" title="Empezar de nuevo">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1616,7 +1590,7 @@ const SoberanaAudio = {
 <div id="s-video" class="screen" style="background:#000;padding:0;position:relative;overflow:hidden;">
 
   <!-- VIDEO FULLSCREEN (corre de fondo desde el inicio) -->
-  <div id="video-wrap" style="position:absolute;inset:0;top:52px;">
+  <div id="video-wrap" style="position:absolute;inset:0;">
     <!-- Placeholder oscuro mientras no hay video -->
     <div id="video-placeholder" style="position:absolute;inset:0;background:#0a0408;"></div>
     <!-- Video real — descomentar cuando esté listo:
@@ -1626,26 +1600,22 @@ const SoberanaAudio = {
     </video> -->
   </div>
 
-  <!-- OVERLAY POPUP REDISEÑADO -->
-  <div id="video-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:flex-start;justify-content:flex-start;padding-top:0;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
-    <div style="text-align:center;padding:8px 28px 24px;width:100%;animation:fadeUp .5s ease both;">
-      <h1 id="video-nombre-titulo" style="font-family:'Cormorant Garamond',serif;font-size:42px;font-style:italic;color:#EDE3CE;line-height:1.1;margin:0 0 6px;font-weight:400;"></h1>
-      
-      <h2 id="video-eyebrow" style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#D4A843;line-height:1.2;margin:0 0 28px;font-weight:400;font-style:italic;"></h2>
-      <div style="width:40px;height:1px;background:rgba(184,137,42,.3);margin:0 auto 24px;"></div>
-      <h3 style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#EDE3CE;line-height:1.4;margin:0 0 36px;font-weight:400;">Hay algo que debes saber<br><em style="color:#D4A843;">antes de ver tu resultado.</em></h3>
-      <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
-        <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
-          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#0f0408"><polygon points="7,3 21,12 7,21"/></svg>
-        </button>
-      </div>
-      <p style="font-family:'Jost',sans-serif;font-size:10px;color:rgba(184,137,42,.5);letter-spacing:1.5px;margin:0;text-transform:uppercase;">Reproducir · 7 min</p>
+  <!-- OVERLAY POPUP — centrado, semitransparente, se cierra al tocar play -->
+  <div id="video-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:rgba(10,4,8,.72);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);">
+    <div style="text-align:center;padding:32px 28px;max-width:320px;animation:fadeUp .4s ease both;">
+      <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;" id="video-eyebrow">JOSUÉ CALDERÓN — TU DIAGNÓSTICO</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#EDE3CE;line-height:1.3;margin-bottom:12px;">Para entender tu diagnóstico necesitas ver este video.</h2>
+      <p style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.5);line-height:1.65;margin-bottom:32px;">Te explica exactamente dónde estás y lo que está bloqueando tu relación.</p>
+      <!-- Botón play -->
+      <button onclick="dismissVideoOverlay()" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 32px rgba(184,137,42,.35);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#0f0408"><polygon points="6,3 20,12 6,21"/></svg>
+      </button>
+      <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(184,137,42,.6);letter-spacing:1px;">REPRODUCIR · 3 MIN</p>
     </div>
   </div>
 
   <!-- CTA post-video (aparece al terminar) -->
-  <div id="video-cta" style="display:none;position:absolute;bottom:0;left:0;right:0;z-index:20;padding:16px 24px 28px;background:linear-gradient(to top,rgba(10,4,8,1) 0%,rgba(10,4,8,.8) 60%,transparent 100%);">
+  <div id="video-cta" style="display:none;position:absolute;bottom:0;left:0;right:0;z-index:20;padding:24px 24px 40px;background:linear-gradient(to top,rgba(10,4,8,1) 0%,rgba(10,4,8,.8) 60%,transparent 100%);">
     <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:rgba(237,227,206,.75);text-align:center;margin-bottom:16px;" id="video-cta-txt"></p>
     <button class="btn-cta" style="width:100%;" onclick="show('s-josue')">Continuar →</button>
   </div>
@@ -2087,21 +2057,20 @@ const PROFILES = {
 };
 
 // ── STATE ─────────────────────────────────────────────────
-let curQ = 0, ans = [], sc = {S:0,P:0,D:0}; window._curQ = 0; var uName = '', uEmail = '';
+let curQ = 0, ans = [], sc = {S:0,P:0,D:0}, uName = '', uEmail = '';
 
 // ── HELPERS ───────────────────────────────────────────────
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
-
 }
 
 // ── QUIZ ──────────────────────────────────────────────────
 function renderQ(idx) {
   const q = QS[idx];
   document.getElementById('p-fill').style.width = (10 + ((idx+1)/QS.length)*40)+'%'; // 10%→50%
-  
+  document.getElementById('p-lbl').textContent = `${idx+1} / ${QS.length}`;
 
   const w = document.getElementById('q-wrap');
   w.className = 'q-wrap';
@@ -2160,7 +2129,7 @@ function nextQ() {
   if (curQ < QS.length-1) {
     const w = document.getElementById('q-wrap');
     w.classList.remove('qin'); w.classList.add('qout');
-    setTimeout(()=>{ curQ++; window._curQ=curQ; renderQ(curQ); updateNavBtns(); }, 260);
+    setTimeout(()=>{ curQ++; renderQ(curQ); updateNavBtns(); }, 260);
   } else {
     show('s-gate-wa');
   }
@@ -2196,7 +2165,7 @@ function unlock() {
 
   const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
 
-  fetch('/api/register', {
+  fetch('/.netlify/functions/register', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ email:e, firstName:n, lastName:'', profile:top })
@@ -2419,7 +2388,7 @@ function unlockMid() {
   uName = n; uEmail = e;
   localStorage.setItem('cs_registered', e);
   localStorage.setItem('cs_user_name', n);
-  fetch('/api/register', {
+  fetch('/.netlify/functions/register', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ email:e, firstName:n, lastName:'', profile:'' })
   }).catch(()=>{});
@@ -2436,25 +2405,21 @@ function showWaInput() {
 }
 function submitWa() {
   const waNum = document.getElementById('g-wa').value.trim();
-  if (!waNum) {
-    const inp = document.getElementById('g-wa');
-    inp.style.borderColor = 'rgba(184,137,42,.8)';
-    inp.placeholder = 'Escribe tu número para continuar';
-    inp.focus();
-    return;
+  const wa = waNum ? selectedCountryCode + waNum.replace(/^0+/, '') : '';
+  if (wa) {
+    fetch('/.netlify/functions/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email:uEmail, firstName:uName, lastName:'', whatsapp:wa })
+    }).catch(()=>{});
+    startLoading();
+  } else {
+    startLoading();
   }
-  const wa = selectedCountryCode + waNum.replace(/^0+/, '');
-  const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
-  fetch('/api/register', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ email:uEmail, firstName:uName, lastName:'', whatsapp:wa, profile:top })
-  }).catch(()=>{});
-  startLoading();
 }
 function showWaInput() {
   document.getElementById('wa-input-wrap').style.display = 'flex';
 }
-function skipWa() { const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0]; fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:uEmail,firstName:uName,lastName:'',profile:top})}).catch(()=>{}); startLoading(); }
+function skipWa() { startLoading(); }
 
 // ── LOADING 1 ─────────────────────────────────────────────
 function startLoading() {
@@ -2477,7 +2442,6 @@ function startLoading() {
     if (pct === 80) txtEl.textContent = msgs[3];
     if (pct >= 100) {
       clearInterval(iv);
-      SoberanaAudio.diagnosticoListo();
       topProfile = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
       showVideoScreen();
     }
@@ -2486,14 +2450,9 @@ function startLoading() {
 
 // ── VIDEO ─────────────────────────────────────────────────
 const VIDEO_URLS = {
-  S: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true',
-  P: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true',
-  D: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true'
-};
-const PROFILE_NAMES = {
-  S: 'La Soberana Silenciosa',
-  P: 'La que Busca Conexión',
-  D: 'La que Creció y se Quedó Sola'
+  S: '', // URL Bunny perfil S
+  P: '', // URL Bunny perfil P
+  D: ''  // URL Bunny perfil D
 };
 const PROFILE_LABELS = {
   S: 'JOSUÉ CALDERÓN — TU FRECUENCIA: LA SOBERANA SILENCIOSA',
@@ -2502,21 +2461,10 @@ const PROFILE_LABELS = {
 };
 function showVideoScreen() {
   show('s-video');
-  const wrap = document.getElementById('video-wrap');
-  if (wrap && VIDEO_URLS[topProfile]) {
-    const ifrm = document.createElement('iframe');
-    ifrm.src = VIDEO_URLS[topProfile];
-    ifrm.allow = 'autoplay; fullscreen';
-    ifrm.setAttribute('allowfullscreen','');
-    ifrm.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
-    wrap.appendChild(ifrm);
-  }
   setGlobalProgress(55);
   // Personalizar eyebrow con perfil
   const eyebrow = document.getElementById('video-eyebrow');
-  if (eyebrow) eyebrow.textContent = PROFILE_NAMES[topProfile] || '';
-  const nombreTitulo = document.getElementById('video-nombre-titulo');
-  if (nombreTitulo) nombreTitulo.textContent = uName ? uName + ',' : '';
+  if (eyebrow) eyebrow.textContent = PROFILE_LABELS[topProfile] || 'JOSUÉ CALDERÓN — TU DIAGNÓSTICO';
   // CTA text personalizado
   const ctaTxt = document.getElementById('video-cta-txt');
   if (ctaTxt) ctaTxt.textContent = (uName ? uName + ', esto' : 'Esto') + ' que viste es lo que el Workshop Código Soberana trabaja contigo.';
@@ -2539,10 +2487,6 @@ function showVideoScreen() {
   }
 }
 function dismissVideoOverlay() {
-  setTimeout(() => {
-    const cta = document.getElementById('video-cta');
-    if (cta) { cta.style.display = 'block'; SoberanaAudio.continuar(); }
-  }, 39000);
   const overlay = document.getElementById('video-overlay');
   if (overlay) overlay.style.opacity = '0';
   setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
@@ -2590,7 +2534,6 @@ function startFinalLoad() {
     if (pct === 70) txtEl.textContent = msgs[2];
     if (pct >= 100) {
       clearInterval(iv);
-      SoberanaAudio.diagnosticoListo();
       showPrecio();
     }
   }, 40);
@@ -2797,11 +2740,7 @@ showPrecio = function() {
   </div>
 </div>
 <script>
-document.addEventListener('touchstart', function iniciarAudio() {
-  SoberanaAudio.init();
-  document.removeEventListener('touchstart', iniciarAudio);
-}, {once: true});
-function abrirPopup(){document.getElementById('popup-overlay').style.display='flex'; SoberanaAudio.campanita();}
+function abrirPopup(){document.getElementById('popup-overlay').style.display='flex';}
 function cerrarPopup(){document.getElementById('popup-overlay').style.display='none';}
 </script>
 
@@ -2816,8 +2755,8 @@ function cerrarPopup(){document.getElementById('popup-overlay').style.display='n
       <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:2px solid #B8892A;border-right:2px solid #B8892A;border-radius:0 4px 0 0;"></div>
       <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:2px solid #B8892A;border-left:2px solid #B8892A;border-radius:0 0 0 4px;"></div>
       <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid #B8892A;border-right:2px solid #B8892A;border-radius:0 0 4px 0;"></div>
-      <div id="scan-line" style="position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,transparent,#B8892A,rgba(184,137,42,0.4),transparent);box-shadow:0 0 18px rgba(184,137,42,0.9),0 0 36px rgba(184,137,42,0.5);"></div>
-      <div id="scan-glow" style="position:absolute;left:0;right:0;top:0;height:60px;background:linear-gradient(180deg,rgba(184,137,42,0.08),transparent);"></div>
+      <div id="scan-line" style="position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#B8892A,rgba(184,137,42,0.4),transparent);box-shadow:0 0 12px rgba(184,137,42,0.7),0 0 24px rgba(184,137,42,0.3);display:none;"></div>
+      <div id="scan-glow" style="position:absolute;left:0;right:0;top:0;height:60px;background:linear-gradient(180deg,rgba(184,137,42,0.08),transparent);display:none;"></div>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
         <div id="scan-icon" style="opacity:0;transition:opacity 0.5s;">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.6)" stroke-width="1"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="rgba(184,137,42,0.4)"/><line x1="12" y1="2" x2="12" y2="4" stroke-width="2"/><line x1="12" y1="20" x2="12" y2="22" stroke-width="2"/><line x1="2" y1="12" x2="4" y2="12" stroke-width="2"/><line x1="20" y1="12" x2="22" y2="12" stroke-width="2"/></svg>
@@ -2831,17 +2770,15 @@ function cerrarPopup(){document.getElementById('popup-overlay').style.display='n
   </div>
 </div>
 <style>
-#scan-line, #scan-glow { display:none; }
 @keyframes scanMove { 0% { top:0%; } 100% { top:calc(100% - 2px); } }
 @keyframes scanGlowMove { 0% { top:0%; } 100% { top:calc(100% - 60px); } }
-#scan-line.running { display:block; animation:scanMove 2.2s linear 2; }
-#scan-glow.running { display:block; animation:scanGlowMove 2.2s linear 2; }
+#scan-line.running { display:block; animation:scanMove 2s linear forwards; }
+#scan-glow.running { display:block; animation:scanGlowMove 2s linear forwards; }
 </style>
 <script>
 function iniciarEscaner() {
   var overlay = document.getElementById('scanner-overlay');
   overlay.style.display = 'flex';
-  SoberanaAudio.escaner();
   if (navigator.vibrate) navigator.vibrate([30,50,30]);
   setTimeout(function() {
     document.getElementById('scan-icon').style.opacity = '1';
@@ -2870,8 +2807,6 @@ function iniciarEscaner() {
     document.getElementById('scan-msg-2').style.transform = 'translateY(0)';
   }, 3200);
   setTimeout(function() {
-    renderQ(0);
-    show('s-quiz');
     overlay.style.transition = 'opacity 0.5s';
     overlay.style.opacity = '0';
     setTimeout(function() {
@@ -2888,6 +2823,8 @@ function iniciarEscaner() {
       document.getElementById('scan-msg-2').style.transform = 'translateY(10px)';
       document.getElementById('scan-pct').textContent = '0%';
       document.getElementById('scan-status').textContent = 'INICIANDO...';
+      renderQ(0);
+      show('s-quiz');
     }, 500);
   }, 4600);
 }
@@ -2897,149 +2834,43 @@ function iniciarEscaner() {
 
 
 <script>
-  function abrirBoveda() {
-  const audioB = new Audio('/sonido-boveda.mp3'); audioB.volume = 0.8; audioB.play().catch(()=>{});
+function abrirBoveda() {
   var svg = document.querySelector('#boveda-svg svg');
   var res = document.getElementById('resultados-boveda');
   var btn = document.getElementById('btn-comenzar');
+  var screen = document.getElementById('s-qualify');
   if (svg) {
-    svg.style.transition = 'transform 0.8s ease, opacity 0.8s ease';
-    svg.style.transform = 'scale(1.08)';
-    svg.style.opacity = '0.3';
+    svg.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+    svg.style.transform = 'scale(1.05)';
+    svg.style.opacity = '0';
   }
   setTimeout(function() {
-    if (svg) { svg.style.transform = 'scale(0.92)'; svg.style.opacity = '0'; }
-  }, 600);
+    screen.style.transition = 'background 1s ease';
+    screen.style.background = '#000000';
+    if (svg) document.getElementById('boveda-svg').style.display = 'none';
+  }, 500);
   setTimeout(function() {
-    document.getElementById('s-qualify').style.transition = 'background 1s ease';
-document.getElementById('s-qualify').style.background = '#000000';
-    document.getElementById('boveda-svg').style.display = 'none';
+    screen.style.background = 'radial-gradient(ellipse at 50% 40%, rgba(184,137,42,0.25) 0%, rgba(107,26,42,0.15) 35%, #000000 70%)';
     res.style.opacity = '1';
     res.style.transform = 'translateY(0)';
-    var items = ['ri1','ri2','ri3'];
-    items.forEach(function(id, i) {
+    var revTitle = document.getElementById('rev-title');
+    if (revTitle) { revTitle.style.opacity='1'; revTitle.style.transform='translateY(0)'; }
+  }, 1400);
+  setTimeout(function() {
+    ['ri1','ri2','ri3'].forEach(function(id, i) {
       setTimeout(function() {
         var el = document.getElementById(id);
-        if (el) { el.style.transition = 'opacity 0.9s ease, transform 1s cubic-bezier(.2,0,.15,1), filter 0.9s ease'; el.style.opacity = '1'; el.style.transform = 'scale(1)'; el.style.filter = 'blur(0)'; var glow = el.querySelector('.card-glow'); if(glow){ glow.style.transition = 'opacity 1.2s ease'; glow.style.opacity = '1'; } }
-      }, i * 300);
+        if (el) {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0) scale(1)';
+          el.style.boxShadow = '0 0 30px rgba(184,137,42,0.3), 0 0 60px rgba(184,137,42,0.1)';
+          if (navigator.vibrate) navigator.vibrate(20);
+        }
+      }, i * 500);
     });
-    setTimeout(function() { if (btn) btn.style.display = 'block'; }, 1200);
-lanzarParticulasBoveda();
-  }, 900);
+  }, 1800);
+  setTimeout(function() {
+    if (btn) btn.style.display = 'block';
+  }, 3500);
 }
-function lanzarParticulasBoveda() {
-  var screen = document.getElementById('s-qualify');
-  for (var i = 0; i < 70; i++) {
-    (function(idx) {
-      setTimeout(function() {
-        var p = document.createElement('div');
-        var size = Math.random() * 3 + 1.5;
-        p.style.cssText = 'position:fixed;border-radius:50%;pointer-events:none;z-index:5;background:#D4A843;box-shadow:0 0 ' + (size*2) + 'px rgba(212,168,67,0.8);width:' + size + 'px;height:' + size + 'px;left:' + (Math.random()*100) + '%;top:-10px;transition:top ' + (3+Math.random()*4) + 's linear,opacity 1s ease;opacity:' + (0.4+Math.random()*0.6) + ';';
-        document.body.appendChild(p);
-        setTimeout(function() {
-          p.style.top = '110%';
-          p.style.opacity = '0';
-        }, 100);
-        setTimeout(function() { p.remove(); }, 7000);
-      }, idx * 200);
-    })(i);
-  }
-}
-</script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+</script>

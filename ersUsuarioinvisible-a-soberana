@@ -1,0 +1,25 @@
+[33meca1b49[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m revert: restaurar al estado estable 4a731d4 pre-gestos
+[33m7a46b3d[m revert: restaurar index.html al ultimo estado estable pre-gestos
+[33m140302e[m revert: volver a estado estable antes de gestos
+[33m8b720ea[m fix: cerrar script principal en lugar correcto
+[33m0d7fec1[m fix: reubicar script closing antes del popup HTML
+[33m1d8ccba[m fix: cerrar script antes del HTML popup
+[33me16b38f[m fix: bump sw version forzar cache clear
+[33m6d6f619[m fix: eliminar gestos dentro del template exportData
+[33mc58ff28[m fix: eliminar bloque gestos duplicado
+[33maa0d66b[m fix: gestos en body correcto
+[33m1e0c7c9[m feat: gestos inline en index.html
+[33mcfd96eb[m fix: eliminar script tag huerfano linea 10371
+[33mdb32e02[m fix: eliminar fragmento drawer huerfano 9469-9512
+[33md1aca6a[m fix: eliminar fragmento drawer huerfano
+[33m3db10b6[m fix: una sola referencia gestos.js
+[33mfdc1349[m feat: gestos y transiciones liquidas via archivo separado
+[33mb7dc5a0[m fix: revert gestos - app estable
+[33mc363a9e[m fix: syntax error linea 9508
+[33mba040a9[m fix: cierre initSwipeGestures
+[33m53c406b[m fix: template literal en drawer swipe
+[33m1deb314[m feat: swipe gestos + transiciones liquidas tabs y drawers
+[33m28f2d29[m feat: transiciones líquidas + swipe gestos entre tabs y drawers
+[33md664423[m fix: flecha sin fondo ni circulo solo chevron dorado con glow
+[33m4a731d4[m fix: corregir sintaxis JS listener scroll
+[33m5aab228[m feat: flecha aparece solo cuando esta debajo de su leccion actual

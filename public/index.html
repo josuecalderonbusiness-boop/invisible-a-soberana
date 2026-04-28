@@ -1628,13 +1628,13 @@ const SoberanaAudio = {
 
   <!-- OVERLAY POPUP REDISEÑADO -->
 <div id="video-overlay" style="position:absolute;inset:0;z-index:50;display:flex;align-items:flex-start;justify-content:flex-start;padding-top:0;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
-    <div style="text-align:center;padding:80px 28px 24px;width:100%;animation:fadeUp .5s ease both;">
+    <div style="text-align:center;padding:160px 28px 24px;width:100%;animation:fadeUp .5s ease both;">
       
       
       
       <div style="width:100%;background:#fff;border:1px solid rgba(139,101,32,.2);border-radius:14px;padding:20px;margin-bottom:32px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08);">
-        <span style="font-family:'Jost',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:#8B6520;text-transform:uppercase;display:block;margin-bottom:10px;">Lo que encontré en ti</span>
-        <p id="video-insight-txt" style="font-family:'Jost',sans-serif;font-size:16px;font-weight:500;color:#1a0810;line-height:1.75;margin:0;"></p>
+        <span style="font-family:'Jost',sans-serif;font-size:9px;font-weight:600;letter-spacing:2.5px;color:#8B6520;text-transform:uppercase;display:block;margin-bottom:12px;">Lo que encontré en ti</span>
+        <p id="video-insight-txt" style="font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:#1a0810;line-height:1.8;margin:0;"></p>
       </div>
       <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
         <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
@@ -1655,7 +1655,7 @@ const SoberanaAudio = {
 
 <!-- ──────────── QUIÉN ES JOSUÉ ──────────── -->
 <div id="s-josue" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:80px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:160px;">
     <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Por qué puedes confiar en este sistema</p>
     <h2 style="font-family:'Jost',sans-serif;font-size:30px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:20px;">¿Y quién está<br>detrás de esto?</h2>
     <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(237,227,206,.8);text-align:center;line-height:1.75;margin-bottom:24px;">Durante 10 años acompañé parejas en crisis como pastor cristiano. Luego lo viví yo mismo como esposo. Lo que encontré no estaba en ningún libro de psicología &mdash; y es exactamente lo que estás a punto de aprender.</p>
@@ -2918,6 +2918,8 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
 
 
 

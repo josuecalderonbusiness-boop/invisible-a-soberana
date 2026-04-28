@@ -1162,7 +1162,7 @@ const SoberanaAudio = {
   bovedaAbre() { this.tono(40,0.5,'sine',0.4); this.tono(80,0.3,'sine',0.3,0.1); this.tono(200,0.8,'sine',0.15,0.2); this.tono(400,0.6,'sine',0.1,0.3); this.vibrar([300,50,100]); },
   card(i) { const f=[1047,1319,1568]; this.tono(f[i]||1047,0.6,'sine',0.2); this.tono((f[i]||1047)*1.5,0.4,'sine',0.1,0.1); this.vibrar([80]); },
   diagnosticoListo() { this.tono(523,0.3,'sine',0.2); this.tono(659,0.3,'sine',0.2,0.15); this.tono(784,0.5,'sine',0.25,0.3); this.vibrar([100,50,100,50,200]); },
-  campanita() { this.tono(2637,0.05,'sine',0.3); this.tono(3136,0.08,'sine',0.25,0.04); this.tono(2637,0.15,'sine',0.15,0.1); this.tono(3951,0.4,'sine',0.1,0.15); },
+  campanita() { this.tono(880,0.3,'sine',0.08); this.tono(1108,0.4,'sine',0.06,0.12); this.tono(1318,0.6,'sine',0.04,0.25); },
   continuar() { this.tono(784,0.4,'sine',0.15); this.tono(1047,0.6,'sine',0.12,0.2); this.vibrar([60,30,60]); }
 };
 </script>
@@ -2927,6 +2927,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return;var starIdx=(window._curQ||0)+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

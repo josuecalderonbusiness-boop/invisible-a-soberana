@@ -2508,7 +2508,7 @@ function showVideoScreen() {
   const wrap = document.getElementById('video-wrap');
   if (wrap && VIDEO_URLS[topProfile]) {
     const ifrm = document.createElement('iframe');
-    ifrm.src = VIDEO_URLS[topProfile] + '?autoplay=true&loop=false&muted=false';
+   ifrm.src = VIDEO_URLS[topProfile];
     ifrm.allow = 'autoplay; fullscreen';
     ifrm.setAttribute('allowfullscreen','');
     ifrm.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
@@ -2559,8 +2559,7 @@ function dismissVideoOverlay() {
   const existingIframe = wrap ? wrap.querySelector('iframe') : null;
   if (existingIframe) {
     const src = existingIframe.src;
-    // Reemplazar muted=true por muted=false y forzar t=0
-    existingIframe.src = src.replace('muted=true', 'muted=false') + '&t=0';
+  existingIframe.src = src.replace('muted=true', 'muted=false&t=0');
   }
 
   // CTA después de 39 segundos

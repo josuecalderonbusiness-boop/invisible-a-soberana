@@ -29,6 +29,14 @@
         updateEnabled: true
       })
     });
+    // Actualizar perfil directamente via PUT (mas confiable que POST con updateEnabled)
+    if (profile) {
+      await fetch('https://api.brevo.com/v3/contacts/' + encodeURIComponent(email), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
+        body: JSON.stringify({ attributes: { QUIZ_PROFILE: profile }, listIds: [listId] })
+      }).catch(() => {});
+    }
     let contactData = {};
     try { contactData = await contactRes.json(); } catch(_) {}
     console.log('Brevo contact response:', JSON.stringify(contactData));

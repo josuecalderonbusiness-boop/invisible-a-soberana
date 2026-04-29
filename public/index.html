@@ -1725,10 +1725,6 @@ const SoberanaAudio = {
       <p style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.5);line-height:1.65;">Sin apps que instalar. Sin plataformas externas. Tu sistema de transformacion, accesible en 3 segundos desde tu pantalla de inicio.</p>
     </div>
     <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;text-align:center;margin-bottom:10px;">Mira el sistema por dentro</p>
-    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(237,227,206,.8);text-align:center;margin-bottom:16px;line-height:1.5;">Activa tu acceso de invitada</p>
-    <div style="border-radius:14px;overflow:hidden;margin-bottom:28px;position:relative;padding-top:56.25%;">
-      <iframe src="https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=false&preload=true" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="fullscreen" allowfullscreen></iframe>
-    </div>
     <button class="btn-cta" style="width:100%;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Quiero acceder al sistema →</button>
   </div>
 </div>
@@ -1737,9 +1733,10 @@ const SoberanaAudio = {
 <div id="s-demo" class="screen">
   <div style="animation:fadeUp .6s ease both;padding-top:130px;padding-bottom:32px;position:relative;overflow:hidden;background:#F5EDE0;min-height:100vh;">
     <div id="demo-particles"></div>
-    <p style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(139,101,32,.7);text-align:center;margin-bottom:20px;position:relative;z-index:1;">Mira el sistema por dentro</p>
-    <div style="width:200px;height:420px;background:#1a1a1a;border-radius:44px;margin:0 auto 24px;position:relative;border:2px solid #3a3a3a;box-shadow:0 0 0 1px #222,0 28px 70px rgba(0,0,0,.25);overflow:hidden;z-index:1;">
-      <div style="position:absolute;right:-3px;top:80px;width:3px;height:28px;background:#3a3a3a;border-radius:2px;"></div>
+<div style="text-align:center;margin-bottom:12px;position:relative;z-index:1;">
+  <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#2a1a0f;">Código</span><span style="font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#8B6520;"> Soberana</span>
+</div>
+<h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#1a0810;text-align:center;line-height:1.2;margin-bottom:24px;position:relative;z-index:1;">Mira el sistema<br>por dentro</h2>      <div style="position:absolute;right:-3px;top:80px;width:3px;height:28px;background:#3a3a3a;border-radius:2px;"></div>
       <div style="position:absolute;right:-3px;top:120px;width:3px;height:52px;background:#3a3a3a;border-radius:2px;"></div>
       <div style="position:absolute;left:-3px;top:70px;width:3px;height:22px;background:#3a3a3a;border-radius:2px;"></div>
       <div style="position:absolute;left:-3px;top:100px;width:3px;height:36px;background:#3a3a3a;border-radius:2px;"></div>
@@ -2955,6 +2952,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

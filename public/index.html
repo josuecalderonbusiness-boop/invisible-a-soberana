@@ -1756,8 +1756,8 @@ const SoberanaAudio = {
 <!-- ──────────── TESTIMONIOS ──────────── -->
 <div id="s-testimonios" class="screen">
   <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:120px;">
-    <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:8px;">Lo que están logrando</p>
-    <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#EDE3CE;text-align:center;line-height:1.3;margin-bottom:24px;">otras Soberanas</h2>
+    <h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Lo que están logrando</h2>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#B8892A;text-align:center;margin-bottom:24px;">otras Soberanas</p>
 
     <div id="testi-wrap" style="position:relative;overflow:hidden;width:100%;margin-bottom:16px;">
       <div id="testi-inner" style="display:flex;transition:transform .4s ease;will-change:transform;width:300%;">
@@ -1818,11 +1818,14 @@ const SoberanaAudio = {
 </div>
 
 <!-- ──────────── CARGANDO ACCESO ──────────── -->
-<div id="s-loading2" class="screen" style="justify-content:center;align-items:center;">
-  <div style="text-align:center;padding:40px 24px;max-width:320px;">
-    <div style="width:80px;height:80px;border-radius:50%;border:3px solid rgba(184,137,42,.2);border-top-color:#B8892A;animation:spin 1s linear infinite;margin:0 auto 28px;"></div>
-    <div id="load2-pct" style="font-family:'Cormorant Garamond',serif;font-size:42px;color:#EDE3CE;margin-bottom:12px;">0%</div>
-    <div id="load2-txt" style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.6);line-height:1.6;min-height:40px;"></div>
+<div id="s-loading2" class="screen" style="justify-content:center;align-items:center;position:relative;overflow:hidden;">
+  <canvas id="particulas-canvas" style="display:none;position:fixed;top:0;left:0;z-index:999;pointer-events:none;"></canvas>
+  <div style="text-align:center;padding:40px 24px;max-width:360px;position:relative;z-index:1;">
+    <div style="width:100%;height:6px;background:rgba(255,255,255,.08);border-radius:20px;margin:0 auto 32px;overflow:hidden;">
+      <div id="load2-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8B6520,#B8892A,#D4AF6A);border-radius:20px;transition:width .1s linear;"></div>
+    </div>
+    <div id="load2-pct"></div>
+    <div id="load2-txt" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:#EDE3CE;line-height:1.7;min-height:80px;opacity:0;"></div>
   </div>
 </div>
 
@@ -2586,22 +2589,63 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── LOADING 2 (FINAL) ─────────────────────────────────────
+const FRASES_PERFIL = {
+  S: "No te apagaste porque se había acabado el amor entre ustedes. Te apagaste porque nadie te enseñó a pedir lo que mereces sin sentir que eso te hacía menos. Eso se acaba en los próximos 90 minutos.",
+  P: "Él se aleja de ti, pero no porque no te ame. Se aleja porque hay un código que ninguna mujer le enseñaron a leer. Y hoy, en los próximos 90 minutos, tú lo vas a conocer.",
+  D: "El problema no es que crezcas y alcances tu mejor versión. Es que creces sin un mapa que te dice cómo llevar a alguien contigo. Ese mapa existe y te lo mostraré en los próximos 90 minutos."
+};
+function lanzarParticulas() {
+  const canvas = document.getElementById('particulas-canvas');
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const particulas = Array.from({length: 80}, () => ({
+    x: canvas.width/2, y: canvas.height/2,
+    vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12,
+    r: Math.random()*4+2, alpha: 1,
+    color: ['#B8892A','#D4AF6A','#F0D080','#8B6520'][Math.floor(Math.random()*4)]
+  }));
+  let frame = 0;
+  function animar() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particulas.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.alpha -= 0.018;
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = p.color; ctx.fill();
+    });
+    frame++;
+    if (frame < 80) requestAnimationFrame(animar);
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }
+  }
+  animar();
+}
 function startFinalLoad() {
   show('s-loading2');
-  const msgs = ['Preparando tu acceso...', 'Validando disponibilidad...', 'Asignando tu lugar...'];
-  let pct = 0;
+  setGlobalProgress(90);
+  const frase = FRASES_PERFIL[topProfile] || FRASES_PERFIL['S'];
   const pctEl = document.getElementById('load2-pct');
   const txtEl = document.getElementById('load2-txt');
-  txtEl.textContent = msgs[0];
+  const barEl = document.getElementById('load2-bar-fill');
+  pctEl.textContent = '';
+  txtEl.style.opacity = '0';
+  txtEl.textContent = frase;
+  let pct = 0;
+  SoberanaAudio.campanita();
   const iv = setInterval(() => {
-    pct += 3;
-    pctEl.textContent = pct + '%';
-    if (pct === 35) txtEl.textContent = msgs[1];
-    if (pct === 70) txtEl.textContent = msgs[2];
+    pct += 2;
+    if (barEl) barEl.style.width = pct + '%';
     if (pct >= 100) {
       clearInterval(iv);
+      lanzarParticulas();
       SoberanaAudio.diagnosticoListo();
-      showPrecio();
+      setTimeout(() => {
+        txtEl.style.transition = 'opacity 1s ease';
+        txtEl.style.opacity = '1';
+      }, 600);
+      setTimeout(() => { showPrecio(); }, 4000);
     }
   }, 40);
 }

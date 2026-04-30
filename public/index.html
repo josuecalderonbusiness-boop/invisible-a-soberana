@@ -2569,7 +2569,7 @@ function dismissVideoOverlay() {
 let testiIdx = 0;
 function goTesti(n) {
   testiIdx = n;
-  document.getElementById('testi-inner').style.transform = `translateX(-${n*100}%)`;
+  document.getElementById('testi-inner').style.transform = `translateX(-${n*33.333}%)`;
   document.querySelectorAll('.testi-dot').forEach((d,i) => d.classList.toggle('active', i===n));
 }
 // Touch swipe en testimonios

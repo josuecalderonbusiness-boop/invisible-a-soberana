@@ -1193,19 +1193,43 @@ const SoberanaAudio = {
 
 <!-- ──────────── INTRO ──────────── -->
 <div id="s-intro" class="screen active">
-  <div class="intro-box">
-    <h1 class="intro-title-big">
-      Tienes tu vida resuelta.
-      <em>¿Por qué tu relación es lo único que no puedes arreglar?</em>
-    </h1>
-    <p class="intro-sub-small">
-      Este escáner analiza tu frecuencia relacional y te dice exactamente qué está bloqueando la conexión con tu pareja. 5 preguntas · 3 minutos
-    </p>
-    <button class="btn-cta" onclick="abrirPopup()">
-      Iniciar mi escáner →
-    </button>
-    <p class="intro-note">Es una herramienta de diagnóstico. No un anuncio.</p>
-  </div>
+<style>
+.i-line{display:block;overflow:hidden;line-height:1.08;}
+.i-word{display:inline-block;transform:translateY(110%);opacity:0;}
+</style>
+<div class="intro-box">
+<h1 class="intro-title-big">
+<span class="i-line"><span class="i-word" data-d="80">Tienes</span>&nbsp;<span class="i-word" data-d="200">tu</span>&nbsp;<span class="i-word" data-d="320">vida</span>&nbsp;<span class="i-word" data-d="440">resuelta.</span></span>
+<em><span class="i-line"><span class="i-word" data-d="600">¿Por</span>&nbsp;<span class="i-word" data-d="700">qué</span>&nbsp;<span class="i-word" data-d="800">tu</span>&nbsp;<span class="i-word" data-d="900">relación</span>&nbsp;<span class="i-word" data-d="1000">es</span>&nbsp;<span class="i-word" data-d="1100">lo</span>&nbsp;<span class="i-word" data-d="1200">único</span>&nbsp;<span class="i-word" data-d="1300">que</span>&nbsp;<span class="i-word" data-d="1400">no</span>&nbsp;<span class="i-word" data-d="1500">puedes</span>&nbsp;<span class="i-word" data-d="1600">arreglar?</span></span></em>
+</h1>
+<p class="intro-sub-small" id="iSub" style="opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease;">
+Este escáner analiza tu frecuencia relacional y te dice exactamente qué está bloqueando la conexión con tu pareja. 5 preguntas · 3 minutos
+</p>
+<div id="iBtnWrap" style="opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease;">
+<button class="btn-cta" onclick="abrirPopup()">Iniciar mi escáner →</button>
+<p class="intro-note">Es una herramienta de diagnóstico. No un anuncio.</p>
+</div>
+</div>
+<script>
+(function(){
+  function run(){
+    document.querySelectorAll("#s-intro .i-word").forEach(function(w){
+      var d=parseInt(w.getAttribute("data-d")||"0");
+      setTimeout(function(){
+        w.style.transition="transform .6s cubic-bezier(.22,1.4,.36,1),opacity .4s ease";
+        w.style.transform="translateY(0)";
+        w.style.opacity="1";
+      },d);
+    });
+    setTimeout(function(){
+      var s=document.getElementById("iSub"),b=document.getElementById("iBtnWrap");
+      if(s){s.style.opacity="1";s.style.transform="none";}
+      if(b){b.style.opacity="1";b.style.transform="none";}
+    },1800);
+  }
+  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",run);}else{setTimeout(run,100);}
+})();
+</script>
 </div>
 
 <!-- ──────────── CALIFICACIÓN ──────────── -->

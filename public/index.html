@@ -2969,7 +2969,7 @@ showPrecio = function() {
   setTimeout(initPrecioEffects, 100);
 };
 </script>
-<div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;align-items:center;justify-content:center;padding:24px;">
+<div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:9000;align-items:center;justify-content:center;padding:24px;">
   <div id="popup-box" style="background:#2A1C21;border:1px solid rgba(184,137,42,.4);border-radius:20px;padding:32px 28px;max-width:420px;width:100%;animation:fadeUp .4s ease both;position:relative;max-height:90vh;overflow-y:auto;">
     <button onclick="cerrarPopup()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(240,230,234,.4);font-size:22px;cursor:pointer;">&#x2715;</button>
     <span style="font-size:10px;font-weight:600;letter-spacing:3px;color:#C97080;text-transform:uppercase;display:block;margin-bottom:18px;">ANTES DE EMPEZAR</span>
@@ -3137,6 +3137,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

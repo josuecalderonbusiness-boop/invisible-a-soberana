@@ -1267,35 +1267,6 @@ const SoberanaAudio = {
 <script src="/intro-anim.js"></script>
 
 </div>
-    <div class="si-clip"><span class="si-w" data-d="0">Tienes&nbsp;</span><span class="si-w" data-d="225">tu&nbsp;</span><span class="si-w" data-d="450">vida</span></div>
-    <div class="si-clip"><span class="si-w" data-d="675">resuelta.</span></div>
-    <div class="si-gold" id="siGold">&#xBF;Por qu&#xE9; tu relaci&#xF3;n<br>es lo &#xFA;nico que no<br>puedes arreglar?</div>
-  </div>
-</div>
-<div class="si-s2" id="siS2">
-  <div style="max-width:420px;">
-    <div class="si-txt" id="siTxt">Este esc&#xE1;ner analiza tu frecuencia relacional y te dice exactamente qu&#xE9; est&#xE1; bloqueando la conexi&#xF3;n<span class="si-dot" id="siD1">.</span><span class="si-dot" id="siD2">.</span><span class="si-dot" id="siD3">.</span><span class="si-cur" id="siCur"></span>&nbsp;<span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt">con tu pareja.</span></span></div>
-    <div class="si-meta" id="siMeta">5 PREGUNTAS &middot; 3 MINUTOS</div>
-    <div class="si-btnw" id="siBtnW"><button class="si-btn" onclick="abrirPopup()">Iniciar mi esc&#xE1;ner &rarr;</button><p class="si-note">Es una herramienta de diagn&#xF3;stico. No un anuncio.</p></div>
-  </div>
-</div>
-<script src="/intro-anim.js"><\/script>
-</div>
-        w.style.transition="transform .6s cubic-bezier(.22,1.4,.36,1),opacity .4s ease";
-        w.style.transform="translateY(0)";
-        w.style.opacity="1";
-      },d);
-    });
-    setTimeout(function(){
-      var s=document.getElementById("iSub"),b=document.getElementById("iBtnWrap");
-      if(s){s.style.opacity="1";s.style.transform="none";}
-      if(b){b.style.opacity="1";b.style.transform="none";}
-    },1800);
-  }
-  if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",run);}else{setTimeout(run,100);}
-})();
-</script>
-</div>
 
 <!-- ──────────── CALIFICACIÓN ──────────── -->
 <div id="s-qualify" class="screen" style="overflow-y:auto;align-items:center;justify-content:center;padding:120px 12px 8px;background:radial-gradient(ellipse at 50% 30%, rgba(107,16,32,0.6) 0%, #1E1218 65%);">
@@ -3166,6 +3137,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

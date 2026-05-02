@@ -1208,7 +1208,7 @@ const SoberanaAudio = {
 
 #s-intro .si-w{display:inline-block;font-family:var(--font-display);font-weight:700;font-size:clamp(32px,8vw,48px);color:#fff;letter-spacing:-.01em;transform:translateY(110%);opacity:0;}
 
-#s-intro .si-gold{font-family:var(--font-display);font-style:italic;font-weight:400;font-size:clamp(30px,7.5vw,48px);color:#e8c97e;letter-spacing:-.01em;line-height:1.08;opacity:0;filter:brightness(4);margin-top:4px;}
+#s-intro .si-gold{font-family:var(--font-display);font-style:italic;font-weight:700;font-size:clamp(38px,10vw,72px);color:#e8c97e;letter-spacing:-.01em;line-height:1.08;opacity:0;filter:brightness(4);margin-top:4px;}
 
 #s-intro .si-txt{font-style:italic;font-weight:400;font-size:clamp(19px,5vw,25px);color:#1a1a1a;line-height:1.65;max-width:420px;opacity:0;transform:translateY(14px);}
 
@@ -3166,6 +3166,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

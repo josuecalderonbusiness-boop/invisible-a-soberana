@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
   var GAP=225;
 
   function animS1(cb){
@@ -23,7 +23,7 @@
       g.style.transition='opacity .12s ease,filter .65s ease';
       g.style.opacity='1';
       setTimeout(function(){g.style.filter='brightness(1)';},100);
-      setTimeout(cb,1200);
+      setTimeout(cb,3000);
     },675+200+750);
   }
 

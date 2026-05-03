@@ -2261,10 +2261,25 @@ function showBridge(qIdx, optIdx) {
   const w = document.getElementById('q-wrap');
   w.classList.remove('qin'); w.classList.add('qout');
   setTimeout(() => {
+    const themes=[
+      {bg:'#050001',eye:'#E8C97E',txt:'rgba(255,255,255,.82)',btn:'#E8C97E',btnTxt:'#050001',acc:'rgba(184,137,42,.3)'},
+      {bg:'#3D0C11',eye:'#E8C97E',txt:'rgba(240,230,220,.88)',btn:'#E8C97E',btnTxt:'#3D0C11',acc:'rgba(232,201,126,.2)'},
+      {bg:'#EDE4C8',eye:'#3D0C11',txt:'#1e0409',btn:'#1e0409',btnTxt:'#E8C97E',acc:'rgba(61,12,17,.15)'},
+      {bg:'#0F0A0B',eye:'#B8892A',txt:'rgba(237,227,206,.82)',btn:'#B8892A',btnTxt:'#050001',acc:'rgba(184,137,42,.2)'},
+      {bg:'#B8892A',eye:'#050001',txt:'#050001',btn:'#050001',btnTxt:'#E8C97E',acc:'rgba(5,0,1,.15)'}
+    ];
+    const t=themes[qIdx]||themes[0];
+    const sq=document.getElementById('s-quiz');
+    sq.style.transition='background .7s ease';
+    sq.style.background=t.bg;
     w.innerHTML = `
-      <span class="q-num" style="color:var(--gold-primary,#B8892A);letter-spacing:2px;font-size:10px;font-family:'Jost',sans-serif;font-weight:600;text-transform:uppercase;">${b.eye}</span>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(16px,3.8vw,19px);font-style:italic;line-height:1.85;color:rgba(237,227,206,.88);margin-top:20px;">${b.txt}</div>
-      <button class="btn-cta" style="margin-top:32px;width:100%;" onclick="nextQ()">Continuar →</button>
+      <div style="display:flex;flex-direction:column;min-height:55vh;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:9px;letter-spacing:.22em;color:${t.eye};margin-bottom:24px;text-transform:uppercase;">${b.eye}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(19px,5vw,24px);font-style:italic;line-height:1.8;color:${t.txt};border-left:2px solid ${t.eye};padding-left:18px;">${b.txt}</div>
+        </div>
+        <button style="margin-top:40px;width:100%;height:56px;background:${t.btn};color:${t.btnTxt};border:none;font-family:'Inter',sans-serif;font-weight:900;font-size:14px;letter-spacing:.08em;cursor:pointer;" onclick="nextQ();document.getElementById('s-quiz').style.background='';">Continuar →</button>
+      </div>
     `;
     w.className = 'q-wrap';
     requestAnimationFrame(() => w.classList.add('qin'));
@@ -2943,6 +2958,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

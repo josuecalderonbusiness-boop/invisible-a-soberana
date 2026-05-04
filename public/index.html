@@ -1698,7 +1698,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 </div>
 
 <!-- ──────────── PRECIO ──────────── -->
-<div id="s-precio" class="screen" style="overflow-y:auto;position:relative;max-height:100dvh;">
+<div id="s-precio" class="screen" style="overflow-y:auto;position:relative;max-height:100dvh;padding-top:40px;">
   <div class="intro-box" style="animation:fadeUp .6s ease both;text-align:center;">
 
     <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:6px;" id="precio-eyebrow">ACCESO GENERADO</p>
@@ -1949,11 +1949,11 @@ let curQ = 0, ans = [], sc = {S:0,P:0,D:0}; window._curQ = 0; var uName = '', uE
 
 // ── HELPERS ───────────────────────────────────────────────
 function show(id) {
-  var headerScreens = ['s-josue','s-workshop','s-demo','s-testimonios','s-loading2','s-precio'];
+  var headerScreens = ['s-josue','s-workshop','s-demo','s-testimonios','s-loading2'];
   var h = document.getElementById('global-header');
   if (h) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';
-    var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306','s-precio':'#1E1218'};
+    var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306'};
     h.style.background = headerBg[id] || '#0F0A0B';
     var sp = document.getElementById('header-spacer');
     if(sp){ sp.style.background = headerBg[id] || '#1E1218'; sp.style.display = headerScreens.indexOf(id) >= 0 ? 'block' : 'none'; }
@@ -2616,6 +2616,9 @@ function escribirFrase2(el, perfil) {
 // ── PRECIO ────────────────────────────────────────────────
 function showPrecio() {
   show('s-precio');
+  document.getElementById('global-prog-bar').style.display='none';
+  document.getElementById('global-header').style.display='none';
+  document.getElementById('header-spacer').style.display='none';
   if (uName) document.getElementById('precio-eyebrow').textContent = 'ACCESO GENERADO PARA ' + uName.toUpperCase();
   // Contador 48h
   const exp = Date.now() + 48*60*60*1000;
@@ -2963,6 +2966,9 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
+
 
 
 

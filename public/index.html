@@ -60,7 +60,7 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
     pointer-events: none; z-index: 1000; opacity: 0.3;
   }
-  .screen { display: none; min-height: 100vh; } #s-demo { height: 100vh; overflow: hidden; } #s-testimonios.active { height: 100vh; overflow: hidden; display:flex; align-items:center; }
+  .screen { display: none; min-height: 100vh; } #s-demo { height: 100vh; overflow: hidden; } #s-testimonios.active { min-height:100vh; overflow-y:auto; display:flex; align-items:flex-start; }
   .screen.active { display: flex; flex-direction: column; }
 
   /* ── INTRO ───────────────────────────────── */
@@ -1618,7 +1618,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <!-- ──────────── TESTIMONIOS ──────────── -->
 <div id="s-testimonios" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:120px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:60px;padding-bottom:40px;">
     <h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Lo que están logrando</h2>
     <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#B8892A;text-align:center;margin-bottom:24px;">otras Soberanas</p>
 
@@ -2960,6 +2960,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

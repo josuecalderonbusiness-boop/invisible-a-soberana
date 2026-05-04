@@ -1523,7 +1523,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <!-- ──────────── QUIÉN ES JOSUÉ ──────────── -->
 <div id="s-josue" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:90px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;">
     <div style="text-align:center;margin-bottom:18px;">
       
     </div>
@@ -1546,7 +1546,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <div id="s-workshop" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:80px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;">
     <div style="text-align:center;margin-bottom:28px;">
       
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:#EDE3CE;line-height:1.4;margin-top:16px;margin-bottom:8px;">No te vendo informacion.<br>Te entrego el sistema.</p>
@@ -1593,7 +1593,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">
-  <div style="animation:fadeUp .6s ease both;padding-top:80px;padding-bottom:32px;position:relative;overflow:hidden;background:#F5EDE0;min-height:100vh;">
+  <div style="animation:fadeUp .6s ease both;padding-top:126px;padding-bottom:32px;position:relative;overflow:hidden;background:#F5EDE0;min-height:100vh;">
     <div id="demo-particles"></div>
 <h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#1a0810;text-align:center;line-height:1.2;margin-bottom:20px;position:relative;z-index:1;">Mira el sistema<br>por dentro</h2>
 <div style="width:160px;height:320px;background:#1a1a1a;border-radius:36px;margin:0 auto 20px;position:relative;border:2px solid #3a3a3a;box-shadow:0 0 0 1px #222,0 20px 50px rgba(0,0,0,.2);overflow:hidden;z-index:1;">
@@ -1618,7 +1618,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <!-- ──────────── TESTIMONIOS ──────────── -->
 <div id="s-testimonios" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:54px;padding-bottom:16px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;padding-bottom:16px;">
     <h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Lo que están logrando</h2>
     <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#B8892A;text-align:center;margin-bottom:24px;">otras Soberanas</p>
 
@@ -1954,6 +1954,8 @@ function show(id) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';
     var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306','s-precio':'#1E1218'};
     h.style.background = headerBg[id] || '#0F0A0B';
+    var sp = document.getElementById('header-spacer');
+    if(sp){ sp.style.background = headerBg[id] || '#1E1218'; sp.style.display = headerScreens.indexOf(id) >= 0 ? 'block' : 'none'; }
     h.style.borderBottom = '1px solid rgba(184,137,42,.15)';
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2960,6 +2962,11 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
+
+
+
+
 
 
 

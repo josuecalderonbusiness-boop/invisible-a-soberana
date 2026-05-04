@@ -1618,7 +1618,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <!-- ──────────── TESTIMONIOS ──────────── -->
 <div id="s-testimonios" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:60px;padding-bottom:40px;">
+  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:54px;padding-bottom:16px;">
     <h2 style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Lo que están logrando</h2>
     <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#B8892A;text-align:center;margin-bottom:24px;">otras Soberanas</p>
 
@@ -1631,7 +1631,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
             <div style="padding:12px 16px 10px;background:rgba(184,137,42,.12);display:flex;align-items:baseline;gap:10px;">
               <span style="font-family:'Jost',sans-serif;font-size:11px;font-weight:700;color:#B8892A;letter-spacing:1px;text-transform:uppercase;">✦ 2 semanas</span>
             </div>
-            <img src="testi_1.jpg" alt="Testimonio 1" style="width:100%;display:block;">
+            <img src="testi_1.jpg" alt="Testimonio 1" style="width:100%;display:block;max-height:180px;object-fit:cover;">
             <div style="padding:14px 16px 16px;">
               <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#EDE3CE;margin-bottom:6px;">"El Ancla Emocional es oro puro"</p>
               <p style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(237,227,206,.5);line-height:1.5;">En solo 2 semanas su esposo empezó a buscarla de nuevo. Aplicó el sistema sola, sin decirle nada.</p>
@@ -1645,7 +1645,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
             <div style="padding:12px 16px 10px;background:rgba(184,137,42,.12);display:flex;align-items:baseline;gap:10px;">
               <span style="font-family:'Jost',sans-serif;font-size:11px;font-weight:700;color:#B8892A;letter-spacing:1px;text-transform:uppercase;">✦ Será nuestro secreto</span>
             </div>
-            <img src="testi_2.jpg" alt="Testimonio 2" style="width:100%;display:block;">
+            <img src="testi_2.jpg" alt="Testimonio 2" style="width:100%;display:block;max-height:180px;object-fit:cover;">
             <div style="padding:14px 16px 16px;">
               <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#EDE3CE;margin-bottom:6px;">"Ya no me siento sola"</p>
               <p style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(237,227,206,.5);line-height:1.5;">Fue una reacción en cadena. Se convirtió en una mujer distinta, él lo sintió, y empezó a tratarla diferente.</p>
@@ -1659,7 +1659,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
             <div style="padding:12px 16px 10px;background:rgba(184,137,42,.12);display:flex;align-items:baseline;gap:10px;">
               <span style="font-family:'Jost',sans-serif;font-size:11px;font-weight:700;color:#B8892A;letter-spacing:1px;text-transform:uppercase;">✦ Matrimonio de 7 años</span>
             </div>
-            <img src="testi_3.jpg" alt="Testimonio 3" style="width:100%;display:block;">
+            <img src="testi_3.jpg" alt="Testimonio 3" style="width:100%;display:block;max-height:180px;object-fit:cover;">
             <div style="padding:14px 16px 16px;">
               <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#EDE3CE;margin-bottom:6px;">"Salvaste mi matrimonio"</p>
               <p style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(237,227,206,.5);line-height:1.5;">Estaba a punto de divorciarse. Aplicó todo lo que enseñaste y todo cambió. Las cosas están mejor que nunca.</p>
@@ -2960,6 +2960,7 @@ function lanzarParticulasBoveda() {
   }
 }
 </script><script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>
+
 
 
 

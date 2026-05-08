@@ -6801,7 +6801,8 @@ function renderSectionsList() {
     node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
     if (gemState === 'current') {
       node.style.perspective = '400px';
-      // 3 arcos de progreso alrededor del hito
+      // 3 arcos de progreso alrededor del hito (solo nodos con ejercicios)
+      if (!isS10 && sec.exercises && sec.exercises.length > 0) {
       const totalArcs = 3;
       const exDoneCount = (sec.exercises || []).filter(ex => {
         const ans = state.answers[ex.id];
@@ -6835,6 +6836,7 @@ function renderSectionsList() {
       }
       node.style.position = 'relative';
       node.appendChild(arcSvg);
+      } // end arcos guard
     }
 
     // Badge CONTINUAR/EMPEZAR solo en el siguiente nodo a hacer

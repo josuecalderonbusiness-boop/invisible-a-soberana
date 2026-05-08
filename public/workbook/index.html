@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1602,76 +1602,62 @@
   .node-popup {
     position: absolute;
     z-index: 20;
-    background: #1C0E08;
-    border: 1.5px solid rgba(184,137,42,0.6);
-    border-radius: 20px;
-    padding: 18px 20px 16px;
-    width: 85vw;
-    max-width: 340px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,106,0.1);
+    background: #8B1A2F;
+    border: none;
+    border-radius: 16px;
+    padding: 14px 18px 12px;
+    width: 72vw;
+    max-width: 280px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
     pointer-events: all;
     animation: popupIn .2s cubic-bezier(.34,1.56,.64,1) forwards;
   }
   .node-popup::after {
     content: '';
     position: absolute;
-    top: -8px;
+    top: -7px;
     left: 50%;
     transform: translateX(-50%);
     width: 14px; height: 14px;
-    background: #1C0E08;
-    border-left: 1.5px solid rgba(184,137,42,0.6);
-    border-top: 1.5px solid rgba(184,137,42,0.6);
+    background: #8B1A2F;
+    border: none;
     clip-path: polygon(0 0, 100% 0, 0 100%);
     rotate: 45deg;
   }
   .node-popup-section {
     font-family: 'Jost', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     letter-spacing: .16em;
     text-transform: uppercase;
-    color: #B8892A;
-    margin-bottom: 4px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 2px;
   }
   .node-popup-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 600;
-    color: #EDE3CE;
-    line-height: 1.25;
-    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 8px;
   }
-  .node-popup-dots {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-  .node-popup-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    transition: background .2s;
-  }
-  .node-popup-dot.done { background: #B8892A; }
-  .node-popup-dot.current { background: #D4AF6A; box-shadow: 0 0 6px rgba(212,175,106,0.6); }
+  .node-popup-dots { display: none; }
+  .node-popup-dot { display: none; }
   .node-popup-count {
     font-family: 'Jost', sans-serif;
     font-size: 11px;
-    color: rgba(237,227,206,0.4);
-    margin-bottom: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 10px;
   }
   .node-popup-btn {
     width: 100%;
-    padding: 11px;
-    background: linear-gradient(135deg, #B8892A, #D4AF6A);
+    padding: 10px;
+    background: #fff;
     border: none;
     border-radius: 10px;
     font-family: 'Jost', sans-serif;
     font-size: 13px;
     font-weight: 700;
-    color: #1a0a0f;
+    color: #8B1A2F;
     cursor: pointer;
     letter-spacing: .04em;
     transition: opacity .15s;
@@ -6813,7 +6799,43 @@ function renderSectionsList() {
     else                               gemState = 'locked';
 
     node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
-    if (gemState === 'current') node.style.perspective = '400px';
+    if (gemState === 'current') {
+      node.style.perspective = '400px';
+      // 3 arcos de progreso alrededor del hito
+      const totalArcs = 3;
+      const exDoneCount = sec.exercises.filter(ex => {
+        const ans = state.answers[ex.id];
+        return ans && (typeof ans === 'string' ? ans.trim().length > 3 : true);
+      }).length;
+      const arcsDone = Math.min(totalArcs, Math.round((exDoneCount / Math.max(sec.exercises.length, 1)) * totalArcs));
+      const arcSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      arcSvg.setAttribute('width', '80');
+      arcSvg.setAttribute('height', '80');
+      arcSvg.setAttribute('viewBox', '0 0 80 80');
+      arcSvg.className = 'node-ring-svg';
+      const r = 36, cx = 40, cy = 40;
+      const gapDeg = 8;
+      const arcDeg = (360 / totalArcs) - gapDeg;
+      for (let a = 0; a < totalArcs; a++) {
+        const startDeg = a * (360 / totalArcs) - 90;
+        const endDeg = startDeg + arcDeg;
+        const toRad = d => d * Math.PI / 180;
+        const x1 = cx + r * Math.cos(toRad(startDeg));
+        const y1 = cy + r * Math.sin(toRad(startDeg));
+        const x2 = cx + r * Math.cos(toRad(endDeg));
+        const y2 = cy + r * Math.sin(toRad(endDeg));
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const d = `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', a < arcsDone ? '#D4AF6A' : 'rgba(255,255,255,0.15)');
+        path.setAttribute('stroke-width', '3');
+        path.setAttribute('stroke-linecap', 'round');
+        arcSvg.appendChild(path);
+      }
+      node.style.position = 'relative';
+      node.appendChild(arcSvg);
+    }
 
     // Badge CONTINUAR/EMPEZAR solo en el siguiente nodo a hacer
     if (i === firstWorkshopUndoneIdx && !isS10) {

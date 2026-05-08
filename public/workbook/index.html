@@ -6803,7 +6803,7 @@ function renderSectionsList() {
       node.style.perspective = '400px';
       // 3 arcos de progreso alrededor del hito
       const totalArcs = 3;
-      const exDoneCount = sec.exercises.filter(ex => {
+      const exDoneCount = (sec.exercises || []).filter(ex => {
         const ans = state.answers[ex.id];
         return ans && (typeof ans === 'string' ? ans.trim().length > 3 : true);
       }).length;
@@ -11598,6 +11598,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

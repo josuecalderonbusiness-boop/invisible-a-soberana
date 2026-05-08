@@ -61,40 +61,49 @@
   }
   #video-lesson-overlay.open { display: flex; }
 
-  /* Rotacion CSS — funciona en todos los dispositivos sin permisos */
-  #video-lesson-overlay .video-frame-wrap {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(90deg);
-    width: 100vh;
-    height: 100vw;
-    padding-top: 0;
+  /* iframe unico que se expande al girar — sin duplicar */
+  .lesson-video-iframe-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #000;
   }
 
-  #video-lesson-overlay .video-frame-wrap iframe {
+  .lesson-video-iframe-wrap iframe {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     border: none;
   }
 
-  /* Header y footer NO se rotan — siempre visibles en su lugar */
+  /* Cuando esta expandido ocupa toda la pantalla */
+  .lesson-video-iframe-wrap.expanded {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding-top: 0;
+    z-index: 9999;
+  }
+
+  #video-lesson-overlay {
+    pointer-events: none;
+  }
+
+  #video-lesson-overlay.open {
+    pointer-events: all;
+  }
+
   #video-lesson-overlay .video-overlay-header {
     transform: none;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     width: 100%;
     z-index: 10000;
   }
 
   #video-lesson-overlay .video-overlay-footer {
     transform: none;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     width: 100%;
     z-index: 10000;
   }
@@ -4317,18 +4326,11 @@
     </div>
   </div>
 
-  <!-- Video Lesson Overlay -->
+  <!-- Video Lesson Overlay (landscape expandido) -->
   <div id="video-lesson-overlay">
     <div class="video-overlay-header">
       <div class="video-overlay-title" id="video-overlay-title">Lección</div>
-      <button class="video-close-btn" onclick="closeVideoOverlay()">×</button>
-    </div>
-    <div class="video-frame-wrap">
-      <iframe id="video-lesson-iframe"
-        src=""
-        allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture"
-        allowfullscreen>
-      </iframe>
+      <button class="video-close-btn" onclick="collapseVideo()">×</button>
     </div>
     <div class="video-overlay-footer" id="video-overlay-footer">
       <button class="video-continue-btn" onclick="unlockExercisesAndClose()">
@@ -4337,6 +4339,7 @@
       </button>
       <div class="video-rewatch-hint">Puedes volver a ver el video cuando quieras</div>
     </div>
+  </div>
   </div>
 
   <!-- Modal Sheet -->
@@ -7976,65 +7979,65 @@ function closeProtocoloModal() {
 let currentSectionId = null;
 
 // ── VIDEO OVERLAY ──
-function openVideoOverlay(sec) {
-  const libId = sec.bunnyLibrary || '636956';
-  const vidId = sec.bunnyVideoId;
-  const src = `https://iframe.mediadelivery.net/embed/${libId}/${vidId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true`;
+let _currentVideoWrap = null;
 
-  document.getElementById('video-lesson-iframe').src = src;
-  document.getElementById('video-overlay-title').textContent = sec.title;
-  document.getElementById('video-overlay-footer').classList.remove('visible');
+function expandVideo() {
+  if (!_currentVideoWrap) return;
+  _currentVideoWrap.classList.add('expanded');
   document.getElementById('video-lesson-overlay').classList.add('open');
+  document.getElementById('video-overlay-title').textContent = 
+    SECTIONS.find(s => s.id === currentSectionId)?.title || '';
+}
 
-  // Forzar landscape
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('landscape').catch(() => {});
-  }
+function collapseVideo() {
+  if (!_currentVideoWrap) return;
+  _currentVideoWrap.classList.remove('expanded');
+  document.getElementById('video-lesson-overlay').classList.remove('open');
+  document.getElementById('video-overlay-footer').classList.remove('visible');
+}
 
-  // Escuchar mensaje del iframe cuando termina el video
-  window._videoMessageHandler = function(e) {
-    if (e.data && (e.data.event === 'ended' || e.data === 'ended')) {
-      document.getElementById('video-overlay-footer').classList.add('visible');
-    }
-  };
-  window.addEventListener('message', window._videoMessageHandler);
-
-  // Fallback: mostrar boton despues de 3 segundos de cargado
-  // (por si el evento ended no llega del iframe de Bunny)
-  clearTimeout(window._videoFallbackTimer);
-  window._videoFallbackTimer = setTimeout(() => {
-    document.getElementById('video-overlay-footer').classList.add('visible');
-  }, 8000);
+function openVideoOverlay(sec) {
+  expandVideo();
 }
 
 function closeVideoOverlay() {
-  document.getElementById('video-lesson-overlay').classList.remove('open');
-  document.getElementById('video-lesson-iframe').src = '';
-  clearTimeout(window._videoFallbackTimer);
-  if (window._videoMessageHandler) {
-    window.removeEventListener('message', window._videoMessageHandler);
-  }
-  // Volver a portrait
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('portrait').catch(() => {});
-  }
+  collapseVideo();
 }
 
 function unlockExercisesAndClose() {
-  // Marcar video como visto
   if (currentSectionId) {
     state.answers['_video_seen_' + currentSectionId] = true;
     saveState();
   }
-  closeVideoOverlay();
-
-  // Animar desbloqueo de ejercicios
+  collapseVideo();
   const wrap = document.getElementById('exercises-wrap');
   if (wrap) {
     wrap.classList.remove('exercises-locked');
     setTimeout(() => wrap.classList.add('exercises-unlocked'), 30);
   }
 }
+
+// Escuchar rotacion del celular
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    const landscape = window.innerWidth > window.innerHeight;
+    if (landscape && _currentVideoWrap) {
+      expandVideo();
+    } else {
+      collapseVideo();
+    }
+  }, 300);
+});
+
+window.addEventListener('resize', () => {
+  if (!_currentVideoWrap) return;
+  const landscape = window.innerWidth > window.innerHeight;
+  if (landscape) {
+    expandVideo();
+  } else {
+    collapseVideo();
+  }
+});
 
 function openLesson(sectionId) {
   const sec = SECTIONS.find(s => s.id === sectionId);
@@ -8068,7 +8071,7 @@ function openLesson(sectionId) {
     const videoBlock = document.createElement('div');
     videoBlock.className = 'lesson-video-block';
     videoBlock.innerHTML = `
-      <div style="position:relative;padding-top:56.25%;background:#000;">
+      <div class="lesson-video-iframe-wrap" style="position:relative;padding-top:56.25%;background:#000;">
         <iframe
           src="https://iframe.mediadelivery.net/embed/${libId}/${sec.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
           style="position:absolute;inset:0;width:100%;height:100%;border:none;"
@@ -8086,7 +8089,7 @@ function openLesson(sectionId) {
         </button>
       </div>
     `;
-    body.appendChild(videoBlock);
+    body.appendChild(videoBlock);_currentVideoWrap = videoBlock.querySelector('.lesson-video-iframe-wrap') || videoBlock;
   }
 
   // Exercises wrapper — bloqueado si hay video y no se ha visto

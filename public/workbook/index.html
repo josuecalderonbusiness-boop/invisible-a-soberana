@@ -8019,6 +8019,7 @@ function unlockExercisesAndClose() {
 
 // Escuchar rotacion del celular
 window.addEventListener('orientationchange', () => {
+  alert('orientationchange: ' + window.innerWidth + 'x' + window.innerHeight);
   setTimeout(() => {
     const landscape = window.innerWidth > window.innerHeight;
     if (landscape && _currentVideoWrap) {

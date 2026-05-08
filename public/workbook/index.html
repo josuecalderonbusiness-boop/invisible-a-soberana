@@ -7940,7 +7940,7 @@ let currentSectionId = null;
 function openVideoOverlay(sec) {
   const libId = sec.bunnyLibrary || '636956';
   const vidId = sec.bunnyVideoId;
-  const src = `https://iframe.mediadelivery.net/embed/${libId}/${vidId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
+  const src = `https://iframe.mediadelivery.net/embed/${libId}/${vidId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true`;
 
   document.getElementById('video-lesson-iframe').src = src;
   document.getElementById('video-overlay-title').textContent = sec.title;
@@ -8086,10 +8086,7 @@ function openLesson(sectionId) {
   exercisesWrap.appendChild(saveWrap);
   body.appendChild(exercisesWrap);
 
-  // Si hay video y no se ha visto, abrir overlay automaticamente
-  if (sec.bunnyVideoId && !videoSeen) {
-    setTimeout(() => openVideoOverlay(sec), 600);
-  }
+  // No abrir overlay automaticamente — ella decide cuando ver el video
 
   // Open lesson view
   document.getElementById('lesson-view').classList.add('open');

@@ -1602,13 +1602,13 @@
   .node-popup {
     position: absolute;
     z-index: 20;
-    background: #2A1018;
-    border: 1px solid rgba(184,137,42,0.35);
+    background: #1C0E08;
+    border: 1.5px solid rgba(184,137,42,0.6);
     border-radius: 20px;
     padding: 18px 20px 16px;
     width: 85vw;
     max-width: 340px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,175,106,0.1);
     pointer-events: all;
     animation: popupIn .2s cubic-bezier(.34,1.56,.64,1) forwards;
   }
@@ -1619,9 +1619,9 @@
     left: 50%;
     transform: translateX(-50%);
     width: 14px; height: 14px;
-    background: #2A1018;
-    border-left: 1px solid rgba(184,137,42,0.35);
-    border-top: 1px solid rgba(184,137,42,0.35);
+    background: #1C0E08;
+    border-left: 1.5px solid rgba(184,137,42,0.6);
+    border-top: 1.5px solid rgba(184,137,42,0.6);
     clip-path: polygon(0 0, 100% 0, 0 100%);
     rotate: 45deg;
   }
@@ -6613,7 +6613,7 @@ function showNodePopup(sec, wrap, container) {
   popup.dataset.secId = sec.id;
   popup.style.left = Math.max(8, Math.min(containerRect.width - popupW - 8, wrapCenterX - popupW / 2)) + 'px';
   const wrapH = wrapRect.height;
-  popup.style.top = (wrapTopY + wrapH + 10) + 'px';
+  popup.style.top = (wrapTopY + wrapH - 10) + 'px';
   popup.style.transform = 'none';
 
   popup.innerHTML = `

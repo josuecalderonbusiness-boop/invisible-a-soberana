@@ -7991,6 +7991,9 @@ let _currentVideoWrap = null;
 function expandVideo() {
   if (!_currentVideoWrap) return;
   _currentVideoWrap.classList.add('expanded');
+  if (screen.orientation && screen.orientation.unlock) {
+    screen.orientation.unlock();
+  }
   document.getElementById('video-lesson-overlay').classList.add('open');
   document.getElementById('video-overlay-title').textContent = 
     SECTIONS.find(s => s.id === currentSectionId)?.title || '';
@@ -7999,6 +8002,9 @@ function expandVideo() {
 function collapseVideo() {
   if (!_currentVideoWrap) return;
   _currentVideoWrap.classList.remove('expanded');
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock('portrait').catch(() => {});
+  }
   document.getElementById('video-lesson-overlay').classList.remove('open');
   document.getElementById('video-overlay-footer').classList.remove('visible');
 }
@@ -8023,7 +8029,10 @@ function unlockExercisesAndClose() {
     setTimeout(() => wrap.classList.add('exercises-unlocked'), 30);
   }
 }
-
+// Bloquear portrait por defecto
+if (screen.orientation && screen.orientation.lock) {
+  screen.orientation.lock('portrait').catch(() => {});
+}
 // Escuchar rotacion del celular
 window.addEventListener('orientationchange', () => {
   setTimeout(() => {

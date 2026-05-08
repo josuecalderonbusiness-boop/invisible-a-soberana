@@ -2459,54 +2459,347 @@
     position: fixed;
     inset: 0;
     z-index: 50;
-    background: var(--surface);
+    background: var(--burgundy-deep);
     flex-direction: column;
     height: 100%;
+    overflow: hidden;
   }
   #lesson-view.open { display: flex; }
 
-  .lesson-header {
-    background: white;
-    padding: 16px 20px;
-    border-bottom: 1px solid rgba(138,26,47,.08);
+  /* ── SLIDE HEADER ── */
+  .slide-header {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    padding: 52px 20px 14px;
     flex-shrink: 0;
+    background: var(--burgundy-deep);
   }
-  .back-btn {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    background: var(--burgundy);
-    border: none;
+  .slide-back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(212,175,106,0.2);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    color: #fff;
+    color: rgba(212,175,106,0.7);
     flex-shrink: 0;
+    font-size: 16px;
+    transition: background .2s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .lesson-header-info { flex: 1; }
-  .lesson-eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mauve); }
-  .lesson-title-h { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--text-dark); }
-
-  .lesson-progress-bar {
-    height: 3px;
-    background: var(--surface-2);
-    flex-shrink: 0;
-  }
-  .lesson-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--burgundy), var(--mauve));
-    transition: width .4s ease;
-  }
-
-  .lesson-scroll {
+  .slide-back-btn:active { background: rgba(212,175,106,0.15); }
+  .slide-progress-wrap {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .slide-progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .slide-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #B8892A, #D4AF6A);
+    border-radius: 100px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+  .slide-progress-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(212,175,106,0.45);
+    text-align: right;
+  }
+
+  /* ── SLIDE VIEWPORT ── */
+  .slide-viewport {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .slide-track {
+    display: flex;
+    height: 100%;
+    transition: transform .38s cubic-bezier(.4,0,.2,1);
+    will-change: transform;
+  }
+  .slide-panel {
+    min-width: 100%;
+    height: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 28px 20px 120px;
+    display: flex;
+    flex-direction: column;
   }
 
-  .lesson-body {
-    padding: 24px 20px 120px;
+  /* ── SLIDE FOOTER ── */
+  .slide-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 20px 36px;
+    background: linear-gradient(to top, var(--burgundy-deep) 65%, transparent);
+    pointer-events: none;
+  }
+  .slide-continue-btn {
+    pointer-events: all;
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #B8892A, #D4AF6A);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #1a0a0f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity .2s, transform .15s;
+    min-height: 52px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .slide-continue-btn:active { opacity: .82; transform: scale(.98); }
+  .slide-continue-btn.disabled { opacity: .35; pointer-events: none; }
+
+  /* ── SLIDE 0: VIDEO ── */
+  .slide-video-wrap {
+    width: 100%;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .slide-video-wrap iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: none;
+  }
+  .slide-lesson-meta {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slide-section-badge {
+    display: inline-block;
+    background: rgba(184,137,42,0.12);
+    border: 1px solid rgba(184,137,42,0.3);
+    color: #B8892A;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'Jost', sans-serif;
+  }
+  .slide-lesson-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #EDE3CE;
+    line-height: 1.2;
+    margin: 14px 0 10px;
+  }
+  .slide-lesson-desc {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: rgba(237,227,206,0.5);
+    line-height: 1.65;
+  }
+  .slide-lesson-quote {
+    margin-top: 18px;
+    border-left: 2px solid rgba(184,137,42,0.4);
+    padding-left: 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: rgba(237,227,206,0.7);
+    line-height: 1.7;
+  }
+
+  /* ── SLIDE N: EJERCICIO (dark skin) ── */
+  .slide-ex-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #B8892A;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .slide-ex-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #EDE3CE;
+    line-height: 1.35;
+    margin-bottom: 14px;
+  }
+  .slide-ex-body {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: rgba(237,227,206,0.55);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .slide-ex-confrontation {
+    background: rgba(184,137,42,0.07);
+    border-left: 2px solid #B8892A;
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    color: rgba(237,227,206,0.75);
+    line-height: 1.65;
+  }
+  .slide-ex-insight {
+    background: rgba(212,175,106,0.06);
+    border: 1px solid rgba(212,175,106,0.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    color: rgba(237,227,206,0.7);
+    line-height: 1.65;
+  }
+  .slide-textarea {
+    width: 100%;
+    min-height: 150px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(184,137,42,0.2);
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    color: #EDE3CE;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+  }
+  .slide-textarea::placeholder { color: rgba(237,227,206,0.22); }
+  .slide-textarea:focus { border-color: rgba(184,137,42,0.5); }
+  .slide-char-hint {
+    text-align: right;
+    font-size: 11px;
+    color: rgba(184,137,42,0.35);
+    margin-top: 8px;
+    font-family: 'Jost', sans-serif;
+    transition: color .2s;
+  }
+  .slide-char-hint.met { color: #B8892A; }
+
+  /* ── ÚLTIMO SLIDE: COMPLETION ── */
+  .slide-completion {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px 40px;
+  }
+  .slide-completion-gem {
+    font-size: 52px;
+    margin-bottom: 22px;
+    animation: gemFloat 3s ease-in-out infinite;
+  }
+  .slide-completion-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 600;
+    color: #EDE3CE;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .slide-completion-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    color: rgba(237,227,206,0.45);
+    line-height: 1.65;
+    max-width: 270px;
+    margin: 0 auto 36px;
+  }
+  .slide-save-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #B8892A, #D4AF6A);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #1a0a0f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 54px;
+    transition: opacity .2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .slide-save-btn:active { opacity: .85; }
+  .slide-save-btn.saved {
+    background: linear-gradient(135deg, #2D5A3D, #3D7A5A);
+    color: #EDE3CE;
+  }
+
+  @keyframes gemFloat {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-9px); }
+  }
+
+  /* ── LEGACY: keep exercise-block dark override ── */
+  .slide-panel .exercise-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(184,137,42,0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .slide-panel .exercise-block .answer-textarea,
+  .slide-panel .exercise-block .belief-seq-ta,
+  .slide-panel .exercise-block .belief-field-ta,
+  .slide-panel .exercise-block .dds-input,
+  .slide-panel .exercise-block .eres-input,
+  .slide-panel .exercise-block .level-input {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(184,137,42,0.2) !important;
+    color: #EDE3CE !important;
+  }
+  .slide-panel .exercise-block .exercise-type,
+  .slide-panel .exercise-block .exercise-question,
+  .slide-panel .exercise-block .checkpoint-badge {
+    color: #EDE3CE !important;
+  }
+  .slide-panel .exercise-block .exercise-type.reflection,
+  .slide-panel .exercise-block .exercise-type.star,
+  .slide-panel .exercise-block .exercise-type.tool {
+    color: #B8892A !important;
+  }
+  .slide-panel .exercise-block .post-note {
+    color: rgba(237,227,206,0.5) !important;
+  }
+  .slide-panel .exercise-block .char-counter {
+    color: rgba(184,137,42,0.4) !important;
   }
 
   /* Intro block */
@@ -4316,20 +4609,30 @@
 
   <!-- Lesson overlay (full screen) -->
   <div id="lesson-view">
-    <div class="lesson-header">
-      <button class="back-btn" onclick="closeLesson()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <!-- Header fijo -->
+    <div class="slide-header">
+      <button class="slide-back-btn" onclick="closeLesson()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div class="lesson-header-info">
-        <div class="lesson-eyebrow" id="lesson-eyebrow">Sección</div>
-        <div class="lesson-title-h" id="lesson-title-h">Título</div>
+      <div class="slide-progress-wrap">
+        <div class="slide-progress-track">
+          <div class="slide-progress-fill" id="slide-prog-fill" style="width:0%"></div>
+        </div>
+        <div class="slide-progress-label" id="slide-prog-label">0 / 0</div>
       </div>
     </div>
-    <div class="lesson-progress-bar">
-      <div class="lesson-progress-fill" id="lesson-prog-fill" style="width:0%"></div>
+
+    <!-- Viewport de slides -->
+    <div class="slide-viewport">
+      <div class="slide-track" id="slide-track"></div>
     </div>
-    <div class="lesson-scroll">
-      <div class="lesson-body" id="lesson-body"></div>
+
+    <!-- Botón continuar flotante -->
+    <div class="slide-footer">
+      <button class="slide-continue-btn" id="slide-continue-btn" onclick="nextSlide()">
+        Continuar
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
   </div>
 
@@ -8055,104 +8358,289 @@ window.addEventListener('resize', () => {
   }
 });
 
+// ═══════════════════════════════════════════
+// SLIDE SYSTEM
+// ═══════════════════════════════════════════
+let _slideIndex = 0;
+let _slides = []; // array of { type:'video'|'exercise'|'completion', data }
+
 function openLesson(sectionId) {
   const sec = SECTIONS.find(s => s.id === sectionId);
   if (!sec) return;
   currentSectionId = sectionId;
-  
-  document.getElementById('lesson-eyebrow').textContent = sec.palanca || ('Sección ' + sec.num);
-  document.getElementById('lesson-title-h').textContent = sec.title;
-  
-  // Build body
-  const body = document.getElementById('lesson-body');
-  body.innerHTML = '';
-  
-  // Intro block
-  const intro = document.createElement('div');
-  intro.className = 'lesson-intro' + (sec.color === 'green' ? ' verde' : '');
-  intro.setAttribute('data-num', sec.num);
-  intro.innerHTML = `
-    <div class="lesson-badge">Sección ${sec.num}</div>
-    <h2>${sec.title}</h2>
-    <p>${sec.desc}</p>
-    ${sec.palanca ? `<p style="margin-top:10px;font-size:13px;opacity:.8;"><strong>${sec.palanca}</strong></p>` : ''}
-    ${sec.introQuote ? `<p style="margin-top:14px;font-style:italic;font-size:13px;color:var(--gold-light);opacity:.9;line-height:1.7">"${sec.introQuote}"</p>` : ''}
-  `;
-  body.appendChild(intro);
 
-  // Video block (si la seccion tiene video)
-  const videoSeen = state.answers['_video_seen_' + sectionId];
-  if (sec.bunnyVideoId) {
-    const libId = sec.bunnyLibrary || '636956';
-    const videoBlock = document.createElement('div');
-    videoBlock.className = 'lesson-video-block';
-    videoBlock.innerHTML = `
-      <div class="lesson-video-iframe-wrap" style="position:relative;padding-top:56.25%;background:#000;" onclick="if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()">
-        <iframe
-          src="https://iframe.mediadelivery.net/embed/${libId}/${sec.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
-          style="position:absolute;inset:0;width:100%;height:100%;border:none;"
-          allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
-          allowfullscreen>
-        </iframe>
-      </div>
-      <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.4);">
-        <div style="font-family:'Jost',sans-serif;font-size:12px;color:rgba(212,175,106,0.7);letter-spacing:.05em;">
-          ${videoSeen ? '✓ Ya viste esta lección' : 'Ve el video antes de continuar'}
+  // Build slides array
+  _slides = [];
+
+  // Slide 0: video (si existe) o intro
+  _slides.push({ type: 'intro', sec });
+
+  // Slides N: un ejercicio por slide
+  sec.exercises.forEach(ex => {
+    _slides.push({ type: 'exercise', ex, sec });
+  });
+
+  // Último slide: completion
+  _slides.push({ type: 'completion', sec });
+
+  _slideIndex = 0;
+
+  // Render all panels into track
+  const track = document.getElementById('slide-track');
+  track.innerHTML = '';
+  _slides.forEach((slide, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'slide-panel';
+    panel.id = 'slide-panel-' + i;
+    panel.appendChild(_buildSlideContent(slide, sectionId));
+    track.appendChild(panel);
+  });
+
+  // Init position
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+
+  // Update UI
+  _updateSlideUI();
+
+  // Open
+  document.getElementById('lesson-view').classList.add('open');
+
+  updateLessonProgress(sectionId);
+  setupMinCharsGuard(sectionId);
+}
+
+function _buildSlideContent(slide, sectionId) {
+  const wrap = document.createElement('div');
+
+  if (slide.type === 'intro') {
+    const sec = slide.sec;
+    const videoSeen = state.answers['_video_seen_' + sectionId];
+    let html = '';
+
+    if (sec.bunnyVideoId) {
+      const libId = sec.bunnyLibrary || '636956';
+      html += `
+        <div class="slide-video-wrap">
+          <iframe
+            src="https://iframe.mediadelivery.net/embed/${libId}/${sec.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+            allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+            allowfullscreen>
+          </iframe>
         </div>
-        <button onclick="openVideoOverlay(SECTIONS.find(s=>s.id==='${sectionId}'))"
-          style="font-family:'Jost',sans-serif;font-size:12px;color:#D4AF6A;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.3);border-radius:8px;padding:6px 12px;cursor:pointer;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Pantalla completa
+        <div class="slide-lesson-meta">
+          <span class="slide-section-badge">Sección ${sec.num}</span>
+          ${videoSeen ? '<span style="font-family:Jost,sans-serif;font-size:11px;color:#B8892A;">✓ Ya vista</span>' : ''}
+        </div>
+      `;
+    } else {
+      html += `<div class="slide-lesson-meta"><span class="slide-section-badge">Sección ${sec.num}</span></div>`;
+    }
+
+    html += `<div class="slide-lesson-title">${sec.title}</div>`;
+    html += `<div class="slide-lesson-desc">${sec.desc}</div>`;
+    if (sec.introQuote) {
+      html += `<div class="slide-lesson-quote">"${sec.introQuote}"</div>`;
+    }
+    if (sec.palanca) {
+      html += `<div style="margin-top:16px;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;color:rgba(184,137,42,0.6);letter-spacing:.1em;text-transform:uppercase;">${sec.palanca}</div>`;
+    }
+    wrap.innerHTML = html;
+
+  } else if (slide.type === 'exercise') {
+    const ex = slide.ex;
+    const sec = slide.sec;
+    const typeLabels = { reflection:'Reflexión', star:'★ Hilo Conductor', tool:'Herramienta', action:'Acción', checkpoint:'Tu punto de partida' };
+    const typeIcons  = { reflection:'💭', star:'🧭', tool:'🔧', action:'✅', checkpoint:'🧭', declaration:'✦' };
+
+    // Eyebrow
+    const label = ex.field === 'declaration' ? 'Declaración' : (typeLabels[ex.type] || 'Ejercicio');
+    const icon  = typeIcons[ex.type] || '📝';
+    wrap.innerHTML = `<div class="slide-ex-eyebrow">${icon} ${label}</div>`;
+
+    // Question
+    if (ex.question) {
+      const q = document.createElement('div');
+      q.className = 'slide-ex-question';
+      q.textContent = ex.question;
+      wrap.appendChild(q);
+    } else if (ex.field === 'declaration') {
+      const q = document.createElement('div');
+      q.className = 'slide-ex-question';
+      q.style.fontStyle = 'italic';
+      q.style.fontSize = '20px';
+      q.style.color = 'rgba(237,227,206,0.8)';
+      q.textContent = '"' + ex.declaration + '"';
+      wrap.appendChild(q);
+    }
+
+    // Body text
+    if (ex.body && ex.field !== 'declaration') {
+      const b = document.createElement('div');
+      b.className = 'slide-ex-body';
+      b.innerHTML = ex.body;
+      wrap.appendChild(b);
+    }
+
+    // Confrontation
+    if (ex.confrontation) {
+      const c = document.createElement('div');
+      c.className = 'slide-ex-confrontation';
+      c.innerHTML = ex.confrontation;
+      wrap.appendChild(c);
+    }
+
+    // Insight
+    if (ex.insight) {
+      const ins = document.createElement('div');
+      ins.className = 'slide-ex-insight';
+      ins.innerHTML = '💡 ' + ex.insight;
+      wrap.appendChild(ins);
+    }
+
+    // Exercise field — reuse buildExerciseBlock but extract only the field HTML
+    // We wrap it in a container that overrides to dark theme
+    const fieldWrap = document.createElement('div');
+    fieldWrap.style.flex = '1';
+    const exBlock = buildExerciseBlock(ex, sec);
+    // Strip the header (already rendered above), keep only the body/field
+    // buildExerciseBlock returns a div.exercise-block with header+body
+    // We take all children after the header div
+    const children = Array.from(exBlock.children);
+    const headerEl = children.find(c => c.classList.contains('exercise-header'));
+    children.forEach(child => {
+      if (child !== headerEl) fieldWrap.appendChild(child.cloneNode(true));
+    });
+    // Re-attach event listeners by using innerHTML approach for simple fields
+    // For complex fields, delegate to buildExerciseBlock directly
+    if (['textarea','star-textarea','declaration'].includes(ex.field)) {
+      // Render textarea directly for clean dark styling
+      fieldWrap.innerHTML = '';
+      const saved = state.answers[ex.id] || '';
+      const ph = ex.placeholder || 'Escribe tu respuesta...';
+      const minH = ex.field === 'star-textarea' ? '180px' : '150px';
+      fieldWrap.innerHTML = `
+        <textarea class="slide-textarea" id="field-${ex.id}"
+          style="min-height:${minH}"
+          placeholder="${ph}"
+          oninput="onFieldInput('${ex.id}',this);_syncSlideAnswer('${ex.id}',this.value)"
+        >${saved}</textarea>
+        <div class="slide-char-hint" id="cc-${ex.id}">${saved.length} caracteres</div>
+      `;
+      if (ex.postNote) {
+        fieldWrap.innerHTML += `<div style="margin-top:14px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,0.4);line-height:1.6;font-style:italic;">${ex.postNote}</div>`;
+      }
+      if (ex.field === 'declaration' && ex.fieldLabel) {
+        const label = document.createElement('div');
+        label.style.cssText = 'font-family:Jost,sans-serif;font-size:11px;font-weight:600;color:#B8892A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;';
+        label.textContent = ex.fieldLabel;
+        fieldWrap.prepend(label);
+      }
+    } else {
+      // For complex field types: use the full exercise block wrapped
+      fieldWrap.innerHTML = '';
+      const fullBlock = buildExerciseBlock(ex, sec);
+      fullBlock.style.background = 'transparent';
+      fullBlock.style.border = 'none';
+      fullBlock.style.borderRadius = '0';
+      // Hide the header inside
+      const h = fullBlock.querySelector('.exercise-header');
+      if (h) h.style.display = 'none';
+      fieldWrap.appendChild(fullBlock);
+    }
+
+    wrap.appendChild(fieldWrap);
+
+  } else if (slide.type === 'completion') {
+    const sec = slide.sec;
+    wrap.innerHTML = `
+      <div class="slide-completion">
+        <div class="slide-completion-gem">✦</div>
+        <div class="slide-completion-title">Lección completada</div>
+        <div class="slide-completion-sub">Tus reflexiones están listas para guardarse en tu perfil.</div>
+        <button class="slide-save-btn" id="lesson-save-btn" onclick="slideSaveLesson('${sec.id}')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
+          Guardar mis respuestas
         </button>
       </div>
     `;
-    body.appendChild(videoBlock);_currentVideoWrap = videoBlock.querySelector('.lesson-video-iframe-wrap') || videoBlock;
   }
 
-  // Exercises wrapper — bloqueado si hay video y no se ha visto
-  const exercisesWrap = document.createElement('div');
-  exercisesWrap.id = 'exercises-wrap';
-  const mustLock = sec.bunnyVideoId && !videoSeen;
-  if (mustLock) {
-    exercisesWrap.className = 'exercises-locked';
-    // Mensaje de bloqueo
-    const lockMsg = document.createElement('div');
-    lockMsg.style.cssText = 'text-align:center;padding:28px 20px;font-family:"Jost",sans-serif;font-size:13px;color:rgba(160,116,138,0.7);line-height:1.6;';
-    lockMsg.innerHTML = `
-      <div style="font-size:28px;margin-bottom:10px;">🔒</div>
-      <div>Ve el video de la lección para<br>desbloquear los ejercicios</div>
-    `;
-    exercisesWrap.appendChild(lockMsg);
-  } else {
-    exercisesWrap.className = 'exercises-unlocked';
+  return wrap;
+}
+
+function _syncSlideAnswer(id, val) {
+  state.answers[id] = val;
+  saveState();
+  updateLessonProgress(currentSectionId);
+}
+
+function _updateSlideUI() {
+  const total = _slides.length;
+  const current = _slideIndex;
+  const pct = total <= 1 ? 100 : Math.round((current / (total - 1)) * 100);
+
+  // Progress bar
+  const fill = document.getElementById('slide-prog-fill');
+  if (fill) fill.style.width = pct + '%';
+
+  // Label
+  const label = document.getElementById('slide-prog-label');
+  if (label) {
+    const isCompletion = _slides[current] && _slides[current].type === 'completion';
+    label.textContent = isCompletion ? '✦ completada' : (current + 1) + ' / ' + total;
   }
 
-  // Exercises
-  sec.exercises.forEach(ex => {
-    const block = buildExerciseBlock(ex, sec);
-    exercisesWrap.appendChild(block);
-  });
+  // Continue button
+  const btn = document.getElementById('slide-continue-btn');
+  if (btn) {
+    const isLast = current === total - 1;
+    if (isLast) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = 'flex';
+      btn.innerHTML = current === total - 2
+        ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+  }
 
-  // Save button
-  const saveWrap = document.createElement('div');
-  saveWrap.className = 'save-btn-wrap';
-  saveWrap.innerHTML = `
-    <button class="save-btn" id="lesson-save-btn" onclick="saveLesson('${sectionId}')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
-      Guardar mis respuestas
-    </button>
-  `;
-  exercisesWrap.appendChild(saveWrap);
-  body.appendChild(exercisesWrap);
+  // Move track
+  const track = document.getElementById('slide-track');
+  if (track) {
+    track.style.transition = current === 0 ? 'none' : 'transform .38s cubic-bezier(.4,0,.2,1)';
+    track.style.transform = `translateX(-${current * 100}%)`;
+  }
 
-  // No abrir overlay automaticamente — ella decide cuando ver el video
+  // Scroll panel to top
+  const panel = document.getElementById('slide-panel-' + current);
+  if (panel) panel.scrollTop = 0;
 
-  // Open lesson view
-  document.getElementById('lesson-view').classList.add('open');
-  document.getElementById('lesson-view').scrollTop = 0;
-  document.querySelector('.lesson-scroll').scrollTop = 0;
-  
-  updateLessonProgress(sectionId);
-  setupMinCharsGuard(sectionId);
+  // Haptic
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function nextSlide() {
+  if (_slideIndex < _slides.length - 1) {
+    _slideIndex++;
+    _updateSlideUI();
+  }
+}
+
+function prevSlide() {
+  if (_slideIndex > 0) {
+    _slideIndex--;
+    _updateSlideUI();
+  }
+}
+
+function slideSaveLesson(secId) {
+  saveLesson(secId);
+  const btn = document.getElementById('lesson-save-btn');
+  if (btn) {
+    btn.classList.add('saved');
+    btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> ¡Guardado correctamente`;
+  }
 }
 
 function buildExerciseBlock(ex, sec) {
@@ -8893,7 +9381,9 @@ function updateLessonProgress(secId) {
     return ans && ans.trim && ans.trim().length > 5;
   }).length;
   const pct = Math.round((filled / total) * 100);
-  document.getElementById('lesson-prog-fill').style.width = pct + '%';
+  // slide-prog-fill se actualiza via _updateSlideUI; aquí solo actualizamos si existe el elemento legacy
+  const legacyFill = document.getElementById('lesson-prog-fill');
+  if (legacyFill) legacyFill.style.width = pct + '%';
 }
 
 // ═══════════════════════════════════════════
@@ -8990,18 +9480,12 @@ function saveLesson(secId) {
 
 function closeLesson() {
   clearInterval(_masterclassCountdown);
-  // Restore lesson-view header styles to defaults
-  const lh = document.querySelector('.lesson-header');
-  if (lh) { lh.style.background = ''; lh.style.borderBottom = ''; }
-  const lpb = document.querySelector('.lesson-progress-bar');
-  if (lpb) lpb.style.background = '';
-  const lpf = document.getElementById('lesson-prog-fill');
-  if (lpf) lpf.style.background = '';
-  const eyebrow = document.getElementById('lesson-eyebrow');
-  if (eyebrow) eyebrow.style.color = '';
-  const body = document.getElementById('lesson-body');
-  if (body) { body.style.background = ''; body.style.padding = ''; }
   document.getElementById('lesson-view').classList.remove('open');
+  // Reset slides
+  _slideIndex = 0;
+  _slides = [];
+  const track = document.getElementById('slide-track');
+  if (track) { track.innerHTML = ''; track.style.transform = 'translateX(0)'; }
   currentSectionId = null;
   updateProgressUI();
 }
@@ -9023,15 +9507,24 @@ function openQueSigneAhora() {
   }
 
   currentSectionId = null;
-  document.getElementById('lesson-eyebrow').textContent = 'Tu siguiente paso';
-  document.getElementById('lesson-title-h').textContent = '¿Qué sigue ahora?';
-  document.getElementById('lesson-prog-fill').style.width = '100%';
+  // Ocultar botón continuar — esta vista es standalone
+  const _qsBtn = document.getElementById('slide-continue-btn');
+  if (_qsBtn) _qsBtn.style.display = 'none';
+  // Barra de progreso al 100%
+  const _qsFill = document.getElementById('slide-prog-fill');
+  if (_qsFill) _qsFill.style.width = '100%';
+  const _qsLabel = document.getElementById('slide-prog-label');
+  if (_qsLabel) _qsLabel.textContent = '✦ completada';
 
   const espejo1 = (state.answers['s1_e1'] || '').trim();
   const espejo3 = (state.answers['s9_e5'] || '').trim();
 
-  const body = document.getElementById('lesson-body');
-  body.innerHTML = '';
+  // Inyectar en slide-track como panel único
+  const track = document.getElementById('slide-track');
+  track.innerHTML = '';
+  track.style.transform = 'translateX(0)';
+  const body = document.createElement('div');
+  body.className = 'slide-panel';
 
   const content = document.createElement('div');
   content.style.cssText = 'background:#0F0A0B;min-height:100%';
@@ -9119,8 +9612,8 @@ function openQueSigneAhora() {
     var c = document.getElementById('bunny-vsl-container');
     if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
   });
+  track.appendChild(body);
   document.getElementById('lesson-view').classList.add('open');
-  document.getElementById('lesson-view').scrollTop = 0;
 }
 
 // ═══════════════════════════════════════════
@@ -9592,24 +10085,33 @@ function openArticleFullscreen(card) {
   const title = card.querySelector('.nov-article-title').textContent;
   const tag   = card.querySelector('.nov-article-tag').textContent;
   const icon  = card.querySelector('.nov-article-icon').textContent;
-  const lv = document.getElementById('lesson-view');
-  const lh = document.getElementById('lesson-header');
-  lh.style.background = 'linear-gradient(135deg,#1a0a0f,#3a0e1f)';
-  lh.style.borderBottom = '1px solid rgba(212,175,106,0.2)';
-  document.getElementById('lesson-title').textContent = title;
-  document.getElementById('lesson-section-name').textContent = tag;
-  document.getElementById('lesson-body').innerHTML = `
-    <div style="padding:32px 24px 40px">
+
+  // Ocultar botón continuar
+  const btn = document.getElementById('slide-continue-btn');
+  if (btn) btn.style.display = 'none';
+  const fill = document.getElementById('slide-prog-fill');
+  if (fill) fill.style.width = '100%';
+  const label = document.getElementById('slide-prog-label');
+  if (label) label.textContent = tag;
+
+  // Inyectar en slide-track como panel único
+  const track = document.getElementById('slide-track');
+  track.innerHTML = '';
+  track.style.transform = 'translateX(0)';
+  const panel = document.createElement('div');
+  panel.className = 'slide-panel';
+  panel.innerHTML = `
+    <div style="padding:8px 0 40px">
       <div style="text-align:center;font-size:52px;margin-bottom:20px">${icon}</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--cream);line-height:1.35;margin-bottom:8px;text-align:center">${title}</div>
-      <div style="font-size:11px;text-align:center;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:28px">${tag}</div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:28px 20px;text-align:center">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#EDE3CE;line-height:1.3;margin-bottom:8px;text-align:center">${title}</div>
+      <div style="font-size:10px;text-align:center;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:28px">${tag}</div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(184,137,42,0.12);border-radius:14px;padding:28px 20px;text-align:center">
         <div style="font-size:32px;margin-bottom:14px">📖</div>
-        <div style="color:rgba(196,160,178,0.6);font-size:14px;line-height:1.7">Artículo disponible próximamente.</div>
-        <div style="font-size:11px;color:rgba(196,160,178,0.25);margin-top:8px">// TODO: conectar a blog</div>
+        <div style="color:rgba(196,160,178,0.5);font-family:'Jost',sans-serif;font-size:14px;line-height:1.7">Artículo disponible próximamente.</div>
       </div>
     </div>`;
-  lv.classList.add('open');
+  track.appendChild(panel);
+  document.getElementById('lesson-view').classList.add('open');
 }
 
 // TABS

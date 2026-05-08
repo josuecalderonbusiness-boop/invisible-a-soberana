@@ -1598,7 +1598,98 @@
     white-space: nowrap;
     text-transform: uppercase;
   }
-  .journey-node-badge.start-badge {
+  /* ── NODE POPUP (Duolingo style) ── */
+  .node-popup {
+    position: absolute;
+    z-index: 20;
+    background: #2A1018;
+    border: 1px solid rgba(184,137,42,0.35);
+    border-radius: 16px;
+    padding: 16px 18px 14px;
+    width: 200px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    pointer-events: all;
+    animation: popupIn .2s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  .node-popup::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px; height: 14px;
+    background: #2A1018;
+    border-right: 1px solid rgba(184,137,42,0.35);
+    border-bottom: 1px solid rgba(184,137,42,0.35);
+    clip-path: polygon(0 0, 100% 100%, 100% 0);
+    rotate: 45deg;
+  }
+  .node-popup-section {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #B8892A;
+    margin-bottom: 4px;
+  }
+  .node-popup-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #EDE3CE;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+  .node-popup-dots {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .node-popup-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    transition: background .2s;
+  }
+  .node-popup-dot.done { background: #B8892A; }
+  .node-popup-dot.current { background: #D4AF6A; box-shadow: 0 0 6px rgba(212,175,106,0.6); }
+  .node-popup-count {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    color: rgba(237,227,206,0.4);
+    margin-bottom: 12px;
+  }
+  .node-popup-btn {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(135deg, #B8892A, #D4AF6A);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Jost', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a0a0f;
+    cursor: pointer;
+    letter-spacing: .04em;
+    transition: opacity .15s;
+  }
+  .node-popup-btn:active { opacity: .82; }
+
+  @keyframes popupIn {
+    from { opacity: 0; transform: scale(.85) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* ── SLIDE RING around current node ── */
+  .node-ring-svg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }.journey-node-badge.start-badge {
     background: #B8892A;
   }
   .journey-node-label {
@@ -6475,7 +6566,77 @@ function makeGemSVG(gemType, nodeState) {
   return `<img src="/workbook/assets/gemas/${m.file}" style="${style}" />`;
 }
 
-function bounceNode(el) {
+// ═══════════════════════════════════════════
+// NODE POPUP
+// ═══════════════════════════════════════════
+function showNodePopup(sec, wrap, container) {
+  // Cerrar popup anterior si existe
+  const existing = document.getElementById('node-popup-el');
+  if (existing) {
+    if (existing.dataset.secId === sec.id) { existing.remove(); return; }
+    existing.remove();
+  }
+
+  // Calcular slides hechos vs total
+  const totalSlides = 1 + sec.exercises.length + 1; // intro + ejercicios + completion
+  const done = state.completedSections.includes(sec.id);
+
+  // Contar ejercicios con respuesta
+  const exDone = sec.exercises.filter(ex => {
+    const ans = state.answers[ex.id];
+    return ans && (typeof ans === 'string' ? ans.trim().length > 3 : true);
+  }).length;
+
+  // Slides completados: intro siempre cuenta, ejercicios según respuestas, completion si sección done
+  const slidesDone = 1 + exDone + (done ? 1 : 0);
+  const isStarted = exDone > 0 || done;
+
+  // Dots HTML
+  const dotsHtml = Array.from({ length: totalSlides }, (_, i) => {
+    let cls = 'node-popup-dot';
+    if (i < slidesDone) cls += ' done';
+    else if (i === slidesDone) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  // Posición del wrap dentro del container
+  const wrapRect = wrap.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const popupW = 200;
+  const wrapCenterX = wrapRect.left - containerRect.left + wrapRect.width / 2;
+  const wrapTopY = wrapRect.top - containerRect.top;
+
+  const popup = document.createElement('div');
+  popup.className = 'node-popup';
+  popup.id = 'node-popup-el';
+  popup.dataset.secId = sec.id;
+  popup.style.left = Math.max(8, Math.min(containerRect.width - popupW - 8, wrapCenterX - popupW / 2)) + 'px';
+  popup.style.top = (wrapTopY - 10) + 'px';
+  popup.style.transform = 'translateY(-100%)';
+
+  popup.innerHTML = `
+    <div class="node-popup-section">Sección ${sec.num}</div>
+    <div class="node-popup-title">${sec.title}</div>
+    <div class="node-popup-dots">${dotsHtml}</div>
+    <div class="node-popup-count">${slidesDone} de ${totalSlides} slides</div>
+    <button class="node-popup-btn" onclick="closeNodePopup();openLesson('${sec.id}')">
+      ${isStarted ? 'Continuar →' : 'Empezar →'}
+    </button>
+  `;
+
+  container.style.position = 'relative';
+  container.appendChild(popup);
+
+  // Cerrar al tocar fuera
+  setTimeout(() => {
+    document.addEventListener('click', closeNodePopup, { once: true });
+  }, 50);
+}
+
+function closeNodePopup() {
+  const p = document.getElementById('node-popup-el');
+  if (p) p.remove();
+}function bounceNode(el) {
   el.classList.remove('bouncing','shaking');
   void el.offsetWidth;
   el.classList.add('bouncing');
@@ -6713,11 +6874,12 @@ function renderSectionsList() {
       wrap.appendChild(stars);
     }
 
-    // Click handler — workshop completamente desbloqueado
-    wrap.addEventListener('click', () => {
+    // Click handler — muestra popup antes de abrir lección
+    wrap.addEventListener('click', (e) => {
       bounceNode(node);
-      if (isS10) openQueSigneAhora();
-      else        openLesson(sec.id);
+      if (isS10) { openQueSigneAhora(); return; }
+      e.stopPropagation();
+      showNodePopup(sec, wrap, workshopMap);
     });
 
     // "· · ·" suspense dots before s10

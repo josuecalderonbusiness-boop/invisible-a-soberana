@@ -1604,9 +1604,10 @@
     z-index: 20;
     background: #2A1018;
     border: 1px solid rgba(184,137,42,0.35);
-    border-radius: 16px;
-    padding: 16px 18px 14px;
-    width: 200px;
+    border-radius: 20px;
+    padding: 18px 20px 16px;
+    width: 85vw;
+    max-width: 340px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     pointer-events: all;
     animation: popupIn .2s cubic-bezier(.34,1.56,.64,1) forwards;
@@ -1614,14 +1615,14 @@
   .node-popup::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    top: -8px;
     left: 50%;
     transform: translateX(-50%);
     width: 14px; height: 14px;
     background: #2A1018;
-    border-right: 1px solid rgba(184,137,42,0.35);
-    border-bottom: 1px solid rgba(184,137,42,0.35);
-    clip-path: polygon(0 0, 100% 100%, 100% 0);
+    border-left: 1px solid rgba(184,137,42,0.35);
+    border-top: 1px solid rgba(184,137,42,0.35);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
     rotate: 45deg;
   }
   .node-popup-section {
@@ -6602,7 +6603,7 @@ function showNodePopup(sec, wrap, container) {
   // Posición del wrap dentro del container
   const wrapRect = wrap.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-  const popupW = 200;
+  const popupW = Math.min(340, containerRect.width * 0.85);
   const wrapCenterX = wrapRect.left - containerRect.left + wrapRect.width / 2;
   const wrapTopY = wrapRect.top - containerRect.top;
 
@@ -6611,8 +6612,9 @@ function showNodePopup(sec, wrap, container) {
   popup.id = 'node-popup-el';
   popup.dataset.secId = sec.id;
   popup.style.left = Math.max(8, Math.min(containerRect.width - popupW - 8, wrapCenterX - popupW / 2)) + 'px';
-  popup.style.top = (wrapTopY - 10) + 'px';
-  popup.style.transform = 'translateY(-100%)';
+  const wrapH = wrapRect.height;
+  popup.style.top = (wrapTopY + wrapH + 10) + 'px';
+  popup.style.transform = 'none';
 
   popup.innerHTML = `
     <div class="node-popup-section">Sección ${sec.num}</div>

@@ -60,7 +60,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // â”€â”€ Cache (PWA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const CACHE_NAME = 'soberana-v363';
+const CACHE_NAME = 'soberana-v364';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',
@@ -96,20 +96,21 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
 
-  // Network First para index.html â€” siempre sirve versiÃ³n nueva si hay red
+  // Stale-While-Revalidate para index.html — muestra cache inmediato, actualiza en segundo plano
   if (req.url.includes('index.html') || req.destination === 'document') {
     event.respondWith(
-      fetch(req)
-        .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
-          return response;
-        })
-        .catch(() => caches.match(req))
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(req).then(cached => {
+          const fetchPromise = fetch(req).then(response => {
+            cache.put(req, response.clone());
+            return response;
+          }).catch(() => cached);
+          return cached || fetchPromise;
+        });
+      })
     );
     return;
   }
-
   // Cache First para el resto de assets
   event.respondWith(
     caches.match(req).then(response => response || fetch(req))

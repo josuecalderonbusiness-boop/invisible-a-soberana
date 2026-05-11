@@ -5286,12 +5286,74 @@ const SECTIONS = [
     title:'Identidad Soberana',
     desc:'Cómo tu identidad determina tu relación',
     palanca: null,
+    temas: [
+      { num:1, titulo:'Identidad primero, habilidades después', bunnyVideoId:'PENDIENTE_S3T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Por qué la Soberana es la meta correcta', bunnyVideoId:'PENDIENTE_S3T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'Necesitar vs. depender', bunnyVideoId:'PENDIENTE_S3T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'Por qué la independencia emocional es atractiva', bunnyVideoId:'PENDIENTE_S3T4', bunnyLibrary:'636956' },
+      { num:5, titulo:'Cómo se ve la mujer que aún no ejerce su soberanía', bunnyVideoId:'PENDIENTE_S3T5', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s3_e1', type:'tool',
+        id:'s3_t1_e1', type:'tool', tema:1,
+        question:'¿Desde dónde has intentado cambiar hasta ahora?',
+        body:'Elige la que más describe tu enfoque actual.',
+        items:[
+          {id:'a', icon:'📋', label:'Cambiando lo que hago', desc:'Nuevos hábitos, nuevas estrategias, nuevas técnicas.'},
+          {id:'b', icon:'🎯', label:'Buscando resultados', desc:'Que él cambie, que la dinámica mejore.'},
+          {id:'c', icon:'🪞', label:'Cuestionando quién soy', desc:'Trabajando en mi identidad desde adentro.'},
+          {id:'d', icon:'❓', label:'Sin claridad', desc:'Nunca lo había pensado de esta manera.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s3_t2_e1', type:'tool', tema:2,
+        question:'¿Desde cuál identidad operas más en tu relación hoy?',
+        body:'En cada fila elige la que más te describe. Sin juzgarte.',
+        items:[
+          {left:'Espera que él valide sus decisiones', right:'Decide desde sus propios valores'},
+          {left:'Su estado emocional depende del de él', right:'Regula su estado desde adentro'},
+          {left:'Sus estándares se mueven según el humor de él', right:'Sus estándares son fijos porque son suyos'},
+          {left:'Habla desde el ruego o la queja', right:'Habla desde la influencia y la claridad'}
+        ],
+        field:'identity-check'
+      },
+      {
+        id:'s3_t3_e1', type:'tool', tema:3,
+        question:'¿Necesitar o depender? Reconoce cuál es cuál.',
+        body:'Elige la frase que más se parece a cómo funciona tu bienestar emocional.',
+        items:[
+          {id:'a', icon:'💛', label:'Valoro su conexión', desc:'Me importa, pero sigo bien sin su validación constante.'},
+          {id:'b', icon:'🔗', label:'La necesito para estar bien', desc:'Si no responde como espero, mi día se desintegra.'},
+          {id:'c', icon:'🧊', label:'Ya aprendí a no necesitar nada', desc:'Me desconecté para no sufrir.'},
+          {id:'d', icon:'🌊', label:'Depende del día', desc:'A veces estoy bien, a veces no puedo con el silencio de él.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s3_t4_e1', type:'reflection', tema:4,
+        question:'¿Qué cambiaría en tu relación si tu bienestar dejara de depender de su respuesta?',
+        confrontation:'Una mujer emocionalmente independiente no es fría. Es la más magnética que existe. Porque elige — no necesita.',
+        placeholder:'Descríbelo con honestidad. No la versión ideal — lo que realmente crees que pasaría...',
+        field:'textarea'
+      },
+      {
+        id:'s3_t5_e1', type:'tool', tema:5,
+        question:'¿Te reconoces en alguno de estos patrones?',
+        body:'Selecciona los que aplican en tu vida hoy.',
+        items:[
+          {id:'c1', label:'Mi humor sube o baja según cómo esté él ese día'},
+          {id:'c2', label:'Digo sí cuando quiero decir no para evitar su reacción'},
+          {id:'c3', label:'Guardo cosas adentro hasta que exploto'},
+          {id:'c4', label:'Mi mente analiza constantemente lo que él dijo o hizo'}
+        ],
+        field:'multi-choice'
+      },
+      {
+        id:'s3_e1', type:'tool', tema:5,
         field:'declaration',
         declaration:'No soy una mujer rota que necesita ser arreglada. Soy una mujer que tiene una dinámica que necesita ser reconfigurada. Y yo soy quien puede reconfigurarlo. Porque soy Soberana.',
-        fieldLabel:'Mi versión (modifícala si necesitas que suene más tuya):',
+        fieldLabel:'Mi versión — modifícala si necesitas que suene más tuya:',
         placeholder:'Escribe la declaración con tus propias palabras...'
       },
       {
@@ -5301,18 +5363,6 @@ const SECTIONS = [
         body:'No te enfocas en tener los hábitos de una mujer soberana. Te enfocas en ser la mujer soberana. Los hábitos vienen solos cuando la raíz cambia.',
         placeholder:'Esa es la parte donde más trabajo hay por hacer. Lo que no puedes ver, no puedes trabajarlo...',
         field:'star-textarea'
-      },
-      {
-        id:'s3_e3', type:'tool',
-        question:'¿Desde cuál identidad operas más frecuentemente en tu relación?',
-        body:'Selecciona en cuál te reconoces más hoy — sin juzgarte, con honestidad.',
-        items:[
-          {left:'Espera que él valide sus decisiones', right:'Decide desde sus propios valores'},
-          {left:'Su estado emocional depende del de él', right:'Regula su estado desde adentro'},
-          {left:'Sus estándares se mueven según el humor de él', right:'Sus estándares son fijos porque son suyos'},
-          {left:'Habla desde el ruego o la queja', right:'Habla desde la influencia y la claridad'}
-        ],
-        field:'identity-check'
       }
     ]
   },

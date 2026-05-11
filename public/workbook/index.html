@@ -2617,6 +2617,10 @@
   }
   .slide-panel-workbook {
     background: #F5EDD8;
+    transition: background .8s ease;
+  }
+  .slide-panel-workbook.wb-opened {
+    background: #1a0508;
   }
   .slide-panel-workbook .checkpoint-badge {
     background: rgba(139,26,47,0.1);
@@ -2625,6 +2629,9 @@
   }
   .slide-panel-workbook .wb-anim-outer {
     background: transparent;
+  }
+  .wb-anim-fullpage.visible {
+    box-shadow: 0 0 0 1px rgba(184,137,42,0.2), 0 8px 40px rgba(0,0,0,0.4);
   }
 
   /* ── SLIDE FOOTER ── */
@@ -9723,6 +9730,8 @@ function wbAbrir(exId) {
       scene.style.display = 'none';
       if (outer) outer.classList.add('opened');
       fp.classList.add('visible');
+      const panel = document.getElementById('slide-panel-' + _slideIndex);
+      if (panel) panel.classList.add('wb-opened');
       setTimeout(function() {
         var ta = document.getElementById('field-' + exId);
         if (ta) ta.focus();
@@ -9751,6 +9760,8 @@ function wbCerrar(exId) {
     scene.classList.remove('zooming');
     cover.classList.remove('open');
     if (outer) outer.classList.remove('opened');
+    const panel = document.getElementById('slide-panel-' + _slideIndex);
+    if (panel) panel.classList.remove('wb-opened');
   }, 400);
 }
 

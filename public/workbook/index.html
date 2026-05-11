@@ -5486,7 +5486,7 @@ const SECTIONS = [
     desc:'Dimension Emocional',
     palanca:'Lo que Sientes',
     temas: [
-      { num:1, titulo:'Tus emociones son informacion estrategica', bunnyVideoId:'PENDIENTE_S6T1', bunnyLibrary:'636956' },
+      { num:1, titulo:'Protocolo 2: Lo que sientes — La dimension emocional', bunnyVideoId:'PENDIENTE_S6T1', bunnyLibrary:'636956' },
       { num:2, titulo:'Tu radar emocional como ventaja', bunnyVideoId:'PENDIENTE_S6T2', bunnyLibrary:'636956' },
       { num:3, titulo:'Gobernada vs. Habitada', bunnyVideoId:'PENDIENTE_S6T3', bunnyLibrary:'636956' },
       { num:4, titulo:'El sistema ERES', bunnyVideoId:'PENDIENTE_S6T4', bunnyLibrary:'636956' }
@@ -5517,11 +5517,16 @@ const SECTIONS = [
         field:'single-choice-cards'
       },
       {
-        id:'s6_e1', type:'reflection', tema:3,
-        question:'¿Cuándo fue la última vez que el secuestro emocional tomó el control — que reaccionaste de una forma que después lamentaste?',
-        confrontation: 'No se trata de sentir menos. Se trata de que lo que sientes no decida por ti en los momentos donde más te juegas.',
-        placeholder:'Describe la situación específicamente. ¿Qué lo disparó? ¿Cómo reaccionaste? ¿Qué pasó después?',
-        field:'textarea'
+        id:'s6_e1', type:'tool', tema:3,
+        question:'¿Como te relacionas con tus emociones en los momentos de tension con el?',
+        body:'Elige la que mas describe tu patron actual.',
+        items:[
+          {id:'a', label:'Gobernada', desc:'La emocion llega y la sigo automaticamente. Sin pausa, sin filtro.'},
+          {id:'b', label:'Reprimida', desc:'Aprendi a tragarme lo que siento para no generar conflicto.'},
+          {id:'c', label:'Habitada', desc:'Siento con intensidad pero tengo una pausa antes de responder.'},
+          {id:'d', label:'Variable', desc:'Depende del dia. A veces la gobierno, a veces me gobierna.'}
+        ],
+        field:'single-choice-cards'
       },
       {
         id:'s6_e2', type:'tool', tema:4,

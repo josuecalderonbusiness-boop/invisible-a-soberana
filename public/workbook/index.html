@@ -2615,6 +2615,17 @@
     display: flex;
     flex-direction: column;
   }
+  .slide-panel-workbook {
+    background: #F5EDD8;
+  }
+  .slide-panel-workbook .checkpoint-badge {
+    background: rgba(139,26,47,0.1);
+    border-color: rgba(139,26,47,0.3);
+    color: #8B1A2F;
+  }
+  .slide-panel-workbook .wb-anim-outer {
+    background: transparent;
+  }
 
   /* ── SLIDE FOOTER ── */
   .slide-footer {
@@ -8672,7 +8683,8 @@ function openLesson(sectionId) {
   track.innerHTML = '';
   _slides.forEach((slide, i) => {
     const panel = document.createElement('div');
-    panel.className = 'slide-panel';
+    const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
+    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));
     track.appendChild(panel);

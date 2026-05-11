@@ -5158,7 +5158,7 @@ const SECTIONS = [
     temas: [
       { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956' },
       { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'PENDIENTE_T2', bunnyLibrary:'636956' },
-      { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'PENDIENTE_T3', bunnyLibrary:'636956' },
+      { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'5e07e2ec-bfa9-4ef0-8a73-6dd560b9cf99', bunnyLibrary:'636956' },
       { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'PENDIENTE_T4', bunnyLibrary:'636956' }
     ],
     exercises: [
@@ -9438,7 +9438,7 @@ function buildExerciseBlock(ex, sec) {
   }
 
   else if (ex.field === 'match-slide') {
-    bodyHtml += `<div id="match-${ex.id}" style="padding:0 20px 20px;">
+    bodyHtml += `<div id="match-${ex.id}" style="padding:0 20px 20px;position:relative;min-height:300px;">
       <div style="height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:20px;">
         <div id="mprog-${ex.id}" style="height:100%;background:#D4AF6A;border-radius:2px;width:0%;transition:width 0.4s;"></div>
       </div>
@@ -9459,7 +9459,7 @@ function buildExerciseBlock(ex, sec) {
           </div>
         </div>
       </div>
-      <div id="mpopup-${ex.id}" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:24px;">
+      <div id="mpopup-${ex.id}" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;min-height:100%;background:rgba(0,0,0,0.5);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:24px;">
         <div style="background:#2D1A0E;border:1px solid #D4AF6A;border-radius:14px;padding:20px;max-width:360px;width:90%;">
           <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#D4AF6A;margin-bottom:8px;">Revisemos esto</div>
           <div id="mpopup-text-${ex.id}" style="font-size:14px;color:#F5E6C8;line-height:1.6;margin-bottom:14px;"></div>

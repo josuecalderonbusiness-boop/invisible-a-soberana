@@ -5517,16 +5517,17 @@ const SECTIONS = [
         field:'single-choice-cards'
       },
       {
-        id:'s6_e1', type:'tool', tema:3,
-        question:'¿Como te relacionas con tus emociones en los momentos de tension con el?',
-        body:'Elige la que mas describe tu patron actual.',
-        items:[
-          {id:'a', label:'Gobernada', desc:'La emocion llega y la sigo automaticamente. Sin pausa, sin filtro.'},
-          {id:'b', label:'Reprimida', desc:'Aprendi a tragarme lo que siento para no generar conflicto.'},
-          {id:'c', label:'Habitada', desc:'Siento con intensidad pero tengo una pausa antes de responder.'},
-          {id:'d', label:'Variable', desc:'Depende del dia. A veces la gobierno, a veces me gobierna.'}
-        ],
-        field:'single-choice-cards'
+        id:'s6_t3_e1', type:'tool', tema:3,
+        question:'Gobernada o habitada',
+        field:'match-slide',
+        doneTitle:'Ya tienes la distincion',
+        doneSub:'No es sentir menos. Es el espacio entre lo que sientes y lo que haces. Ahi vive tu libertad.',
+        matchItems:[
+          {text:'Sientes soledad y vas a buscarlo de inmediato, sin pausa.', correct:'G', error:'Cuando no hay pausa entre el estimulo y la accion, la emocion es quien decide. Eso es ser gobernada — no hay espacio de eleccion consciente.'},
+          {text:'Sientes rabia, respiras, y eliges cuando y como responder.', correct:'H', error:'La pausa entre el estimulo y la respuesta es la senal clave. Donde hay eleccion consciente, hay una mujer habitada — no una reaccion automatica.'},
+          {text:'Sientes miedo y empiezas a controlar cada movimiento de el.', correct:'G', error:'El miedo activa el control como mecanismo automatico de proteccion. Cuando la emocion dicta el comportamiento sin filtro, eso es ser gobernada.'},
+          {text:'Sientes tristeza, la reconoces, y esperas el momento correcto para hablar.', correct:'H', error:'Reconocer la emocion y elegir el momento para actuar requiere conciencia. La emocion esta presente — pero no decide sola. Eso es estar habitada.'}
+        ]
       },
       {
         id:'s6_e2', type:'tool', tema:4,
@@ -9436,6 +9437,39 @@ function buildExerciseBlock(ex, sec) {
     bodyHtml += `</div>`;
   }
 
+  else if (ex.field === 'match-slide') {
+    bodyHtml += `<div id="match-${ex.id}" style="padding:0 20px 20px;">
+      <div style="height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:20px;">
+        <div id="mprog-${ex.id}" style="height:100%;background:#D4AF6A;border-radius:2px;width:0%;transition:width 0.4s;"></div>
+      </div>
+      <div style="overflow:hidden;">
+        <div id="mtrack-${ex.id}" style="display:flex;transition:transform 0.4s cubic-bezier(.4,0,.2,1);">
+          ${(ex.matchItems||[]).map((item,i)=>`
+          <div style="min-width:100%;padding:0 2px;">
+            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:10px;">${i+1} de ${ex.matchItems.length}</div>
+            <div style="font-size:15px;color:#F5E6C8;line-height:1.6;margin-bottom:24px;">${item.text}</div>
+            <div style="display:flex;gap:10px;">
+              <button onclick="matchAnswer('${ex.id}',${i},this,'G')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Gobernada</button>
+              <button onclick="matchAnswer('${ex.id}',${i},this,'H')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Habitada</button>
+            </div>
+          </div>`).join('')}
+          <div style="min-width:100%;padding:2rem 0;text-align:center;">
+            <div style="font-size:16px;font-weight:500;color:#F5E6C8;margin-bottom:8px;">${ex.doneTitle||'Completado'}</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">${ex.doneSub||''}</div>
+          </div>
+        </div>
+      </div>
+      <div id="mpopup-${ex.id}" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:24px;">
+        <div style="background:#2D1A0E;border:1px solid #D4AF6A;border-radius:14px;padding:20px;max-width:360px;width:90%;">
+          <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#D4AF6A;margin-bottom:8px;">Revisemos esto</div>
+          <div id="mpopup-text-${ex.id}" style="font-size:14px;color:#F5E6C8;line-height:1.6;margin-bottom:14px;"></div>
+          <button onclick="matchClosePopup('${ex.id}')" style="width:100%;padding:11px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:500;color:#2D1A0E;cursor:pointer;">Entendido — intentar de nuevo</button>
+        </div>
+      </div>
+    </div>`;
+    if (!window._matchState) window._matchState = {};
+    window._matchState['${ex.id}'] = { current:0, activeBtn:null };
+  }
   else if (ex.field === 'single-choice-cards') {
     const savedSCC = state.answers[ex.id] || '';
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
@@ -9715,6 +9749,39 @@ function selectSingleChoice(exId, val, btn) {
   updateLessonProgress(currentSectionId);
 }
 
+function matchAnswer(exId, idx, btn, val) {
+  var ex = null;
+  SECTIONS.forEach(function(s){ (s.exercises||[]).forEach(function(e){ if(e.id===exId) ex=e; }); });
+  if (!ex) return;
+  var correct = (ex.matchItems[idx].correct === val);
+  if (correct) {
+    btn.style.background = '#EAF3DE'; btn.style.borderColor = '#639922'; btn.style.color = '#3B6D11';
+    btn.parentElement.querySelectorAll('button').forEach(function(b){ b.disabled=true; });
+    setTimeout(function(){
+      var cur = ++window._matchState[exId].current;
+      var track = document.getElementById('mtrack-'+exId);
+      var prog = document.getElementById('mprog-'+exId);
+      if (track) track.style.transform = 'translateX(-'+(cur*100)+'%)';
+      if (prog) prog.style.width = (cur/(ex.matchItems.length)*100)+'%';
+      if (cur >= ex.matchItems.length) {
+        onFieldInput(exId, {value:'done'});
+        _syncSlideAnswer(exId,'done');
+      }
+    }, 700);
+  } else {
+    btn.style.background = '#FCEBEB'; btn.style.borderColor = '#E24B4A'; btn.style.color = '#A32D2D';
+    window._matchState[exId].activeBtn = btn;
+    var popup = document.getElementById('mpopup-'+exId);
+    var ptext = document.getElementById('mpopup-text-'+exId);
+    if (ptext) ptext.textContent = ex.matchItems[idx].error;
+    if (popup) popup.style.display = 'flex';
+    setTimeout(function(){ btn.style.background=''; btn.style.borderColor=''; btn.style.color=''; }, 1500);
+  }
+}
+function matchClosePopup(exId) {
+  var popup = document.getElementById('mpopup-'+exId);
+  if (popup) popup.style.display = 'none';
+}
 function selectSingleChoiceCard(exId, val, btn) {
   document.querySelectorAll(`[data-scc-group="${exId}"]`).forEach(b => {
     const sel = b.dataset.sccVal === val;

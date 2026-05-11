@@ -3016,9 +3016,9 @@
 
   /* ── WORKBOOK ANIMADO ── */
   @keyframes wbPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
-  .wb-anim-outer { position:relative; width:100%; min-height:440px; display:flex; align-items:center; justify-content:center; padding:20px 0; overflow:hidden; }
-    .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; animation:wbGlow 2.5s ease-in-out infinite; }
-  @keyframes wbGlow { 0%,100%{filter:drop-shadow(0 0 8px rgba(184,137,42,0.2));transform:scale(1)} 50%{filter:drop-shadow(0 0 28px rgba(184,137,42,0.55));transform:scale(1.02)} }
+  .wb-anim-outer { position:relative; width:100%; min-height:440px; display:flex; align-items:center; justify-content:center; padding:20px 0; overflow:hidden; background:#F5EDD8; border-radius:16px; transition:background .8s ease; }
+  .wb-anim-outer.opened { background:#3D0C11; }
+  .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
   .wb-anim-scene.zooming { transform:scale(3) translateY(-8px); opacity:0; pointer-events:none; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
   .wb-anim-book { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
   .wb-anim-spine { position:absolute; left:0; top:0; width:26px; height:100%; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:4px 0 0 4px; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:6px 0; gap:0; box-shadow:inset -3px 0 8px rgba(0,0,0,.4); overflow:hidden; }
@@ -3033,8 +3033,8 @@
   .wb-anim-fullpage { position:absolute; inset:0; background-color:#F5EDD8; background-image:linear-gradient(rgba(180,150,100,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(180,150,100,.15) 1px,transparent 1px); background-size:20px 20px; border-radius:16px; opacity:0; transform:scale(0.3); pointer-events:none; transition:opacity .45s ease,transform .45s cubic-bezier(.34,1.56,.64,1); overflow:hidden; z-index:20; display:flex; }
   .wb-anim-fullpage.visible { opacity:1; transform:scale(1); pointer-events:all; }
   .wb-anim-fullpage::before { content:''; position:absolute; left:40px; top:0; bottom:0; width:1px; background:rgba(200,80,80,.3); }
-  .wb-anim-fp-spine { width:18px; flex-shrink:0; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:16px 0 0 16px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 0; gap:0; }
-  .wb-fsd { width:9px; height:9px; border-radius:50%; border:1.5px solid #B8892A; background:#1a0508; margin:3px 0; flex-shrink:0; }
+  .wb-anim-fp-spine { width:24px; flex-shrink:0; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:16px 0 0 16px; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:6px 0; gap:0; }
+  .wb-fsd { width:13px; height:13px; border-radius:50%; border:2px solid #B8892A; background:#1a0508; flex-shrink:0; }
   .wb-anim-fp-close { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:rgba(61,12,17,.8); border:1px solid rgba(184,137,42,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:#D4AF6A; z-index:30; }
   .wb-anim-fp-content { flex:1; padding:16px 14px 14px 52px; display:flex; flex-direction:column; min-width:0; }
   .wb-anim-fp-tag { font-family:'Jost',system-ui,sans-serif; font-size:9px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(139,26,47,.6); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
@@ -8868,16 +8868,17 @@ function _buildSlideContent(slide, sectionId) {
               <div class="wb-anim-fp-close" onclick="wbCerrar('${ex.id}')">✕</div>
               <div class="wb-anim-fp-content">
                 <div class="wb-anim-fp-tag">
-                  <span class="wb-anim-fp-num">🪞</span>
-                  ${ex.label || 'Pausa Workbook'}
+                  🪞 Pregunta Espejo ${ex.label&&ex.label.includes('1')?'1':ex.label&&ex.label.includes('2')?'2':'3'} de 3
                 </div>
                 <div class="wb-anim-fp-q">${ex.question}</div>
                 <div class="wb-anim-fp-note">${ex.body || ''}</div>
+                <div style="margin:8px 0 4px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(245,237,216,0.7));border:1.5px solid rgba(184,137,42,0.25);border-radius:12px;padding:12px 14px;box-shadow:inset 0 2px 8px rgba(139,100,60,0.06);">
                 <textarea id="field-${ex.id}"
-                  style="flex:1;min-height:120px;background:transparent;border:none;border-bottom:1px solid rgba(139,100,60,0.25);border-radius:0;padding:8px 4px;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#1a0810;resize:none;outline:none;line-height:1.7;width:100%;"
+                  style="width:100%;min-height:120px;background:transparent;border:none;padding:0;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#1a0810;resize:none;outline:none;line-height:1.7;caret-color:#8B1A2F;display:block;"
                   placeholder="${ph}"
                   oninput="onFieldInput('${ex.id}',this);_syncSlideAnswer('${ex.id}',this.value)"
                 >${saved}</textarea>
+                </div>
                 <div class="slide-char-hint" id="cc-${ex.id}" style="color:rgba(26,8,16,0.35);">${saved.length} caracteres</div>
                 <button id="wb-guardar-${ex.id}" onclick="wbGuardar('${ex.id}')"
                   style="display:none;margin-top:12px;width:100%;background:linear-gradient(135deg,#3D0C11,#6b1a2a);border:1px solid rgba(184,137,42,0.4);border-radius:12px;padding:14px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;color:#D4AF6A;letter-spacing:.05em;cursor:pointer;">
@@ -9701,13 +9702,19 @@ function wbAbrir(exId) {
   var cover = document.getElementById('wb-cover-' + exId);
   var scene = document.getElementById('wb-scene-' + exId);
   var fp    = document.getElementById('wb-fp-' + exId);
+  var outer = document.getElementById('wb-outer-' + exId);
   if (!cover) return;
   cover.classList.add('open');
   setTimeout(function() {
     scene.classList.add('zooming');
     setTimeout(function() {
       scene.style.display = 'none';
+      if (outer) outer.classList.add('opened');
       fp.classList.add('visible');
+      setTimeout(function() {
+        var ta = document.getElementById('field-' + exId);
+        if (ta) ta.focus();
+      }, 350);
     }, 1100);
   }, 1000);
 }
@@ -9725,11 +9732,13 @@ function wbCerrar(exId) {
   var scene = document.getElementById('wb-scene-' + exId);
   var fp    = document.getElementById('wb-fp-' + exId);
   var cover = document.getElementById('wb-cover-' + exId);
+  var outer = document.getElementById('wb-outer-' + exId);
   fp.classList.remove('visible');
   setTimeout(function() {
     scene.style.display = '';
     scene.classList.remove('zooming');
     cover.classList.remove('open');
+    if (outer) outer.classList.remove('opened');
   }, 400);
 }
 

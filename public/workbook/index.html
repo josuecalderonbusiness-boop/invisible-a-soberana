@@ -3036,7 +3036,8 @@
   @keyframes wbPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
   .wb-anim-outer { position:relative; width:100%; min-height:440px; display:flex; align-items:center; justify-content:center; padding:20px 0; overflow:hidden; background:#F5EDD8; border-radius:16px; transition:background .8s ease; }
   .wb-anim-outer.opened { background:#3D0C11; }
-  .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
+  .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; animation:wbBookPulse 2.8s ease-in-out infinite; }
+  @keyframes wbBookPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.03)} }
   .wb-anim-scene.zooming { transform:scale(3) translateY(-8px); opacity:0; pointer-events:none; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
   .wb-anim-book { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
   .wb-anim-spine { position:absolute; left:0; top:0; width:26px; height:100%; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:4px 0 0 4px; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:6px 0; gap:0; box-shadow:inset -3px 0 8px rgba(0,0,0,.4); overflow:hidden; }

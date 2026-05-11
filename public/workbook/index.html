@@ -5431,23 +5431,51 @@ const SECTIONS = [
   {
     id:'s5', num:'05', label:'Protocolo 1',
     title:'Protocolo 1',
-    desc:'Dimensión Mental 🧠',
+    desc:'Dimension Mental',
     palanca:'Lo que Piensas',
     introQuote:'Las creencias no son la verdad. Son los lentes con los que ves la verdad. Y los lentes se pueden cambiar.',
+    temas: [
+      { num:1, titulo:'Lo que piensas', bunnyVideoId:'PENDIENTE_S5T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'El autocomplete de tu cerebro', bunnyVideoId:'PENDIENTE_S5T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'El sistema de 3 preguntas', bunnyVideoId:'PENDIENTE_S5T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'Pausa Workbook', bunnyVideoId:'PENDIENTE_S5T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s5_e1', type:'tool',
+        id:'s5_t1_e1', type:'tool', tema:1,
+        question:'¿Que historia construye tu mente mas rapido?',
+        body:'La que llega automaticamente — antes de verificar nada.',
+        items:[
+          {id:'a', label:'"No le importo."', desc:'Cuando no me saluda o me ignora.'},
+          {id:'b', label:'"Nunca me apoya."', desc:'Cuando no reacciona como esperaba.'},
+          {id:'c', label:'"Estoy sola en esto."', desc:'Cuando cargo con todo sin que el lo vea.'},
+          {id:'d', label:'"Algo hice mal."', desc:'Cuando el se cierra sin decir por que.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s5_t2_e1', type:'tool', tema:2,
+        question:'¿Cual distorsion operas mas seguido?',
+        body:'Solo puedes elegir una. La mas honesta.',
+        items:[
+          {id:'a', label:'Lectura de mente', desc:'Creo saber lo que el piensa o intenta, sin preguntarle.'},
+          {id:'b', label:'Generalizacion absoluta', desc:'Uso siempre y nunca como si fueran hechos reales.'},
+          {id:'c', label:'Filtro negativo', desc:'Ver solo lo negativo aunque haya cosas positivas ese dia.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s5_e1', type:'tool', tema:3,
         question:'Sistema de Actualización de Creencias',
         body:'Piensa en la situación que más se repite con tu pareja. La que más te activa. Llena los 4 campos con honestidad.',
         field:'belief-sequence'
       },
       {
-        id:'s5_e3', type:'checkpoint',
-        label:'Pausa Workbook · Pregunta Espejo 2 de 3',
-        question:'Después de explorar el Protocolo 1, ¿qué creencia o historia mental es la más difícil de dejar ir? No la que suena peor — la que más te cuesta soltar.',
-        body:'Esta es la segunda de tres preguntas espejo. Al terminar la Lección 9 vas a ver la distancia que recorriste.',
-        confrontation: null,
-        placeholder:'La respuesta honesta, no la que crees que deberías dar...',
+        id:'s5_e3', type:'checkpoint', tema:4,
+        label:'Pausa Workbook · Lección 5',
+        question:'Si la proxima vez parto del hecho en lugar de la historia, ¿que haria diferente?',
+        body:'Cuando el camino ya esta trazado en frio, no tienes que construirlo bajo presion.',
+        placeholder:'Describe como seria tu respuesta desde el hecho — no desde la historia automatica...',
         field:'star-textarea'
       }
     ]

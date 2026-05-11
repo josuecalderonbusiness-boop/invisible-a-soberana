@@ -5379,14 +5379,26 @@ const SECTIONS = [
     ],
     exercises: [
       {
+        id:'s4_t1_e1', type:'tool', tema:1,
+        question:'En los ultimos meses, donde ha ido la mayoria de tu energia?',
+        body:'No hay respuesta correcta. Solo una honesta.',
+        items:[
+          {id:'a', label:'Intentando que el cambie', desc:'Su actitud, su forma de ser, su disposicion emocional.'},
+          {id:'b', label:'Esperando su reaccion', desc:'Que responda diferente a lo que hago o digo.'},
+          {id:'c', label:'Trabajando en mi misma', desc:'Mi mente, mis respuestas, mi forma de procesar.'},
+          {id:'d', label:'Sin claridad', desc:'No lo habia pensado de esta manera antes.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
         id:'s4_e1', type:'tool', tema:2,
         question:'¿Cuál es tu protocolo más débil ahora mismo?',
         body:'Toca el que necesita más trabajo en tu caso específico.',
         items:[
-          {id:'p1', icon:'🧠', label:'Protocolo Mental', desc:'Lo que Piensas — Las creencias que operan en piloto automático'},
-          {id:'p2', icon:'❤️', label:'Protocolo Emocional', desc:'Lo que Sientes — La regulación emocional bajo presión'},
-          {id:'p3', icon:'🤝', label:'Protocolo del Carácter', desc:'Lo que Sostienes — Los estándares que cedes cuando nadie aplaude'},
-          {id:'p4', icon:'💬', label:'Protocolo de Comunicación', desc:'Lo que Comunicas — Hablar desde influencia, no desde el ruego'}
+          {id:'p1',  label:'Protocolo Mental', desc:'Lo que Piensas — Las creencias que operan en piloto automático'},
+          {id:'p2',  label:'Protocolo Emocional', desc:'Lo que Sientes — La regulación emocional bajo presión'},
+          {id:'p3',  label:'Protocolo del Carácter', desc:'Lo que Sostienes — Los estándares que cedes cuando nadie aplaude'},
+          {id:'p4',  label:'Protocolo de Comunicación', desc:'Lo que Comunicas — Hablar desde influencia, no desde el ruego'}
         ],
         field:'single-choice-cards'
       },

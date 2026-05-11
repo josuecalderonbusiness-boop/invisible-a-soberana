@@ -5221,11 +5221,41 @@ const SECTIONS = [
     title:'La Trampa de la Entrega',
     desc:'El ciclo de persecución y distanciamiento — el patrón que nadie te enseñó a ver',
     palanca: null,
+    temas: [
+      { num:1, titulo:'El Gancho', bunnyVideoId:'PENDIENTE_S2T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Del Púlpito a la Estrategia', bunnyVideoId:'PENDIENTE_S2T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'La Trampa de la Entrega', bunnyVideoId:'PENDIENTE_S2T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'La Tabla — Trampa vs. Código', bunnyVideoId:'PENDIENTE_S2T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s2_e1', type:'tool',
+        id:'s2_t1_e1', type:'tool', tema:1,
+        question:'¿Cuándo fue la última vez que sentiste que tus necesidades importaban tanto como las de él?',
+        body:'Elige la que más se parece a lo que vives.',
+        items:[
+          {id:'a', icon:'🌫', label:'No recuerdo', desc:'Ha pasado tanto tiempo que ya ni lo noto.'},
+          {id:'b', icon:'⚖️', label:'Casi nunca', desc:'Siempre termino priorizando lo que él necesita.'},
+          {id:'c', icon:'🔄', label:'A veces', desc:'Depende del humor que él tenga ese día.'},
+          {id:'d', icon:'🪞', label:'Sigo esperando', desc:'Creo que si él cambia, todo estaría bien.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s2_t2_e1', type:'tool', tema:2,
+        question:'¿Qué has intentado para mover la dinámica?',
+        body:'Selecciona todo lo que hayas probado.',
+        items:[
+          {id:'c1', label:'Orar y tener paciencia esperando que cambie'},
+          {id:'c2', label:'Hablar con él una y otra vez sobre lo mismo'},
+          {id:'c3', label:'Leer libros, ir a terapia, buscar respuestas'},
+          {id:'c4', label:'Amenazar con consecuencias que después no cumplí'}
+        ],
+        field:'multi-choice'
+      },
+      {
+        id:'s2_e1', type:'tool', tema:3,
         question:'Lo que veo en el espejo',
-        body:'¿En cuál de estas posiciones te reconoces más frecuentemente? Marca con honestidad — no con la respuesta que te gustaría poder dar, sino con la que es verdad.',
+        body:'¿En cuál de estas posiciones te reconoces más frecuentemente? Con honestidad — no con la respuesta que te gustaría dar.',
         items:[
           {left:'Mi humor depende del suyo', right:'Mi centro no depende de él'},
           {left:'Hablo desde la herida', right:'Hablo desde la claridad'},
@@ -5233,6 +5263,13 @@ const SECTIONS = [
           {left:'Confundo entrega con anulación', right:'Amo desde la elección'}
         ],
         field:'mirror-check'
+      },
+      {
+        id:'s2_t4_e1', type:'reflection', tema:4,
+        question:'Una vez que lo reconoces en blanco y negro, ¿qué se mueve en ti?',
+        confrontation:'El patrón que reconoces es el patrón que puedes cambiar. Lo que no puedes ver, no puedes trabajarlo.',
+        placeholder:'¿En cuál columna te ves más? ¿Qué sientes al verlo así de claro?',
+        field:'textarea'
       },
       {
         id:'s2_e2', type:'checkpoint',

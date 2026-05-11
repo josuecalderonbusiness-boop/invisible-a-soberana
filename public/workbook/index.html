@@ -3013,6 +3013,33 @@
   .post-note { font-style:italic; font-size:13px; color:var(--mauve); text-align:center; padding:0 24px 20px; line-height:1.7; }
   /* Checkpoint */
   .checkpoint-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(212,175,106,.15); border:1px solid rgba(212,175,106,.4); color:var(--gold-light); font-size:10px; letter-spacing:.15em; text-transform:uppercase; padding:4px 12px; border-radius:100px; margin-bottom:10px; font-weight:600; }
+
+  /* ── WORKBOOK ANIMADO ── */
+  @keyframes wbPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  .wb-anim-outer { position:relative; width:100%; min-height:440px; display:flex; align-items:center; justify-content:center; padding:20px 0; overflow:hidden; }
+  .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .4s ease; }
+  .wb-anim-scene.zooming { transform:scale(2.5) translateY(-10px); opacity:0; pointer-events:none; }
+  .wb-anim-book { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
+  .wb-anim-spine { position:absolute; left:0; top:0; width:26px; height:100%; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:4px 0 0 4px; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px 0; gap:0; box-shadow:inset -3px 0 8px rgba(0,0,0,.4); }
+  .wb-sd { width:11px; height:11px; border-radius:50%; border:2px solid #B8892A; background:#1a0508; margin:3.5px 0; flex-shrink:0; }
+  .wb-anim-stack { position:absolute; left:28px; top:2px; width:calc(100% - 30px); height:100%; background:#EDE3CE; border-radius:0 8px 8px 0; z-index:0; }
+  .wb-anim-page { position:absolute; left:26px; top:0; width:calc(100% - 26px); height:100%; border-radius:0 8px 8px 0; overflow:hidden; z-index:1; }
+  .wb-anim-page-inner { width:100%; height:100%; background-color:#F5EDD8; background-image:linear-gradient(rgba(180,150,100,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(180,150,100,.15) 1px,transparent 1px); background-size:20px 20px; }
+  .wb-anim-cover { position:absolute; left:26px; top:0; width:calc(100% - 26px); height:100%; background:linear-gradient(145deg,#3D0C11 0%,#6b1a2a 50%,#3D0C11 100%); border-radius:0 8px 8px 0; transform-origin:left center; transform-style:preserve-3d; transition:transform .9s cubic-bezier(.645,.045,.355,1); cursor:pointer; z-index:5; box-shadow:4px 0 20px rgba(0,0,0,.5); overflow:hidden; }
+  .wb-anim-cover.open { transform:rotateY(-168deg); }
+  .wb-anim-cover-border { position:absolute; inset:10px; border:1px solid rgba(184,137,42,.35); border-radius:4px; pointer-events:none; z-index:3; }
+  .wb-anim-cover-content { position:absolute; inset:0; backface-visibility:hidden; }
+  .wb-anim-fullpage { position:absolute; inset:0; background-color:#F5EDD8; background-image:linear-gradient(rgba(180,150,100,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(180,150,100,.15) 1px,transparent 1px); background-size:20px 20px; border-radius:16px; opacity:0; transform:scale(0.3); pointer-events:none; transition:opacity .45s ease,transform .45s cubic-bezier(.34,1.56,.64,1); overflow:hidden; z-index:20; display:flex; }
+  .wb-anim-fullpage.visible { opacity:1; transform:scale(1); pointer-events:all; }
+  .wb-anim-fullpage::before { content:''; position:absolute; left:40px; top:0; bottom:0; width:1px; background:rgba(200,80,80,.3); }
+  .wb-anim-fp-spine { width:18px; flex-shrink:0; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:16px 0 0 16px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 0; gap:0; }
+  .wb-fsd { width:9px; height:9px; border-radius:50%; border:1.5px solid #B8892A; background:#1a0508; margin:3px 0; flex-shrink:0; }
+  .wb-anim-fp-close { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:rgba(61,12,17,.8); border:1px solid rgba(184,137,42,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:#D4AF6A; z-index:30; }
+  .wb-anim-fp-content { flex:1; padding:16px 14px 14px 52px; display:flex; flex-direction:column; min-width:0; }
+  .wb-anim-fp-tag { font-family:'Jost',system-ui,sans-serif; font-size:9px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(139,26,47,.6); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .wb-anim-fp-num { font-size:14px; }
+  .wb-anim-fp-q { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; font-weight:700; color:#1a0810; line-height:1.45; margin-bottom:6px; }
+  .wb-anim-fp-note { font-family:system-ui,sans-serif; font-size:10px; color:rgba(26,8,16,.38); font-style:italic; line-height:1.5; margin-bottom:10px; }
   /* Belief-sequence field */
   .belief-seq-block { margin:0 20px 16px; border-left:3px solid var(--burgundy); background:#fdf5ee; border-radius:0 12px 12px 0; padding:16px; }
   .belief-seq-label { font-size:13px; font-weight:600; color:var(--burgundy); margin-bottom:8px; display:block; letter-spacing:0; text-transform:none; }
@@ -5109,10 +5136,10 @@ const SECTIONS = [
     desc:'Quién eres antes de aprender',
     palanca: null,
     temas: [
-      { num:1, titulo:'El Gancho', bunnyVideoId:'PENDIENTE_T1', bunnyLibrary:'636956' },
+      { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'PENDIENTE_T1', bunnyLibrary:'636956' },
       { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'PENDIENTE_T2', bunnyLibrary:'636956' },
       { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'PENDIENTE_T3', bunnyLibrary:'636956' },
-      { num:4, titulo:'Qué es el Código Soberana', bunnyVideoId:'PENDIENTE_T4', bunnyLibrary:'636956' }
+      { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'PENDIENTE_T4', bunnyLibrary:'636956' }
     ],
     exercises: [
       {
@@ -8936,7 +8963,9 @@ function buildExerciseBlock(ex, sec) {
   const typeIcons  = { reflection:'💭', star:'🧭', tool:'🔧', action:'✅', checkpoint:'🧭' };
 
   let headerHtml;
-  if (isCheckpoint) {
+  if (isCheckpoint && ex.label && ex.label.includes('Pausa Workbook')) {
+    headerHtml = '';
+  } else if (isCheckpoint) {
     headerHtml = `<div class="exercise-header"><div class="exercise-icon type-star">🧭</div><div class="exercise-meta"><div class="checkpoint-badge">🧭 ${ex.label || 'Tu punto de partida'}</div><div class="exercise-question">${ex.question}</div></div></div>`;
   } else if (ex.field === 'declaration') {
     headerHtml = ''; // declaration has no standard header
@@ -8959,7 +8988,59 @@ function buildExerciseBlock(ex, sec) {
   // Field rendering
   const saved = state.answers[ex.id] || '';
   
-  if (ex.field === 'textarea' || ex.field === 'star-textarea') {
+  if ((ex.field === 'textarea' || ex.field === 'star-textarea') && ex.label && ex.label.includes('Pausa Workbook')) {
+    const saved = state.answers[ex.id] || '';
+    const ph = ex.placeholder || 'Escribe tu respuesta...';
+    bodyHtml += `
+      <div class="wb-anim-outer" id="wb-outer-${ex.id}">
+        <div class="wb-anim-scene" id="wb-scene-${ex.id}">
+          <div class="wb-anim-book">
+            <div class="wb-anim-stack"></div>
+            <div class="wb-anim-page"><div class="wb-anim-page-inner"></div></div>
+            <div class="wb-anim-spine">
+              <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+              <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+              <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+              <div class="wb-sd"></div><div class="wb-sd"></div>
+            </div>
+            <div class="wb-anim-cover" id="wb-cover-${ex.id}" onclick="wbAbrir('${ex.id}')">
+              <div class="wb-anim-cover-border"></div>
+              <div class="wb-anim-cover-content">
+                <img src="/workbook/assets/workbook-cover.png" style="width:100%;height:100%;object-fit:cover;border-radius:0 8px 8px 0;position:absolute;inset:0;" onerror="this.style.display='none'" />
+                <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;padding:20px;">
+                  <div style="font-family:system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:rgba(212,175,106,0.7);">Workbook</div>
+                  <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#D4AF6A;text-align:center;line-height:1.3;">Código<br>Soberana</div>
+                  <div style="position:absolute;bottom:18px;font-family:system-ui,sans-serif;font-size:10px;color:rgba(212,175,106,0.4);letter-spacing:.12em;text-transform:uppercase;animation:wbPulse 2s ease-in-out infinite;">Toca para abrir</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wb-anim-fullpage" id="wb-fp-${ex.id}">
+          <div class="wb-anim-fp-spine">
+            <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+            <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+            <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+            <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+          </div>
+          <div class="wb-anim-fp-close" onclick="wbCerrar('${ex.id}')">✕</div>
+          <div class="wb-anim-fp-content">
+            <div class="wb-anim-fp-tag">
+              <span class="wb-anim-fp-num">🪞</span>
+              ${ex.label || 'Pausa Workbook'}
+            </div>
+            <div class="wb-anim-fp-q">${ex.question}</div>
+            <div class="wb-anim-fp-note">${ex.body || ''}</div>
+            <textarea class="answer-textarea star-field" id="field-${ex.id}"
+              style="flex:1;min-height:140px;background:transparent;border:none;border-bottom:1px solid rgba(139,100,60,0.2);border-radius:0;padding:8px 4px;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#1a0810;resize:none;outline:none;line-height:1.7;"
+              placeholder="${ph}"
+              oninput="onFieldInput('${ex.id}',this)">${saved}</textarea>
+            <div class="char-counter" id="cc-${ex.id}" style="color:rgba(26,8,16,0.35);">${saved.length} caracteres</div>
+          </div>
+        </div>
+      </div>`;
+    if (ex.postNote) bodyHtml += `<p class="post-note">${ex.postNote}</p>`;
+  } else if (ex.field === 'textarea' || ex.field === 'star-textarea') {
     const cls = ex.field === 'star-textarea' ? 'answer-textarea star-field' : 'answer-textarea';
     const ph = ex.placeholder || 'Escribe tu respuesta...';
     const minH = ex.field === 'star-textarea' ? '200px' : '120px';
@@ -9545,6 +9626,33 @@ function setProtocolCheck(exId, role, val, btn) {
   state.answers[exId] = JSON.stringify(obj);
   saveState();
   updateLessonProgress(currentSectionId);
+}
+
+function wbAbrir(exId) {
+  var cover = document.getElementById('wb-cover-' + exId);
+  var scene = document.getElementById('wb-scene-' + exId);
+  var fp    = document.getElementById('wb-fp-' + exId);
+  if (!cover) return;
+  cover.classList.add('open');
+  setTimeout(function() {
+    scene.classList.add('zooming');
+    setTimeout(function() {
+      scene.style.display = 'none';
+      fp.classList.add('visible');
+    }, 500);
+  }, 900);
+}
+
+function wbCerrar(exId) {
+  var scene = document.getElementById('wb-scene-' + exId);
+  var fp    = document.getElementById('wb-fp-' + exId);
+  var cover = document.getElementById('wb-cover-' + exId);
+  fp.classList.remove('visible');
+  setTimeout(function() {
+    scene.style.display = '';
+    scene.classList.remove('zooming');
+    cover.classList.remove('open');
+  }, 400);
 }
 
 function toggleEspejo1(btn) {

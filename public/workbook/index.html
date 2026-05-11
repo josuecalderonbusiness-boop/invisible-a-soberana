@@ -5371,9 +5371,15 @@ const SECTIONS = [
     title:'El Punto de Influencia',
     desc:'El termostato, el GPS y el proveedor único — los 4 Protocolos del Código Soberana',
     palanca: null,
+    temas: [
+      { num:1, titulo:'El mapa de tu energia', bunnyVideoId:'PENDIENTE_S4T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'La definicion exacta del Punto de Influencia', bunnyVideoId:'PENDIENTE_S4T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'Los 3 Protocolos del Codigo Soberana', bunnyVideoId:'PENDIENTE_S4T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'Lo que esto NO es', bunnyVideoId:'PENDIENTE_S4T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s4_e1', type:'tool',
+        id:'s4_e1', type:'tool', tema:2,
         question:'¿Cuál es tu protocolo más débil ahora mismo?',
         body:'Toca el que necesita más trabajo en tu caso específico.',
         items:[
@@ -5385,7 +5391,7 @@ const SECTIONS = [
         field:'single-choice-cards'
       },
       {
-        id:'s4_e2', type:'checkpoint',
+        id:'s4_e2', type:'checkpoint', tema:4,
         label:'Pausa Workbook · Lección 4',
         question:'¿Dónde está tu punto de influencia ahora mismo — en ti o en él? ¿Cómo lo ves en tu vida concreta esta semana?',
         body:'No hay una respuesta correcta. Hay solo una respuesta honesta. Y la honestidad es el primer paso para moverlo.',
@@ -5393,7 +5399,7 @@ const SECTIONS = [
         field:'star-textarea'
       },
       {
-        id:'s4_e3', type:'tool',
+        id:'s4_e3', type:'tool', tema:3,
         field:'declaration',
         declaration:'No soy una mujer rota que necesita ser arreglada. Soy una mujer que tiene una dinámica que necesita ser reconfigurada. Y yo soy quien puede reconfigurarlo. Porque soy Soberana.',
         fieldLabel:'Mi versión:',
@@ -12022,6 +12028,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

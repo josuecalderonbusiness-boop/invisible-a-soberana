@@ -9025,7 +9025,7 @@ function _buildSlideContent(slide, sectionId) {
               <div class="wb-anim-fp-close" onclick="wbCerrar('${ex.id}')">✕</div>
               <div class="wb-anim-fp-content">
                 <div class="wb-anim-fp-tag">
-                  🪞 Pregunta Espejo ${ex.label&&ex.label.includes('1')?'1':ex.label&&ex.label.includes('2')?'2':'3'} de 3
+                  ${ex.label&&ex.label.includes('Espejo')?'🪞 '+ex.label:ex.label||'Pausa Workbook'}
                 </div>
                 <div class="wb-anim-fp-q">${ex.question}</div>
                 <div class="wb-anim-fp-note">${ex.body || ''}</div>

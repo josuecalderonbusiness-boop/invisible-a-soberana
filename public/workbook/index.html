@@ -3017,7 +3017,8 @@
   /* ── WORKBOOK ANIMADO ── */
   @keyframes wbPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
   .wb-anim-outer { position:relative; width:100%; min-height:440px; display:flex; align-items:center; justify-content:center; padding:20px 0; overflow:hidden; }
-    .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
+    .wb-anim-scene { perspective:1200px; width:280px; height:400px; position:relative; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; animation:wbGlow 3s ease-in-out infinite; }
+  @keyframes wbGlow { 0%,100%{filter:drop-shadow(0 0 10px rgba(184,137,42,0.2))} 50%{filter:drop-shadow(0 0 25px rgba(184,137,42,0.5))} }
   .wb-anim-scene.zooming { transform:scale(3) translateY(-8px); opacity:0; pointer-events:none; transition:transform 1.2s cubic-bezier(.4,0,.2,1),opacity .8s ease; }
   .wb-anim-book { width:100%; height:100%; position:relative; transform-style:preserve-3d; }
   .wb-anim-spine { position:absolute; left:0; top:0; width:26px; height:100%; background:linear-gradient(180deg,#2A0A0F,#4a1020,#2A0A0F); border-radius:4px 0 0 4px; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:6px 0; gap:0; box-shadow:inset -3px 0 8px rgba(0,0,0,.4); overflow:hidden; }
@@ -8766,10 +8767,14 @@ function _buildSlideContent(slide, sectionId) {
     // Eyebrow
     const label = ex.field === 'declaration' ? 'Declaración' : (typeLabels[ex.type] || 'Ejercicio');
     const icon  = typeIcons[ex.type] || '📝';
-    wrap.innerHTML = `<div class="slide-ex-eyebrow">${icon} ${label}</div>`;
+    if (ex.label && ex.label.includes('Pausa Workbook')) {
+      wrap.innerHTML = `<div class="checkpoint-badge" style="margin:0 0 16px 0;">📓 ${ex.label}</div>`;
+    } else {
+      wrap.innerHTML = `<div class="slide-ex-eyebrow">${icon} ${label}</div>`;
+    }
 
     // Question
-    if (ex.question) {
+    if (ex.question && !(ex.label && ex.label.includes('Pausa Workbook'))) {
       const q = document.createElement('div');
       q.className = 'slide-ex-question';
       q.textContent = ex.question;
@@ -8785,7 +8790,7 @@ function _buildSlideContent(slide, sectionId) {
     }
 
     // Body text
-    if (ex.body && ex.field !== 'declaration') {
+    if (ex.body && ex.field !== 'declaration' && !(ex.label && ex.label.includes('Pausa Workbook'))) {
       const b = document.createElement('div');
       b.className = 'slide-ex-body';
       b.innerHTML = ex.body;
@@ -8848,7 +8853,7 @@ function _buildSlideContent(slide, sectionId) {
                   <div class="wb-anim-cover-border"></div>
                   <div class="wb-anim-cover-content">
                     <img src="/workbook/assets/workbook-cover.png" style="width:100%;height:100%;object-fit:cover;border-radius:0 8px 8px 0;position:absolute;inset:0;" onerror="this.style.display='none'" />
-                    <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:system-ui,sans-serif;font-size:10px;color:rgba(212,175,106,0.6);letter-spacing:.12em;text-transform:uppercase;animation:wbPulse 2s ease-in-out infinite;z-index:3;">Toca para abrir</div>
+                    <div style="position:absolute;bottom:22px;left:0;right:0;text-align:center;font-family:system-ui,sans-serif;font-size:13px;font-weight:600;color:rgba(212,175,106,0.85);letter-spacing:.15em;text-transform:uppercase;animation:wbPulse 2s ease-in-out infinite;z-index:3;">✦ Toca para abrir ✦</div>
                   </div>
                 </div>
               </div>
@@ -8874,6 +8879,10 @@ function _buildSlideContent(slide, sectionId) {
                   oninput="onFieldInput('${ex.id}',this);_syncSlideAnswer('${ex.id}',this.value)"
                 >${saved}</textarea>
                 <div class="slide-char-hint" id="cc-${ex.id}" style="color:rgba(26,8,16,0.35);">${saved.length} caracteres</div>
+                <button id="wb-guardar-${ex.id}" onclick="wbGuardar('${ex.id}')"
+                  style="display:none;margin-top:12px;width:100%;background:linear-gradient(135deg,#3D0C11,#6b1a2a);border:1px solid rgba(184,137,42,0.4);border-radius:12px;padding:14px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;color:#D4AF6A;letter-spacing:.05em;cursor:pointer;">
+                  Guardar mis respuestas ✦
+                </button>
               </div>
             </div>
           </div>`;
@@ -8933,6 +8942,11 @@ function _syncSlideAnswer(id, val) {
   state.answers[id] = val;
   saveState();
   updateLessonProgress(currentSectionId);
+  // Mostrar botón guardar en Pausa Workbook cuando escribe
+  const guardarBtn = document.getElementById('wb-guardar-' + id);
+  if (guardarBtn && val.trim().length > 20) {
+    guardarBtn.style.display = 'block';
+  }
 }
 
 function _updateSlideUI() {
@@ -8962,6 +8976,11 @@ function _updateSlideUI() {
       btn.innerHTML = current === total - 2
         ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    // Ocultar botón continuar en slide de Pausa Workbook
+    const curSlide = _slides[current];
+    if (curSlide && curSlide.type === 'exercise' && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook')) {
+      btn.style.display = 'none';
     }
   }
 
@@ -9691,6 +9710,15 @@ function wbAbrir(exId) {
       fp.classList.add('visible');
     }, 1100);
   }, 1000);
+}
+
+function wbGuardar(exId) {
+  const btn = document.getElementById('slide-continue-btn');
+  if (btn) {
+    btn.style.display = 'flex';
+    btn.innerHTML = '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  wbCerrar(exId);
 }
 
 function wbCerrar(exId) {

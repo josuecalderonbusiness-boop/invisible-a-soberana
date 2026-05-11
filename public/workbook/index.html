@@ -5483,18 +5483,48 @@ const SECTIONS = [
   {
     id:'s6', num:'06', label:'Protocolo 2',
     title:'Protocolo 2',
-    desc:'Dimensión Emocional ❤️',
+    desc:'Dimension Emocional',
     palanca:'Lo que Sientes',
+    temas: [
+      { num:1, titulo:'Tus emociones son informacion estrategica', bunnyVideoId:'PENDIENTE_S6T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Tu radar emocional como ventaja', bunnyVideoId:'PENDIENTE_S6T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'Gobernada vs. Habitada', bunnyVideoId:'PENDIENTE_S6T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'El sistema ERES', bunnyVideoId:'PENDIENTE_S6T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s6_e1', type:'reflection',
+        id:'s6_t1_e1', type:'tool', tema:1,
+        question:'¿Que emocion aparece mas seguido en tu relacion?',
+        body:'Elige la mas honesta. Despues vas a ver que necesidad hay detras.',
+        items:[
+          {id:'a', label:'Enojo o irritacion', desc:'Un limite fue cruzado. Algo que importa no fue respetado.'},
+          {id:'b', label:'Soledad acompanada', desc:'Estas presente fisicamente pero ausente emocionalmente para el otro.'},
+          {id:'c', label:'Resentimiento acumulado', desc:'Tu esfuerzo no esta siendo visto ni reconocido.'},
+          {id:'d', label:'Ansiedad constante', desc:'La incertidumbre se volvio insostenible. Necesitas claridad.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s6_t2_e1', type:'tool', tema:2,
+        question:'¿Como describes tu relacion con tus propias emociones?',
+        body:'La forma mas honesta, no la que suena mejor.',
+        items:[
+          {id:'a', label:'Las sigo automaticamente', desc:'Cuando siento algo, actuo sin pausa ni filtro.'},
+          {id:'b', label:'Las reprimo', desc:'Aprendi a no mostrarlas para evitar conflictos.'},
+          {id:'c', label:'Las proceso', desc:'Tengo una pausa entre lo que siento y lo que hago.'},
+          {id:'d', label:'Depende del dia', desc:'A veces las gobierno, a veces me gobiernan.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s6_e1', type:'reflection', tema:3,
         question:'¿Cuándo fue la última vez que el secuestro emocional tomó el control — que reaccionaste de una forma que después lamentaste?',
         confrontation: 'No se trata de sentir menos. Se trata de que lo que sientes no decida por ti en los momentos donde más te juegas.',
         placeholder:'Describe la situación específicamente. ¿Qué lo disparó? ¿Cómo reaccionaste? ¿Qué pasó después?',
         field:'textarea'
       },
       {
-        id:'s6_e2', type:'tool',
+        id:'s6_e2', type:'tool', tema:4,
         question:'Sistema ERES — Practica con una situación de esta semana',
         body:'Recuerda un momento de tensión reciente. Aplica el Sistema ERES paso a paso.',
         field:'eres-system',
@@ -5507,7 +5537,7 @@ const SECTIONS = [
         postNote:'Si no te validas tú, irás a buscar que él te valide. Y cuando tu bienestar depende de su respuesta, ya perdiste el Punto de Influencia.'
       },
       {
-        id:'s6_e3', type:'checkpoint',
+        id:'s6_e3', type:'checkpoint', tema:4,
         label:'Pausa Workbook · Lección 6',
         question:'¿Cuándo fue la última vez que el secuestro emocional tomó el control? Aplica el Sistema ERES a esa situación.',
         body:'No se trata de sentir menos. Se trata de que lo que sientes no decida por ti en los momentos donde más te juegas.',

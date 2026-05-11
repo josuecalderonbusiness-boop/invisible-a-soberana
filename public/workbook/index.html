@@ -8829,7 +8829,54 @@ function _buildSlideContent(slide, sectionId) {
       const saved = state.answers[ex.id] || '';
       const ph = ex.placeholder || 'Escribe tu respuesta...';
       const minH = ex.field === 'star-textarea' ? '180px' : '150px';
-      fieldWrap.innerHTML = `
+      if (ex.field === 'star-textarea' && ex.label && ex.label.includes('Pausa Workbook')) {
+        fieldWrap.innerHTML = `
+          <div class="wb-anim-outer" id="wb-outer-${ex.id}">
+            <div class="wb-anim-scene" id="wb-scene-${ex.id}">
+              <div class="wb-anim-book">
+                <div class="wb-anim-stack"></div>
+                <div class="wb-anim-page"><div class="wb-anim-page-inner"></div></div>
+                <div class="wb-anim-spine">
+                  <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+                  <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+                  <div class="wb-sd"></div><div class="wb-sd"></div><div class="wb-sd"></div>
+                  <div class="wb-sd"></div><div class="wb-sd"></div>
+                </div>
+                <div class="wb-anim-cover" id="wb-cover-${ex.id}" onclick="wbAbrir('${ex.id}')">
+                  <div class="wb-anim-cover-border"></div>
+                  <div class="wb-anim-cover-content">
+                    <img src="/workbook/assets/workbook-cover.png" style="width:100%;height:100%;object-fit:cover;border-radius:0 8px 8px 0;position:absolute;inset:0;" onerror="this.style.display='none'" />
+                    <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:system-ui,sans-serif;font-size:10px;color:rgba(212,175,106,0.6);letter-spacing:.12em;text-transform:uppercase;animation:wbPulse 2s ease-in-out infinite;z-index:3;">Toca para abrir</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="wb-anim-fullpage" id="wb-fp-${ex.id}">
+              <div class="wb-anim-fp-spine">
+                <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+                <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+                <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+                <div class="wb-fsd"></div><div class="wb-fsd"></div><div class="wb-fsd"></div>
+              </div>
+              <div class="wb-anim-fp-close" onclick="wbCerrar('${ex.id}')">✕</div>
+              <div class="wb-anim-fp-content">
+                <div class="wb-anim-fp-tag">
+                  <span class="wb-anim-fp-num">🪞</span>
+                  ${ex.label || 'Pausa Workbook'}
+                </div>
+                <div class="wb-anim-fp-q">${ex.question}</div>
+                <div class="wb-anim-fp-note">${ex.body || ''}</div>
+                <textarea id="field-${ex.id}"
+                  style="flex:1;min-height:120px;background:transparent;border:none;border-bottom:1px solid rgba(139,100,60,0.25);border-radius:0;padding:8px 4px;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#1a0810;resize:none;outline:none;line-height:1.7;width:100%;"
+                  placeholder="${ph}"
+                  oninput="onFieldInput('${ex.id}',this);_syncSlideAnswer('${ex.id}',this.value)"
+                >${saved}</textarea>
+                <div class="slide-char-hint" id="cc-${ex.id}" style="color:rgba(26,8,16,0.35);">${saved.length} caracteres</div>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        fieldWrap.innerHTML = `
         <textarea class="slide-textarea" id="field-${ex.id}"
           style="min-height:${minH}"
           placeholder="${ph}"
@@ -8837,6 +8884,7 @@ function _buildSlideContent(slide, sectionId) {
         >${saved}</textarea>
         <div class="slide-char-hint" id="cc-${ex.id}">${saved.length} caracteres</div>
       `;
+      }
       if (ex.postNote) {
         fieldWrap.innerHTML += `<div style="margin-top:14px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,0.4);line-height:1.6;font-style:italic;">${ex.postNote}</div>`;
       }

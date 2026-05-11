@@ -5403,14 +5403,6 @@ const SECTIONS = [
         field:'single-choice-cards'
       },
       {
-        id:'s4_e2', type:'checkpoint', tema:4,
-        label:'Pausa Workbook · Lección 4',
-        question:'¿Dónde está tu punto de influencia ahora mismo — en ti o en él? ¿Cómo lo ves en tu vida concreta esta semana?',
-        body:'No hay una respuesta correcta. Hay solo una respuesta honesta. Y la honestidad es el primer paso para moverlo.',
-        placeholder:'Descríbelo con un ejemplo concreto de esta semana...',
-        field:'star-textarea'
-      },
-      {
         id:'s4_t3_e1', type:'tool', tema:3,
         question:'En cual de las 3 dimensiones pierdes el control primero cuando hay tension?',
         body:'La que se activa antes de que puedas hacer algo al respecto.',
@@ -5422,8 +5414,9 @@ const SECTIONS = [
         field:'single-choice-cards'
       },
       {
-        id:'s4_e3', type:'tool', tema:4,
-        field:'declaration',
+        id:'s4_e3', type:'checkpoint', tema:4,
+        label:'Pausa Workbook · Lección 4',
+        field:'star-textarea',
         declaration:'No soy una mujer rota que necesita ser arreglada. Soy una mujer que tiene una dinámica que necesita ser reconfigurada. Y yo soy quien puede reconfigurarlo. Porque soy Soberana.',
         fieldLabel:'Mi versión:',
         placeholder:'Escribe la declaración con tus propias palabras...',
@@ -9025,9 +9018,10 @@ function _buildSlideContent(slide, sectionId) {
               <div class="wb-anim-fp-close" onclick="wbCerrar('${ex.id}')">✕</div>
               <div class="wb-anim-fp-content">
                 <div class="wb-anim-fp-tag">
-                  ${ex.label&&ex.label.includes('Espejo')?'🪞 '+ex.label:ex.label||'Pausa Workbook'}
+                  ${ex.label&&ex.label.includes('Espejo')?'🪞 '+ex.label:''}
                 </div>
-                <div class="wb-anim-fp-q">${ex.question}</div>
+                ${ex.declaration?`<div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#6b1a2a;line-height:1.8;font-style:italic;margin:0 0 12px;padding:12px 14px;background:rgba(107,26,42,0.06);border-left:2px solid #D4AF6A;border-radius:4px;">"${ex.declaration}"</div>`:''}
+                <div class="wb-anim-fp-q">${ex.declaration?ex.fieldLabel||'Mi versión:':ex.question}</div>
                 <div class="wb-anim-fp-note">${ex.body || ''}</div>
                 <div style="margin:8px 0 4px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(245,237,216,0.7));border:1.5px solid rgba(184,137,42,0.25);border-radius:12px;padding:12px 14px;box-shadow:inset 0 2px 8px rgba(139,100,60,0.06);">
                 <textarea id="field-${ex.id}"

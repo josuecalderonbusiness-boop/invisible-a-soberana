@@ -5104,18 +5104,67 @@ const SECTIONS = [
     ]
   },
   {
-    id:'s1', num:'01', label:'Bienvenida y Autoridad', bunnyVideoId:'5dec6476-af29-47c4-aad4-4f5a36f8773b', bunnyLibrary:'636956',
+    id:'s1', num:'01', label:'Bienvenida y Autoridad',
     title:'¿Qué es el Código Soberana?',
     desc:'Quién eres antes de aprender',
     palanca: null,
+    temas: [
+      { num:1, titulo:'El Gancho', bunnyVideoId:'PENDIENTE_T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'PENDIENTE_T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'PENDIENTE_T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'Qué es el Código Soberana', bunnyVideoId:'PENDIENTE_T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s1_e1', type:'checkpoint',
-        label:'pregunta espejo 1',
+        id:'s1_t1_e1', type:'tool', tema:1,
+        question:'La última vez que intentaste hablarle algo importante, ¿cómo terminó?',
+        body:'Elige la que más se parece. Sin la respuesta presentable.',
+        items:[
+          {id:'a', icon:'🌑', label:'En silencio', desc:'Ninguno volvió al tema.'},
+          {id:'b', icon:'🌊', label:'En pelea', desc:'No resolvió absolutamente nada.'},
+          {id:'c', icon:'🪞', label:'Sintiéndome demasiado', desc:'Intensa, emocional, demasiado de todo.'},
+          {id:'d', icon:'🔒', label:'Ya no lo intento', desc:'Paré hace tiempo de intentarlo.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s1_t2_e1', type:'tool', tema:2,
+        question:'¿Cuándo notas más el distanciamiento?',
+        body:'La situación que más se repite en tu relación.',
+        items:[
+          {id:'a', icon:'💬', label:'Cuando necesito conexión', desc:'Él da soluciones, no presencia.'},
+          {id:'b', icon:'🚪', label:'Cuando llega a casa', desc:'Desconectado, como si yo no existiera.'},
+          {id:'c', icon:'🔇', label:'Cuando quiero hablar', desc:'Cierra la conversación antes de que empiece.'},
+          {id:'d', icon:'🏆', label:'Cuando logro algo', desc:'Reacciona con indiferencia.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s1_t3_e1', type:'tool', tema:3,
+        question:'¿Qué has intentado hasta ahora?',
+        body:'Selecciona todo lo que hayas probado. Sin juzgarte.',
+        items:[
+          {id:'c1', label:'Cambiar cómo le hablo para que no se defienda'},
+          {id:'c2', label:'Dar más espacio esperando que él se acerque'},
+          {id:'c3', label:'Leer libros, ir a terapia, tomar cursos'},
+          {id:'c4', label:'Amenazar con consecuencias que después no cumplí'}
+        ],
+        field:'multi-choice'
+      },
+      {
+        id:'s1_t4_e1', type:'reflection', tema:4,
+        question:'Lo que has intentado no tocó el punto donde el cambio ocurre',
+        confrontation:'Lo que cambia la dinámica no es presionarlo a él. Es cambiar tu posición dentro del sistema. Y eso solo depende de ti.',
+        placeholder:'¿Qué pensaste cuando escuchaste eso por primera vez? Escribe sin filtro...',
+        field:'textarea'
+      },
+      {
+        id:'s1_e1', type:'checkpoint', tema:4,
+        label:'📓 Pausa Workbook · Pregunta Espejo 1 de 3',
         question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser?',
-        body:'Esta es la primera de tres preguntas espejo que van a acompañarte durante todo el workbook. Cuando termines, vas a volver aquí y ver la distancia que recorriste.',
+        body:'Esta pregunta te acompaña en todo el workshop. Al terminar la Lección 9 vas a volver aquí y ver la distancia que recorriste.',
         confrontation: null,
-        placeholder:'No lo pienses demasiado. Escribe lo primero que llegue, sin juzgarte.',
+        placeholder:'Escribe lo primero que llegue. Sin editar. Sin la versión presentable.',
         field:'star-textarea'
       }
     ]
@@ -8566,13 +8615,24 @@ function openLesson(sectionId) {
   // Build slides array
   _slides = [];
 
-  // Slide 0: video (si existe) o intro
-  _slides.push({ type: 'intro', sec });
-
-  // Slides N: un ejercicio por slide
-  sec.exercises.forEach(ex => {
-    _slides.push({ type: 'exercise', ex, sec });
-  });
+  if (sec.temas && sec.temas.length > 0) {
+    // Nueva estructura: por cada tema → video del tema → ejercicios de ese tema
+    sec.temas.forEach(tema => {
+      // Slide de video del tema
+      _slides.push({ type: 'tema-video', tema, sec });
+      // Ejercicios que pertenecen a este tema
+      const exsTema = sec.exercises.filter(ex => ex.tema === tema.num);
+      exsTema.forEach(ex => {
+        _slides.push({ type: 'exercise', ex, sec });
+      });
+    });
+  } else {
+    // Estructura original: intro + todos los ejercicios
+    _slides.push({ type: 'intro', sec });
+    sec.exercises.forEach(ex => {
+      _slides.push({ type: 'exercise', ex, sec });
+    });
+  }
 
   // Último slide: completion
   _slides.push({ type: 'completion', sec });
@@ -8607,7 +8667,36 @@ function openLesson(sectionId) {
 function _buildSlideContent(slide, sectionId) {
   const wrap = document.createElement('div');
 
-  if (slide.type === 'intro') {
+  if (slide.type === 'tema-video') {
+    const tema = slide.tema;
+    const sec = slide.sec;
+    const libId = tema.bunnyLibrary || '636956';
+    let html = '';
+    if (tema.bunnyVideoId && tema.bunnyVideoId !== 'PENDIENTE_T1' && tema.bunnyVideoId !== 'PENDIENTE_T2' && tema.bunnyVideoId !== 'PENDIENTE_T3' && tema.bunnyVideoId !== 'PENDIENTE_T4' && tema.bunnyVideoId !== 'PENDIENTE_T5') {
+      html += `
+        <div class="slide-video-wrap">
+          <iframe
+            src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+            allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+            allowfullscreen>
+          </iframe>
+        </div>`;
+    } else {
+      html += `
+        <div style="margin:20px 16px;padding:40px 20px;background:rgba(184,137,42,0.06);border:1px dashed rgba(184,137,42,0.3);border-radius:16px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:12px">🎬</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF6A;margin-bottom:6px">Video próximamente</div>
+          <div style="font-size:12px;color:rgba(237,227,206,0.45);line-height:1.5">Este tema estará disponible cuando se publique el video.</div>
+        </div>`;
+    }
+    html += `
+      <div style="padding:0 20px 8px">
+        <div style="font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin-bottom:6px">Lección ${sec.num} · Tema ${tema.num}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F0E6EA;line-height:1.25">${tema.titulo}</div>
+      </div>`;
+    wrap.innerHTML = html;
+
+  } else if (slide.type === 'intro') {
     const sec = slide.sec;
     const videoSeen = state.answers['_video_seen_' + sectionId];
     let html = '';

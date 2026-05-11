@@ -1,0 +1,12 @@
+﻿      {
+        id:'s4_t1_e1', type:'tool', tema:1,
+        question:'En los ultimos meses, donde ha ido la mayoria de tu energia?',
+        body:'No hay respuesta correcta. Solo una honesta.',
+        items:[
+          {id:'a', label:'Intentando que el cambie', desc:'Su actitud, su forma de ser, su disposicion emocional.'},
+          {id:'b', label:'Esperando su reaccion', desc:'Que responda diferente a lo que hago o digo.'},
+          {id:'c', label:'Trabajando en mi misma', desc:'Mi mente, mis respuestas, mi forma de procesar.'},
+          {id:'d', label:'Sin claridad', desc:'No lo habia pensado de esta manera antes.'}
+        ],
+        field:'single-choice-cards'
+      },

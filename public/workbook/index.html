@@ -5157,7 +5157,7 @@ const SECTIONS = [
     palanca: null,
     temas: [
       { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956' },
-      { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'PENDIENTE_T2', bunnyLibrary:'636956' },
+      { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'f5b66696-2ca6-4ed3-9c4c-02746d23ede7', bunnyLibrary:'636956' },
       { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'5e07e2ec-bfa9-4ef0-8a73-6dd560b9cf99', bunnyLibrary:'636956' },
       { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'069011ae-ae68-453a-81c4-47f95103ab8b', bunnyLibrary:'636956' }
     ],
@@ -8914,7 +8914,7 @@ function _buildSlideContent(slide, sectionId) {
     const sec = slide.sec;
     const libId = tema.bunnyLibrary || '636956';
     let html = '';
-    if (tema.bunnyVideoId && tema.bunnyVideoId !== 'PENDIENTE_T1' && tema.bunnyVideoId !== 'PENDIENTE_T2' && tema.bunnyVideoId !== 'PENDIENTE_T3' && tema.bunnyVideoId !== 'PENDIENTE_T4' && tema.bunnyVideoId !== 'PENDIENTE_T5') {
+    if (tema.bunnyVideoId && tema.bunnyVideoId !== 'PENDIENTE_T1' && tema.bunnyVideoId !== 'PENDIENTE_T2' && tema.bunnyVideoId !== 'PENDIENTE_T3' && tema.bunnyVideoId !== '069011ae-ae68-453a-81c4-47f95103ab8b' && tema.bunnyVideoId !== 'PENDIENTE_T5') {
       html += `
         <div class="slide-video-wrap">
           <iframe

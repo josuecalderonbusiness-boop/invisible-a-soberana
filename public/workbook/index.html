@@ -5555,32 +5555,56 @@ const SECTIONS = [
   {
     id:'s7', num:'07', label:'Protocolo 3',
     title:'Protocolo 3',
-    desc:'Dimensión del Carácter 🤝',
-    palanca:'Lo que Sostienes',
+    desc:'Dimension Relacional',
+    palanca:'Lo que Comunicas',
+    temas: [
+      { num:1, titulo:'Protocolo 3: Lo que comunicas — La dimension relacional', bunnyVideoId:'PENDIENTE_S7T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Comunicacion como transaccion de valor', bunnyVideoId:'PENDIENTE_S7T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'Los 3 modos de comunicacion soberana', bunnyVideoId:'PENDIENTE_S7T3', bunnyLibrary:'636956' },
+      { num:4, titulo:'Pausa Workbook', bunnyVideoId:'PENDIENTE_S7T4', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s7_e1', type:'tool',
-        question:'Sistema de los 3 Niveles — Define los tuyos',
-        body:'Un límite que no sostienes no es un límite. Es una sugerencia que el otro aprende a ignorar.',
-        field:'three-levels'
+        id:'s7_t1_e1', type:'tool', tema:1,
+        question:'En la conversacion que mas se repite con tu pareja, ¿que modo usas mas seguido?',
+        body:'Elige el que mas describe como sueles entrar a esas conversaciones.',
+        items:[
+          {id:'a', label:'Desde el historial', desc:'Empiezo mencionando todo lo que ha pasado antes — los agravios acumulados.'},
+          {id:'b', label:'Desde la queja', desc:'Describo lo que falta, lo que no hace, lo que nunca pasa.'},
+          {id:'c', label:'Desde la necesidad', desc:'Digo lo que necesito sin acusaciones ni historial.'},
+          {id:'d', label:'Me callo', desc:'Prefiero no decir nada para evitar el conflicto.'}
+        ],
+        field:'single-choice-cards'
       },
       {
-        id:'s7_e2', type:'tool',
-        question:'¿Qué tan urgente es trabajar cada nivel en tu relación ahora mismo?',
-        body:'Mueve el slider para cada uno.',
-        field:'triple-slider',
-        sliders:[
-          {id:'sl1', label:'1 — Lo no negociable', color:'var(--burgundy)'},
-          {id:'sl2', label:'2 — Lo negociable con condiciones', color:'var(--gold)'},
-          {id:'sl3', label:'3 — Lo flexible', color:'var(--mauve)'}
-        ]
+        id:'s7_t2_e1', type:'tool', tema:2,
+        question:'¿Desde donde hablas cuando tu influencia es mayor?',
+        body:'Solo una respuesta. La mas honesta.',
+        items:[
+          {id:'a', label:'Desde la queja acumulada', desc:'Cuando ya no aguanto mas y necesito decirlo todo.'},
+          {id:'b', label:'Desde el ruego', desc:'Cuando le pido que cambie porque me duele mucho.'},
+          {id:'c', label:'Desde la soberania', desc:'Cuando tengo claro lo que necesito y lo digo sin urgencia ni historial.'},
+          {id:'d', label:'No lo habia pensado', desc:'Nunca habia considerado que el origen cambia el peso de lo que digo.'}
+        ],
+        field:'single-choice-cards'
       },
       {
-        id:'s7_e3', type:'checkpoint',
-        label:'Pausa Workbook · Lección 7',
-        question:'¿Has cedido en algo del Nivel 1 en los últimos 3 meses? ¿Qué pasó con tu autoestima después?',
-        body:'Cada vez que cedes en lo que dijiste que no ibas a ceder, le enseñas a tu propia mente que tus palabras son vacías. Ese estándar no lo sostienes por él. Lo sostienes porque es la forma en que te tratas a ti misma.',
-        placeholder:'Sé honesta. ¿Qué cediste? ¿Por qué? ¿Cómo te sentiste después?',
+        id:'s7_t3_e1', type:'tool', tema:3,
+        question:'¿Cual de los 3 modos te cuesta mas aplicar?',
+        body:'El que se siente mas dificil en el momento real.',
+        items:[
+          {id:'a', label:'Declarar sin acusar', desc:'Me cuesta hablar desde la necesidad sin mencionar lo que hizo mal.'},
+          {id:'b', label:'Dirigir la conversacion', desc:'Me cuesta proponer estructura — siento que cargo con todo.'},
+          {id:'c', label:'Retiro estrategico', desc:'Me cuesta soltar despues de hablar — necesito verificar que el mensaje llego.'}
+        ],
+        field:'single-choice-cards'
+      },
+      {
+        id:'s7_e3', type:'checkpoint', tema:4,
+        label:'Pausa Workbook · Leccion 7',
+        question:'Piensa en la conversacion mas dificil que se repite. Escribela aplicando los 3 modos.',
+        body:'Como la DECLARARIAS sin acusaciones. Como la DIRIGIRIAS. Cual seria tu frase de RETIRO ESTRATEGICO.',
+        placeholder:'Escribe la conversacion como si fuera a pasar manana...',
         field:'star-textarea'
       }
     ]

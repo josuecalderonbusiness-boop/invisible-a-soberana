@@ -5681,31 +5681,31 @@ const SECTIONS = [
       },
       {
         id:'s8_e2', type:'tool', tema:2,
-        question:'¿Cual no pertenece al Protocolo 1?',
-        body:'Tres frases aplican el mismo protocolo. Una no. Identifica el intruso.',
-        rounds:[
+        question:'¿Que produce cada reaccion?',
+        body:'Mira la situacion y elige la consecuencia correcta.',
+        scenarios:[
           {
-            instruccion:'Estas frases corresponden al Protocolo 1 — Limpia el lente. ¿Cual no pertenece?',
+            situacion:'El toma una decision sobre los hijos sin consultarla. Sin protocolos, ella le dice: "¿Por que siempre tomas decisiones sin preguntarme? Ya tenia planes para ese dia. Nunca me consultas nada."',
             opciones:[
-              {id:'a', texto:'"El hecho es: llego a casa y no saludo."'},
-              {id:'b', texto:'"¿Cuales son las interpretaciones alternativas posibles?"'},
-              {id:'c', texto:'"Siento soledad y necesito reconocimiento."', correcto:true},
-              {id:'d', texto:'"La historia que escribi es una interpretacion, no un hecho."'}
+              {id:'a', texto:'El entiende que debe consultarla y lo hace diferente la proxima vez.'},
+              {id:'b', texto:'El se pone a la defensiva. Ella escala. El se cierra. El ambiente queda tenso por dias.', correcto:true},
+              {id:'c', texto:'El propone un sistema para coordinar los planes familiares.'},
+              {id:'d', texto:'Ambos acuerdan hablar antes de confirmar cualquier plan.'}
             ],
-            explicacion:'"Siento soledad y necesito reconocimiento" es Protocolo 2 — habitar la emocion. El Protocolo 1 trabaja solo con hechos e interpretaciones, no con emociones.'
+            explicacion:'"Siempre" y "nunca" convierten una situacion especifica en un veredicto sobre su caracter. La defensa es automatica — no hay escucha posible desde ahi.'
           },
           {
-            instruccion:'Estas frases corresponden al Protocolo 3 — Comunica desde tu centro. ¿Cual no pertenece?',
+            situacion:'El tema del dinero sale en la conversacion. Sin protocolos: "Tu siempre gastas de mas. Desde el ano pasado que esto no funciona."',
             opciones:[
-              {id:'a', texto:'"Necesito que cuando llegues, aunque sea un momento, me veas."'},
-              {id:'b', texto:'"¿Puedo expresar esto ahora, en frio?"', correcto:true},
-              {id:'c', texto:'"No para vetarlo, sino para ser parte de la decision."'},
-              {id:'d', texto:'"¿Podemos crear un sistema que contemple los dos?"'}
+              {id:'a', texto:'Resuelven el tema financiero y acuerdan un presupuesto.'},
+              {id:'b', texto:'El escucha y reconoce que necesitan un sistema mejor.'},
+              {id:'c', texto:'La conversacion no resuelve nada. Se acumula mas carga emocional y el silencio vuelve a ganar.', correcto:true},
+              {id:'d', texto:'Ella se siente mejor por haber expresado lo que sentia.'}
             ],
-            explicacion:'"¿Puedo expresar esto ahora, en frio?" es una pregunta del Protocolo 2 — elegir el momento correcto para hablar. No es una frase de comunicacion soberana.'
+            explicacion:'Sacar el historial en una conversacion sobre dinero convierte el problema financiero en un conflicto de caracter. Nadie resuelve nada cuando esta en modo defensa.'
           }
         ],
-        field:'intruder'
+        field:'consequence'
       },
       {
         id:'s8_e3', type:'checkpoint', tema:3,

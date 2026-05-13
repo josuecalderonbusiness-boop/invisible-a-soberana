@@ -5647,17 +5647,67 @@ const SECTIONS = [
     palanca:'No el caso genérico. El tuyo. Con los detalles reales. Con lo que él diría. Con lo que tú sentirías. Con lo que cambiarías.',
     exercises: [
       {
-        id:'s8_e1', type:'tool',
-        question:'Elige la situación que más se parece a lo que vives',
-        field:'protocol-selector'
+        id:'s8_e1', type:'tool', tema:1,
+        question:'¿Que produce cada reaccion?',
+        body:'Mira la situacion y elige la consecuencia correcta.',
+        scenarios:[
+          {
+            situacion:'El llega a casa y no saluda. Sin protocolos activos, ella va al cuarto y le dice: "¿Por que nunca me saludas cuando llegas? ¿Tan dificil es?"',
+            opciones:[
+              {id:'a', texto:'El escucha, reconoce el error y cambia su habito desde esa noche.'},
+              {id:'b', texto:'El se defiende. La conversacion explota. El ambiente queda peor.', correcto:true},
+              {id:'c', texto:'El se disculpa y le pregunta como estuvo su dia.'},
+              {id:'d', texto:'Ella se siente mejor por haber dicho lo que pensaba.'}
+            ],
+            explicacion:'Cuando el mensaje llega como acusacion, el cerebro activa el protocolo de defensa de manera automatica. No hay escucha posible en ese estado.'
+          },
+          {
+            situacion:'El toma una decision sobre los hijos sin consultarla. Sin protocolos, ella le dice: "¿Por que siempre tomas decisiones sin preguntarme? Nunca me consultas nada."',
+            opciones:[
+              {id:'a', texto:'El entiende que debe consultarla y lo hace diferente la proxima vez.'},
+              {id:'b', texto:'El propone una solucion para coordinar mejor los planes.'},
+              {id:'c', texto:'El se pone a la defensiva. Ella escala. El se cierra.', correcto:true},
+              {id:'d', texto:'Ambos acuerdan un sistema para tomar decisiones juntos.'}
+            ],
+            explicacion:'Las generalizaciones "siempre" y "nunca" convierten una situacion especifica en un veredicto sobre el caracter de el. La defensa es inevitable.'
+          }
+        ],
+        field:'consequence'
       },
       {
-        id:'s8_e2', type:'checkpoint',
-        label:'Pausa Workbook · Lección 8',
-        question:'Elige una de las situaciones y escribe cómo se vería aplicar los tres protocolos en tu versión específica.',
-        body:'No el caso genérico. El tuyo. Con lo que él diría. Con lo que tú sentirías. Con lo que cambiarías.',
-        placeholder:'Descríbela con los detalles reales de tu relación...',
-        field:'star-textarea'
+        id:'s8_e2', type:'tool', tema:2,
+        question:'¿Cual no pertenece al Protocolo 1?',
+        body:'Tres frases aplican el mismo protocolo. Una no. Identifica el intruso.',
+        rounds:[
+          {
+            instruccion:'Estas frases corresponden al Protocolo 1 — Limpia el lente. ¿Cual no pertenece?',
+            opciones:[
+              {id:'a', texto:'"El hecho es: llego a casa y no saludo."'},
+              {id:'b', texto:'"¿Cuales son las interpretaciones alternativas posibles?"'},
+              {id:'c', texto:'"Siento soledad y necesito reconocimiento."', correcto:true},
+              {id:'d', texto:'"La historia que escribi es una interpretacion, no un hecho."'}
+            ],
+            explicacion:'"Siento soledad y necesito reconocimiento" es Protocolo 2 — habitar la emocion. El Protocolo 1 trabaja solo con hechos e interpretaciones, no con emociones.'
+          },
+          {
+            instruccion:'Estas frases corresponden al Protocolo 3 — Comunica desde tu centro. ¿Cual no pertenece?',
+            opciones:[
+              {id:'a', texto:'"Necesito que cuando llegues, aunque sea un momento, me veas."'},
+              {id:'b', texto:'"¿Puedo expresar esto ahora, en frio?"', correcto:true},
+              {id:'c', texto:'"No para vetarlo, sino para ser parte de la decision."'},
+              {id:'d', texto:'"¿Podemos crear un sistema que contemple los dos?"'}
+            ],
+            explicacion:'"¿Puedo expresar esto ahora, en frio?" es una pregunta del Protocolo 2 — elegir el momento correcto para hablar. No es una frase de comunicacion soberana.'
+          }
+        ],
+        field:'intruder'
+      },
+      {
+        id:'s8_e3', type:'checkpoint', tema:3,
+        label:'Workbook · Leccion 8',
+        question:'El sistema en mi vida',
+        body:'Elige 3 situaciones frecuentes en tu dia a dia y aplica los 3 protocolos en cada una.',
+        field:'protocol-selector'
       }
     ]
   },
@@ -9809,6 +9859,61 @@ function buildExerciseBlock(ex, sec) {
     });
   }
 
+  else if (ex.field === 'consequence') {
+    if (!window._conseqState) window._conseqState = {};
+    if (!window._conseqState[ex.id]) window._conseqState[ex.id] = { current:0 };
+    const scenarios = ex.scenarios || [];
+    bodyHtml += `<div id="conseq-${ex.id}" style="padding:0 20px 20px">
+      <div style="height:3px;background:rgba(139,26,47,0.15);border-radius:2px;margin-bottom:20px">
+        <div id="cprog-${ex.id}" style="height:100%;background:var(--burgundy);border-radius:2px;width:0%;transition:width 0.4s"></div>
+      </div>
+      ${scenarios.map((sc,i)=>`
+      <div id="csc-${ex.id}-${i}" style="display:${i===0?'block':'none'}">
+        <div style="background:var(--surface-2);border-radius:14px;padding:16px;margin-bottom:16px;font-size:13px;color:var(--text-mid);line-height:1.7">${sc.situacion}</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--burgundy);margin-bottom:10px">¿Que pasa despues?</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="copts-${ex.id}-${i}">
+          ${sc.opciones.map(op=>`
+          <button onclick="conseqAnswer('${ex.id}',${i},'${op.id}',${!!op.correcto})"
+            id="copt-${ex.id}-${i}-${op.id}"
+            style="padding:13px 16px;border-radius:12px;border:1.5px solid var(--surface-2);background:white;font-size:13px;color:var(--text-dark);cursor:pointer;text-align:left;line-height:1.5;transition:all .2s">
+            ${op.texto}
+          </button>`).join('')}
+        </div>
+        <div id="cfb-${ex.id}-${i}" style="display:none;background:#1a0a0f;border-radius:12px;padding:14px;margin-top:14px">
+          <div style="font-size:12px;color:#D4A843;line-height:1.6">${sc.explicacion}</div>
+          ${i<scenarios.length-1?`<button onclick="conseqNext('${ex.id}',${i+1},${scenarios.length})" style="margin-top:12px;width:100%;padding:11px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente situacion →</button>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  else if (ex.field === 'intruder') {
+    if (!window._intruderState) window._intruderState = {};
+    if (!window._intruderState[ex.id]) window._intruderState[ex.id] = { current:0 };
+    const rounds = ex.rounds || [];
+    bodyHtml += `<div id="intruder-${ex.id}" style="padding:0 20px 20px">
+      <div style="height:3px;background:rgba(139,26,47,0.15);border-radius:2px;margin-bottom:20px">
+        <div id="iprog-${ex.id}" style="height:100%;background:var(--burgundy);border-radius:2px;width:0%;transition:width 0.4s"></div>
+      </div>
+      ${rounds.map((rd,i)=>`
+      <div id="ird-${ex.id}-${i}" style="display:${i===0?'block':'none'}">
+        <div style="font-size:13px;font-weight:600;color:var(--text-mid);line-height:1.6;margin-bottom:14px">${rd.instruccion}</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="iopts-${ex.id}-${i}">
+          ${rd.opciones.map(op=>`
+          <button onclick="intruderAnswer('${ex.id}',${i},'${op.id}',${!!op.correcto})"
+            id="iopt-${ex.id}-${i}-${op.id}"
+            style="padding:13px 16px;border-radius:12px;border:1.5px solid var(--surface-2);background:white;font-size:13px;color:var(--text-dark);cursor:pointer;text-align:left;line-height:1.5;transition:all .2s">
+            ${op.texto}
+          </button>`).join('')}
+        </div>
+        <div id="ifb-${ex.id}-${i}" style="display:none;background:#1a0a0f;border-radius:12px;padding:14px;margin-top:14px">
+          <div style="font-size:12px;color:#D4A843;line-height:1.6">${rd.explicacion}</div>
+          ${i<rounds.length-1?`<button onclick="intruderNext('${ex.id}',${i+1},${rounds.length})" style="margin-top:12px;width:100%;padding:11px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente ronda →</button>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
   else if (ex.field === 'eres-system') {
     const savedEres = {};
     try { Object.assign(savedEres, state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}); } catch(e) {}
@@ -9839,6 +9944,55 @@ function selectSingleChoice(exId, val, btn) {
   state.answers[exId] = val;
   saveState();
   updateLessonProgress(currentSectionId);
+}
+
+function conseqAnswer(exId, scIdx, optId, correcto) {
+  var btns = document.querySelectorAll('#copts-'+exId+'-'+scIdx+' button');
+  btns.forEach(function(b){ b.disabled=true; });
+  var btn = document.getElementById('copt-'+exId+'-'+scIdx+'-'+optId);
+  if (correcto) {
+    btn.style.background='#EAF3DE'; btn.style.borderColor='#639922'; btn.style.color='#3B6D11';
+  } else {
+    btn.style.background='#FDF0F0'; btn.style.borderColor='#C0392B'; btn.style.color='#C0392B';
+    var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
+    if(ex) { var correctBtn=null; ex.scenarios[scIdx].opciones.forEach(function(op){if(op.correcto){correctBtn=document.getElementById('copt-'+exId+'-'+scIdx+'-'+op.id);}}); if(correctBtn){correctBtn.style.background='#EAF3DE';correctBtn.style.borderColor='#639922';correctBtn.style.color='#3B6D11';} }
+  }
+  var fb = document.getElementById('cfb-'+exId+'-'+scIdx);
+  if(fb) fb.style.display='block';
+  var total = document.querySelectorAll('[id^="csc-'+exId+'-"]').length;
+  var prog = document.getElementById('cprog-'+exId);
+  if(prog) prog.style.width = ((scIdx+1)/total*100)+'%';
+  if(correcto){ state.answers[exId]=(state.answers[exId]||'')+'1'; saveState(); updateLessonProgress(currentSectionId); }
+}
+
+function conseqNext(exId, nextIdx, total) {
+  document.querySelectorAll('[id^="csc-'+exId+'-"]').forEach(function(el){ el.style.display='none'; });
+  var next = document.getElementById('csc-'+exId+'-'+nextIdx);
+  if(next) next.style.display='block';
+}
+
+function intruderAnswer(exId, rdIdx, optId, correcto) {
+  var btns = document.querySelectorAll('#iopts-'+exId+'-'+rdIdx+' button');
+  btns.forEach(function(b){ b.disabled=true; });
+  var btn = document.getElementById('iopt-'+exId+'-'+rdIdx+'-'+optId);
+  if(correcto) {
+    btn.style.background='#EAF3DE'; btn.style.borderColor='#639922'; btn.style.color='#3B6D11';
+  } else {
+    btn.style.background='#FDF0F0'; btn.style.borderColor='#C0392B'; btn.style.color='#C0392B';
+    var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
+    if(ex){ var correctBtn=null; ex.rounds[rdIdx].opciones.forEach(function(op){if(op.correcto){correctBtn=document.getElementById('iopt-'+exId+'-'+rdIdx+'-'+op.id);}}); if(correctBtn){correctBtn.style.background='#EAF3DE';correctBtn.style.borderColor='#639922';correctBtn.style.color='#3B6D11';} }
+  }
+  var fb = document.getElementById('ifb-'+exId+'-'+rdIdx);
+  if(fb) fb.style.display='block';
+  var prog = document.getElementById('iprog-'+exId);
+  if(prog) prog.style.width = ((rdIdx+1)/(document.querySelectorAll('[id^="ird-'+exId+'-"]').length)*100)+'%';
+  if(correcto){ state.answers[exId]=(state.answers[exId]||'')+'1'; saveState(); updateLessonProgress(currentSectionId); }
+}
+
+function intruderNext(exId, nextIdx, total) {
+  document.querySelectorAll('[id^="ird-'+exId+'-"]').forEach(function(el){ el.style.display='none'; });
+  var next = document.getElementById('ird-'+exId+'-'+nextIdx);
+  if(next) next.style.display='block';
 }
 
 function updateConvBuilder(exId, n, key, val) {

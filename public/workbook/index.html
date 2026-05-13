@@ -5580,8 +5580,8 @@ const SECTIONS = [
       },
       {
         id:'s7_t2_e1', type:'tool', tema:2,
-        question:'¿Desde donde hablas cuando tu palabra tiene mas peso?',
-        body:'Elige en cada par.',
+        question:'Tu influencia sube o baja segun desde donde hablas.',
+        body:'En cada par, elige el que valoriza tu palabra.',
         items:[
           {left:'Desde la queja acumulada', right:'Desde tu centro, con claridad'},
           {left:'Desde el ruego', right:'Desde la soberania'},
@@ -9599,7 +9599,7 @@ function buildExerciseBlock(ex, sec) {
     bodyHtml += `<div style="padding:0 20px 20px">`;
     (ex.items || []).forEach((item, i) => {
       const val = savedMR[i] || null;
-      bodyHtml += `<div class="mirror-row"><button onclick="setIdentityCheck('${ex.id}',${i},'left',this)" class="mirror-btn ${val==='left'?'sel-left':''}" style="border-color:${val==='left'?'var(--burgundy)':'var(--surface-2)'}">${item.left}</button><div class="mirror-vs">o</div><button onclick="setIdentityCheck('${ex.id}',${i},'right',this)" class="mirror-btn ${val==='right'?'sel-right':''}" style="border-color:${val==='right'?'#2D7A4F':'var(--surface-2)'}">${item.right}</button></div>`;
+      bodyHtml += `<div class="mirror-row"><button onclick="setIdentityCheck('${ex.id}',${i},'left',this)" class="mirror-btn ${val==='left'?'sel-left':''}" style="border-color:${val==='left'?'var(--burgundy)':'var(--surface-2)'}">${item.left}</button><div class="mirror-vs">o</div><button onclick="setIdentityCheck('${ex.id}',${i},'right',this)" class="mirror-btn ${val==='right'?'sel-right':''}" style="border-color:${val==='right'?'#2D7A4F':'var(--surface-2)'};background:${val==='right'?'#1a3d2b':'white'};color:${val==='right'?'white':'var(--text-dark)'}">${item.right}</button></div>`;
     });
     bodyHtml += `</div>`;
   }

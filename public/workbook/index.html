@@ -5708,9 +5708,10 @@ const SECTIONS = [
         field:'consequence'
       },
       {
-        id:'s8_e3', type:'tool', tema:3,
+        id:'s8_e3', type:'checkpoint', tema:3,
+        label:'Workbook · Leccion 8',
         question:'El sistema en mi vida',
-        body:'Elige una situacion frecuente y aplica los 3 protocolos.',
+        body:'Elige una situacion y aplica los 3 protocolos.',
         field:'protocol-selector'
       }
     ]
@@ -9194,8 +9195,49 @@ function _buildSlideContent(slide, sectionId) {
                   ${ex.label&&ex.label.includes('Espejo')?'🪞 '+ex.label:''}
                 </div>
                 ${ex.declaration?`<div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#6b1a2a;line-height:1.8;font-style:italic;margin:0 0 12px;padding:12px 14px;background:rgba(107,26,42,0.06);border-left:2px solid #D4AF6A;border-radius:4px;">"${ex.declaration}"</div>`:''}
-                <div class="wb-anim-fp-q">${ex.declaration?ex.fieldLabel||'Mi versión:':ex.question}</div>
-                <div class="wb-anim-fp-note">${ex.body || ''}</div>
+                <div class="wb-anim-fp-q">${ex.field==='protocol-selector'?'':ex.declaration?ex.fieldLabel||'Mi versión:':ex.question}</div>
+                <div class="wb-anim-fp-note">${ex.field==='protocol-selector'?'':ex.body||''}</div>
+                ${ex.field==='protocol-selector'?`
+                <div id="ps-wb-wrap-${ex.id}" style="flex:1;overflow:hidden;position:relative;margin:-4px 0">
+                  <div style="height:3px;background:rgba(107,26,42,0.15);border-radius:2px;margin-bottom:14px">
+                    <div id="ps-prog-${ex.id}" style="height:100%;background:#8B1A2F;border-radius:2px;width:0%;transition:width 0.4s"></div>
+                  </div>
+                  <div id="ps-track-${ex.id}" style="display:flex;transition:transform 0.4s cubic-bezier(.4,0,.2,1)">
+                    <div style="min-width:100%;display:flex;flex-direction:column;gap:8px">
+                      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8B1A2F;margin-bottom:4px">Elige tu situacion</div>
+                      ${[
+                        {id:'sit1',label:'El llega distante y se desconecta'},
+                        {id:'sit2',label:'Siento que hago todo sola en casa'},
+                        {id:'sit3',label:'Me desautorizo frente a los ninos'},
+                        {id:'sit4',label:'Llevo dias sintiendome invisible'},
+                        {id:'sit5',label:'Necesito tener una conversacion dificil'}
+                      ].map(sit=>`<button onclick="psSelectSit('${ex.id}','${sit.id}')" id="ps-sit-${ex.id}-${sit.id}"
+                        style="padding:12px 14px;border-radius:12px;border:1.5px solid rgba(107,26,42,0.2);background:rgba(255,255,255,0.6);cursor:pointer;text-align:left;font-size:13px;color:#1a0810;font-family:'Jost',sans-serif;transition:all .2s">
+                        ${sit.label}</button>`).join('')}
+                    </div>
+                    <div style="min-width:100%;padding:0 2px">
+                      <div style="display:inline-block;background:#8B1A2F;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px">Protocolo 1 · Lo que Piensas</div>
+                      <div style="font-size:13px;font-weight:600;color:#1a0810;line-height:1.6;margin-bottom:4px">¿Que historia esta escribiendo tu mente?</div>
+                      <div style="font-size:11px;color:#8a6575;margin-bottom:10px">¿Hecho o interpretacion?</div>
+                      <textarea id="ps-p1-${ex.id}" style="width:100%;border:1.5px solid rgba(107,26,42,0.2);border-radius:10px;padding:10px;font-size:13px;color:#1a0810;resize:none;height:90px;font-family:'Jost',sans-serif;background:rgba(255,255,255,0.7);box-sizing:border-box;line-height:1.6" placeholder="Ej: soy invisible, nunca le importo..." oninput="updateProtocolSel('${ex.id}','protocolo1',this.value)"></textarea>
+                      <button onclick="psNextStep('${ex.id}',2)" style="margin-top:12px;width:100%;padding:11px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Continuar →</button>
+                    </div>
+                    <div style="min-width:100%;padding:0 2px">
+                      <div style="display:inline-block;background:#B8892A;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px">Protocolo 2 · Lo que Sientes</div>
+                      <div style="font-size:13px;font-weight:600;color:#1a0810;line-height:1.6;margin-bottom:4px">¿Que estas sintiendo exactamente?</div>
+                      <div style="font-size:11px;color:#8a6575;margin-bottom:10px">Nombralo con precision. ¿Que necesidad hay debajo?</div>
+                      <textarea id="ps-p2-${ex.id}" style="width:100%;border:1.5px solid rgba(107,26,42,0.2);border-radius:10px;padding:10px;font-size:13px;color:#1a0810;resize:none;height:90px;font-family:'Jost',sans-serif;background:rgba(255,255,255,0.7);box-sizing:border-box;line-height:1.6" placeholder="Ej: soledad, frustracion... necesito conexion, reconocimiento..." oninput="updateProtocolSel('${ex.id}','protocolo2',this.value)"></textarea>
+                      <button onclick="psNextStep('${ex.id}',3)" style="margin-top:12px;width:100%;padding:11px;background:#B8892A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Continuar →</button>
+                    </div>
+                    <div style="min-width:100%;padding:0 2px">
+                      <div style="display:inline-block;background:#3D0C11;color:#D4A843;border:1px solid #D4A843;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px">Protocolo 3 · Lo que Comunicas</div>
+                      <div style="font-size:13px;font-weight:600;color:#1a0810;line-height:1.6;margin-bottom:4px">¿Que necesitas comunicar desde tu centro?</div>
+                      <div style="font-size:11px;color:#8a6575;margin-bottom:10px">Una sola frase. Sin historial. Sin rogar.</div>
+                      <textarea id="ps-p3-${ex.id}" style="width:100%;border:1.5px solid rgba(107,26,42,0.2);border-radius:10px;padding:10px;font-size:13px;color:#1a0810;resize:none;height:90px;font-family:'Jost',sans-serif;background:rgba(255,255,255,0.7);box-sizing:border-box;line-height:1.6" placeholder="Ej: Necesito que cuando llegues, aunque sea un momento, me veas." oninput="updateProtocolSel('${ex.id}','protocolo3',this.value)"></textarea>
+                      <button onclick="psFinish('${ex.id}')" style="margin-top:12px;width:100%;padding:11px;background:#3D0C11;border:1px solid #D4A843;border-radius:10px;font-size:13px;font-weight:600;color:#D4A843;cursor:pointer;font-family:'Jost',sans-serif">Completado ✦</button>
+                    </div>
+                  </div>
+                </div>`:`
                 <div style="margin:8px 0 4px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(245,237,216,0.7));border:1.5px solid rgba(184,137,42,0.25);border-radius:12px;padding:12px 14px;box-shadow:inset 0 2px 8px rgba(139,100,60,0.06);">
                 <textarea id="field-${ex.id}"
                   style="width:100%;min-height:120px;background:transparent;border:none;padding:0;font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;color:#1a0810;resize:none;outline:none;line-height:1.7;caret-color:#8B1A2F;display:block;"
@@ -9207,7 +9249,7 @@ function _buildSlideContent(slide, sectionId) {
                 <button id="wb-guardar-${ex.id}" onclick="wbGuardar('${ex.id}')"
                   style="display:none;margin-top:12px;width:100%;background:linear-gradient(135deg,#3D0C11,#6b1a2a);border:1px solid rgba(184,137,42,0.4);border-radius:12px;padding:14px;font-family:'Jost',sans-serif;font-size:14px;font-weight:600;color:#D4AF6A;letter-spacing:.05em;cursor:pointer;">
                   Guardar mis respuestas ✦
-                </button>
+                </button>`}
               </div>
             </div>
           </div>`;

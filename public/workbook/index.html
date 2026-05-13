@@ -5590,13 +5590,45 @@ const SECTIONS = [
       },
       {
         id:'s7_t3_e1', type:'tool', tema:3,
-        question:'¿En cual de estas dos versiones te reconoces mas?',
-        body:'Los pares exactos del guion — elige con honestidad.',
-        items:[
-          {left:'Nunca me apoyas cuando tomo decisiones.', right:'Para mi es importante sentirme respaldada. Necesito que me digas lo que piensas antes de que yo actue.'},
-          {left:'¿Por que nunca tenemos tiempo?', right:'Necesito que encontremos veinte minutos esta noche para hablar.'}
+        question:'Modo Declarar — ¿acusacion o declaracion soberana?',
+        body:'Clasifica cada frase.',
+        leftLabel:'Acusacion',
+        rightLabel:'Declarar',
+        matchItems:[
+          {text:'"¿Por que nunca tenemos tiempo?"', correct:'G', error:'Esta frase activa la defensa antes de que el mensaje llegue. "Nunca" cierra la conversacion antes de abrirla.'},
+          {text:'"Necesito que encontremos veinte minutos esta noche para hablar."', correct:'H', error:'Esta es una declaracion soberana — especifica, sin historial, sin acusacion.'},
+          {text:'"Nunca me apoyas cuando tomo decisiones."', correct:'G', error:'Es un veredicto ya dictado. El otro deja de intentar antes de responder.'},
+          {text:'"Para mi es importante sentirme respaldada. Necesito que me digas lo que piensas antes de que yo actue."', correct:'H', error:'Necesidad clara, orientada al futuro. El puede responder sin ponerse a la defensiva.'}
         ],
-        field:'mirror-check'
+        field:'match-slide'
+      },
+      {
+        id:'s7_t3_e2', type:'tool', tema:3,
+        question:'Modo Dirigir — ¿queda flotando o es una propuesta concreta?',
+        body:'Clasifica cada frase.',
+        leftLabel:'Queda flotando',
+        rightLabel:'Propuesta concreta',
+        matchItems:[
+          {text:'"¿Podemos hablar en algun momento?"', correct:'G', error:'Una pregunta abierta puede quedar flotando indefinidamente. No tiene estructura ni tiempo definido.'},
+          {text:'"¿Puede ser despues de cenar, cuando los ninos esten dormidos?"', correct:'H', error:'Tiene momento, contexto y formato. Eso es dirigir — no rogar.'},
+          {text:'"Necesito que estes mas presente."', correct:'G', error:'Sin estructura concreta, el otro no sabe como responder. La necesidad existe pero no hay propuesta.'},
+          {text:'"A la hora del almuerzo de manana entonces — apagamos los telefonos."', correct:'H', error:'Propuesta especifica con formato definido. La Soberana no espera — propone.'}
+        ],
+        field:'match-slide'
+      },
+      {
+        id:'s7_t3_e3', type:'tool', tema:3,
+        question:'Modo Retiro Estrategico — ¿verificacion ansiosa o cierre soberano?',
+        body:'Clasifica cada frase.',
+        leftLabel:'Verificacion ansiosa',
+        rightLabel:'Cierre soberano',
+        matchItems:[
+          {text:'"¿Entendiste lo que te dije?"', correct:'G', error:'Esta pregunta cancela el peso de todo lo que acabas de decir. Comunica que no confias en que el mensaje llego.'},
+          {text:'"Entonces hablamos manana a la hora del almuerzo."', correct:'H', error:'Una frase de cierre directa. Sin repetir, sin verificar. Eso es soltar de verdad.'},
+          {text:'"¿Me prometes que lo vas a hacer esta vez?"', correct:'G', error:'La verificacion ansiosa persigue validacion inmediata y destruye la influencia que acabas de construir.'},
+          {text:'"Ya lo dije. Cuando quieras hablarlo, aqui estoy."', correct:'H', error:'Se dice una vez con claridad y se sostiene. El espacio que das despues es inteligencia estrategica.'}
+        ],
+        field:'match-slide'
       },
       {
         id:'s7_e3', type:'checkpoint', tema:4,

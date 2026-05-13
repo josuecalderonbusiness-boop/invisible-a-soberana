@@ -5520,7 +5520,7 @@ const SECTIONS = [
         id:'s6_t3_e1', type:'tool', tema:3,
         question:'Gobernada o habitada',
         field:'match-slide',
-        doneTitle:'Ya tienes la distincion',
+        doneTitle:'Ya sabes cual es la diferencia',
         doneSub:'No es sentir menos. Es el espacio entre lo que sientes y lo que haces. Ahi vive tu libertad.',
         matchItems:[
           {text:'Sientes soledad y vas a buscarlo de inmediato, sin pausa.', correct:'G', error:'Cuando no hay pausa entre el estimulo y la accion, la emocion es quien decide. Eso es ser gobernada — no hay espacio de eleccion consciente.'},
@@ -9446,16 +9446,16 @@ function buildExerciseBlock(ex, sec) {
         <div id="mtrack-${ex.id}" style="display:flex;transition:transform 0.4s cubic-bezier(.4,0,.2,1);">
           ${(ex.matchItems||[]).map((item,i)=>`
           <div style="min-width:100%;padding:0 2px;">
-            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:10px;">${i+1} de ${ex.matchItems.length}</div>
-            <div style="font-size:15px;color:#F5E6C8;line-height:1.6;margin-bottom:24px;">${item.text}</div>
+            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:12px;">${i+1} de ${ex.matchItems.length}</div>
+            <div style="font-size:20px;color:#F5E6C8;line-height:1.6;margin-bottom:28px;">${item.text}</div>
             <div style="display:flex;gap:10px;">
               <button onclick="matchAnswer('${ex.id}',${i},this,'G')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Gobernada</button>
               <button onclick="matchAnswer('${ex.id}',${i},this,'H')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Habitada</button>
             </div>
           </div>`).join('')}
           <div style="min-width:100%;padding:2rem 0;text-align:center;">
-            <div style="font-size:16px;font-weight:500;color:#F5E6C8;margin-bottom:8px;">${ex.doneTitle||'Completado'}</div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">${ex.doneSub||''}</div>
+            <div style="font-size:22px;font-weight:500;color:#F5E6C8;margin-bottom:12px;">${ex.doneTitle||'Completado'}</div>
+            <div style="font-size:16px;color:rgba(255,255,255,0.6);line-height:1.7;">${ex.doneSub||''}</div>
           </div>
         </div>
       </div>

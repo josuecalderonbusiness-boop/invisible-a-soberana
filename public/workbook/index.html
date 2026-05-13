@@ -9476,7 +9476,7 @@ function buildExerciseBlock(ex, sec) {
     </div>`;
     if (!window._matchState) window._matchState = {};
     window._matchState[ex.id] = { current:0, activeBtn:null };
-    delete state.answers[ex.id];
+    state.answers[ex.id] = '';
   }
   else if (ex.field === 'single-choice-cards') {
     const savedSCC = state.answers[ex.id] || '';

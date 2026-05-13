@@ -9152,7 +9152,7 @@ function _buildSlideContent(slide, sectionId) {
     });
     // Re-attach event listeners by using innerHTML approach for simple fields
     // For complex fields, delegate to buildExerciseBlock directly
-    if (['textarea','star-textarea','declaration'].includes(ex.field)) {
+    if (['textarea','star-textarea','declaration','protocol-selector'].includes(ex.field)) {
       // Render textarea directly for clean dark styling
       fieldWrap.innerHTML = '';
       const saved = state.answers[ex.id] || '';

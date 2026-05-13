@@ -5566,27 +5566,28 @@ const SECTIONS = [
     exercises: [
       {
         id:'s7_t1_e1', type:'tool', tema:1,
-        question:'En la conversacion que mas se repite con tu pareja, ¿que modo usas mas seguido?',
-        body:'Elige el que mas describe como sueles entrar a esas conversaciones.',
-        items:[
-          {id:'a', label:'Desde el historial', desc:'Empiezo mencionando todo lo que ha pasado antes — los agravios acumulados.'},
-          {id:'b', label:'Desde la queja', desc:'Describo lo que falta, lo que no hace, lo que nunca pasa.'},
-          {id:'c', label:'Desde la necesidad', desc:'Digo lo que necesito sin acusaciones ni historial.'},
-          {id:'d', label:'Me callo', desc:'Prefiero no decir nada para evitar el conflicto.'}
+        question:'¿Que activa la defensa y que puede llegar?',
+        body:'Clasifica cada frase de la conversacion.',
+        leftLabel:'Activa la defensa',
+        rightLabel:'Puede llegar',
+        matchItems:[
+          {text:'"Siempre estas con el telefono o metido en el trabajo."', correct:'G', error:'Las generalizaciones con "siempre" y "nunca" activan el protocolo de defensa de manera automatica. El cerebro deja de escuchar.'},
+          {text:'"Siento que no soy una prioridad."', correct:'H', error:'Hablar desde lo que sientes — sin acusar — es informacion que el otro puede recibir sin ponerse a la defensiva.'},
+          {text:'"Yo hago todo en esta casa y tu ni siquiera lo notas."', correct:'G', error:'Seis cargos simultaneos no se analizan — se defienden. El cerebro humano frente a multiples acusaciones activa el protocolo de proteccion.'},
+          {text:'"Necesito veinte minutos esta noche para hablar contigo."', correct:'H', error:'Una sola necesidad, especifica, sin historial. Eso es lo que el otro puede recibir y procesar.'}
         ],
-        field:'single-choice-cards'
+        field:'match-slide'
       },
       {
         id:'s7_t2_e1', type:'tool', tema:2,
-        question:'Cuando hablas desde la queja o el ruego, ¿que le pasa a tu influencia?',
-        body:'Solo una. La que sientes mas verdadera.',
+        question:'¿Desde donde hablas cuando tu palabra tiene mas peso?',
+        body:'Elige en cada par.',
         items:[
-          {id:'a', label:'Se devalua', desc:'El otro aprende a ignorar esa frecuencia — siempre produce el mismo resultado.'},
-          {id:'b', label:'Se mantiene igual', desc:'El tono cambia pero el peso de mi palabra sigue siendo el mismo.'},
-          {id:'c', label:'Depende del momento', desc:'A veces funciona, a veces no — depende de como el lo reciba.'},
-          {id:'d', label:'No lo habia conectado', desc:'Nunca habia pensado que el origen de mis palabras cambia su peso.'}
+          {left:'Desde la queja acumulada', right:'Desde tu centro, con claridad'},
+          {left:'Desde el ruego', right:'Desde la soberania'},
+          {left:'Desde la desesperacion', right:'Con los protocolos activos'}
         ],
-        field:'single-choice-cards'
+        field:'mirror-check'
       },
       {
         id:'s7_t3_e1', type:'tool', tema:3,

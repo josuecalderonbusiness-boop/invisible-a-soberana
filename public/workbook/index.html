@@ -5832,7 +5832,7 @@ function getProgress() {
 }
 
 function countAnswers() {
-  return Object.values(state.answers).filter(v => v && v.trim().length > 0).length;
+  return Object.values(state.answers).filter(v => v && typeof v === 'string' && v.trim().length > 0).length;
 }
 
 const HILO_IDS = ['s1_e1', 's5_e3', 's9_e5'];

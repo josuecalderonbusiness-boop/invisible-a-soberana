@@ -9158,7 +9158,7 @@ function _buildSlideContent(slide, sectionId) {
       const saved = state.answers[ex.id] || '';
       const ph = ex.placeholder || 'Escribe tu respuesta...';
       const minH = ex.field === 'star-textarea' ? '180px' : '150px';
-      if (ex.field === 'star-textarea' && ex.label && ex.label.includes('Pausa Workbook')) {
+      if ((ex.field === 'star-textarea' || ex.field === 'protocol-selector') && ex.label && ex.label.includes('Workbook')) {
         fieldWrap.innerHTML = `
           <div class="wb-anim-outer" id="wb-outer-${ex.id}">
             <div class="wb-anim-scene" id="wb-scene-${ex.id}">

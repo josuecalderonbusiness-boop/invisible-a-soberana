@@ -9479,7 +9479,7 @@ function buildExerciseBlock(ex, sec) {
     state.answers[ex.id] = '';
   }
   else if (ex.field === 'single-choice-cards') {
-    const savedSCC = state.answers[ex.id] || '';
+    const savedSCC = '';
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     (ex.items || []).forEach(item => {
       const sel = savedSCC === item.id;

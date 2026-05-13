@@ -5578,25 +5578,26 @@ const SECTIONS = [
       },
       {
         id:'s7_t2_e1', type:'tool', tema:2,
-        question:'¿Desde donde hablas cuando tu influencia es mayor?',
-        body:'Solo una respuesta. La mas honesta.',
+        question:'Cuando hablas desde la queja o el ruego, ¿que le pasa a tu influencia?',
+        body:'Solo una. La que sientes mas verdadera.',
         items:[
-          {id:'a', label:'Desde la queja acumulada', desc:'Cuando ya no aguanto mas y necesito decirlo todo.'},
-          {id:'b', label:'Desde el ruego', desc:'Cuando le pido que cambie porque me duele mucho.'},
-          {id:'c', label:'Desde la soberania', desc:'Cuando tengo claro lo que necesito y lo digo sin urgencia ni historial.'},
-          {id:'d', label:'No lo habia pensado', desc:'Nunca habia considerado que el origen cambia el peso de lo que digo.'}
+          {id:'a', label:'Se devalua', desc:'El otro aprende a ignorar esa frecuencia — siempre produce el mismo resultado.'},
+          {id:'b', label:'Se mantiene igual', desc:'El tono cambia pero el peso de mi palabra sigue siendo el mismo.'},
+          {id:'c', label:'Depende del momento', desc:'A veces funciona, a veces no — depende de como el lo reciba.'},
+          {id:'d', label:'No lo habia conectado', desc:'Nunca habia pensado que el origen de mis palabras cambia su peso.'}
         ],
         field:'single-choice-cards'
       },
       {
         id:'s7_t3_e1', type:'tool', tema:3,
-        question:'¿Cual de los 3 modos te cuesta mas aplicar?',
-        body:'El que se siente mas dificil en el momento real.',
+        question:'Lee estas dos frases. ¿Cual es la version soberana?',
+        body:'"Nunca me apoyas cuando tomo decisiones." — ¿Como se dice esto desde la soberania?',
         items:[
-          {id:'a', label:'Declarar sin acusar', desc:'Me cuesta hablar desde la necesidad sin mencionar lo que hizo mal.'},
-          {id:'b', label:'Dirigir la conversacion', desc:'Me cuesta proponer estructura — siento que cargo con todo.'},
-          {id:'c', label:'Retiro estrategico', desc:'Me cuesta soltar despues de hablar — necesito verificar que el mensaje llego.'}
+          {id:'a', label:'Siempre termino sola en esto', desc:'Describes el patron general que se repite.'},
+          {id:'b', label:'Para mi es importante sentirme respaldada. Necesito que la proxima vez me digas lo que piensas antes de que yo actue, no despues.', desc:'Necesidad clara, orientada al futuro, sin historial.'},
+          {id:'c', label:'No entiendo por que no puedes apoyarme mas', desc:'Preguntas por la razon sin ofrecer una salida concreta.'}
         ],
+        correct:'b',
         field:'single-choice-cards'
       },
       {
@@ -9480,8 +9481,8 @@ function buildExerciseBlock(ex, sec) {
             <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:12px;">${i+1} de ${ex.matchItems.length}</div>
             <div style="font-size:20px;color:#F5E6C8;line-height:1.6;margin-bottom:28px;">${item.text}</div>
             <div style="display:flex;gap:10px;">
-              <button onclick="matchAnswer('${ex.id}',${i},this,'G')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Gobernada</button>
-              <button onclick="matchAnswer('${ex.id}',${i},this,'H')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">Habitada</button>
+              <button onclick="matchAnswer('${ex.id}',${i},this,'G')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">${ex.leftLabel||'Gobernada'}</button>
+              <button onclick="matchAnswer('${ex.id}',${i},this,'H')" style="flex:1;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);font-size:14px;font-weight:500;color:#F5E6C8;cursor:pointer;">${ex.rightLabel||'Habitada'}</button>
             </div>
           </div>`).join('')}
           <div style="min-width:100%;padding:2rem 0;text-align:center;">

@@ -9301,7 +9301,11 @@ function _updateSlideUI() {
       const curSlideData = _slides && _slides[current];
       const isMatchSlide = curSlideData && curSlideData.ex && curSlideData.ex.field === 'match-slide';
       const matchDone = isMatchSlide && state.answers[curSlideData.ex.id] === 'done';
-      if (isMatchSlide && !matchDone) {
+      const isConseq = curSlideData && curSlideData.ex && curSlideData.ex.field === 'consequence';
+      const isIntruder = curSlideData && curSlideData.ex && curSlideData.ex.field === 'intruder';
+      const conseqDone = isConseq && window._conseqState && window._conseqState[curSlideData.ex.id] && window._conseqState[curSlideData.ex.id].done;
+      const intruderDone = isIntruder && window._intruderState && window._intruderState[curSlideData.ex.id] && window._intruderState[curSlideData.ex.id].done;
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone)) {
         btn.style.display = 'none';
       } else {
         btn.style.display = 'flex';
@@ -9955,25 +9959,52 @@ function conseqAnswer(exId, scIdx, optId, correcto) {
   var btns = document.querySelectorAll('#copts-'+exId+'-'+scIdx+' button');
   btns.forEach(function(b){ b.disabled=true; });
   var btn = document.getElementById('copt-'+exId+'-'+scIdx+'-'+optId);
-  if (correcto) {
+  if(correcto) {
     btn.style.background='#EAF3DE'; btn.style.borderColor='#639922'; btn.style.color='#3B6D11';
   } else {
     btn.style.background='#FDF0F0'; btn.style.borderColor='#C0392B'; btn.style.color='#C0392B';
     var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
-    if(ex) { var correctBtn=null; ex.scenarios[scIdx].opciones.forEach(function(op){if(op.correcto){correctBtn=document.getElementById('copt-'+exId+'-'+scIdx+'-'+op.id);}}); if(correctBtn){correctBtn.style.background='#EAF3DE';correctBtn.style.borderColor='#639922';correctBtn.style.color='#3B6D11';} }
+    if(ex){ var correctBtn=null; ex.scenarios[scIdx].opciones.forEach(function(op){if(op.correcto){correctBtn=document.getElementById('copt-'+exId+'-'+scIdx+'-'+op.id);}}); if(correctBtn){correctBtn.style.background='#EAF3DE';correctBtn.style.borderColor='#639922';correctBtn.style.color='#3B6D11';} }
   }
-  var fb = document.getElementById('cfb-'+exId+'-'+scIdx);
-  if(fb) fb.style.display='block';
-  var total = document.querySelectorAll('[id^="csc-'+exId+'-"]').length;
+  var ex2=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex2=e;});});
+  var total = ex2 ? ex2.scenarios.length : 0;
   var prog = document.getElementById('cprog-'+exId);
   if(prog) prog.style.width = ((scIdx+1)/total*100)+'%';
+  var explicacion = ex2 ? ex2.scenarios[scIdx].explicacion : '';
+  var isLast = scIdx >= total-1;
+  var overlayId = 'coverlay-'+exId+'-'+scIdx;
+  var existing = document.getElementById(overlayId);
+  if(existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = overlayId;
+  overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,4,8,0.82);backdrop-filter:blur(6px);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:inherit';
+  overlay.innerHTML = '<div style="background:#1a0a0f;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:20px;width:100%;max-width:340px;text-align:center">'
+    +'<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:'+(correcto?'#639922':'#D4A843')+';margin-bottom:10px">'+(correcto?'Correcto':'Revisemos esto')+'</div>'
+    +'<div style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:16px">'+explicacion+'</div>'
+    +(isLast
+      ? '<button onclick="conseqFinish(\''+exId+'\')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Completado ✦</button>'
+      : '<button onclick="conseqNext(\''+exId+'\','+(scIdx+1)+','+total+',\''+overlayId+'\')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente situacion →</button>')
+    +'</div>';
+  var container = document.getElementById('csc-'+exId+'-'+scIdx);
+  if(container){ container.style.position='relative'; container.appendChild(overlay); }
   if(correcto){ state.answers[exId]=(state.answers[exId]||'')+'1'; saveState(); updateLessonProgress(currentSectionId); }
 }
 
-function conseqNext(exId, nextIdx, total) {
+function conseqNext(exId, nextIdx, total, overlayId) {
+  if(overlayId){ var ol=document.getElementById(overlayId); if(ol) ol.remove(); }
   document.querySelectorAll('[id^="csc-'+exId+'-"]').forEach(function(el){ el.style.display='none'; });
   var next = document.getElementById('csc-'+exId+'-'+nextIdx);
   if(next) next.style.display='block';
+}
+
+function conseqFinish(exId) {
+  if(!window._conseqState) window._conseqState={};
+  if(!window._conseqState[exId]) window._conseqState[exId]={};
+  window._conseqState[exId].done = true;
+  var btn = document.getElementById('slide-continue-btn');
+  if(btn){ btn.style.display='flex'; btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  var overlays = document.querySelectorAll('[id^="coverlay-'+exId+'-"]');
+  overlays.forEach(function(o){ o.remove(); });
 }
 
 function intruderAnswer(exId, rdIdx, optId, correcto) {
@@ -9987,17 +10018,45 @@ function intruderAnswer(exId, rdIdx, optId, correcto) {
     var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
     if(ex){ var correctBtn=null; ex.rounds[rdIdx].opciones.forEach(function(op){if(op.correcto){correctBtn=document.getElementById('iopt-'+exId+'-'+rdIdx+'-'+op.id);}}); if(correctBtn){correctBtn.style.background='#EAF3DE';correctBtn.style.borderColor='#639922';correctBtn.style.color='#3B6D11';} }
   }
-  var fb = document.getElementById('ifb-'+exId+'-'+rdIdx);
-  if(fb) fb.style.display='block';
+  var ex2=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex2=e;});});
+  var totalR = ex2 ? ex2.rounds.length : 0;
   var prog = document.getElementById('iprog-'+exId);
-  if(prog) prog.style.width = ((rdIdx+1)/(document.querySelectorAll('[id^="ird-'+exId+'-"]').length)*100)+'%';
+  if(prog) prog.style.width = ((rdIdx+1)/totalR*100)+'%';
+  var explicacion = ex2 ? ex2.rounds[rdIdx].explicacion : '';
+  var isLast = rdIdx >= totalR-1;
+  var overlayId = 'ioverlay-'+exId+'-'+rdIdx;
+  var existing = document.getElementById(overlayId);
+  if(existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = overlayId;
+  overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,4,8,0.82);backdrop-filter:blur(6px);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:inherit';
+  overlay.innerHTML = '<div style="background:#1a0a0f;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:20px;width:100%;max-width:340px;text-align:center">'
+    +'<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:'+(correcto?'#639922':'#D4A843')+';margin-bottom:10px">'+(correcto?'Correcto':'Revisemos esto')+'</div>'
+    +'<div style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:16px">'+explicacion+'</div>'
+    +(isLast
+      ? '<button onclick="intruderFinish(\''+exId+'\')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Completado ✦</button>'
+      : '<button onclick="intruderNext(\''+exId+'\','+(rdIdx+1)+','+totalR+',\''+overlayId+'\')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente ronda →</button>')
+    +'</div>';
+  var container = document.getElementById('ird-'+exId+'-'+rdIdx);
+  if(container){ container.style.position='relative'; container.appendChild(overlay); }
   if(correcto){ state.answers[exId]=(state.answers[exId]||'')+'1'; saveState(); updateLessonProgress(currentSectionId); }
 }
 
-function intruderNext(exId, nextIdx, total) {
+function intruderNext(exId, nextIdx, total, overlayId) {
+  if(overlayId){ var ol=document.getElementById(overlayId); if(ol) ol.remove(); }
   document.querySelectorAll('[id^="ird-'+exId+'-"]').forEach(function(el){ el.style.display='none'; });
   var next = document.getElementById('ird-'+exId+'-'+nextIdx);
   if(next) next.style.display='block';
+}
+
+function intruderFinish(exId) {
+  if(!window._intruderState) window._intruderState={};
+  if(!window._intruderState[exId]) window._intruderState[exId]={};
+  window._intruderState[exId].done = true;
+  var btn = document.getElementById('slide-continue-btn');
+  if(btn){ btn.style.display='flex'; btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  var overlays = document.querySelectorAll('[id^="ioverlay-'+exId+'-"]');
+  overlays.forEach(function(o){ o.remove(); });
 }
 
 function updateConvBuilder(exId, n, key, val) {

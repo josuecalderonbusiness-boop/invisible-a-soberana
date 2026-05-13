@@ -5590,15 +5590,13 @@ const SECTIONS = [
       },
       {
         id:'s7_t3_e1', type:'tool', tema:3,
-        question:'Lee estas dos frases. ¿Cual es la version soberana?',
-        body:'"Nunca me apoyas cuando tomo decisiones." — ¿Como se dice esto desde la soberania?',
+        question:'¿En cual de estas dos versiones te reconoces mas?',
+        body:'Los pares exactos del guion — elige con honestidad.',
         items:[
-          {id:'a', label:'Siempre termino sola en esto', desc:'Describes el patron general que se repite.'},
-          {id:'b', label:'Para mi es importante sentirme respaldada. Necesito que la proxima vez me digas lo que piensas antes de que yo actue, no despues.', desc:'Necesidad clara, orientada al futuro, sin historial.'},
-          {id:'c', label:'No entiendo por que no puedes apoyarme mas', desc:'Preguntas por la razon sin ofrecer una salida concreta.'}
+          {left:'Nunca me apoyas cuando tomo decisiones.', right:'Para mi es importante sentirme respaldada. Necesito que me digas lo que piensas antes de que yo actue.'},
+          {left:'¿Por que nunca tenemos tiempo?', right:'Necesito que encontremos veinte minutos esta noche para hablar.'}
         ],
-        correct:'b',
-        field:'single-choice-cards'
+        field:'mirror-check'
       },
       {
         id:'s7_e3', type:'checkpoint', tema:4,

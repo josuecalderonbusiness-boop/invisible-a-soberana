@@ -9469,6 +9469,7 @@ function buildExerciseBlock(ex, sec) {
     </div>`;
     if (!window._matchState) window._matchState = {};
     window._matchState[ex.id] = { current:0, activeBtn:null };
+    setTimeout(function(){ var b = document.getElementById('slide-continue-btn'); if(b) b.style.display='none'; }, 50);
   }
   else if (ex.field === 'single-choice-cards') {
     const savedSCC = state.answers[ex.id] || '';
@@ -9761,13 +9762,15 @@ function matchAnswer(exId, idx, btn, val) {
       var cur = ++window._matchState[exId].current;
       var track = document.getElementById('mtrack-'+exId);
       var prog = document.getElementById('mprog-'+exId);
+      var contBtn = document.getElementById('slide-continue-btn');
       if (track) track.style.transform = 'translateX(-'+(cur*100)+'%)';
       if (prog) prog.style.width = (cur/(ex.matchItems.length)*100)+'%';
       if (cur >= ex.matchItems.length) {
+        if (contBtn) contBtn.style.display = 'flex';
         onFieldInput(exId, {value:'done'});
         _syncSlideAnswer(exId,'done');
       }
-    }, 700);
+    }, 300);
   } else {
     btn.style.background = '#FCEBEB'; btn.style.borderColor = '#E24B4A'; btn.style.color = '#A32D2D';
     window._matchState[exId].activeBtn = btn;

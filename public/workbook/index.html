@@ -9305,7 +9305,9 @@ function _updateSlideUI() {
       const isIntruder = curSlideData && curSlideData.ex && curSlideData.ex.field === 'intruder';
       const conseqDone = isConseq && window._conseqState && window._conseqState[curSlideData.ex.id] && window._conseqState[curSlideData.ex.id].done;
       const intruderDone = isIntruder && window._intruderState && window._intruderState[curSlideData.ex.id] && window._intruderState[curSlideData.ex.id].done;
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone)) {
+      const isPS = curSlideData && curSlideData.ex && curSlideData.ex.field === 'protocol-selector';
+      const psDone = isPS && window._psState && window._psState[curSlideData.ex.id] && window._psState[curSlideData.ex.id].done;
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone)) {
         btn.style.display = 'none';
       } else {
         btn.style.display = 'flex';
@@ -9723,84 +9725,78 @@ function buildExerciseBlock(ex, sec) {
     let savedPS = {};
     try { savedPS = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
     const situations = [
-      { id:'sit1', icon:'🌫️', label:'Él llega distante y se desconecta', ph1:'Ej: "Se alejó porque hice algo mal", "Ya no le importo", "Esto es el principio del fin"...', ph3:'Ej: "Cuando llegas así y no me dices qué pasa, me cierro. Necesito saber si estás bien."' },
-      { id:'sit2', icon:'🏠', label:'Siento que hago todo sola en casa', ph1:'Ej: "No le importa el hogar", "Siempre me toca a mí", "Soy su empleada, no su pareja"...', ph3:'Ej: "Hay cosas que necesito que hagamos juntos. ¿Podemos hablar de cómo repartirlo?"' },
-      { id:'sit3', icon:'⚡', label:'Me desautorizó frente a los niños', ph1:'Ej: "Me hizo quedar mal a propósito", "No me respeta como madre", "Lo hace siempre"...', ph3:'Ej: "Cuando me contradices frente a ellos, siento que piedo autoridad. Necesito que lo hablemos antes."' },
-      { id:'sit4', icon:'🫥', label:'Llevo días sintiéndome invisible', ph1:'Ej: "Soy transparente para él", "No soy una prioridad", "Nunca voy a ser suficiente"...', ph3:'Ej: "Llevo días necesitando conexión contigo. ¿Puedes estar presente esta noche?"' },
-      { id:'sit5', icon:'💬', label:'Necesito tener una conversación difícil', ph1:'Ej: "Va a explotar", "No va a escuchar", "Siempre termina igual"...', ph3:'Ej: "Hay algo que necesito decirte. No es un ataque — es algo que me importa. ¿Puedes escucharme cinco minutos?"' }
+      { id:'sit1', label:'El llega distante y se desconecta', ph1:'Ej: "Se alejo porque hice algo mal", "Ya no le importo", "Esto es el principio del fin"...', ph3:'Ej: "Cuando llegas asi y no me dices que pasa, me cierro. Necesito saber si estas bien."' },
+      { id:'sit2', label:'Siento que hago todo sola en casa', ph1:'Ej: "No le importa el hogar", "Siempre me toca a mi", "Soy su empleada, no su pareja"...', ph3:'Ej: "Hay cosas que necesito que hagamos juntos. ¿Podemos hablar de como repartirlo?"' },
+      { id:'sit3', label:'Me desautorizo frente a los ninos', ph1:'Ej: "Me hizo quedar mal a proposito", "No me respeta como madre", "Lo hace siempre"...', ph3:'Ej: "Cuando me contradices frente a ellos, siento que pierdo autoridad. Necesito que lo hablemos antes."' },
+      { id:'sit4', label:'Llevo dias sintiendome invisible', ph1:'Ej: "Soy transparente para el", "No soy una prioridad", "Nunca voy a ser suficiente"...', ph3:'Ej: "Llevo dias necesitando conexion contigo. ¿Puedes estar presente esta noche?"' },
+      { id:'sit5', label:'Necesito tener una conversacion dificil', ph1:'Ej: "Va a explotar", "No va a escuchar", "Siempre termina igual"...', ph3:'Ej: "Hay algo que necesito decirte. No es un ataque — es algo que me importa. ¿Puedes escucharme cinco minutos?"' }
     ];
-    const selSit = savedPS.situacion || '';
-    const showProtocols = selSit ? 'block' : 'none';
-    const selSitObj = situations.find(s => s.id === selSit);
+    if(!window._psState) window._psState={};
+    if(!window._psState[ex.id]) window._psState[ex.id]={step:0};
+    const psStep = window._psState[ex.id].step;
 
-    bodyHtml += `<div style="padding:0 20px 16px">
-      <div style="font-size:12px;font-weight:700;color:var(--burgundy);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Paso 1 — Tu situación</div>
-      <div style="display:flex;flex-direction:column;gap:9px" id="ps-cards-${ex.id}">`;
-    situations.forEach(sit => {
-      const sel = selSit === sit.id;
-      bodyHtml += `<button onclick="selectProtocolSit('${ex.id}','${sit.id}')"
-        id="ps-sit-${ex.id}-${sit.id}"
-        style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;
-          border:2px solid ${sel?'var(--burgundy)':'var(--surface-2)'};
-          background:${sel?'#FDF5F0':'white'};cursor:pointer;text-align:left;
-          transition:all .2s;font-size:13px;color:var(--text-dark);font-weight:${sel?'600':'400'}">
-        <span style="font-size:22px;flex-shrink:0">${sit.icon}</span>
-        <span>${sit.label}</span>
-      </button>`;
-    });
-    bodyHtml += `</div></div>
+    const psSlides = [
+      { type:'sit' },
+      { type:'p1' },
+      { type:'p2' },
+      { type:'p3' }
+    ];
 
-    <div id="ps-protocols-${ex.id}" style="display:${showProtocols}">
-      <div style="margin:0 20px 14px;border-top:1px solid var(--surface-2)"></div>
-      <div style="padding:0 20px 6px">
-        <div style="font-size:12px;font-weight:700;color:var(--burgundy);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px">Paso 2 — Los 3 Protocolos aplicados</div>
+    bodyHtml += `<div id="ps-wrap-${ex.id}" style="overflow:hidden;position:relative">
+      <div style="height:3px;background:rgba(139,26,47,0.15);border-radius:2px;margin:0 20px 20px">
+        <div id="ps-prog-${ex.id}" style="height:100%;background:var(--burgundy);border-radius:2px;width:${(psStep/3*100)}%;transition:width 0.4s"></div>
+      </div>
+      <div id="ps-track-${ex.id}" style="display:flex;transition:transform 0.4s cubic-bezier(.4,0,.2,1);transform:translateX(-${psStep*100}%)">
 
-        <!-- Protocolo 1 -->
-        <div style="background:#EEF3FB;border-left:4px solid var(--burgundy);border-radius:12px;padding:16px;margin-bottom:12px">
-          <div style="display:inline-block;background:var(--burgundy);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">🧠 Protocolo 1 · Lo que Piensas</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">En esta situación, ¿qué historia está escribiendo tu mente automáticamente?</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">¿Es un hecho o es una interpretación?</div>
-          <textarea style="width:100%;border:1.5px solid #d0dae8;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
-            id="ps-p1-${ex.id}"
-            placeholder="${selSitObj ? selSitObj.ph1 : 'Escribe la historia que tu mente produce automáticamente...'}"
+        <!-- Slide 0: Elige situacion -->
+        <div style="min-width:100%;padding:0 20px 20px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--burgundy);margin-bottom:14px">Elige tu situacion</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            ${situations.map(sit => `
+            <button onclick="psSelectSit('${ex.id}','${sit.id}')"
+              id="ps-sit-${ex.id}-${sit.id}"
+              style="padding:14px 16px;border-radius:14px;border:1.5px solid var(--surface-2);background:white;cursor:pointer;text-align:left;font-size:13px;color:var(--text-dark);font-weight:400;transition:all .2s;line-height:1.5">
+              ${sit.label}
+            </button>`).join('')}
+          </div>
+        </div>
+
+        <!-- Slide 1: Protocolo 1 -->
+        <div style="min-width:100%;padding:0 20px 20px">
+          <div style="display:inline-block;background:var(--burgundy);color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:14px">Protocolo 1 · Lo que Piensas</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-dark);line-height:1.6;margin-bottom:6px">¿Que historia esta escribiendo tu mente automaticamente?</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">¿Es un hecho o una interpretacion?</div>
+          <textarea id="ps-p1-${ex.id}"
+            style="width:100%;border:1.5px solid var(--surface-2);border-radius:12px;padding:12px;font-size:13px;color:var(--text-dark);resize:none;height:120px;font-family:inherit;background:white;box-sizing:border-box;line-height:1.6"
+            placeholder="${situations[0].ph1}"
             oninput="updateProtocolSel('${ex.id}','protocolo1',this.value)">${savedPS.protocolo1||''}</textarea>
+          <button onclick="psNextStep('${ex.id}',2)" style="margin-top:14px;width:100%;padding:13px;background:var(--burgundy);border:none;border-radius:12px;font-size:13px;font-weight:600;color:white;cursor:pointer">Continuar →</button>
         </div>
 
-        <!-- Protocolo 2 -->
-        <div style="background:#EEF7F0;border-left:4px solid #B8892A;border-radius:12px;padding:16px;margin-bottom:12px">
-          <div style="display:inline-block;background:#B8892A;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">❤️ Protocolo 2 · Lo que Sientes</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">¿Qué estás sintiendo exactamente? Nómbralo con precisión — no "mal", el nombre exacto.</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">¿Qué necesidad hay debajo de esa emoción?</div>
-          <textarea style="width:100%;border:1.5px solid #c8dbb0;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
-            id="ps-p2-${ex.id}"
-            placeholder="Ej: frustración, soledad, miedo, vergüenza... y debajo: necesito reconocimiento, conexión, seguridad..."
+        <!-- Slide 2: Protocolo 2 -->
+        <div style="min-width:100%;padding:0 20px 20px">
+          <div style="display:inline-block;background:#B8892A;color:white;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:14px">Protocolo 2 · Lo que Sientes</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-dark);line-height:1.6;margin-bottom:6px">¿Que estas sintiendo exactamente?</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Nombralo con precision — no "mal", el nombre exacto. ¿Que necesidad hay debajo?</div>
+          <textarea id="ps-p2-${ex.id}"
+            style="width:100%;border:1.5px solid var(--surface-2);border-radius:12px;padding:12px;font-size:13px;color:var(--text-dark);resize:none;height:120px;font-family:inherit;background:white;box-sizing:border-box;line-height:1.6"
+            placeholder="Ej: frustracion, soledad, miedo... y debajo: necesito reconocimiento, conexion, seguridad..."
             oninput="updateProtocolSel('${ex.id}','protocolo2',this.value)">${savedPS.protocolo2||''}</textarea>
+          <button onclick="psNextStep('${ex.id}',3)" style="margin-top:14px;width:100%;padding:13px;background:#B8892A;border:none;border-radius:12px;font-size:13px;font-weight:600;color:white;cursor:pointer">Continuar →</button>
         </div>
 
-        <!-- Protocolo 3 -->
-        <div style="background:#FAF5F0;border-left:4px solid #A08090;border-radius:12px;padding:16px;margin-bottom:16px">
-          <div style="display:inline-block;background:#A08090;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:10px">🤝 Protocolo 3 · Lo que Sostienes</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:4px;line-height:1.5">¿Qué necesitas comunicar desde tu centro, sin rogar ni explotar?</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">Escríbelo como si fuera la frase exacta que dirías — una vez, con calma.</div>
-          <textarea style="width:100%;border:1.5px solid #d8c8d0;border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:80px;font-family:inherit;background:white;box-sizing:border-box"
-            id="ps-p3-${ex.id}"
-            placeholder="${selSitObj ? selSitObj.ph3 : 'Escribe la frase exacta que dirías — desde tu centro, con calma...'}"
+        <!-- Slide 3: Protocolo 3 -->
+        <div style="min-width:100%;padding:0 20px 20px">
+          <div style="display:inline-block;background:#3D0C11;color:#D4A843;border:1px solid #D4A843;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:14px">Protocolo 3 · Lo que Comunicas</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text-dark);line-height:1.6;margin-bottom:6px">¿Que necesitas comunicar desde tu centro?</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Escribelo como la frase exacta que dirias — una vez, con calma, sin historial.</div>
+          <textarea id="ps-p3-${ex.id}"
+            style="width:100%;border:1.5px solid var(--surface-2);border-radius:12px;padding:12px;font-size:13px;color:var(--text-dark);resize:none;height:120px;font-family:inherit;background:white;box-sizing:border-box;line-height:1.6"
+            placeholder="${situations[0].ph3}"
             oninput="updateProtocolSel('${ex.id}','protocolo3',this.value)">${savedPS.protocolo3||''}</textarea>
+          <button onclick="psFinish('${ex.id}')" style="margin-top:14px;width:100%;padding:13px;background:#3D0C11;border:1px solid #D4A843;border-radius:12px;font-size:13px;font-weight:600;color:#D4A843;cursor:pointer">Completado ✦</button>
         </div>
 
-        <!-- Paso 3: Reflexión final -->
-        <div style="background:#3D0C11;border-radius:14px;padding:18px;margin-bottom:4px">
-          <div style="font-size:13px;color:#F0E6EA;line-height:1.6;margin-bottom:10px">
-            Ahora tienes los tres protocolos aplicados a tu situación real. No en teoría — en tu vida.
-          </div>
-          <div style="font-size:13px;font-weight:600;color:#D4A843;margin-bottom:10px">
-            ¿Qué se siente diferente después de escribirlo así?
-          </div>
-          <textarea style="width:100%;border:1.5px solid rgba(212,168,67,.4);border-radius:10px;padding:10px;font-size:13px;color:var(--text-dark);resize:vertical;min-height:70px;font-family:inherit;background:rgba(255,255,255,.95);box-sizing:border-box"
-            id="ps-ref-${ex.id}"
-            placeholder="Escribe lo que notas diferente..."
-            oninput="updateProtocolSel('${ex.id}','reflexion',this.value)">${savedPS.reflexion||''}</textarea>
-        </div>
       </div>
     </div>`;
   }
@@ -10057,6 +10053,50 @@ function intruderFinish(exId) {
   if(btn){ btn.style.display='flex'; btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   var overlays = document.querySelectorAll('[id^="ioverlay-'+exId+'-"]');
   overlays.forEach(function(o){ o.remove(); });
+}
+
+function psSelectSit(exId, sitId) {
+  var situations = [
+    {id:'sit1',ph1:'Ej: "Se alejo porque hice algo mal"...',ph3:'Ej: "Cuando llegas asi y no me dices que pasa, me cierro."'},
+    {id:'sit2',ph1:'Ej: "No le importa el hogar", "Siempre me toca a mi"...',ph3:'Ej: "Hay cosas que necesito que hagamos juntos."'},
+    {id:'sit3',ph1:'Ej: "Me hizo quedar mal a proposito"...',ph3:'Ej: "Cuando me contradices frente a ellos, pierdo autoridad."'},
+    {id:'sit4',ph1:'Ej: "Soy transparente para el", "No soy una prioridad"...',ph3:'Ej: "Llevo dias necesitando conexion contigo."'},
+    {id:'sit5',ph1:'Ej: "Va a explotar", "No va a escuchar"...',ph3:'Ej: "Hay algo que necesito decirte. No es un ataque."'}
+  ];
+  var sit = situations.find(function(s){return s.id===sitId;});
+  document.querySelectorAll('[id^="ps-sit-'+exId+'-"]').forEach(function(b){
+    b.style.borderColor='var(--surface-2)';b.style.background='white';b.style.fontWeight='400';
+  });
+  var sel = document.getElementById('ps-sit-'+exId+'-'+sitId);
+  if(sel){sel.style.borderColor='var(--burgundy)';sel.style.background='#FDF5F0';sel.style.fontWeight='600';}
+  if(sit){
+    var p1=document.getElementById('ps-p1-'+exId); if(p1) p1.placeholder=sit.ph1;
+    var p3=document.getElementById('ps-p3-'+exId); if(p3) p3.placeholder=sit.ph3;
+  }
+  updateProtocolSel(exId,'situacion',sitId);
+  setTimeout(function(){ psNextStep(exId,1); },300);
+}
+
+function psNextStep(exId, step) {
+  if(!window._psState) window._psState={};
+  if(!window._psState[exId]) window._psState[exId]={};
+  window._psState[exId].step = step;
+  var track = document.getElementById('ps-track-'+exId);
+  if(track) track.style.transform='translateX(-'+(step*100)+'%)';
+  var prog = document.getElementById('ps-prog-'+exId);
+  if(prog) prog.style.width=(step/3*100)+'%';
+}
+
+function psFinish(exId) {
+  if(!window._psState) window._psState={};
+  if(!window._psState[exId]) window._psState[exId]={};
+  window._psState[exId].done=true;
+  var prog = document.getElementById('ps-prog-'+exId);
+  if(prog) prog.style.width='100%';
+  var btn = document.getElementById('slide-continue-btn');
+  if(btn){btn.style.display='flex';btn.innerHTML='Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+  saveState();
+  updateLessonProgress(currentSectionId);
 }
 
 function updateConvBuilder(exId, n, key, val) {

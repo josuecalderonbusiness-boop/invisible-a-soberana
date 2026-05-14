@@ -2580,7 +2580,7 @@
     overflow: hidden;
   }
   .slide-progress-fill {
-    height: 100%;
+    height: 5px;
     background: linear-gradient(90deg, #B8892A, #D4AF6A);
     border-radius: 100px;
     transition: width .4s cubic-bezier(.4,0,.2,1);
@@ -2590,7 +2590,7 @@
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(212,175,106,0.45);
+    color: rgba(212,175,106,0.7);
     text-align: right;
   }
 
@@ -11071,11 +11071,17 @@ function openQueSigneAhora() {
   track.appendChild(panel2);
 
   body.appendChild(content);
-  getBunnyUrl(BUNNY_VIDEO_PRUEBA).then(function(url) {
-    var c = document.getElementById('bunny-vsl-container');
+  panel2.appendChild(content2);
+  track.appendChild(body);
+  track.appendChild(panel2);
+  getBunnyUrl('PENDIENTE_S10T1').then(function(url) {
+    var c = document.getElementById('bunny-vsl1-container');
     if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
   });
-  track.appendChild(body);
+  getBunnyUrl('PENDIENTE_S10T2').then(function(url) {
+    var c = document.getElementById('bunny-vsl2-container');
+    if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
+  });
   document.getElementById('lesson-view').classList.add('open');
 }
 

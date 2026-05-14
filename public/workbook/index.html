@@ -5719,17 +5719,22 @@ const SECTIONS = [
   {
     id:'s9', num:'09', label:'Lo que Construiste y lo que te Espera',
     title:'Lo que Construiste y lo que te Espera',
-    desc:'Integración final — tu Código Soberana Personal',
+    desc:'Integracion final — tu Codigo Soberana Personal',
     palanca: null,
+    temas: [
+      { num:1, titulo:'Lo que ya tienes — los 3 sistemas que cambiaron tu dinamica', bunnyVideoId:'PENDIENTE_S9T1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'PENDIENTE_S9T2', bunnyLibrary:'636956' },
+      { num:3, titulo:'Soberana 7D — el siguiente nivel', bunnyVideoId:'PENDIENTE_S9T3', bunnyLibrary:'636956' }
+    ],
     exercises: [
       {
-        id:'s9_e1', type:'tool',
-        question:'¿Qué cambió en ti durante este workshop?',
-        body:'Selecciona todo lo que aplica — no lo que crees que debería aplicar, lo que realmente sientes que se movió.',
+        id:'s9_e1', type:'tool', tema:1,
+        question:'¿Que cambio en ti durante este workshop?',
+        body:'Selecciona todo lo que aplica — no lo que crees que deberia aplicar, lo que realmente sientes que se movio.',
         items:[
-          {id:'c1', label:'Mi forma de pensar sobre la dinámica'},
-          {id:'c2', label:'Cómo me veo a mí misma en la relación'},
-          {id:'c3', label:'Cómo quiero reaccionar la próxima vez'},
+          {id:'c1', label:'Mi forma de pensar sobre la dinamica'},
+          {id:'c2', label:'Como me veo a mi misma en la relacion'},
+          {id:'c3', label:'Como quiero reaccionar la proxima vez'},
           {id:'c4', label:'Lo que estoy dispuesta a aceptar y lo que no'},
           {id:'c5', label:'Mi forma de comunicar lo que necesito'},
           {id:'c6', label:'La forma en que entiendo a mi pareja'}
@@ -5737,34 +5742,33 @@ const SECTIONS = [
         field:'multi-choice'
       },
       {
-        id:'s9_e2', type:'tool',
-        question:'¿Desde cuál protocolo has operado con mayor fortaleza — y cuál necesitas profundizar más?',
+        id:'s9_e2', type:'tool', tema:1,
+        question:'¿Desde cual protocolo has operado con mayor fortaleza — y cual necesitas profundizar mas?',
         field:'protocol-check'
       },
       {
-        id:'s9_e3', type:'reflection',
+        id:'s9_e3', type:'reflection', tema:2,
         question:'Cosas que he tolerado que no son coherentes con ser Soberana:',
-        placeholder:'Escríbelas sin juzgarte. Reconocerlas es el primer paso para cambiarlas...',
+        placeholder:'Escribelas sin juzgarte. Reconocerlas es el primer paso para cambiarlas...',
         field:'textarea'
       },
       {
-        id:'s9_e4', type:'reflection',
-        question:'¿Desde cuál de los tres protocolos he estado operando con mayor fortaleza — y cuál es el que más necesito profundizar?',
-        placeholder:'Responde con honestidad — no la respuesta que quisieras dar, la que es verdad...',
-        field:'textarea'
-      },
-      {
-        id:'s9_e5', type:'checkpoint',
-        label:'Pregunta Espejo 3',
-        question:'Hoy, en tu relación, ¿estás siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambió algo desde la Lección 1?',
+        id:'s9_e5', type:'checkpoint', tema:2,
+        label:'Pausa Workbook · Espejo 3',
+        question:'Hoy, en tu relacion, ¿estas siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambio algo desde la Leccion 1?',
         placeholder:'Responde comparando con lo que escribiste al inicio...',
         espejo1Button: true,
         field:'star-textarea'
       },
       {
-        id:'s9_e6', type:'tool',
-        question:'Mi Código Soberana Personal',
+        id:'s9_e6', type:'tool', tema:2,
+        question:'Mi Codigo Soberana Personal',
         field:'codigo-personal'
+      },
+      {
+        id:'s9_e7', type:'tool', tema:3,
+        question:'El siguiente nivel',
+        field:'oferta-7d'
       }
     ]
   },

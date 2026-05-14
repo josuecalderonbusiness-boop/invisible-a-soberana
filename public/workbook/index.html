@@ -9932,10 +9932,7 @@ function buildExerciseBlock(ex, sec) {
         </div>
        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:18px 20px;position:relative;z-index:10">
           <div id="dr-fb-text-${ex.id}-${i}" style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:14px"></div>
-          ${i<dims.length-1
-            ?`<button data-dr-next="${ex.id}" data-dr-nextidx="${i+1}" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Siguiente →</button>`
-            :`<button data-dr-finish="${ex.id}" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:'Jost',sans-serif">Ver el siguiente nivel →</button>`
-          }
+          <div style="font-size:11px;color:rgba(212,168,67,0.5);text-align:center;margin-top:8px">Continuando...</div>
         </div>
       </div>`).join('')}
       <div id="dr-result-${ex.id}" style="display:none;text-align:center;padding:24px 0">
@@ -10192,6 +10189,14 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   state.answers[exId]=(state.answers[exId]||'')+(esCarencia?'1':'0');
   saveState();
   updateLessonProgress(currentSectionId);
+  var totalDims = ex.dimensiones.length;
+  setTimeout(function(){
+    if(idx < totalDims-1) {
+      dimRevNext(exId, idx+1);
+    } else {
+      dimRevFinish(exId);
+    }
+  }, 2000);
 }
 
 document.addEventListener('click', function(e) {

@@ -5755,15 +5755,13 @@ const SECTIONS = [
         id:'s9_e3', type:'tool', tema:1,
         question:'Una pregunta por cada dimension que viene',
         body:'Responde con honestidad — no la que quisieras dar.',
-        leftLabel:'Me falta trabajarlo',
-        rightLabel:'Lo tengo resuelto',
-        matchItems:[
-          {text:'¿Cuantas veces en el ultimo ano cediste un limite que dijiste que no ibas a ceder?', correct:'G', error:'Cada vez que cedes lo que dijiste que no ibas a ceder, tus palabras pierden peso. Eso se trabaja en la dimension de Caracter.'},
-          {text:'¿Tu nivel de energia fisica esta afectando como reaccionas en las conversaciones dificiles?', correct:'G', error:'El agotamiento amplifica la reactividad hasta en un 60%. Eso se trabaja en la dimension Fisica.'},
-          {text:'¿El dinero en tu relacion tiene acuerdos claros — o es un tema que prefieren evitar?', correct:'G', error:'Lo que no se acuerda se acumula. El 80% de las discusiones sobre dinero vienen de acuerdos que nunca se hicieron. Eso se trabaja en Economia Consciente.'},
-          {text:'¿Tienes un proposito propio mas alla de la relacion y los hijos?', correct:'H', error:'Una mujer con un para que suficientemente solido no necesita que el la complete para estar bien. Eso se trabaja en la dimension Espiritual.'}
+        items:[
+          {left:'He cedido limites que dije que no iba a ceder', right:'Mis estandares son limites reales que sostengo'},
+          {left:'Mi energia fisica afecta como reacciono en conflictos', right:'Mi vitalidad no compromete mis conversaciones'},
+          {left:'El dinero es un tema que evitamos en mi relacion', right:'Tenemos acuerdos economicos claros'},
+          {left:'No tengo un proposito claro mas alla de la relacion', right:'Tengo un para que propio que no depende de el'}
         ],
-        field:'match-slide'
+        field:'mirror-check'
       },
       {
         id:'s9_e5', type:'checkpoint', tema:2,

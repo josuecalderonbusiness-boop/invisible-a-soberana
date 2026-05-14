@@ -5730,7 +5730,7 @@ const SECTIONS = [
       {
         id:'s9_e1', type:'tool', tema:1,
         question:'¿Que cambio en ti durante este workshop?',
-        body:'Selecciona todo lo que aplica — no lo que crees que deberia aplicar, lo que realmente sientes que se movio.',
+        body:'Selecciona todo lo que aplica — lo que realmente sientes que se movio.',
         items:[
           {id:'c1', label:'Mi forma de pensar sobre la dinamica'},
           {id:'c2', label:'Como me veo a mi misma en la relacion'},
@@ -5743,14 +5743,25 @@ const SECTIONS = [
       },
       {
         id:'s9_e2', type:'tool', tema:1,
-        question:'¿Desde cual protocolo has operado con mayor fortaleza — y cual necesitas profundizar mas?',
+        question:'¿Desde cual protocolo operaste con mayor fortaleza?',
         field:'protocol-check'
       },
       {
-        id:'s9_e3', type:'reflection', tema:2,
-        question:'Cosas que he tolerado que no son coherentes con ser Soberana:',
-        placeholder:'Escribelas sin juzgarte. Reconocerlas es el primer paso para cambiarlas...',
-        field:'textarea'
+        id:'s9_e6', type:'tool', tema:1,
+        question:'Mi Codigo Soberana Personal',
+        field:'codigo-personal'
+      },
+      {
+        id:'s9_e3', type:'tool', tema:2,
+        question:'Antes de ver el siguiente video — responde con honestidad',
+        body:'Una pregunta por cada dimension que viene.',
+        items:[
+          {id:'a', label:'En el ultimo ano, ¿cuantas veces cediste un limite que dijiste que no ibas a ceder?', desc:'Siempre que cedo, mis palabras pierden peso.'},
+          {id:'b', label:'¿Tu nivel de energia fisica esta afectando como reaccionas en tu relacion?', desc:'El agotamiento amplifica todo conflicto.'},
+          {id:'c', label:'¿El dinero en tu relacion tiene acuerdos claros — o es un tema que evitan?', desc:'Lo que no se acuerda, se acumula.'},
+          {id:'d', label:'¿Tienes un proposito propio mas alla de la relacion y los hijos?', desc:'Una mujer con proposito claro no necesita que el la complete.'}
+        ],
+        field:'multi-choice'
       },
       {
         id:'s9_e5', type:'checkpoint', tema:2,
@@ -5759,11 +5770,6 @@ const SECTIONS = [
         placeholder:'Responde comparando con lo que escribiste al inicio...',
         espejo1Button: true,
         field:'star-textarea'
-      },
-      {
-        id:'s9_e6', type:'tool', tema:2,
-        question:'Mi Codigo Soberana Personal',
-        field:'codigo-personal'
       },
       {
         id:'s9_e7', type:'tool', tema:3,

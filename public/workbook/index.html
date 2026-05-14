@@ -9912,43 +9912,44 @@ function buildExerciseBlock(ex, sec) {
     if(!window._dimRevState) window._dimRevState={};
     if(!window._dimRevState[ex.id]) window._dimRevState[ex.id]={current:0,pendientes:0};
     const dims = ex.dimensiones||[];
-    bodyHtml += `<div id="dr-wrap-${ex.id}" style="padding:0 20px 20px;position:relative">
-      <div style="height:3px;background:rgba(139,26,47,0.15);border-radius:2px;margin-bottom:24px">
-        <div id="dr-prog-${ex.id}" style="height:100%;background:var(--burgundy);border-radius:2px;width:0%;transition:width 0.4s"></div>
+    bodyHtml += `<div id="dr-wrap-${ex.id}" style="padding:0 20px 20px">
+      <div style="height:2px;background:rgba(212,168,67,0.15);border-radius:2px;margin-bottom:24px">
+        <div id="dr-prog-${ex.id}" style="height:100%;background:#D4A843;border-radius:2px;width:0%;transition:width 0.5s"></div>
       </div>
       ${dims.map((d,i)=>`
       <div id="dr-dim-${ex.id}-${i}" style="display:${i===0?'block':'none'}">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <div style="width:44px;height:44px;border-radius:50%;background:rgba(139,26,47,0.1);border:1.5px solid rgba(139,26,47,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--burgundy)">${d.num}</span>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+          <div style="width:48px;height:48px;border-radius:50%;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#D4A843">${d.num}</span>
           </div>
           <div>
-            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px">Dimension</div>
-            <div style="font-size:17px;font-weight:600;color:var(--text-dark)">${d.nombre}</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(212,168,67,0.6);margin-bottom:3px">Dimension</div>
+            <div style="font-size:19px;font-weight:600;color:#F0E6EA;font-family:'Cormorant Garamond',serif">${d.nombre}</div>
           </div>
         </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--text-dark);line-height:1.7;margin-bottom:24px">"${d.dolor}"</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:rgba(240,230,234,0.85);line-height:1.8;margin-bottom:24px;padding:16px;background:rgba(255,255,255,0.04);border-left:2px solid rgba(212,168,67,0.4);border-radius:0 12px 12px 0">"${d.dolor}"</div>
         <div style="display:flex;flex-direction:column;gap:10px">
           <button onclick="dimRevAnswer('${ex.id}',${i},true)"
-            style="padding:16px 20px;border-radius:14px;border:2px solid rgba(139,26,47,0.25);background:rgba(139,26,47,0.05);font-size:14px;font-weight:600;color:var(--burgundy);cursor:pointer;text-align:left;transition:all .2s">
+            style="padding:16px 20px;border-radius:14px;border:1.5px solid rgba(139,26,47,0.6);background:rgba(139,26,47,0.15);font-size:14px;font-weight:600;color:#F0E6EA;cursor:pointer;text-align:left;line-height:1.4;font-family:'Jost',sans-serif;transition:all .2s">
             Esto me pasa
           </button>
           <button onclick="dimRevAnswer('${ex.id}',${i},false)"
-            style="padding:16px 20px;border-radius:14px;border:1.5px solid var(--surface-2);background:white;font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;text-align:left;transition:all .2s">
+            style="padding:16px 20px;border-radius:14px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);font-size:14px;font-weight:400;color:rgba(240,230,234,0.5);cursor:pointer;text-align:left;line-height:1.4;font-family:'Jost',sans-serif;transition:all .2s">
             Ya lo tengo resuelto
           </button>
         </div>
-        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:#1a0a0f;border-radius:14px;padding:18px 20px">
+        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:18px 20px">
           <div id="dr-fb-text-${ex.id}-${i}" style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:14px"></div>
           ${i<dims.length-1
-            ?`<button onclick="dimRevNext('${ex.id}',${i+1},${dims.length})" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente →</button>`
-            :`<button onclick="dimRevFinish('${ex.id}')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Ver el siguiente nivel →</button>`
+            ?`<button onclick="dimRevNext('${ex.id}',${i+1},${dims.length})" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Siguiente →</button>`
+            :`<button onclick="dimRevFinish('${ex.id}')" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:'Jost',sans-serif">Ver el siguiente nivel →</button>`
           }
         </div>
       </div>`).join('')}
-      <div id="dr-result-${ex.id}" style="display:none;text-align:center;padding:20px 0">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--burgundy);margin-bottom:8px" id="dr-count-${ex.id}"></div>
-        <div style="font-size:14px;color:var(--text-muted);line-height:1.6" id="dr-msg-${ex.id}"></div>
+      <div id="dr-result-${ex.id}" style="display:none;text-align:center;padding:24px 0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:#D4A843;margin-bottom:10px" id="dr-count-${ex.id}"></div>
+        <div style="font-size:14px;color:rgba(240,230,234,0.6);line-height:1.7;margin-bottom:20px" id="dr-msg-${ex.id}"></div>
+        <div style="width:40px;height:1px;background:rgba(212,168,67,0.3);margin:0 auto"></div>
       </div>
     </div>`;
   }

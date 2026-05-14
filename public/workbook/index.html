@@ -5742,11 +5742,6 @@ const SECTIONS = [
         field:'multi-choice'
       },
       {
-        id:'s9_e2', type:'tool', tema:1,
-        question:'¿Desde cual protocolo operaste con mayor fortaleza?',
-        field:'protocol-check'
-      },
-      {
         id:'s9_e6', type:'tool', tema:1,
         question:'Mi Codigo Soberana Personal',
         field:'codigo-personal'
@@ -9935,7 +9930,7 @@ function buildExerciseBlock(ex, sec) {
             ${op}
           </button>`).join('')}
         </div>
-        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:18px 20px">
+       <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:18px 20px;position:relative;z-index:10">
           <div id="dr-fb-text-${ex.id}-${i}" style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:14px"></div>
           ${i<dims.length-1
             ?`<button onclick="dimRevNext('${ex.id}',${i+1},${dims.length})" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Siguiente →</button>`

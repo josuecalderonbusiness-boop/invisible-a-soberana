@@ -11023,11 +11023,8 @@ function openQueSigneAhora() {
   track.style.transform = 'translateX(0)';
   const body = document.createElement('div');
   body.className = 'slide-panel';
-  body.style.cssText = 'overflow-y:auto;height:100%';
-
-  const content = document.createElement('div');
-  content.style.cssText = 'background:#0D2418;min-height:100%';
-  content.innerHTML = `
+  body.style.cssText = 'background:#0D2418';
+  body.innerHTML = `
 
     <!-- VIDEO 1 -->
     <div style="padding:28px 20px 0;background:#0D2418;min-height:auto">
@@ -11075,7 +11072,6 @@ function openQueSigneAhora() {
   panel2.appendChild(content2);
   track.appendChild(panel2);
 
-  body.appendChild(content);
   panel2.appendChild(content2);
   track.appendChild(body);
   track.appendChild(panel2);

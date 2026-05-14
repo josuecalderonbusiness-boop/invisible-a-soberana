@@ -8735,8 +8735,8 @@ function renderHiloCards() {
   ];
   
   container.innerHTML = hilos.map((h,i) => {
-    const ans = state.answers[h.id] || '';
-    const has = ans.trim().length > 10;
+    const ans = typeof state.answers[h.id] === 'string' ? state.answers[h.id] : '';
+    const has = typeof ans === 'string' && ans.trim().length > 10;
     const preview = has ? ans.substring(0,120) + (ans.length > 120 ? '...' : '') : '';
     return `
       <div class="hilo-q-card">

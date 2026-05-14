@@ -5755,13 +5755,41 @@ const SECTIONS = [
         id:'s9_e3', type:'tool', tema:1,
         question:'Una pregunta por cada dimension que viene',
         body:'Responde con honestidad — no la que quisieras dar.',
-        items:[
-          {left:'He cedido limites que dije que no iba a ceder', right:'Mis estandares son limites reales que sostengo'},
-          {left:'Mi energia fisica afecta como reacciono en conflictos', right:'Mi vitalidad no compromete mis conversaciones'},
-          {left:'El dinero es un tema que evitamos en mi relacion', right:'Tenemos acuerdos economicos claros'},
-          {left:'No tengo un proposito claro mas alla de la relacion', right:'Tengo un para que propio que no depende de el'}
+        scenarios:[
+          {
+            situacion:'"Si vuelves a hacer esto, yo voy a hacer aquello." ¿Cuantas veces dijiste algo asi — y luego no lo hiciste?',
+            opciones:[
+              {id:'a', texto:'Muchas veces. Digo cosas que luego no sostengo.', correcto:true},
+              {id:'b', texto:'Mis limites son reales. Cuando digo algo, lo cumplo.'}
+            ],
+            explicacion:'Cada vez que cedes lo que dijiste que no ibas a ceder, el sistema aprende que tus palabras no tienen peso. Eso se trabaja en la dimension de Caracter — la cuarta dimension.'
+          },
+          {
+            situacion:'¿Cuantas peleas de tu relacion ocurren de noche — cuando ambos estan agotados?',
+            opciones:[
+              {id:'a', texto:'La mayoria. El cansancio lo amplifica todo.', correcto:true},
+              {id:'b', texto:'Mi energia no afecta como reacciono en conflictos.'}
+            ],
+            explicacion:'El deficit de sueno aumenta la respuesta de alarma del cerebro hasta en un 60%. Parte de eso no es problema de tu relacion. Es biologia. Eso se trabaja en la dimension Fisica.'
+          },
+          {
+            situacion:'¿El tema del dinero en tu relacion tiene acuerdos claros — o es algo que prefieren no tocar?',
+            opciones:[
+              {id:'a', texto:'Es un tema que evitamos. Siempre termina mal.', correcto:true},
+              {id:'b', texto:'Tenemos acuerdos economicos claros que funcionan.'}
+            ],
+            explicacion:'Lo que no se acuerda se acumula. El 80% de las discusiones sobre dinero vienen de acuerdos que nunca se hicieron. Eso se trabaja en Economia Consciente.'
+          },
+          {
+            situacion:'Si el manana te dijera que necesita espacio — ¿tienes un proposito propio al que volverte?',
+            opciones:[
+              {id:'a', texto:'No tengo claro quien soy mas alla de esta relacion.', correcto:true},
+              {id:'b', texto:'Tengo un para que propio que no depende de el.'}
+            ],
+            explicacion:'Una mujer con un proposito suficientemente solido no necesita que el la complete para estar bien. Las tormentas la prueban — pero no la destruyen. Eso se trabaja en la dimension Espiritual.'
+          }
         ],
-        field:'mirror-check'
+        field:'consequence'
       },
       {
         id:'s9_e5', type:'checkpoint', tema:2,

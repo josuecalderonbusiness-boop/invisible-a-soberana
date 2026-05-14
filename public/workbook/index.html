@@ -10359,15 +10359,9 @@ function dimRevFinish(exId) {
   var result = document.getElementById('dr-result-'+exId);
   var count = document.getElementById('dr-count-'+exId);
   var msg = document.getElementById('dr-msg-'+exId);
-  if(count) count.textContent = pendientes + ' de 4 dimensiones';
-  if(msg) msg.innerHTML = pendientes >= 3
-    ? 'Las identificaste. El siguiente video te muestra exactamente como trabajarlas.'
-    : pendientes >= 1
-    ? 'Las tienes identificadas. El siguiente video te muestra el camino.'
-    : 'Tienes una base solida. El siguiente video te muestra como consolidarla.';
-  if(result) result.style.display='block';
+  if(result) result.style.display='none';
   var btn = document.getElementById('slide-continue-btn');
-  if(btn){btn.style.display='flex';btn.innerHTML='Ver el siguiente nivel <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+  if(btn){btn.style.display='flex';btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
 }
 
 function psSelectSit(exId, sitId) {

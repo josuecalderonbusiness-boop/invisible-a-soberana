@@ -10170,7 +10170,8 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
   if(!ex) return;
   var d = ex.dimensiones[idx];
-  var btns = document.querySelectorAll('#dr-dim-'+exId+'-'+idx+' button');
+  var dimDiv = document.getElementById('dr-dim-'+exId+'-'+idx);
+  var btns = dimDiv ? dimDiv.querySelectorAll('button') : [];
   btns.forEach(function(b){b.disabled=true;b.style.opacity='0.35';b.style.borderColor='rgba(255,255,255,0.08)';});
   btn.style.opacity='1';
   btn.style.borderColor='rgba(212,168,67,0.6)';

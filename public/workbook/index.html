@@ -6940,6 +6940,13 @@ const SECTION_ICONS = {
 };
 
 // x-positions alternating for the sinuous path (as % of container width)
+const SECCION_COLORES = {
+  s0:  '#3D0C11', s1:  '#3D0C11', s2:  '#5A1220',
+  s3:  '#6B1A2A', s4:  '#8B2D3F', s5:  '#7A5C1E',
+  s6:  '#B8892A', s7:  '#D4A843', s8:  '#1A4A2E',
+  s9:  '#0D2418', s10: '#B8892A'
+};
+function _hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return r+','+g+','+b;}
 const NODE_X_PCT = [50, 70, 50, 30, 50, 70, 50, 30, 50, 70]; // s0..s9
 const NODE_SPACING = 120; // px between nodes vertically
 
@@ -9030,7 +9037,20 @@ function openLesson(sectionId) {
   // Update UI
   _updateSlideUI();
 
-  // Open
+  // Open — color del viaje
+  const _lc = (typeof SECCION_COLORES!=='undefined' && SECCION_COLORES[sectionId]) ? SECCION_COLORES[sectionId] : '#B8892A';
+  window._lessonAccent = _lc;
+  const _pf = document.getElementById('slide-prog-fill');
+  if (_pf) _pf.style.background = 'linear-gradient(90deg,'+_lc+','+_lc+'cc)';
+  setTimeout(function(){
+    document.querySelectorAll('.slide-ex-eyebrow').forEach(function(e){ e.style.color=_lc; });
+    document.querySelectorAll('.slide-ex-confrontation').forEach(function(c){ c.style.borderLeftColor=_lc; c.style.background='rgba('+_hexToRgb(_lc)+',0.06)'; });
+    document.querySelectorAll('.slide-lesson-quote').forEach(function(q){ q.style.borderLeftColor='rgba('+_hexToRgb(_lc)+',0.45)'; });
+    document.querySelectorAll('.slide-ex-insight').forEach(function(i){ i.style.borderColor='rgba('+_hexToRgb(_lc)+',0.2)'; i.style.background='rgba('+_hexToRgb(_lc)+',0.06)'; });
+    document.querySelectorAll('.slide-textarea').forEach(function(t){ t.style.borderColor='rgba('+_hexToRgb(_lc)+',0.2)'; t.onfocus=function(){this.style.borderColor='rgba('+_hexToRgb(_lc)+',0.5)';}; t.onblur=function(){this.style.borderColor='rgba('+_hexToRgb(_lc)+',0.2)';}; });
+    var pl=document.getElementById('slide-prog-label'); if(pl) pl.style.color='rgba('+_hexToRgb(_lc)+',0.55)';
+    document.querySelectorAll('.slide-char-hint').forEach(function(h){ h.style.color='rgba('+_hexToRgb(_lc)+',0.35)'; });
+  },0);
   document.getElementById('lesson-view').classList.add('open');
 
   updateLessonProgress(sectionId);
@@ -10456,9 +10476,10 @@ function matchClosePopup(exId) {
 function selectSingleChoiceCard(exId, val, btn) {
   document.querySelectorAll(`[data-scc-group="${exId}"]`).forEach(b => {
     const sel = b.dataset.sccVal === val;
-    b.style.borderColor = sel ? 'var(--burgundy)' : 'var(--surface-2)';
-    b.style.background = sel ? 'rgba(139,26,47,.09)' : 'white';
-    b.querySelector('div:nth-child(2)').style.color = sel ? 'var(--burgundy)' : 'var(--text-dark)';
+    const _a = (window._lessonAccent||'var(--burgundy)');
+    b.style.borderColor = sel ? _a : 'var(--surface-2)';
+    b.style.background = sel ? 'rgba('+_hexToRgb(_a.startsWith('#')?_a:'#8B1A2F')+',0.09)' : 'white';
+    b.querySelector('div:nth-child(2)').style.color = sel ? _a : 'var(--text-dark)';
   });
   state.answers[exId] = val;
   saveState();
@@ -10475,13 +10496,14 @@ function toggleMultiChoice(exId, val, btn) {
   saveState();
   // Re-render the button visually
   const sel = saved.includes(val);
-  btn.style.borderColor = sel ? 'var(--burgundy)' : 'var(--surface-2)';
-  btn.style.background = sel ? 'rgba(139,26,47,.07)' : 'white';
+  const _ac = (window._lessonAccent||'var(--burgundy)');
+  btn.style.borderColor = sel ? _ac : 'var(--surface-2)';
+  btn.style.background = sel ? 'rgba('+_hexToRgb(_ac.startsWith('#')?_ac:'#8B1A2F')+',0.07)' : 'white';
   btn.style.fontWeight = sel ? '600' : '400';
   const box = btn.querySelector('span');
   if (box) {
-    box.style.borderColor = sel ? 'var(--burgundy)' : '#ccc';
-    box.style.background = sel ? 'var(--burgundy)' : 'white';
+    box.style.borderColor = sel ? _ac : '#ccc';
+    box.style.background = sel ? _ac : 'white';
     box.innerHTML = sel ? '<svg width="10" height="10" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>' : '';
   }
   updateLessonProgress(currentSectionId);

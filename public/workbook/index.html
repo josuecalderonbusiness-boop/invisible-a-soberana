@@ -10183,7 +10183,16 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
     ? '<strong style="color:#D4A843;display:block;margin-bottom:8px">Eso se trabaja en el siguiente nivel:</strong>' + d.ganas
     : '<span style="color:rgba(240,230,234,0.6)">Bien. En Soberana 7D lo profundizamos para que se sostenga bajo presion real.</span>';
   var fb = document.getElementById('dr-fb-'+exId+'-'+idx);
-  if(fb) fb.style.display='block';
+  if(fb){
+    fb.style.display='block';
+    var dimDiv = document.getElementById('dr-dim-'+exId+'-'+idx);
+    if(dimDiv){
+      dimDiv.style.position='relative';
+      var overlay = document.createElement('div');
+      overlay.style.cssText='position:absolute;inset:0;background:rgba(10,4,8,0.75);backdrop-filter:blur(4px);border-radius:14px;z-index:5';
+      dimDiv.appendChild(overlay);
+    }
+  }
   var prog = document.getElementById('dr-prog-'+exId);
   if(prog) prog.style.width=((idx+1)/ex.dimensiones.length*100)+'%';
   state.answers[exId]=(state.answers[exId]||'')+(esCarencia?'1':'0');
@@ -10196,7 +10205,7 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
     } else {
       dimRevFinish(exId);
     }
-  }, 2000);
+  }, 4500);
 }
 
 document.addEventListener('click', function(e) {

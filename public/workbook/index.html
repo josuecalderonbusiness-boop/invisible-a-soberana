@@ -5784,14 +5784,6 @@ const SECTIONS = [
         field:'espejo-transformacion'
       },
       {
-        id:'s9_e5', type:'checkpoint', tema:2,
-        label:'Pausa Workbook · Espejo 3',
-        question:'Hoy, en tu relacion, ¿estas siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambio algo desde la Leccion 1?',
-        placeholder:'Responde comparando con lo que escribiste al inicio...',
-        espejo1Button: true,
-        field:'star-textarea'
-      },
-      {
         id:'s9_e7', type:'tool', tema:3,
         question:'El siguiente nivel',
         field:'oferta-7d'
@@ -10264,12 +10256,24 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   var fb = document.getElementById('dr-fb-'+exId+'-'+idx);
   if(fb){
     fb.style.display='block';
-    var dimDiv = document.getElementById('dr-dim-'+exId+'-'+idx);
-    if(dimDiv){
-      dimDiv.style.position='relative';
+    var panel = document.getElementById('slide-panel-'+_slideIndex);
+    if(panel){
+      var existingOv = panel.querySelector('.dr-overlay-blur');
+      if(existingOv) existingOv.remove();
       var overlay = document.createElement('div');
-      overlay.style.cssText='position:absolute;inset:0;background:rgba(10,4,8,0.75);backdrop-filter:blur(4px);border-radius:14px;z-index:5';
-      dimDiv.appendChild(overlay);
+      overlay.className='dr-overlay-blur';
+      overlay.style.cssText='position:absolute;inset:0;background:rgba(10,4,8,0.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px';
+      var card = document.createElement('div');
+      card.style.cssText='background:#1a0a0f;border:1px solid rgba(212,168,67,0.35);border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center';
+      var esCarenciaLocal = opIdx < ex.dimensiones[idx].opciones.length-1;
+      card.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#D4A843;margin-bottom:12px">'+(esCarenciaLocal?'Eso se trabaja en el siguiente nivel':'Ya lo tienes')+'</div>'
+        +'<div style="font-size:14px;color:#F0E6EA;line-height:1.7;margin-bottom:0">'+(esCarenciaLocal?ex.dimensiones[idx].ganas:'En Soberana 7D lo profundizamos para que se sostenga bajo presion real.')+'</div>';
+      overlay.appendChild(card);
+      panel.style.position='relative';
+      panel.appendChild(overlay);
+      setTimeout(function(){
+        overlay.remove();
+      }, 4500);
     }
   }
   var prog = document.getElementById('dr-prog-'+exId);

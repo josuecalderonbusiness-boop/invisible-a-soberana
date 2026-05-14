@@ -2555,7 +2555,7 @@
     transition: background 0.3s ease;
   }
   .slide-header.s10-mode {
-    background: transparent !important;
+    background: #0A1F12 !important;
   }
   .slide-header-inner {
     display: flex;
@@ -11025,7 +11025,7 @@ function openQueSigneAhora() {
   if (_qsFill) { _qsFill.style.width = '100%'; _qsFill.parentElement.style.visibility = 'hidden'; }
   const _qsLabel = document.getElementById('slide-prog-label');
   if (_qsLabel) _qsLabel.style.visibility = 'hidden';
-  setTimeout(function(){ const _qsHeader = document.querySelector('.slide-header'); if (_qsHeader) { _qsHeader.style.setProperty('background', 'transparent', 'important'); _qsHeader.setAttribute('data-s10','1'); } }, 50);
+  setTimeout(function(){ const _qsHeader = document.querySelector('.slide-header'); if (_qsHeader) _qsHeader.classList.add('s10-mode'); }, 50);
 
   const _e1raw = state.answers['s1_e1'];
   const espejo1 = (typeof _e1raw === 'string' ? _e1raw : (_e1raw && _e1raw.hecho) ? _e1raw.hecho : '').trim();

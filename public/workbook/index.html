@@ -5779,6 +5779,11 @@ const SECTIONS = [
         field:'dimension-reveal'
       },
       {
+        id:'s9_e4', type:'tool', tema:2,
+        question:'Lo que cambiaste en 90 minutos',
+        field:'espejo-transformacion'
+      },
+      {
         id:'s9_e5', type:'checkpoint', tema:2,
         label:'Pausa Workbook · Espejo 3',
         question:'Hoy, en tu relacion, ¿estas siendo la mujer que quieres ser — o la que las circunstancias te han obligado a ser? ¿Cambio algo desde la Leccion 1?',
@@ -9375,7 +9380,9 @@ function _updateSlideUI() {
       const psDone = isPS && window._psState && window._psState[curSlideData.ex.id] && window._psState[curSlideData.ex.id].done;
       const isDimRev = curSlideData && curSlideData.ex && curSlideData.ex.field === 'dimension-reveal';
       const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].done === true;
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone)) {
+      const isET = curSlideData && curSlideData.ex && curSlideData.ex.field === 'espejo-transformacion';
+      const etDone = isET && (()=>{ try{ var s=state.answers[curSlideData.ex.id]; return s&&JSON.parse(s).futuro; }catch(e){return false;} })();
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone)) {
         btn.style.display = 'none';
       } else {
         btn.style.display = 'flex';
@@ -9903,6 +9910,52 @@ function buildExerciseBlock(ex, sec) {
     bodyHtml += `</div><button class="add-row-btn" onclick="addBeliefSeqEntry('${ex.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Agregar otra situación</button>`;
   }
 
+  else if (ex.field === 'espejo-transformacion') {
+    let savedET = {};
+    try { savedET = state.answers['s8_e3'] ? JSON.parse(state.answers['s8_e3']) : {}; } catch(e) {}
+    const espejo1 = typeof state.answers['s1_e1'] === 'string' ? state.answers['s1_e1'].trim() : '';
+    const proto3 = savedET.protocolo3 || '';
+    bodyHtml += `<div id="et-wrap-${ex.id}" style="padding:0 20px 20px">
+      <div style="height:2px;background:rgba(212,168,67,0.15);border-radius:2px;margin-bottom:24px">
+        <div id="et-prog-${ex.id}" style="height:100%;background:#D4A843;border-radius:2px;width:0%;transition:width 0.5s"></div>
+      </div>
+
+      <!-- Momento 1: Aqui empezaste -->
+      <div id="et-m1-${ex.id}">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,0.5);margin-bottom:16px">Aqui empezaste</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:11px;font-style:normal;color:rgba(240,230,234,0.4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Tu respuesta al comenzar el workshop</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0E6EA;line-height:1.8;padding:20px;background:rgba(107,26,42,0.2);border-left:2px solid rgba(139,26,47,0.6);border-radius:0 12px 12px 0;margin-bottom:24px">
+          ${espejo1 ? '"'+espejo1.substring(0,200)+(espejo1.length>200?'...':'')+'"' : '<span style="color:rgba(240,230,234,0.3);font-style:normal;font-size:14px">No respondiste el Espejo 1 — puedes volver a la Leccion 1 y completarlo.</span>'}
+        </div>
+        <button onclick="etNext('${ex.id}',2)" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:13px;color:rgba(240,230,234,0.6);cursor:pointer;font-family:'Jost',sans-serif">Ver en que terminas →</button>
+      </div>
+
+      <!-- Momento 2: Aqui terminas -->
+      <div id="et-m2-${ex.id}" style="display:none">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,0.5);margin-bottom:16px">Aqui terminas</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:11px;font-style:normal;color:rgba(240,230,234,0.4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Lo que comunicarias hoy desde tu centro</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0E6EA;line-height:1.8;padding:20px;background:rgba(184,137,42,0.1);border-left:2px solid rgba(212,168,67,0.5);border-radius:0 12px 12px 0;margin-bottom:24px">
+          ${proto3 ? '"'+proto3.substring(0,200)+(proto3.length>200?'...':'')+'"' : '<span style="color:rgba(240,230,234,0.3);font-style:normal;font-size:14px">Completa el workbook de la Leccion 8 para ver tu transformacion aqui.</span>'}
+        </div>
+        <div style="text-align:center;font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:16px">Eso lo construiste en 90 minutos.</div>
+        <button onclick="etNext('${ex.id}',3)" style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:13px;color:rgba(240,230,234,0.6);cursor:pointer;font-family:'Jost',sans-serif">¿Y en 30 dias? →</button>
+      </div>
+
+      <!-- Momento 3: Espejo al futuro -->
+      <div id="et-m3-${ex.id}" style="display:none">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(212,168,67,0.5);margin-bottom:16px">En 30 dias</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0E6EA;line-height:1.8;padding:20px;background:rgba(255,255,255,0.04);border-left:2px solid rgba(212,168,67,0.3);border-radius:0 12px 12px 0;margin-bottom:20px">
+          "Imagina que trabajaste las 7 dimensiones. ¿Como se ve tu vida?"
+        </div>
+        <textarea id="et-futuro-${ex.id}"
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(212,168,67,0.2);border-radius:12px;padding:14px;font-size:14px;color:#F0E6EA;resize:none;height:110px;font-family:'Cormorant Garamond',serif;font-style:italic;box-sizing:border-box;line-height:1.7"
+          placeholder="Escribelo como si ya fuera real..."
+          oninput="etSaveFuturo('${ex.id}',this.value)"></textarea>
+        <button onclick="etFinish('${ex.id}')" style="margin-top:14px;width:100%;padding:14px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:12px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:'Jost',sans-serif">Listo ✦</button>
+      </div>
+    </div>`;
+  }
+
   else if (ex.field === 'dimension-reveal') {
     if(!window._dimRevState) window._dimRevState={};
     if(!window._dimRevState[ex.id]) window._dimRevState[ex.id]={current:0,pendientes:0};
@@ -10161,6 +10214,32 @@ function intruderFinish(exId) {
   if(btn){ btn.style.display='flex'; btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   var overlays = document.querySelectorAll('[id^="ioverlay-'+exId+'-"]');
   overlays.forEach(function(o){ o.remove(); });
+}
+
+function etNext(exId, step) {
+  document.getElementById('et-m1-'+exId) && (document.getElementById('et-m1-'+exId).style.display='none');
+  document.getElementById('et-m2-'+exId) && (document.getElementById('et-m2-'+exId).style.display='none');
+  document.getElementById('et-m3-'+exId) && (document.getElementById('et-m3-'+exId).style.display='none');
+  var target = document.getElementById('et-m'+step+'-'+exId);
+  if(target) target.style.display='block';
+  var prog = document.getElementById('et-prog-'+exId);
+  if(prog) prog.style.width=((step-1)/3*100)+'%';
+}
+
+function etSaveFuturo(exId, val) {
+  var saved = {};
+  try { saved = state.answers[exId] ? JSON.parse(state.answers[exId]) : {}; } catch(e) {}
+  saved.futuro = val;
+  state.answers[exId] = JSON.stringify(saved);
+  saveState();
+}
+
+function etFinish(exId) {
+  var prog = document.getElementById('et-prog-'+exId);
+  if(prog) prog.style.width='100%';
+  var btn = document.getElementById('slide-continue-btn');
+  if(btn){btn.style.display='flex';btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+  updateLessonProgress(currentSectionId);
 }
 
 function dimRevAnswer(exId, idx, opIdx, btn) {

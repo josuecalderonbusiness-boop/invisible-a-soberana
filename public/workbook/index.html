@@ -9379,7 +9379,7 @@ function _updateSlideUI() {
       const isPS = curSlideData && curSlideData.ex && curSlideData.ex.field === 'protocol-selector';
       const psDone = isPS && window._psState && window._psState[curSlideData.ex.id] && window._psState[curSlideData.ex.id].done;
       const isDimRev = curSlideData && curSlideData.ex && curSlideData.ex.field === 'dimension-reveal';
-      const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].pendientes !== undefined && (state.answers[curSlideData.ex.id]||'').length >= 4;
+      const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].done === true;
       if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone)) {
         btn.style.display = 'none';
       } else {
@@ -10205,6 +10205,9 @@ function dimRevNext(exId, nextIdx, total) {
 }
 
 function dimRevFinish(exId) {
+  if(!window._dimRevState) window._dimRevState={};
+  if(!window._dimRevState[exId]) window._dimRevState[exId]={};
+  window._dimRevState[exId].done = true;
   document.querySelectorAll('[id^="dr-dim-'+exId+'-"]').forEach(function(el){el.style.display='none';});
   var prog = document.getElementById('dr-prog-'+exId);
   if(prog) prog.style.width='100%';

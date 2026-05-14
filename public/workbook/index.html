@@ -6940,25 +6940,6 @@ const SECTION_ICONS = {
 };
 
 // x-positions alternating for the sinuous path (as % of container width)
-const SECCION_COLORES = {
-  s0:  { accent: '#3D0C11', glow: 'rgba(61,12,17,0.55)'   },
-  s1:  { accent: '#3D0C11', glow: 'rgba(61,12,17,0.55)'   },
-  s2:  { accent: '#5A1220', glow: 'rgba(90,18,32,0.55)'   },
-  s3:  { accent: '#6B1A2A', glow: 'rgba(107,26,42,0.55)'  },
-  s4:  { accent: '#8B2D3F', glow: 'rgba(139,45,63,0.55)'  },
-  s5:  { accent: '#7A5C1E', glow: 'rgba(122,92,30,0.55)'  },
-  s6:  { accent: '#B8892A', glow: 'rgba(184,137,42,0.55)' },
-  s7:  { accent: '#D4A843', glow: 'rgba(212,168,67,0.55)' },
-  s8:  { accent: '#1A4A2E', glow: 'rgba(26,74,46,0.55)'   },
-  s9:  { accent: '#0D2418', glow: 'rgba(13,36,24,0.55)'   },
-  s10: { accent: '#B8892A', glow: 'rgba(184,137,42,0.55)' },
-};
-function _hexToRgb(hex) {
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return r+','+g+','+b;
-}
 const NODE_X_PCT = [50, 70, 50, 30, 50, 70, 50, 30, 50, 70]; // s0..s9
 const NODE_SPACING = 120; // px between nodes vertically
 
@@ -9049,45 +9030,7 @@ function openLesson(sectionId) {
   // Update UI
   _updateSlideUI();
 
-  // Open - aplicar paleta de color del viaje
-  const _lc = (typeof SECCION_COLORES !== 'undefined' && SECCION_COLORES[sectionId])
-    ? SECCION_COLORES[sectionId]
-    : { accent: '#B8892A', glow: 'rgba(184,137,42,0.55)' };
-  const _lv = document.getElementById('lesson-view');
-  _lv.style.setProperty('--lesson-accent', _lc.accent);
-  const _pf = document.getElementById('slide-prog-fill');
-  if (_pf) _pf.style.background = 'linear-gradient(90deg,' + _lc.accent + ',' + _lc.accent + 'cc)';
-  setTimeout(function() {
-    document.querySelectorAll('.slide-section-badge').forEach(function(b) {
-      b.style.background  = 'rgba(' + _hexToRgb(_lc.accent) + ',0.12)';
-      b.style.borderColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.35)';
-      b.style.color       = _lc.accent;
-    });
-    document.querySelectorAll('.slide-ex-eyebrow').forEach(function(e) {
-      e.style.color = _lc.accent;
-    });
-    document.querySelectorAll('.slide-ex-confrontation').forEach(function(c) {
-      c.style.borderLeftColor = _lc.accent;
-      c.style.background      = 'rgba(' + _hexToRgb(_lc.accent) + ',0.06)';
-    });
-    document.querySelectorAll('.slide-lesson-quote').forEach(function(q) {
-      q.style.borderLeftColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.45)';
-    });
-    document.querySelectorAll('.slide-ex-insight').forEach(function(ins) {
-      ins.style.borderColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.2)';
-      ins.style.background  = 'rgba(' + _hexToRgb(_lc.accent) + ',0.06)';
-    });
-    document.querySelectorAll('.slide-textarea').forEach(function(ta) {
-      ta.style.borderColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.2)';
-      ta.onfocus = function(){ this.style.borderColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.5)'; };
-      ta.onblur  = function(){ this.style.borderColor = 'rgba(' + _hexToRgb(_lc.accent) + ',0.2)'; };
-    });
-    var pl = document.getElementById('slide-prog-label');
-    if (pl) pl.style.color = 'rgba(' + _hexToRgb(_lc.accent) + ',0.55)';
-    document.querySelectorAll('.slide-char-hint').forEach(function(h) {
-      h.style.color = 'rgba(' + _hexToRgb(_lc.accent) + ',0.4)';
-    });
-  }, 0);
+  // Open
   document.getElementById('lesson-view').classList.add('open');
 
   updateLessonProgress(sectionId);
@@ -11143,22 +11086,29 @@ function openQueSigneAhora() {
       </p>
     </div>
 
-    <!-- SECCIÓN 4: Cierre -->
-    <div style="padding:40px 24px;background:#1A3D2B;text-align:center">
+    <!-- SECCIÓN 4: CTA final -->
+    <div style="padding:40px 24px;background:linear-gradient(#0D2418,#1A3D2B);text-align:center">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#F0E6EA;line-height:1.7;margin-bottom:28px">
+        "Cuando estés lista —<br>el siguiente paso está aquí."
+      </p>
+
+      <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
+        style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
+        Quiero entrar a Soberana 7D →
+      </a>
+
+      <div style="font-size:11px;color:#B8892A;margin-bottom:28px">30 días · 4 sesiones en vivo · Tu caso analizado</div>
+
       <button onclick="closeLesson()"
-        style="background:none;border:1px solid rgba(93,202,165,0.2);border-radius:10px;color:rgba(240,230,234,0.4);font-size:13px;cursor:pointer;padding:10px 20px;font-family:'Jost',sans-serif">
+        style="background:none;border:none;color:var(--mauve);font-size:13px;cursor:pointer;padding:8px">
         ← Volver a mi workbook
       </button>
     </div>
   `;
 
   body.appendChild(content);
-  getBunnyUrl('PENDIENTE_S10T1').then(function(url) {
-    var c = document.getElementById('bunny-vsl1-container');
-    if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
-  });
-  getBunnyUrl('PENDIENTE_S10T2').then(function(url) {
-    var c = document.getElementById('bunny-vsl2-container');
+  getBunnyUrl(BUNNY_VIDEO_PRUEBA).then(function(url) {
+    var c = document.getElementById('bunny-vsl-container');
     if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
   });
   track.appendChild(body);

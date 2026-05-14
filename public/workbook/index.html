@@ -9205,7 +9205,11 @@ function _buildSlideContent(slide, sectionId) {
     const children = Array.from(exBlock.children);
     const headerEl = children.find(c => c.classList.contains('exercise-header'));
     children.forEach(child => {
-      if (child !== headerEl) fieldWrap.appendChild(child.cloneNode(true));
+      if (child !== headerEl) {
+        const cloned = child.cloneNode(true);
+        cloned.querySelectorAll('div[style*="text-muted"]').forEach(el => el.style.display = 'none');
+        fieldWrap.appendChild(cloned);
+      }
     });
     // Re-attach event listeners by using innerHTML approach for simple fields
     // For complex fields, delegate to buildExerciseBlock directly

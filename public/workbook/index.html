@@ -10254,42 +10254,31 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
     ? '<strong style="color:#D4A843;display:block;margin-bottom:8px">Eso se trabaja en el siguiente nivel:</strong>' + d.ganas
     : '<span style="color:rgba(240,230,234,0.6)">Bien. En Soberana 7D lo profundizamos para que se sostenga bajo presion real.</span>';
   var fb = document.getElementById('dr-fb-'+exId+'-'+idx);
-  if(fb){
-    fb.style.display='block';
-    var panel = document.getElementById('slide-panel-'+_slideIndex);
-    if(panel){
-      var existingOv = panel.querySelector('.dr-overlay-blur');
-      if(existingOv) existingOv.remove();
-      var overlay = document.createElement('div');
-      overlay.className='dr-overlay-blur';
-      overlay.style.cssText='position:absolute;inset:0;background:rgba(10,4,8,0.82);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px';
-      var card = document.createElement('div');
-      card.style.cssText='background:#1a0a0f;border:1px solid rgba(212,168,67,0.35);border-radius:16px;padding:24px;width:100%;max-width:340px;text-align:center';
-      var esCarenciaLocal = opIdx < ex.dimensiones[idx].opciones.length-1;
-      card.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#D4A843;margin-bottom:12px">'+(esCarenciaLocal?'Eso se trabaja en el siguiente nivel':'Ya lo tienes')+'</div>'
-        +'<div style="font-size:14px;color:#F0E6EA;line-height:1.7;margin-bottom:0">'+(esCarenciaLocal?ex.dimensiones[idx].ganas:'En Soberana 7D lo profundizamos para que se sostenga bajo presion real.')+'</div>';
-      overlay.appendChild(card);
-      panel.style.position='relative';
-      panel.appendChild(overlay);
-      setTimeout(function(){
-        overlay.remove();
-      }, 4500);
-    }
-  }
+  if(fb) fb.style.display='block';
+  var dimDiv = document.getElementById('dr-dim-'+exId+'-'+idx);
+  var overlayId = 'droverlay-'+exId+'-'+idx;
+  var existing = document.getElementById(overlayId);
+  if(existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = overlayId;
+  overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,4,8,0.82);backdrop-filter:blur(6px);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:inherit';
+  var esCarenciaLocal = opIdx < ex.dimensiones[idx].opciones.length-1;
+  var totalDimsLocal = ex.dimensiones.length;
+  var isLastLocal = idx >= totalDimsLocal-1;
+  overlay.innerHTML = '<div style="background:#1a0a0f;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:20px;width:100%;max-width:340px;text-align:center">'
+    +'<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#D4A843;margin-bottom:10px">'+(esCarenciaLocal?'Eso se trabaja en el siguiente nivel':'Ya lo tienes')+'</div>'
+    +'<div style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:16px">'+(esCarenciaLocal?ex.dimensiones[idx].ganas:'En Soberana 7D lo profundizamos para que se sostenga bajo presion real.')+'</div>'
+    +(isLastLocal
+      ? '<button onclick="document.getElementById(\''+overlayId+'\').remove();dimRevFinish(\''+exId+'\')" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:\'Jost\',sans-serif">Ver el siguiente nivel →</button>'
+      : '<button onclick="document.getElementById(\''+overlayId+'\').remove();dimRevNext(\''+exId+'\','+(idx+1)+')" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:\'Jost\',sans-serif">Siguiente →</button>')
+    +'</div>';
+  if(dimDiv){ dimDiv.style.position='relative'; dimDiv.appendChild(overlay); }
   var prog = document.getElementById('dr-prog-'+exId);
   if(prog) prog.style.width=((idx+1)/ex.dimensiones.length*100)+'%';
   state.answers[exId]=(state.answers[exId]||'')+(esCarencia?'1':'0');
   saveState();
   updateLessonProgress(currentSectionId);
-  var totalDims = ex.dimensiones.length;
-  setTimeout(function(){
-    if(idx < totalDims-1) {
-      dimRevNext(exId, idx+1);
-    } else {
-      dimRevFinish(exId);
-    }
-  }, 4500);
-}
+  }
 
 document.addEventListener('click', function(e) {
   var nb = e.target.closest('[data-dr-next]');

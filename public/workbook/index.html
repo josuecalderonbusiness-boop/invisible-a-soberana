@@ -11028,7 +11028,6 @@ function openQueSigneAhora() {
   const _s10canvas = document.createElement('canvas');
   _s10canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.6';
   _s10canvas.id = 's10-particles';
-  body.appendChild(_s10canvas);
   setTimeout(function(){
     const c = document.getElementById('s10-particles');
     if (!c) return;
@@ -11063,14 +11062,14 @@ function openQueSigneAhora() {
   body.innerHTML = `
 
     <!-- VIDEO 1 -->
-    <div style="padding:28px 20px 0;background:#0D2418;min-height:auto">
+    <div style="padding:28px 20px 0;background:transparent;min-height:auto">
       <div style="font-size:10px;font-weight:700;color:#5DCAA5;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Soberana 7D</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#F0E6EA;margin-bottom:16px;line-height:1.4">El entrenamiento completo</div>
       <div id="bunny-vsl1-container"><div style="height:38vh;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
     </div>
 
     <!-- CTA 1 -->
-    <div style="padding:24px 20px;background:#0D2418;text-align:center">
+    <div style="padding:24px 20px;background:transparent;text-align:center">
       <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
         style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
         Quiero entrar a Soberana 7D →
@@ -11083,6 +11082,7 @@ function openQueSigneAhora() {
     </div>
 
     `;
+  body.appendChild(_s10canvas);
 
   // Panel 2 — Video objeciones
   const panel2 = document.createElement('div');

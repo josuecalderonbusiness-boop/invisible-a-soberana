@@ -5780,8 +5780,8 @@ const SECTIONS = [
       },
       {
         id:'s9_e7', type:'tool', tema:3,
-        question:'El siguiente nivel',
-        field:'oferta-7d'
+        question:'Lo que sigue',
+        field:'anticipacion-7d'
       }
     ]
   },
@@ -10989,8 +10989,9 @@ function openQueSigneAhora() {
   const _qsLabel = document.getElementById('slide-prog-label');
   if (_qsLabel) _qsLabel.textContent = '✦ completada';
 
-  const espejo1 = (state.answers['s1_e1'] || '').trim();
-  const espejo3 = (state.answers['s9_e5'] || '').trim();
+  const _e1raw = state.answers['s1_e1'];
+  const espejo1 = (typeof _e1raw === 'string' ? _e1raw : (_e1raw && _e1raw.hecho) ? _e1raw.hecho : '').trim();
+  const espejo3 = (typeof state.answers['s9_e5'] === 'string' ? state.answers['s9_e5'] : '').trim();
 
   // Inyectar en slide-track como panel único
   const track = document.getElementById('slide-track');
@@ -11066,9 +11067,9 @@ function openQueSigneAhora() {
         "Cuando estés lista —<br>el siguiente paso está aquí."
       </p>
 
-      <a href="https://invisible-a-soberana.josuecalderon.lat/soberana7d"
-        style="display:block;background:linear-gradient(135deg,#1A3D2B,#2A5C42);border:2px solid #B8892A;border-radius:14px;padding:18px 32px;font-size:14px;font-weight:600;color:#F0E6EA;letter-spacing:.06em;text-decoration:none;box-shadow:0 8px 32px rgba(26,61,43,0.5);margin-bottom:12px">
-        Quiero el entrenamiento completo →
+      <a href="TU_LINK_HOTMART_AQUI" target="_blank"
+        style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
+        Quiero entrar a Soberana 7D →
       </a>
 
       <div style="font-size:11px;color:#B8892A;margin-bottom:28px">30 días · 4 sesiones en vivo · Tu caso analizado</div>

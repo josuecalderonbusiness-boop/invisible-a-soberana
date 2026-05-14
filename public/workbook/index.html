@@ -5863,7 +5863,7 @@ function countAnswers() {
 const HILO_IDS = ['s1_e1', 's5_e3', 's9_e5'];
 
 function countHilo() {
-  return HILO_IDS.filter(id => state.answers[id] && state.answers[id].trim().length > 10).length;
+  return HILO_IDS.filter(id => state.answers[id] && typeof state.answers[id] === 'string' && state.answers[id].trim().length > 10).length;
 }
 
 // ═══════════════════════════════════════════
@@ -10194,7 +10194,9 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
 }
 
 function dimRevNext(exId, nextIdx, total) {
-  document.querySelectorAll('[id^="dr-dim-'+exId+'-"]').forEach(function(el){el.style.display='none';});
+  var wrap = document.getElementById('dr-wrap-'+exId);
+  if(!wrap) return;
+  wrap.querySelectorAll('[id^="dr-dim-"]').forEach(function(el){el.style.display='none';});
   var next = document.getElementById('dr-dim-'+exId+'-'+nextIdx);
   if(next) next.style.display='block';
 }
@@ -10203,7 +10205,8 @@ function dimRevFinish(exId) {
   if(!window._dimRevState) window._dimRevState={};
   if(!window._dimRevState[exId]) window._dimRevState[exId]={};
   window._dimRevState[exId].done = true;
-  document.querySelectorAll('[id^="dr-dim-'+exId+'-"]').forEach(function(el){el.style.display='none';});
+  var wrap = document.getElementById('dr-wrap-'+exId);
+  if(wrap) wrap.querySelectorAll('[id^="dr-dim-"]').forEach(function(el){el.style.display='none';});
   var prog = document.getElementById('dr-prog-'+exId);
   if(prog) prog.style.width='100%';
   var pendientes = window._dimRevState&&window._dimRevState[exId]?window._dimRevState[exId].pendientes:0;

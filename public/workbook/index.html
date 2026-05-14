@@ -11115,7 +11115,7 @@ function openQueSigneAhora() {
   track.appendChild(panel2);
   getBunnyUrl('PENDIENTE_S10T1').then(function(url) {
     var c = document.getElementById('bunny-vsl1-container');
-    if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;aspect-ratio:16/9;border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
+    if (c) c.innerHTML = '<iframe src="' + url + '" loading="lazy" style="border:none;width:100%;height:min(56vw,420px);border-radius:12px;" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe>';
   });
   getBunnyUrl('PENDIENTE_S10T2').then(function(url) {
     var c = document.getElementById('bunny-vsl2-container');

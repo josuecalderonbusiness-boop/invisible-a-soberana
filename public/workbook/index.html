@@ -9933,8 +9933,8 @@ function buildExerciseBlock(ex, sec) {
        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:18px 20px;position:relative;z-index:10">
           <div id="dr-fb-text-${ex.id}-${i}" style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:14px"></div>
           ${i<dims.length-1
-            ?`<button onclick="dimRevNext('${ex.id}',${i+1},${dims.length})" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Siguiente →</button>`
-            :`<button onclick="dimRevFinish('${ex.id}')" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:'Jost',sans-serif">Ver el siguiente nivel →</button>`
+            ?`<button data-dr-next="${ex.id}" data-dr-nextidx="${i+1}" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:'Jost',sans-serif">Siguiente →</button>`
+            :`<button data-dr-finish="${ex.id}" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:'Jost',sans-serif">Ver el siguiente nivel →</button>`
           }
         </div>
       </div>`).join('')}
@@ -10193,6 +10193,13 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   saveState();
   updateLessonProgress(currentSectionId);
 }
+
+document.addEventListener('click', function(e) {
+  var nb = e.target.closest('[data-dr-next]');
+  if(nb) { dimRevNext(nb.dataset.drNext, parseInt(nb.dataset.drNextidx)); return; }
+  var fb = e.target.closest('[data-dr-finish]');
+  if(fb) { dimRevFinish(fb.dataset.drFinish); return; }
+});
 
 function dimRevNext(exId, nextIdx, total) {
   var wrap = document.getElementById('dr-wrap-'+exId);

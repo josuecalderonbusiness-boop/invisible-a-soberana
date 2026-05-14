@@ -10986,7 +10986,9 @@ function closeLesson() {
   clearInterval(_masterclassCountdown);
   document.getElementById('lesson-view').classList.remove('open');
   const _ch = document.querySelector('.slide-header');
-  if (_ch) { _ch.style.removeProperty('background'); _ch.removeAttribute('data-s10'); }
+  if (_ch) { _ch.style.removeProperty('background'); _ch.removeAttribute('data-s10'); _ch.classList.remove('s10-mode'); }
+  const _sf = document.querySelector('.slide-footer');
+  if (_sf) _sf.style.removeProperty('background');
   const _rf = document.getElementById('slide-prog-fill');
   if (_rf) _rf.parentElement.style.visibility = 'visible';
   const _rl = document.getElementById('slide-prog-label');

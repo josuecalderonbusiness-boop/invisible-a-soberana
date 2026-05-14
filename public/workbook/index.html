@@ -11038,15 +11038,21 @@ function openQueSigneAhora() {
         Quiero entrar a Soberana 7D →
       </a>
       <div style="font-size:12px;color:rgba(93,202,165,0.6);margin-bottom:16px">$197 · Un solo pago · Acceso completo</div>
-      <button onclick="document.getElementById('s10-video2-wrap').style.display='block';this.style.display='none'"
+      <button onclick="(function(){var t=document.getElementById('slide-track');t.style.transition='transform 0.4s cubic-bezier(0.4,0,0.2,1)';t.style.transform='translateX(-100%)';document.getElementById('s10-back-btn').style.display='block';})()"
         style="background:none;border:none;color:rgba(240,230,234,0.35);font-size:13px;cursor:pointer;padding:8px;font-family:'Jost',sans-serif;text-decoration:underline">
         ¿Todavía tienes dudas? Escúchame un momento más →
       </button>
     </div>
 
-    <!-- VIDEO 2 (oculto) -->
-    <div id="s10-video2-wrap" style="display:none;background:#0D2418">
-      <div style="padding:0 20px 16px">
+    `;
+
+  // Panel 2 — Video objeciones
+  const panel2 = document.createElement('div');
+  panel2.className = 'slide-panel';
+  const content2 = document.createElement('div');
+  content2.style.cssText = 'background:#0D2418;min-height:100%';
+  content2.innerHTML = `
+    <div style="padding:0 20px 16px;padding-top:28px">
         <div id="bunny-vsl2-container"><div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
       </div>
       <div style="padding:20px 20px 40px;text-align:center">
@@ -11060,8 +11066,9 @@ function openQueSigneAhora() {
           Tal vez después ←
         </button>
       </div>
-    </div>
   `;
+  panel2.appendChild(content2);
+  track.appendChild(panel2);
 
   body.appendChild(content);
   getBunnyUrl(BUNNY_VIDEO_PRUEBA).then(function(url) {

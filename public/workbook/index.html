@@ -11007,11 +11007,11 @@ function openQueSigneAhora() {
   // Ocultar botón continuar — esta vista es standalone
   const _qsBtn = document.getElementById('slide-continue-btn');
   if (_qsBtn) _qsBtn.style.display = 'none';
-  // Barra de progreso al 100%
+  // Ocultar barra y label en s10
   const _qsFill = document.getElementById('slide-prog-fill');
-  if (_qsFill) _qsFill.style.width = '100%';
+  if (_qsFill) { _qsFill.style.width = '100%'; _qsFill.parentElement.style.display = 'none'; }
   const _qsLabel = document.getElementById('slide-prog-label');
-  if (_qsLabel) _qsLabel.textContent = '✦ completada';
+  if (_qsLabel) _qsLabel.style.display = 'none';
 
   const _e1raw = state.answers['s1_e1'];
   const espejo1 = (typeof _e1raw === 'string' ? _e1raw : (_e1raw && _e1raw.hecho) ? _e1raw.hecho : '').trim();
@@ -11023,7 +11023,43 @@ function openQueSigneAhora() {
   track.style.transform = 'translateX(0)';
   const body = document.createElement('div');
   body.className = 'slide-panel';
-  body.style.cssText = 'background:#0D2418';
+  body.style.cssText = 'background:linear-gradient(160deg,#0A1F12 0%,#0D2418 40%,#060F09 100%);position:relative;overflow:hidden;';
+  // Canvas de partículas verdes
+  const _s10canvas = document.createElement('canvas');
+  _s10canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.6';
+  _s10canvas.id = 's10-particles';
+  body.appendChild(_s10canvas);
+  setTimeout(function(){
+    const c = document.getElementById('s10-particles');
+    if (!c) return;
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const ctx = c.getContext('2d');
+    const pts = Array.from({length:40}, () => ({
+      x: Math.random()*c.width, y: Math.random()*c.height,
+      r: Math.random()*1.6+0.3,
+      vx: (Math.random()-.5)*0.25, vy: -(Math.random()*0.4+0.1),
+      a: Math.random()*0.4+0.1, p: Math.random()*Math.PI*2
+    }));
+    function frame(){
+      ctx.clearRect(0,0,c.width,c.height);
+      const t = Date.now()/1000;
+      // orb flotante
+      const gx = c.width*.65+Math.sin(t*.35)*25, gy = c.height*.2+Math.cos(t*.28)*18;
+      const g = ctx.createRadialGradient(gx,gy,0,gx,gy,140);
+      g.addColorStop(0,'rgba(42,106,66,0.1)'); g.addColorStop(1,'rgba(42,106,66,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,c.width,c.height);
+      pts.forEach(function(p){
+        p.p+=0.018; p.x+=p.vx; p.y+=p.vy;
+        if(p.y<-4){p.y=c.height+4;p.x=Math.random()*c.width;}
+        if(p.x<0||p.x>c.width) p.vx*=-1;
+        const a = p.a*(0.5+0.5*Math.sin(p.p));
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle='rgba(93,202,165,'+a+')'; ctx.fill();
+      });
+      if(document.getElementById('s10-particles')) requestAnimationFrame(frame);
+    }
+    frame();
+  }, 100);
   body.innerHTML = `
 
     <!-- VIDEO 1 -->

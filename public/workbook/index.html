@@ -5753,43 +5753,35 @@ const SECTIONS = [
       },
       {
         id:'s9_e3', type:'tool', tema:1,
-        question:'Una pregunta por cada dimension que viene',
-        body:'Responde con honestidad — no la que quisieras dar.',
-        scenarios:[
+        question:'Antes de continuar, responde esto con honestidad.',
+        body:'',
+        dimensiones:[
           {
-            situacion:'"Si vuelves a hacer esto, yo voy a hacer aquello." ¿Cuantas veces dijiste algo asi — y luego no lo hiciste?',
-            opciones:[
-              {id:'a', texto:'Muchas veces. Digo cosas que luego no sostengo.', correcto:true},
-              {id:'b', texto:'Mis limites son reales. Cuando digo algo, lo cumplo.'}
-            ],
-            explicacion:'Cada vez que cedes lo que dijiste que no ibas a ceder, el sistema aprende que tus palabras no tienen peso. Eso se trabaja en la dimension de Caracter — la cuarta dimension.'
+            num:'IV', nombre:'Caracter',
+            dolor:'¿Cuantas veces dijiste "si vuelves a hacer esto yo voy a hacer aquello" — y luego no lo hiciste?',
+            ganas:'Tus estandares dejan de ser declaraciones vacias y se convierten en limites reales. Eliminas el 70% de las conversaciones dificiles que nunca debieron ocurrir.',
+            icono:'shield'
           },
           {
-            situacion:'¿Cuantas peleas de tu relacion ocurren de noche — cuando ambos estan agotados?',
-            opciones:[
-              {id:'a', texto:'La mayoria. El cansancio lo amplifica todo.', correcto:true},
-              {id:'b', texto:'Mi energia no afecta como reacciono en conflictos.'}
-            ],
-            explicacion:'El deficit de sueno aumenta la respuesta de alarma del cerebro hasta en un 60%. Parte de eso no es problema de tu relacion. Es biologia. Eso se trabaja en la dimension Fisica.'
+            num:'V', nombre:'Fisica',
+            dolor:'¿Cuantas peleas ocurren de noche — cuando ambos estan agotados? Parte de eso no es problema de tu relacion. Es biologia.',
+            ganas:'Recuperas 2-3 horas de energia util cada dia. Reduces los conflictos nocturnos en un 40-50%. Tu vitalidad deja de ser el eslabon debil.',
+            icono:'bolt'
           },
           {
-            situacion:'¿El tema del dinero en tu relacion tiene acuerdos claros — o es algo que prefieren no tocar?',
-            opciones:[
-              {id:'a', texto:'Es un tema que evitamos. Siempre termina mal.', correcto:true},
-              {id:'b', texto:'Tenemos acuerdos economicos claros que funcionan.'}
-            ],
-            explicacion:'Lo que no se acuerda se acumula. El 80% de las discusiones sobre dinero vienen de acuerdos que nunca se hicieron. Eso se trabaja en Economia Consciente.'
+            num:'VI', nombre:'Economia Consciente',
+            dolor:'¿El dinero en tu relacion tiene acuerdos claros — o es un tema que prefieren no tocar porque siempre termina mal?',
+            ganas:'Eliminas el 80% de las discusiones sobre dinero. Construyes autonomia economica dentro de la relacion sin necesitar su permiso.',
+            icono:'coin'
           },
           {
-            situacion:'Si el manana te dijera que necesita espacio — ¿tienes un proposito propio al que volverte?',
-            opciones:[
-              {id:'a', texto:'No tengo claro quien soy mas alla de esta relacion.', correcto:true},
-              {id:'b', texto:'Tengo un para que propio que no depende de el.'}
-            ],
-            explicacion:'Una mujer con un proposito suficientemente solido no necesita que el la complete para estar bien. Las tormentas la prueban — pero no la destruyen. Eso se trabaja en la dimension Espiritual.'
+            num:'VII', nombre:'Espiritual',
+            dolor:'Si el manana te dijera que necesita espacio — ¿tienes un proposito propio al que volverte?',
+            ganas:'Una mujer con un para que suficientemente solido no necesita que el la complete. Las tormentas la prueban — pero no la destruyen.',
+            icono:'star'
           }
         ],
-        field:'consequence'
+        field:'dimension-reveal'
       },
       {
         id:'s9_e5', type:'checkpoint', tema:2,
@@ -9386,7 +9378,9 @@ function _updateSlideUI() {
       const intruderDone = isIntruder && window._intruderState && window._intruderState[curSlideData.ex.id] && window._intruderState[curSlideData.ex.id].done;
       const isPS = curSlideData && curSlideData.ex && curSlideData.ex.field === 'protocol-selector';
       const psDone = isPS && window._psState && window._psState[curSlideData.ex.id] && window._psState[curSlideData.ex.id].done;
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone)) {
+      const isDimRev = curSlideData && curSlideData.ex && curSlideData.ex.field === 'dimension-reveal';
+      const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].pendientes !== undefined && (state.answers[curSlideData.ex.id]||'').length >= 4;
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone)) {
         btn.style.display = 'none';
       } else {
         btn.style.display = 'flex';
@@ -9914,6 +9908,51 @@ function buildExerciseBlock(ex, sec) {
     bodyHtml += `</div><button class="add-row-btn" onclick="addBeliefSeqEntry('${ex.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Agregar otra situación</button>`;
   }
 
+  else if (ex.field === 'dimension-reveal') {
+    if(!window._dimRevState) window._dimRevState={};
+    if(!window._dimRevState[ex.id]) window._dimRevState[ex.id]={current:0,pendientes:0};
+    const dims = ex.dimensiones||[];
+    bodyHtml += `<div id="dr-wrap-${ex.id}" style="padding:0 20px 20px;position:relative">
+      <div style="height:3px;background:rgba(139,26,47,0.15);border-radius:2px;margin-bottom:24px">
+        <div id="dr-prog-${ex.id}" style="height:100%;background:var(--burgundy);border-radius:2px;width:0%;transition:width 0.4s"></div>
+      </div>
+      ${dims.map((d,i)=>`
+      <div id="dr-dim-${ex.id}-${i}" style="display:${i===0?'block':'none'}">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(139,26,47,0.1);border:1.5px solid rgba(139,26,47,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--burgundy)">${d.num}</span>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px">Dimension</div>
+            <div style="font-size:17px;font-weight:600;color:var(--text-dark)">${d.nombre}</div>
+          </div>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--text-dark);line-height:1.7;margin-bottom:24px">"${d.dolor}"</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="dimRevAnswer('${ex.id}',${i},true)"
+            style="padding:16px 20px;border-radius:14px;border:2px solid rgba(139,26,47,0.25);background:rgba(139,26,47,0.05);font-size:14px;font-weight:600;color:var(--burgundy);cursor:pointer;text-align:left;transition:all .2s">
+            Esto me pasa
+          </button>
+          <button onclick="dimRevAnswer('${ex.id}',${i},false)"
+            style="padding:16px 20px;border-radius:14px;border:1.5px solid var(--surface-2);background:white;font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;text-align:left;transition:all .2s">
+            Ya lo tengo resuelto
+          </button>
+        </div>
+        <div id="dr-fb-${ex.id}-${i}" style="display:none;margin-top:16px;background:#1a0a0f;border-radius:14px;padding:18px 20px">
+          <div id="dr-fb-text-${ex.id}-${i}" style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:14px"></div>
+          ${i<dims.length-1
+            ?`<button onclick="dimRevNext('${ex.id}',${i+1},${dims.length})" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Siguiente →</button>`
+            :`<button onclick="dimRevFinish('${ex.id}')" style="width:100%;padding:12px;background:var(--burgundy);border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer">Ver el siguiente nivel →</button>`
+          }
+        </div>
+      </div>`).join('')}
+      <div id="dr-result-${ex.id}" style="display:none;text-align:center;padding:20px 0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--burgundy);margin-bottom:8px" id="dr-count-${ex.id}"></div>
+        <div style="font-size:14px;color:var(--text-muted);line-height:1.6" id="dr-msg-${ex.id}"></div>
+      </div>
+    </div>`;
+  }
+
   else if (ex.field === 'conversation-builder') {
     let savedCB = {};
     try { savedCB = state.answers[ex.id] ? JSON.parse(state.answers[ex.id]) : {}; } catch(e) {}
@@ -10132,6 +10171,58 @@ function intruderFinish(exId) {
   if(btn){ btn.style.display='flex'; btn.innerHTML='Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   var overlays = document.querySelectorAll('[id^="ioverlay-'+exId+'-"]');
   overlays.forEach(function(o){ o.remove(); });
+}
+
+function dimRevAnswer(exId, idx, meApplica) {
+  var ex=null; SECTIONS.forEach(function(s){(s.exercises||[]).forEach(function(e){if(e.id===exId)ex=e;});});
+  if(!ex) return;
+  var d = ex.dimensiones[idx];
+  var btns = document.querySelectorAll('#dr-dim-'+exId+'-'+idx+' button');
+  btns.forEach(function(b){b.disabled=true;b.style.opacity='0.5';});
+  var selectedBtn = btns[meApplica?0:1];
+  selectedBtn.style.opacity='1';
+  selectedBtn.style.borderColor=meApplica?'var(--burgundy)':'#2D7A4F';
+  selectedBtn.style.background=meApplica?'rgba(139,26,47,0.1)':'#E8F5EE';
+  selectedBtn.style.color=meApplica?'var(--burgundy)':'#2D7A4F';
+  if(!window._dimRevState) window._dimRevState={};
+  if(!window._dimRevState[exId]) window._dimRevState[exId]={current:0,pendientes:0};
+  if(meApplica) window._dimRevState[exId].pendientes++;
+  var fbText = document.getElementById('dr-fb-text-'+exId+'-'+idx);
+  if(fbText) fbText.innerHTML = meApplica
+    ? '<strong style="color:#D4A843;display:block;margin-bottom:6px">Lo que ganas al trabajar esto:</strong>' + d.ganas
+    : 'Excelente. En el siguiente nivel lo profundizamos para que se sostenga bajo presion real.';
+  var fb = document.getElementById('dr-fb-'+exId+'-'+idx);
+  if(fb) fb.style.display='block';
+  var prog = document.getElementById('dr-prog-'+exId);
+  if(prog) prog.style.width=((idx+1)/ex.dimensiones.length*100)+'%';
+  state.answers[exId]=(state.answers[exId]||'')+(meApplica?'1':'0');
+  saveState();
+  updateLessonProgress(currentSectionId);
+}
+
+function dimRevNext(exId, nextIdx, total) {
+  document.querySelectorAll('[id^="dr-dim-'+exId+'-"]').forEach(function(el){el.style.display='none';});
+  var next = document.getElementById('dr-dim-'+exId+'-'+nextIdx);
+  if(next) next.style.display='block';
+}
+
+function dimRevFinish(exId) {
+  document.querySelectorAll('[id^="dr-dim-'+exId+'-"]').forEach(function(el){el.style.display='none';});
+  var prog = document.getElementById('dr-prog-'+exId);
+  if(prog) prog.style.width='100%';
+  var pendientes = window._dimRevState&&window._dimRevState[exId]?window._dimRevState[exId].pendientes:0;
+  var result = document.getElementById('dr-result-'+exId);
+  var count = document.getElementById('dr-count-'+exId);
+  var msg = document.getElementById('dr-msg-'+exId);
+  if(count) count.textContent = pendientes + ' de 4 dimensiones';
+  if(msg) msg.innerHTML = pendientes >= 3
+    ? 'Las identificaste. El siguiente video te muestra exactamente como trabajarlas.'
+    : pendientes >= 1
+    ? 'Las tienes identificadas. El siguiente video te muestra el camino.'
+    : 'Tienes una base solida. El siguiente video te muestra como consolidarla.';
+  if(result) result.style.display='block';
+  var btn = document.getElementById('slide-continue-btn');
+  if(btn){btn.style.display='flex';btn.innerHTML='Ver el siguiente nivel <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
 }
 
 function psSelectSit(exId, sitId) {

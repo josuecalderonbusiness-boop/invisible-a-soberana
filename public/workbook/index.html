@@ -11012,6 +11012,8 @@ function openQueSigneAhora() {
   if (_qsFill) { _qsFill.style.width = '100%'; _qsFill.parentElement.style.display = 'none'; }
   const _qsLabel = document.getElementById('slide-prog-label');
   if (_qsLabel) _qsLabel.style.display = 'none';
+  const _qsHeader = document.querySelector('.slide-header');
+  if (_qsHeader) _qsHeader.style.background = 'transparent';
 
   const _e1raw = state.answers['s1_e1'];
   const espejo1 = (typeof _e1raw === 'string' ? _e1raw : (_e1raw && _e1raw.hecho) ? _e1raw.hecho : '').trim();
@@ -11026,7 +11028,7 @@ function openQueSigneAhora() {
   body.style.cssText = 'background:linear-gradient(160deg,#0A1F12 0%,#0D2418 40%,#060F09 100%);position:relative;overflow:hidden;';
   // Canvas de partículas verdes
   const _s10canvas = document.createElement('canvas');
-  _s10canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.6';
+  _s10canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:1';
   _s10canvas.id = 's10-particles';
   setTimeout(function(){
     const c = document.getElementById('s10-particles');
@@ -11062,7 +11064,7 @@ function openQueSigneAhora() {
   body.innerHTML = `
 
     <!-- VIDEO 1 -->
-    <div style="padding:28px 20px 0;background:transparent;min-height:auto">
+    <div style="padding:28px 20px 0;background:transparent;min-height:auto;position:relative;z-index:2">
       <div style="font-size:10px;font-weight:700;color:#5DCAA5;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Soberana 7D</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#F0E6EA;margin-bottom:16px;line-height:1.4">El entrenamiento completo</div>
       <div id="bunny-vsl1-container"><div style="height:38vh;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>

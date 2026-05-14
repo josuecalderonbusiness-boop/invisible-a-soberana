@@ -9336,9 +9336,10 @@ function _buildSlideContent(slide, sectionId) {
       fullBlock.style.background = 'transparent';
       fullBlock.style.border = 'none';
       fullBlock.style.borderRadius = '0';
-      // Hide the header inside
+      // Hide the header and body text inside (already rendered above)
       const h = fullBlock.querySelector('.exercise-header');
       if (h) h.style.display = 'none';
+      fullBlock.querySelectorAll('div[style*="text-muted"]').forEach(el => el.style.display = 'none');
       fieldWrap.appendChild(fullBlock);
     }
 

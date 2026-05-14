@@ -11002,107 +11002,42 @@ function openQueSigneAhora() {
   content.style.cssText = 'background:#0D2418;min-height:100%';
   content.innerHTML = `
 
-    <!-- SECCIÓN 1: Los dos espejos -->
-    <div style="padding:32px 20px;background:#0D2418">
-      <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Lo que recorriste</div>
-
-      <div style="border-left:3px solid #6B1A2A;background:rgba(107,26,42,0.15);border-radius:0 12px 12px 0;padding:20px;margin-bottom:16px">
-        <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">🪞 Espejo 1 — Al comenzar</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#F0E6EA;line-height:1.8">${espejo1 || '<span style="color:var(--mauve)">No respondido</span>'}</div>
-      </div>
-
-      <div style="text-align:center;padding:8px 0;font-size:22px;color:#B8892A">↓</div>
-
-      <div style="border-left:3px solid #B8892A;background:rgba(184,137,42,0.1);border-radius:0 12px 12px 0;padding:20px;margin-bottom:24px">
-        <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">🪞 Espejo 3 — La Soberana que descubriste</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#F0E6EA;line-height:1.8">${espejo3 || '<span style="color:var(--mauve)">No respondido</span>'}</div>
-      </div>
-
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0E6EA;text-align:center;line-height:1.7;margin-bottom:28px">
-        "Esa distancia la recorriste tú.<br>En 90 minutos. Con tres protocolos."
-      </div>
-
-      <div style="height:1px;background:linear-gradient(90deg,transparent,#B8892A,transparent)"></div>
-    </div>
-
-    <!-- SECCIÓN 2: Video 1 — La oferta -->
-    <div style="padding:32px 20px;background:#0D2418">
+    <!-- VIDEO 1 -->
+    <div style="padding:28px 20px 0;background:#0D2418">
       <div style="font-size:10px;font-weight:700;color:#5DCAA5;letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Soberana 7D</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#F0E6EA;margin-bottom:20px;line-height:1.4">El entrenamiento completo</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#F0E6EA;margin-bottom:16px;line-height:1.4">El entrenamiento completo</div>
       <div id="bunny-vsl1-container"><div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
     </div>
 
-    <!-- CTA 1 — después del video 1 -->
+    <!-- CTA 1 -->
     <div style="padding:24px 20px;background:#0D2418;text-align:center">
-      <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
-        style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:16px;font-family:'Jost',sans-serif">
-        Quiero entrar a Soberana 7D →
-      </a>
-      <div style="font-size:12px;color:rgba(93,202,165,0.6);margin-bottom:20px">$197 · Un solo pago · Acceso completo</div>
-      <button onclick="document.getElementById('s10-video2-wrap').style.display='block';this.parentElement.style.display='none'"
-        style="background:none;border:none;color:rgba(240,230,234,0.4);font-size:13px;cursor:pointer;padding:8px;font-family:'Jost',sans-serif;text-decoration:underline">
-        ¿Todavía tienes dudas? Escúchame un momento más →
-      </button>
-    </div>
-
-    <!-- Video 2 — objeciones (oculto inicialmente) -->
-    <div id="s10-video2-wrap" style="display:none">
-      <div style="padding:0 20px 20px;background:#0D2418">
-        <div id="bunny-vsl2-container"><div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
-      </div>
-      <div style="padding:24px 20px;background:#0D2418;text-align:center">
-        <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
-          style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
-          Quiero entrar a Soberana 7D →
-        </a>
-        <div style="font-size:12px;color:rgba(93,202,165,0.6)">$197 · Un solo pago · Acceso completo</div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN 3: Las 7 dimensiones -->
-    <div style="padding:32px 20px;background:linear-gradient(#0D2418,#1A3D2B)">
-      <div style="font-size:10px;font-weight:700;color:#B8892A;letter-spacing:.18em;text-transform:uppercase;margin-bottom:20px">Las 7 Dimensiones</div>
-
-      ${[
-        { n:1, name:'Mental',               tipo:'cs'  },
-        { n:2, name:'Emocional',            tipo:'cs'  },
-        { n:3, name:'Relacional',           tipo:'cs'  },
-        { n:4, name:'Carácter',             tipo:'7d'  },
-        { n:5, name:'Física',               tipo:'7d'  },
-        { n:6, name:'Economía Consciente',  tipo:'7d'  },
-        { n:7, name:'Espiritual',           tipo:'7d'  }
-      ].map(d => `
-        <div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#B8892A;min-width:20px">${d.n}</span>
-          <span style="font-size:14px;font-weight:600;color:#F0E6EA;flex:1">${d.name}</span>
-          ${d.tipo === 'cs'
-            ? `<span style="font-size:10px;font-weight:700;background:rgba(107,26,42,0.5);color:#F0E6EA;padding:4px 10px;border-radius:20px;white-space:nowrap">✓ Código Soberana</span>`
-            : `<span style="font-size:10px;font-weight:700;background:rgba(26,61,43,0.6);color:#B8892A;padding:4px 10px;border-radius:20px;white-space:nowrap">Soberana 7D</span>`
-          }
-        </div>`).join('')}
-
-      <p style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#F0E6EA;line-height:1.7;margin-top:20px;text-align:center">
-        Las tres primeras cambiaron tu dinámica.<br>Las cuatro siguientes consolidan quién eres.
-      </p>
-    </div>
-
-    <!-- SECCIÓN 4: CTA final -->
-    <div style="padding:40px 24px;background:linear-gradient(#0D2418,#1A3D2B);text-align:center">
-      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#F0E6EA;line-height:1.7;margin-bottom:28px">
-        "Cuando estés lista —<br>el siguiente paso está aquí."
-      </p>
-
       <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
         style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
         Quiero entrar a Soberana 7D →
       </a>
-
-      <div style="font-size:11px;color:#B8892A;margin-bottom:28px">30 días · 4 sesiones en vivo · Tu caso analizado</div>
-
-      <button onclick="closeLesson()"
-        style="background:none;border:none;color:var(--mauve);font-size:13px;cursor:pointer;padding:8px">
-        ← Volver a mi workbook
+      <div style="font-size:12px;color:rgba(93,202,165,0.6);margin-bottom:16px">$197 · Un solo pago · Acceso completo</div>
+      <button onclick="document.getElementById('s10-video2-wrap').style.display='block';this.style.display='none'"
+        style="background:none;border:none;color:rgba(240,230,234,0.35);font-size:13px;cursor:pointer;padding:8px;font-family:'Jost',sans-serif;text-decoration:underline">
+        ¿Todavía tienes dudas? Escúchame un momento más →
       </button>
+    </div>
+
+    <!-- VIDEO 2 (oculto) -->
+    <div id="s10-video2-wrap" style="display:none;background:#0D2418">
+      <div style="padding:0 20px 16px">
+        <div id="bunny-vsl2-container"><div style="aspect-ratio:16/9;background:#1A3D2B;border:1px solid rgba(93,202,165,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="#5DCAA5"><path d="M5 3l14 9-14 9V3z"/></svg></div></div>
+      </div>
+      <div style="padding:20px 20px 40px;text-align:center">
+        <a href="https://pay.hotmart.com/B104912242W?checkoutMode=10" target="_blank"
+          style="display:block;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:14px;padding:18px 32px;font-size:15px;font-weight:700;color:#0F0A0B;letter-spacing:.04em;text-decoration:none;box-shadow:0 8px 32px rgba(184,137,42,0.35);margin-bottom:12px;font-family:'Jost',sans-serif">
+          Quiero entrar a Soberana 7D →
+        </a>
+        <div style="font-size:12px;color:rgba(93,202,165,0.6);margin-bottom:20px">$197 · Un solo pago · Acceso completo</div>
+        <button onclick="closeLesson()"
+          style="background:none;border:none;color:rgba(240,230,234,0.25);font-size:12px;cursor:pointer;padding:8px;font-family:'Jost',sans-serif">
+          Tal vez después ←
+        </button>
+      </div>
     </div>
   `;
 

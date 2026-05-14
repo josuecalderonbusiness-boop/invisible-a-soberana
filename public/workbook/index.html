@@ -2547,11 +2547,17 @@
   /* ── SLIDE HEADER ── */
   .slide-header {
     display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    flex-shrink: 0;
+    background: var(--burgundy-deep);
+  }
+  .slide-header-inner {
+    display: flex;
     align-items: center;
     gap: 12px;
     padding: 52px 20px 14px;
-    flex-shrink: 0;
-    background: var(--burgundy-deep);
   }
   .slide-back-btn {
     width: 36px; height: 36px;
@@ -2574,9 +2580,9 @@
     gap: 5px;
   }
   .slide-progress-track {
-    height: 4px;
+    height: 8px;
     background: rgba(255,255,255,0.08);
-    border-radius: 100px;
+    border-radius: 0;
     overflow: hidden;
   }
   .slide-progress-fill {
@@ -4736,15 +4742,13 @@
   <div id="lesson-view">
     <!-- Header fijo -->
     <div class="slide-header">
+      <div class="slide-header-inner">
       <button class="slide-back-btn" onclick="closeLesson()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div class="slide-progress-wrap">
-        <div class="slide-progress-track">
-          <div class="slide-progress-fill" id="slide-prog-fill" style="width:0%"></div>
-        </div>
-        <div class="slide-progress-label" id="slide-prog-label">0 / 0</div>
       </div>
+    <div class="slide-progress-track">
+      <div class="slide-progress-fill" id="slide-prog-fill" style="width:0%"></div>
     </div>
 
     <!-- Viewport de slides -->

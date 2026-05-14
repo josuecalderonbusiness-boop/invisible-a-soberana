@@ -10219,7 +10219,7 @@ function dimRevFinish(exId) {
   if(!window._dimRevState[exId]) window._dimRevState[exId]={};
   window._dimRevState[exId].done = true;
   var wrap = document.getElementById('dr-wrap-'+exId);
-  if(wrap) wrap.querySelectorAll('[id^="dr-dim-"]').forEach(function(el){el.style.display='none';});
+  if(wrap) wrap.querySelectorAll('[id^="dr-dim-"]').forEach(function(el){el.style.display='none';el.innerHTML='';});
   var prog = document.getElementById('dr-prog-'+exId);
   if(prog) prog.style.width='100%';
   var pendientes = window._dimRevState&&window._dimRevState[exId]?window._dimRevState[exId].pendientes:0;

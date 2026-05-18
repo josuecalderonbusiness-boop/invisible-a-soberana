@@ -1,0 +1,6 @@
+$path = "public\workbook\index.html"
+$content = Get-Content $path -Encoding UTF8 -Raw
+$buscar = "        field:'single-choice-cards'" + "`r`n      }," + "`r`n      {" + "`r`n        id:'s1_t2_e1'"
+$reemplazar = "        field:'single-choice-cards'," + "`r`n        repeatQuestion:'Cual de estas describe mejor como funciona el Codigo Soberana?'," + "`r`n        repeatBody:'Solo una es correcta. Piensalo antes de elegir.'," + "`r`n        repeatCorrect:'b'," + "`r`n        repeatItems:[" + "`r`n          {id:'a', label:'Es una tecnica para que el cambie su comportamiento'}," + "`r`n          {id:'b', label:'Es un sistema que cambia tu posicion dentro de la relacion'}," + "`r`n          {id:'c', label:'Es un metodo que requiere que el tambien este dispuesto'}," + "`r`n          {id:'d', label:'Es comunicacion mejorada cuando el esta en buena disposicion'}" + "`r`n        ]" + "`r`n      }," + "`r`n      {" + "`r`n        id:'s1_t2_e1'"
+$content = $content.Replace($buscar, $reemplazar)
+$content | Set-Content $path -Encoding UTF8

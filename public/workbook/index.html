@@ -5188,7 +5188,16 @@ const SECTIONS = [
           {id:'c', icon:'🪞', label:'Sintiéndome demasiado', desc:'Intensa, emocional, demasiado de todo.'},
           {id:'d', icon:'🔒', label:'Ya no lo intento', desc:'Paré hace tiempo de intentarlo.'}
         ],
-        field:'single-choice-cards'
+        field:'single-choice-cards',
+        repeatQuestion:'Cual de estas describe mejor como funciona el Codigo Soberana?',
+        repeatBody:'Solo una es correcta. Piensalo antes de elegir.',
+        repeatCorrect:'b',
+        repeatItems:[
+          {id:'a', label:'Es una tecnica para que el cambie su comportamiento'},
+          {id:'b', label:'Es un sistema que cambia tu posicion dentro de la relacion'},
+          {id:'c', label:'Es un metodo que requiere que el tambien este dispuesto'},
+          {id:'d', label:'Es comunicacion mejorada cuando el esta en buena disposicion'}
+        ]
       },
       {
         id:'s1_t2_e1', type:'tool', tema:2,
@@ -9703,8 +9712,16 @@ function buildExerciseBlock(ex, sec) {
   }
   else if (ex.field === 'single-choice-cards') {
     const savedSCC = '';
+    const isRepeat = ex.repeatItems && state.answers[ex.id];
+    const activeItems = isRepeat ? ex.repeatItems : (ex.items || []);
+    const activeQuestion = isRepeat ? ex.repeatQuestion : ex.question;
+    const activeBody = isRepeat ? ex.repeatBody : ex.body;
+    if (isRepeat) {
+      bodyHtml = bodyHtml.replace(ex.question, activeQuestion);
+      bodyHtml = bodyHtml.replace(ex.body, activeBody);
+    }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
-    (ex.items || []).forEach(item => {
+    activeItems.forEach(item => {
       const sel = savedSCC === item.id;
       bodyHtml += `<button onclick="selectSingleChoiceCard('${ex.id}','${item.id}',this)"
         style="padding:16px 12px;border-radius:14px;border:2px solid ${sel?'var(--burgundy)':'var(--surface-2)'};
@@ -9716,6 +9733,9 @@ function buildExerciseBlock(ex, sec) {
       </button>`;
     });
     bodyHtml += `</div>`;
+    if (isRepeat && ex.repeatCorrect) {
+      bodyHtml += `<div id="fb-repeat-${ex.id}" style="display:none;margin:0 20px 20px;padding:14px 16px;border-radius:12px;border-left:3px solid #4CAF50;background:rgba(76,175,80,0.08)"><div id="fb-repeat-text-${ex.id}" style="font-size:13px;color:var(--text-dark);line-height:1.55"></div></div>`;
+    }
   }
 
   else if (ex.field === 'multi-choice') {
@@ -10502,6 +10522,19 @@ function selectSingleChoiceCard(exId, val, btn) {
     b.style.background = sel ? 'rgba('+_hexToRgb(_a.startsWith('#')?_a:'#8B1A2F')+',0.09)' : 'white';
     b.querySelector('div:nth-child(2)').style.color = sel ? _a : 'var(--text-dark)';
   });
+  const sec = SECTIONS.find(s => s.exercises && s.exercises.find(e => e.id === exId));
+  const ex = sec && sec.exercises.find(e => e.id === exId);
+  const fbBox = document.getElementById('fb-repeat-' + exId);
+  const fbText = document.getElementById('fb-repeat-text-' + exId);
+  if (fbBox && fbText && ex && ex.repeatCorrect) {
+    const isCorrect = val === ex.repeatCorrect;
+    fbBox.style.display = 'block';
+    fbBox.style.borderLeftColor = isCorrect ? '#4CAF50' : '#E57373';
+    fbBox.style.background = isCorrect ? 'rgba(76,175,80,0.08)' : 'rgba(229,115,115,0.08)';
+    fbText.innerHTML = isCorrect
+      ? 'Exacto. El Codigo no requiere su aprobacion ni su presencia. Lo que cambia es tu posicion — y eso solo depende de ti.'
+      : 'No exactamente. El Codigo Soberana no depende de el. Lo que cambia es tu posicion dentro del sistema — y eso solo depende de ti.';
+  }
   state.answers[exId] = val;
   saveState();
   updateLessonProgress(currentSectionId);
@@ -12945,6 +12978,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

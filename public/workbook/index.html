@@ -5903,39 +5903,25 @@ async function doLogin() {
 
   try {
     // PASO 1 — Verificar si tiene acceso
-    const resVerificar = await fetch(
-      `${SHEETS_URL}?action=verificar&email=${encodeURIComponent(email)}`,
-      { method: 'GET' }
-    );
-    const jsonVerificar = await resVerificar.json();
-
-    if (!jsonVerificar.ok) {
+    const docAcceso = await db.collection('workbook_acceso').doc(email).get();
+    if (!docAcceso.exists || docAcceso.data().activo !== true) {
       btn.textContent = 'Comenzar mi Workbook →';
       btn.disabled = false;
       showAccesoDenegado(email);
       return;
     }
 
-    // PASO 2 — Cargar sus respuestas desde Sheets
+    // PASO 2 — Cargar sus respuestas desde Firestore
     btn.textContent = 'Cargando tu progreso...';
-
     try {
-      const resCargar = await fetch(
-        `${SHEETS_URL}?action=cargar&email=${encodeURIComponent(email)}`,
-        { method: 'GET' }
-      );
-      const jsonCargar = await resCargar.json();
-
-      if (jsonCargar.ok && jsonCargar.respuestas) {
-        // Combinar respuestas de Sheets con las del dispositivo
-        // Sheets tiene prioridad (es la fuente de verdad)
+      const docResp = await db.collection('workbook_respuestas').doc(email).get();
+      if (docResp.exists && docResp.data().answers) {
         const localState = localStorage.getItem('soberana_state');
         const localAnswers = localState ? JSON.parse(localState).answers || {} : {};
-        state.answers = { ...localAnswers, ...jsonCargar.respuestas };
+        state.answers = { ...localAnswers, ...docResp.data().answers };
       }
     } catch(e) {
-      // Si falla la carga, usar lo que hay en local
-      console.warn('No se pudo cargar desde Sheets, usando datos locales');
+      console.warn('No se pudo cargar desde Firestore, usando datos locales');
     }
 
     // Siempre recalcular completedSections con las respuestas finales
@@ -12102,6 +12088,8 @@ function resetAll() {
 // ═══════════════════════════════════════════
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwr3Dtcs7ewrB8PGsdE0JRO7Ianw6FxFdN1KN12WQ_PGrzSseg98aUn0rr7T85uKs1K/exec';
 
+// FIREBASE — db ya inicializado arriba
+
 async function syncToSheets(secId) {
   const sec = SECTIONS.find(s => s.id === secId);
   if (!sec || !state.user) return;
@@ -12132,16 +12120,23 @@ async function syncToSheets(secId) {
   };
 
   try {
-    await fetch(SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors', // Apps Script requiere no-cors
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const email = state.user.email;
+    const answersMap = {};
+    respuestas.forEach(r => { answersMap[r.ejercicioId] = r.respuesta; });
+    await db.collection('workbook_respuestas').doc(email).set({
+      nombre: state.user.name,
+      email: email,
+      answers: answersMap,
+      ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    await db.collection('workbook_diario').doc(email).collection('entradas').add({
+      seccionId: secId,
+      respuestas: respuestas,
+      fecha: firebase.firestore.FieldValue.serverTimestamp()
     });
-    console.log('✅ Sincronizado con Google Sheets');
+    console.log('Sincronizado con Firestore');
   } catch (err) {
-    console.warn('⚠️ No se pudo sincronizar con Sheets (sin conexión):', err);
-    // No bloqueamos — el guardado local ya funcionó
+    console.warn('No se pudo sincronizar con Firestore:', err);
   }
 }
 

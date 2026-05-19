@@ -10528,13 +10528,24 @@ function selectSingleChoiceCard(exId, val, btn) {
   const fbText = document.getElementById('fb-repeat-text-' + exId);
   if (fbBox && fbText && ex && ex.repeatCorrect) {
     const isCorrect = val === ex.repeatCorrect;
-    fbBox.style.display = 'flex';
-    const fbBadge = document.getElementById('fb-repeat-badge-' + exId);
-    if (fbBadge) fbBadge.textContent = isCorrect ? '✓ Correcto' : '× Revisemos esto';
-    if (fbBadge) fbBadge.style.color = isCorrect ? '#4CAF50' : '#E57373';
-    fbText.innerHTML = isCorrect
+    const badge = isCorrect ? '✓ Correcto' : '× Revisemos esto';
+    const badgeColor = isCorrect ? '#4CAF50' : '#E57373';
+    const msg = isCorrect
       ? 'Exacto. El Codigo no requiere su aprobacion ni su presencia. Lo que cambia es tu posicion — y eso solo depende de ti.'
       : 'No exactamente. El Codigo Soberana no depende de el. Lo que cambia es tu posicion dentro del sistema — y eso solo depende de ti.';
+    let modalEl = document.getElementById('modal-repeat-feedback');
+    if (!modalEl) {
+      modalEl = document.createElement('div');
+      modalEl.id = 'modal-repeat-feedback';
+      modalEl.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding-bottom:32px;';
+      document.body.appendChild(modalEl);
+    }
+    modalEl.innerHTML = `<div style="background:#1a0a0f;border:1px solid #D4AF6A;border-radius:16px;padding:24px 20px;max-width:380px;width:90%;margin:0 16px;">
+      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${badgeColor};margin-bottom:10px;">${badge}</div>
+      <div style="font-size:14px;color:#F5E6C8;line-height:1.65;margin-bottom:18px;">${msg}</div>
+      <button onclick="document.getElementById('modal-repeat-feedback').style.display='none'" style="width:100%;padding:12px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#1a0a0f;cursor:pointer;font-family:'Jost',sans-serif;">Entendido</button>
+    </div>`;
+    modalEl.style.display = 'flex';
   }
   state.answers[exId] = val;
   saveState();

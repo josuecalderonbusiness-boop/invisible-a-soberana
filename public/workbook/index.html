@@ -9703,8 +9703,13 @@ function buildExerciseBlock(ex, sec) {
     const activeQuestion = isRepeat ? ex.repeatQuestion : ex.question;
     const activeBody = isRepeat ? ex.repeatBody : ex.body;
     if (isRepeat) {
-      bodyHtml = bodyHtml.replace(ex.question, activeQuestion);
-      bodyHtml = bodyHtml.replace(ex.body, activeBody);
+      setTimeout(() => {
+        const panel = document.getElementById('panel-' + ex.id) || document.querySelector('.slide-panel.active');
+        if (panel) {
+          const qEl = panel.querySelector('.slide-ex-question');
+          if (qEl) qEl.textContent = activeQuestion;
+        }
+      }, 50);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     activeItems.forEach(item => {
@@ -12117,7 +12122,12 @@ async function syncToSheets(secId) {
     nombre: state.user.name,
     email: state.user.email,
     respuestas
-  };
+  };const activeQuestion = isRepeat ? ex.repeatQuestion : ex.question;
+    const activeBody = isRepeat ? ex.repeatBody : ex.body;
+    if (isRepeat) {
+      bodyHtml = bodyHtml.replace(ex.question, activeQuestion);
+      bodyHtml = bodyHtml.replace(ex.body, activeBody);
+    }
 
   try {
     const email = state.user.email;

@@ -5,6 +5,7 @@
     "build": "echo ok"
   },
   "dependencies": {
-    "firebase-admin": "^13.8.0"
+    "firebase-admin": "^13.8.0",
+    "googleapis": "^171.4.0"
   }
 }

@@ -10546,6 +10546,11 @@ function selectSingleChoiceCard(exId, val, btn) {
       <button onclick="document.getElementById('modal-repeat-feedback').style.display='none'" style="width:100%;padding:12px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#1a0a0f;cursor:pointer;font-family:'Jost',sans-serif;">Entendido</button>
     </div>`;
     modalEl.style.display = 'flex';
+    const continueBtn = document.getElementById('slide-continue-btn');
+    if (continueBtn) continueBtn.style.display = 'none';
+    modalEl.querySelector('button').addEventListener('click', () => {
+      if (continueBtn) continueBtn.style.display = '';
+    });
   }
   state.answers[exId] = val;
   saveState();

@@ -9712,6 +9712,8 @@ function buildExerciseBlock(ex, sec) {
             if (qEl) qEl.textContent = activeQuestion;
           }
         });
+        const continueBtn = document.getElementById('slide-continue-btn');
+        if (continueBtn) continueBtn.style.display = 'none';
       }, 100);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;

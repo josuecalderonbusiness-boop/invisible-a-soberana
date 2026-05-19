@@ -220,7 +220,7 @@ async function guardarEnFirestore(email, nombre, tipo) {
     await fetch(url, {
       method: 'PATCH',
       headers: {
-        'Authorization': Bearer ,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

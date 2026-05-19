@@ -9704,12 +9704,15 @@ function buildExerciseBlock(ex, sec) {
     const activeBody = isRepeat ? ex.repeatBody : ex.body;
     if (isRepeat) {
       setTimeout(() => {
-        const panel = document.getElementById('panel-' + ex.id) || document.querySelector('.slide-panel.active');
-        if (panel) {
-          const qEl = panel.querySelector('.slide-ex-question');
-          if (qEl) qEl.textContent = activeQuestion;
-        }
-      }, 50);
+        const allPanels = document.querySelectorAll('.slide-panel');
+        allPanels.forEach(panel => {
+          const btn = panel.querySelector(`[data-scc-group="${ex.id}"]`);
+          if (btn) {
+            const qEl = panel.querySelector('.slide-ex-question');
+            if (qEl) qEl.textContent = activeQuestion;
+          }
+        });
+      }, 100);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     activeItems.forEach(item => {

@@ -9713,7 +9713,7 @@ function buildExerciseBlock(ex, sec) {
           }
         });
         const continueBtn = document.getElementById('slide-continue-btn');
-        if (continueBtn) continueBtn.style.display = 'none';
+        if (continueBtn) continueBtn.style.visibility = 'hidden';
       }, 100);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
@@ -10549,9 +10549,10 @@ function selectSingleChoiceCard(exId, val, btn) {
     </div>`;
     modalEl.style.display = 'flex';
     const continueBtn = document.getElementById('slide-continue-btn');
-    if (continueBtn) continueBtn.style.display = 'none';
+    if (continueBtn) continueBtn.style.visibility = 'hidden';
     modalEl.querySelector('button').addEventListener('click', () => {
-      if (continueBtn) continueBtn.style.display = '';
+      modalEl.style.display = 'none';
+      if (continueBtn) continueBtn.style.visibility = 'visible';
     });
   }
   state.answers[exId] = val;

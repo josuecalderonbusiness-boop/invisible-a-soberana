@@ -1,4 +1,4 @@
-// api/hotmart-webhook.js — versión final
+﻿// api/hotmart-webhook.js — versión final
 // Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
 
 export default async function handler(req, res) {
@@ -90,6 +90,7 @@ export default async function handler(req, res) {
         lista:    String(targetList),
         mensaje:  'Contacto nuevo creado desde Hotmart'
       });
+      await guardarEnFirestore(email, primerNombre, isCompra7D ? '7d' : 'workshop');
 
       return res.status(200).json({
         received: true, action: 'contact_created', email, list: targetList
@@ -153,6 +154,7 @@ export default async function handler(req, res) {
       lista:    String(targetList),
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
+    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', isCompra7D ? '7d' : 'workshop');
 
     return res.status(200).json({
       received:        true,
@@ -205,6 +207,38 @@ async function guardarEnSheets(data) {
 }
 
 // ── Fecha Colombia ───────────────────────────────────────────────
+async function guardarEnFirestore(email, nombre, tipo) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const { google } = await import('googleapis');
+    const auth = new google.auth.GoogleAuth({
+      credentials: serviceAccount,
+      scopes: ['https://www.googleapis.com/auth/datastore']
+    });
+    const token = await auth.getAccessToken();
+    const url = `https://firestore.googleapis.com/v1/projects/soberana-app/databases/(default)/documents/workbook_acceso/${encodeURIComponent(email)}`;
+    await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': Bearer ,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fields: {
+          nombre: { stringValue: nombre },
+          activo: { booleanValue: true },
+          tipo: { stringValue: tipo },
+          fecha: { stringValue: new Date().toISOString() }
+        }
+      })
+    });
+    console.log('Firestore workbook_acceso actualizado:', email);
+  } catch(err) {
+    console.error('Error Firestore:', err.message);
+  }
+}
+
 function now() {
   return new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
 }
+

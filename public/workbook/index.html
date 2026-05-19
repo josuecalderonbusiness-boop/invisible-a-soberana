@@ -9728,7 +9728,13 @@ function buildExerciseBlock(ex, sec) {
     });
     bodyHtml += `</div>`;
     if (isRepeat && ex.repeatCorrect) {
-      bodyHtml += `<div id="fb-repeat-${ex.id}" style="display:none;margin:0 20px 20px;padding:14px 16px;border-radius:12px;border-left:3px solid #4CAF50;background:rgba(76,175,80,0.08)"><div id="fb-repeat-text-${ex.id}" style="font-size:13px;color:var(--text-dark);line-height:1.55"></div></div>`;
+      bodyHtml += `<div id="fb-repeat-${ex.id}" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:32px;">
+        <div style="background:#1a0a0f;border:1px solid #D4AF6A;border-radius:16px;padding:24px 20px;max-width:380px;width:90%;margin:0 auto;">
+          <div id="fb-repeat-badge-${ex.id}" style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#D4AF6A;margin-bottom:10px;"></div>
+          <div id="fb-repeat-text-${ex.id}" style="font-size:14px;color:#F5E6C8;line-height:1.65;margin-bottom:18px;"></div>
+          <button onclick="document.getElementById('fb-repeat-${ex.id}').style.display='none'" style="width:100%;padding:12px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#1a0a0f;cursor:pointer;font-family:'Jost',sans-serif;">Entendido</button>
+        </div>
+      </div>`;
     }
   }
 
@@ -10522,9 +10528,10 @@ function selectSingleChoiceCard(exId, val, btn) {
   const fbText = document.getElementById('fb-repeat-text-' + exId);
   if (fbBox && fbText && ex && ex.repeatCorrect) {
     const isCorrect = val === ex.repeatCorrect;
-    fbBox.style.display = 'block';
-    fbBox.style.borderLeftColor = isCorrect ? '#4CAF50' : '#E57373';
-    fbBox.style.background = isCorrect ? 'rgba(76,175,80,0.08)' : 'rgba(229,115,115,0.08)';
+    fbBox.style.display = 'flex';
+    const fbBadge = document.getElementById('fb-repeat-badge-' + exId);
+    if (fbBadge) fbBadge.textContent = isCorrect ? '✓ Correcto' : '× Revisemos esto';
+    if (fbBadge) fbBadge.style.color = isCorrect ? '#4CAF50' : '#E57373';
     fbText.innerHTML = isCorrect
       ? 'Exacto. El Codigo no requiere su aprobacion ni su presencia. Lo que cambia es tu posicion — y eso solo depende de ti.'
       : 'No exactamente. El Codigo Soberana no depende de el. Lo que cambia es tu posicion dentro del sistema — y eso solo depende de ti.';

@@ -9409,23 +9409,21 @@ function _updateSlideUI() {
       const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].done === true;
       const isET = curSlideData && curSlideData.ex && curSlideData.ex.field === 'espejo-transformacion';
       const etDone = isET && (()=>{ try{ var s=state.answers[curSlideData.ex.id]; return s&&JSON.parse(s).futuro; }catch(e){return false;} })();
-      const isSCC = curSlideData && curSlideData.ex && curSlideData.ex.field === 'single-choice-cards';
-      const sccDone = isSCC && state.answers[curSlideData.ex.id] !== undefined && state.answers[curSlideData.ex.id] !== '' && state.answers[curSlideData.ex.id] !== null;
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone) || (isSCC && !sccDone)) {
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone)) {
         btn.style.display = 'none';
       } else {
-        const curSlide = _slides[current];
-        const isPausaWB = curSlide && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook');
-        if (isPausaWB) {
-          btn.style.display = 'none';
-        } else {
-          btn.style.display = 'flex';
-          btn.innerHTML = current === total - 2
-            ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-            : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        }
+        btn.style.display = 'flex';
+        btn.innerHTML = current === total - 2
+          ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       }
     }
+    // Ocultar botón continuar en slide de Pausa Workbook
+    const curSlide = _slides[current];
+    if (curSlide && curSlide.type === 'exercise' && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook')) {
+      btn.style.display = 'none';
+    }
+  }
 
   // Move track
   const track = document.getElementById('slide-track');
@@ -9706,17 +9704,12 @@ function buildExerciseBlock(ex, sec) {
     const activeBody = isRepeat ? ex.repeatBody : ex.body;
     if (isRepeat) {
       setTimeout(() => {
-        const allPanels = document.querySelectorAll('.slide-panel');
-        allPanels.forEach(panel => {
-          const btn = panel.querySelector(`[data-scc-group="${ex.id}"]`);
-          if (btn) {
-            const qEl = panel.querySelector('.slide-ex-question');
-            if (qEl) qEl.textContent = activeQuestion;
-          }
-        });
-        const continueBtn = document.getElementById('slide-continue-btn');
-        if (continueBtn) continueBtn.style.visibility = 'hidden';
-      }, 100);
+        const panel = document.getElementById('panel-' + ex.id) || document.querySelector('.slide-panel.active');
+        if (panel) {
+          const qEl = panel.querySelector('.slide-ex-question');
+          if (qEl) qEl.textContent = activeQuestion;
+        }
+      }, 50);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
     activeItems.forEach(item => {
@@ -9732,13 +9725,7 @@ function buildExerciseBlock(ex, sec) {
     });
     bodyHtml += `</div>`;
     if (isRepeat && ex.repeatCorrect) {
-      bodyHtml += `<div id="fb-repeat-${ex.id}" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:32px;">
-        <div style="background:#1a0a0f;border:1px solid #D4AF6A;border-radius:16px;padding:24px 20px;max-width:380px;width:90%;margin:0 auto;">
-          <div id="fb-repeat-badge-${ex.id}" style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#D4AF6A;margin-bottom:10px;"></div>
-          <div id="fb-repeat-text-${ex.id}" style="font-size:14px;color:#F5E6C8;line-height:1.65;margin-bottom:18px;"></div>
-          <button onclick="document.getElementById('fb-repeat-${ex.id}').style.display='none'" style="width:100%;padding:12px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#1a0a0f;cursor:pointer;font-family:'Jost',sans-serif;">Entendido</button>
-        </div>
-      </div>`;
+      bodyHtml += `<div id="fb-repeat-${ex.id}" style="display:none;margin:0 20px 20px;padding:14px 16px;border-radius:12px;border-left:3px solid #4CAF50;background:rgba(76,175,80,0.08)"><div id="fb-repeat-text-${ex.id}" style="font-size:13px;color:var(--text-dark);line-height:1.55"></div></div>`;
     }
   }
 
@@ -10532,40 +10519,16 @@ function selectSingleChoiceCard(exId, val, btn) {
   const fbText = document.getElementById('fb-repeat-text-' + exId);
   if (fbBox && fbText && ex && ex.repeatCorrect) {
     const isCorrect = val === ex.repeatCorrect;
-    const badge = isCorrect ? '✓ Correcto' : '× Revisemos esto';
-    const badgeColor = isCorrect ? '#4CAF50' : '#E57373';
-    const msg = isCorrect
+    fbBox.style.display = 'block';
+    fbBox.style.borderLeftColor = isCorrect ? '#4CAF50' : '#E57373';
+    fbBox.style.background = isCorrect ? 'rgba(76,175,80,0.08)' : 'rgba(229,115,115,0.08)';
+    fbText.innerHTML = isCorrect
       ? 'Exacto. El Codigo no requiere su aprobacion ni su presencia. Lo que cambia es tu posicion — y eso solo depende de ti.'
       : 'No exactamente. El Codigo Soberana no depende de el. Lo que cambia es tu posicion dentro del sistema — y eso solo depende de ti.';
-    let modalEl = document.getElementById('modal-repeat-feedback');
-    if (!modalEl) {
-      modalEl = document.createElement('div');
-      modalEl.id = 'modal-repeat-feedback';
-      modalEl.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding-bottom:32px;';
-      document.body.appendChild(modalEl);
-    }
-    modalEl.innerHTML = `<div style="background:#1a0a0f;border:1px solid #D4AF6A;border-radius:16px;padding:24px 20px;max-width:380px;width:90%;margin:0 16px;">
-      <div style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:${badgeColor};margin-bottom:10px;">${badge}</div>
-      <div style="font-size:14px;color:#F5E6C8;line-height:1.65;margin-bottom:18px;">${msg}</div>
-      <button onclick="document.getElementById('modal-repeat-feedback').style.display='none'" style="width:100%;padding:12px;background:#D4AF6A;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#1a0a0f;cursor:pointer;font-family:'Jost',sans-serif;">Entendido</button>
-    </div>`;
-    modalEl.style.display = 'flex';
-    const continueBtn = document.getElementById('slide-continue-btn');
-    if (continueBtn) continueBtn.style.visibility = 'hidden';
-    modalEl.querySelector('button').addEventListener('click', () => {
-      modalEl.style.display = 'none';
-      if (continueBtn) { continueBtn.style.display = 'flex'; continueBtn.style.visibility = 'visible'; }
-    });
   }
   state.answers[exId] = val;
   saveState();
   updateLessonProgress(currentSectionId);
-  // Si NO tiene repeatCorrect (modal de feedback), mostrar botón inmediatamente
-  const _exForBtn = SECTIONS.reduce((f, s) => f || (s.exercises && s.exercises.find(e => e.id === exId)), null);
-  if (!(_exForBtn && _exForBtn.repeatCorrect)) {
-    const _cb = document.getElementById('slide-continue-btn');
-    if (_cb) { _cb.style.display = 'flex'; _cb.style.visibility = 'visible'; }
-  }
 }
 
 function toggleMultiChoice(exId, val, btn) {

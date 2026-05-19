@@ -9717,7 +9717,24 @@ function buildExerciseBlock(ex, sec) {
       }, 100);
     }
     bodyHtml += `<div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
-    activeItems.forEach(item => {
+    actiif (isRepeat) {
+      setTimeout(() => {
+        const allPanels = document.querySelectorAll('.slide-panel');
+        allPanels.forEach(panel => {
+          const sccBtn = panel.querySelector(`[data-scc-group="${ex.id}"]`);
+          if (sccBtn) {
+            const qEl = panel.querySelector('.slide-ex-question');
+            if (qEl) qEl.textContent = activeQuestion;
+          }
+        });
+      }, 100);
+      bodyHtml += `<style>#slide-continue-btn-hidden-${ex.id}{display:none}</style>`;
+      setTimeout(() => {
+        const continueBtn = document.getElementById('slide-continue-btn');
+        if (continueBtn) continueBtn.setAttribute('data-hidden-by', ex.id);
+        if (continueBtn) continueBtn.style.display = 'none';
+      }, 100);
+    }eItems.forEach(item => {
       const sel = savedSCC === item.id;
       bodyHtml += `<button onclick="selectSingleChoiceCard('${ex.id}','${item.id}',this)"
         style="padding:16px 12px;border-radius:14px;border:2px solid ${sel?'var(--burgundy)':'var(--surface-2)'};
@@ -10551,7 +10568,9 @@ function selectSingleChoiceCard(exId, val, btn) {
     const continueBtn = document.getElementById('slide-continue-btn');
     if (continueBtn) continueBtn.style.display = 'none';
     modalEl.querySelector('button').addEventListener('click', () => {
-      if (continueBtn) continueBtn.style.display = '';
+      modalEl.style.display = 'none';
+      const cb = document.getElementById('slide-continue-btn');
+      if (cb) { cb.style.display = ''; cb.removeAttribute('data-hidden-by'); }
     });
   }
   state.answers[exId] = val;

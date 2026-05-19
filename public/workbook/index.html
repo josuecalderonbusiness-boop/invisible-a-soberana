@@ -9409,21 +9409,23 @@ function _updateSlideUI() {
       const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].done === true;
       const isET = curSlideData && curSlideData.ex && curSlideData.ex.field === 'espejo-transformacion';
       const etDone = isET && (()=>{ try{ var s=state.answers[curSlideData.ex.id]; return s&&JSON.parse(s).futuro; }catch(e){return false;} })();
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone)) {
+      const isSCC = curSlideData && curSlideData.ex && curSlideData.ex.field === 'single-choice-cards';
+      const sccDone = isSCC && state.answers[curSlideData.ex.id] !== undefined && state.answers[curSlideData.ex.id] !== '' && state.answers[curSlideData.ex.id] !== null;
+      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone) || (isSCC && !sccDone)) {
         btn.style.display = 'none';
       } else {
-        btn.style.display = 'flex';
-        btn.innerHTML = current === total - 2
-          ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-          : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const curSlide = _slides[current];
+        const isPausaWB = curSlide && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook');
+        if (isPausaWB) {
+          btn.style.display = 'none';
+        } else {
+          btn.style.display = 'flex';
+          btn.innerHTML = current === total - 2
+            ? '✦ Ver resumen <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            : 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
       }
     }
-    // Ocultar botón continuar en slide de Pausa Workbook
-    const curSlide = _slides[current];
-    if (curSlide && curSlide.type === 'exercise' && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook')) {
-      btn.style.display = 'none';
-    }
-  }
 
   // Move track
   const track = document.getElementById('slide-track');
@@ -10552,12 +10554,18 @@ function selectSingleChoiceCard(exId, val, btn) {
     if (continueBtn) continueBtn.style.visibility = 'hidden';
     modalEl.querySelector('button').addEventListener('click', () => {
       modalEl.style.display = 'none';
-      if (continueBtn) continueBtn.style.visibility = 'visible';
+      if (continueBtn) { continueBtn.style.display = 'flex'; continueBtn.style.visibility = 'visible'; }
     });
   }
   state.answers[exId] = val;
   saveState();
   updateLessonProgress(currentSectionId);
+  // Si NO tiene repeatCorrect (modal de feedback), mostrar botón inmediatamente
+  const _exForBtn = SECTIONS.reduce((f, s) => f || (s.exercises && s.exercises.find(e => e.id === exId)), null);
+  if (!(_exForBtn && _exForBtn.repeatCorrect)) {
+    const _cb = document.getElementById('slide-continue-btn');
+    if (_cb) { _cb.style.display = 'flex'; _cb.style.visibility = 'visible'; }
+  }
 }
 
 function toggleMultiChoice(exId, val, btn) {

@@ -6004,9 +6004,7 @@ async function initApp() {
   document.getElementById('profile-email').textContent = state.user.email;
 
   // Random daily quote
-  const q = CONFRONTATION_QUOTES[Math.floor(Math.random() * CONFRONTATION_QUOTES.length)];
-  document.querySelector('#daily-quote .confrontation-text').textContent = q.text;
-  document.querySelector('#daily-quote .confrontation-attr').textContent = '— ' + q.attr;
+
 
   // Merge progreso remoto con localStorage antes de renderizar
   const _initEmail = state.user && state.user.email;
@@ -12983,6 +12981,7 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
 
 
 

@@ -1,4 +1,8 @@
-$path = "index.html"
-$content = Get-Content $path -Encoding UTF8 -Raw
-$content = $content -replace 'position:absolute;inset:0;width:100%;height:100%;border:none;object-fit:cover;', 'position:absolute;top:0;left:0;width:100%;height:100%;border:none;'
-$content | Set-Content $path -Encoding UTF8
+$path = "public\workbook\index.html"
+$lines = Get-Content $path -Encoding UTF8
+
+# Eliminar líneas 4375 a 4388 (hilo-banner + daily-quote, índice base 0 = línea -1)
+$newLines = $lines[0..4373] + $lines[4387..$($lines.Length - 1)]
+
+$newLines | Set-Content $path -Encoding UTF8
+Write-Host "Listo"

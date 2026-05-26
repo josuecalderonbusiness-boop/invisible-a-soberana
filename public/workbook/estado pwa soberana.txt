@@ -1,0 +1,227 @@
+# ESTADO TÉCNICO — PWA CÓDIGO SOBERANA
+*Última actualización: 13 Mayo 2026*
+
+---
+
+## REPOSITORIO Y DEPLOYMENT
+
+- **GitHub:** `josuecalderonbusiness-boop/invisible-a-soberana`
+- **Vercel:** auto-deploy en push a `origin/main`
+- **URL Workbook:** `soberana-app.josuecalderon.lat/workbook`
+- **Carpeta en repo:** `/public/workbook/`
+- **Archivos principales:** `index.html`, `manifest.json`, `sw.js`
+
+---
+
+## ARQUITECTURA GENERAL
+
+### Stack tecnológico
+- **Frontend:** PWA — HTML + CSS + JS vanilla (un solo archivo `index.html`)
+- **Hosting:** Vercel (plan Hobby)
+- **DNS:** Namecheap (`josuecalderon.lat`)
+- **Service Worker:** `sw.js` para funcionamiento offline
+- **Manifest:** `manifest.json` para instalación en dispositivos
+- **Backend:** Firebase/Firestore (proyecto `soberana-app`, plan Blaze)
+- **Video:** Bunny.net biblioteca ID `636956`
+
+### Firebase Config
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSyB7-A43AHuHDERC-ZdEyFRZ5R2w6w_rRYo",
+  authDomain: "soberana-app.firebaseapp.com",
+  projectId: "soberana-app",
+  storageBucket: "soberana-app.firebasestorage.app",
+  messagingSenderId: "30025552803",
+  appId: "1:30025552803:web:eb47af86c1898b99e94016",
+  measurementId: "G-PM302SH985"
+};
+```
+
+---
+
+## SISTEMA DE MICROLEARNING — ESTADO ACTUAL
+
+### Arquitectura
+```
+SECTIONS[].temas[]     → array de videos por tema (Bunny)
+SECTIONS[].exercises[] → ejercicios con propiedad tema:N
+
+openLesson() →
+  si sec.temas → alternar { tema-video, ejercicio(s) del tema }
+  si no → estructura original { intro, ejercicios }
+
+Pausa Workbook detectada por: ex.label.includes('Pausa Workbook')
+Portada cuaderno: /workbook/assets/workbook-cover.png
+```
+
+### Estado por sección
+
+| Sección | Temas | Estado |
+|---|---|---|
+| S0 — Punto de Arranque | — | Sin temas (intro especial) |
+| S1 — Qué es el Código | 4 temas | ✅ Completo |
+| S2 — La Trampa | 4 temas | ✅ Completo |
+| S3 — Identidad Soberana | 5 temas | ✅ Completo |
+| S4 — El Punto de Influencia | 4 temas | ✅ Completo |
+| S5 — Protocolo 1 | 4 temas | ✅ Completo |
+| S6 — Protocolo 2 | 4 temas | ✅ Completo |
+| S7 — Protocolo 3 | ❌ Pendiente | Sin temas |
+| S8 — El Sistema | ❌ Pendiente | Sin temas |
+| S9 — Integración | ❌ Pendiente | Sin temas |
+
+### Ejercicios por sección
+
+**S4 — El Punto de Influencia**
+| ID | Tema | Tipo | Descripción |
+|---|---|---|---|
+| s4_t1_e1 | 1 | single-choice-cards | Reconocimiento mapa de energía |
+| s4_e1 | 2 | single-choice-cards | Protocolo más débil |
+| s4_t3_e1 | 3 | single-choice-cards | Diagnóstico: dimensión más débil |
+| s4_e3 | 4 | checkpoint (star-textarea) | Pausa WB: Declaración de identidad + followUp |
+
+**S5 — Protocolo 1**
+| ID | Tema | Tipo | Descripción |
+|---|---|---|---|
+| s5_t1_e1 | 1 | single-choice-cards | Historia que construye la mente |
+| s5_t2_e1 | 2 | single-choice-cards | Distorsión más frecuente |
+| s5_e1 | 3 | belief-sequence | Sistema de 3 preguntas |
+| s5_e3 | 4 | checkpoint (star-textarea) | Pausa WB: Lección 5 |
+
+**S6 — Protocolo 2**
+| ID | Tema | Tipo | Descripción |
+|---|---|---|---|
+| s6_t1_e1 | 1 | single-choice-cards | Emoción más frecuente |
+| s6_t2_e1 | 2 | single-choice-cards | Relación con emociones |
+| s6_t3_e1 | 3 | match-slide | Gobernada vs Habitada (nuevo tipo) |
+| s6_e2 | 4 | eres-system | Sistema ERES |
+| s6_e3 | 4 | checkpoint (star-textarea) | Pausa WB: Lección 6 |
+
+---
+
+## NUEVOS TIPOS DE EJERCICIO
+
+### `field:'match-slide'`
+Ejercicio de emparejamiento con slide automático. Propiedades:
+```javascript
+{
+  id: 'ejercicio_id',
+  type: 'tool',
+  tema: N,
+  field: 'match-slide',
+  doneTitle: 'Texto pantalla final',
+  doneSub: 'Subtexto pantalla final',
+  matchItems: [
+    {
+      text: 'Situación en segunda persona',
+      correct: 'G', // o 'H' (Gobernada / Habitada)
+      error: 'Explicación conceptual cuando falla'
+    }
+  ]
+}
+```
+**Comportamiento:**
+- Una pregunta a la vez con slide automático (300ms delay)
+- Botón correcto → verde → avanza automáticamente
+- Botón incorrecto → popup oscuro vino/dorado con explicación conceptual
+- Botón "Continuar" oculto hasta completar todas las preguntas
+- Estado guardado en `window._matchState[exId]`
+
+### Funciones JS asociadas
+```javascript
+matchAnswer(exId, idx, btn, val)  // evalúa respuesta, avanza o muestra popup
+matchClosePopup(exId)             // cierra popup de error
+```
+
+---
+
+## CUADERNO ANIMADO (Pausa Workbook)
+
+### Detección
+- Se activa cuando `ex.label.includes('Pausa Workbook')`
+- Field debe ser `star-textarea` (no `declaration`)
+
+### Funciones JS
+```javascript
+wbAbrir(exId)       // flip portada → zoom → fullpage + fondo vino
+wbCerrar(exId)      // cierra hoja → vuelve cuaderno + fondo beige
+wbGuardar(exId)     // si tiene followUp → flip a segunda hoja; si no → wbGuardarFinal
+wbGuardarFinal(exId) // muestra botón "Ver resumen", cierra cuaderno
+```
+
+### Soporte de declaración + followUp
+Si el ejercicio tiene `declaration`, el cuaderno muestra:
+1. Texto de la declaración en cursiva (fondo vino suave, borde dorado izquierdo)
+2. Campo `fieldLabel` como label del textarea
+3. Al guardar: flip a segunda hoja con `followUp.question`
+
+### Tag del cuaderno
+```javascript
+// Solo muestra "🪞 Espejo X de 3" si el label lo dice explícitamente
+${ex.label && ex.label.includes('Espejo') ? '🪞 ' + ex.label : ''}
+```
+
+---
+
+## SISTEMA DE NAVEGACIÓN DE LECCIONES
+
+### Botón Continuar — lógica de visibilidad
+El botón se oculta automáticamente en:
+- Slides de Pausa Workbook (hasta guardar)
+- Slides `match-slide` (hasta completar todas las preguntas)
+- Último slide de la lección
+
+---
+
+## VIDEOS BUNNY PENDIENTES DE SUBIR
+
+Todos los temas tienen `bunnyVideoId: 'PENDIENTE_SXT#'`. Al subir videos reemplazar con IDs reales.
+
+| Sección | Tema | ID placeholder |
+|---|---|---|
+| S4 | T1-T4 | PENDIENTE_S4T1 → PENDIENTE_S4T4 |
+| S5 | T1-T4 | PENDIENTE_S5T1 → PENDIENTE_S5T4 |
+| S6 | T1-T4 | PENDIENTE_S6T1 → PENDIENTE_S6T4 |
+| S7-S9 | — | Sin implementar |
+
+---
+
+## PENDIENTES TÉCNICOS
+
+### Alta prioridad
+- [ ] S7, S8, S9 — agregar temas y ejercicios
+- [ ] S9 — conectar Espejo 3 correctamente
+- [ ] Videos reales — subir a Bunny y reemplazar IDs placeholder
+- [ ] Aro fragmentado en nodos del camino (4 arcos SVG por tema)
+
+### Media prioridad
+- [ ] Animación celebración post-Pausa Workbook
+- [ ] Cohort system (Firestore + admin panel)
+- [ ] Hotmart webhook para acceso automático
+- [ ] Favicon S dorada sobre fondo vino
+- [ ] Toast in-app para último post de Novedades
+- [ ] Sábado 7D live/replay logic
+- [ ] Bloquear registro workbook si no está en modo standalone (PWA)
+- [ ] Guardar FCM token desde página de instalación
+
+### Baja prioridad
+- [ ] Splash screen elegante (eliminar cuadrado blanco 5s)
+- [ ] App Badge — confirmar en más dispositivos Android
+- [ ] Botón "Compartir mi logro" — imagen para historias
+- [ ] Zoom SDK embebido (requiere cuenta Pro/Business)
+
+---
+
+## PRINCIPIOS TÉCNICOS (PowerShell)
+
+- **Ediciones simples:** `fix.ps1` con `Get-Content -Encoding UTF8 -Raw` + `Set-Content -Encoding UTF8`
+- **HTML con caracteres especiales:** guardar en archivo separado e inyectar con `Substring + IndexOf`
+- **Emojis en `-replace`:** NO usar — corrompen el archivo. Usar Ctrl+H en VSCode
+- **Comillas dobles en strings:** guardar fragmento en archivo separado
+- **Recovery:** `git restore public/workbook/index.html` o `git revert <hash>`
+- **Edición directa de líneas:** `$lines[N] = "..."` solo cuando `-replace` falla por comillas simples
+
+---
+
+*PWA deployada en: `soberana-app.josuecalderon.lat/workbook`*
+*Repo: `josuecalderonbusiness-boop/invisible-a-soberana`*
+*Sesión: 13 Mayo 2026*

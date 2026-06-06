@@ -4279,6 +4279,32 @@
   -webkit-tap-highlight-color: transparent;
 }
 .debug-btn:active { background: rgba(255,255,255,0.08); }
+.pod-skin-wrap{position:relative;background:#0F0A0B;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;overflow:hidden;border-radius:0;}
+.pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
+.pod-skin-mic-ring{position:relative;width:140px;height:140px;margin-bottom:2rem;z-index:1;}
+.pod-pulse-ring{position:absolute;border-radius:50%;border:1px solid rgba(184,137,42,0.3);top:50%;left:50%;transform:translate(-50%,-50%);animation:podPulse 2s ease-out infinite;}
+.pod-pulse-ring:nth-child(2){animation-delay:0.6s;}
+.pod-pulse-ring:nth-child(3){animation-delay:1.2s;}
+@keyframes podPulse{0%{width:90px;height:90px;opacity:0.6;}100%{width:200px;height:200px;opacity:0;}}
+.pod-mic-circle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90px;height:90px;border-radius:50%;background:#1a1015;border:1px solid rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center;z-index:2;}
+.pod-skin-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#F5ECD7;text-align:center;line-height:1.3;margin-bottom:0.4rem;z-index:1;}
+.pod-skin-subtitle{font-size:11px;color:rgba(184,137,42,0.7);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2rem;z-index:1;}
+.pod-skin-waveform{display:flex;align-items:center;gap:3px;height:40px;margin-bottom:1rem;z-index:1;}
+.pod-wave-bar{width:3px;background:#B8892A;border-radius:2px;opacity:0.5;animation:podWave 1.2s ease-in-out infinite;transition:background 0.3s;}
+.pod-wave-bar.pod-played{background:rgba(184,137,42,0.25);animation:none;height:4px!important;}
+.pod-wave-bar.pod-active{opacity:1;}
+@keyframes podWave{0%,100%{transform:scaleY(0.3);opacity:0.3;}50%{transform:scaleY(1);opacity:0.9;}}
+.pod-skin-time{display:flex;justify-content:space-between;width:100%;max-width:280px;font-size:11px;color:rgba(245,236,215,0.35);margin-bottom:1rem;z-index:1;font-variant-numeric:tabular-nums;}
+.pod-skin-progress-track{width:100%;max-width:280px;height:2px;background:rgba(184,137,42,0.15);border-radius:2px;margin-bottom:2rem;z-index:1;}
+.pod-skin-progress-fill{height:100%;width:0%;background:#B8892A;border-radius:2px;transition:width 0.5s linear;position:relative;}
+.pod-skin-progress-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#B8892A;}
+.pod-skin-controls{display:flex;align-items:center;gap:2rem;margin-bottom:2rem;z-index:1;}
+.pod-skin-btn-play{width:64px;height:64px;border-radius:50%;background:#B8892A;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;padding-left:4px;}
+.pod-skin-btn-play:active{transform:scale(0.95);}
+.pod-skin-badge{display:flex;align-items:center;gap:8px;background:rgba(184,137,42,0.08);border:1px solid rgba(184,137,42,0.2);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(184,137,42,0.7);letter-spacing:0.1em;text-transform:uppercase;z-index:1;}
+.pod-skin-dot{width:6px;height:6px;border-radius:50%;background:#B8892A;animation:podBlink 1.5s ease-in-out infinite;}
+@keyframes podBlink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 </style>
 </head>
 <body>
@@ -5742,7 +5768,7 @@ const SECTIONS = [
     desc:'Integracion final — tu Codigo Soberana Personal',
     palanca: null,
     temas: [
-      { num:1, titulo:'Lo que ya tienes — los 3 sistemas que cambiaron tu dinamica', bunnyVideoId:'PENDIENTE_S9T1', bunnyLibrary:'636956' },
+      { num:1, titulo:'Lo que ya tienes — los 3 sistemas que cambiaron tu dinamica', bunnyVideoId:'PENDIENTE_S9T1', bunnyLibrary:'636956', podcastSkin:true },
       { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'PENDIENTE_S9T2', bunnyLibrary:'636956' }
     ],
     exercises: [
@@ -5814,7 +5840,56 @@ const SECTIONS = [
 const BUNNY_LIBRARY_ID = '636956';
 const BUNNY_VIDEO_PRUEBA = 'a24ce52e-4395-4b7c-8b6b-50a154ec746c';
 
-async function getBunnyUrl(videoId) {
+async function podToggle(temaNum) {
+  const wrap = document.getElementById('pod-skin-' + temaNum);
+  const playBtn = document.getElementById('pod-play-' + temaNum);
+  const prog = document.getElementById('pod-prog-' + temaNum);
+  const wave = document.getElementById('pod-wave-' + temaNum);
+  if (!wrap) return;
+
+  if (!wrap._podReady) {
+    wrap._podReady = true;
+    wrap._playing = false;
+    wrap._pct = 0;
+    const heights = [8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16,22,12,18,8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16];
+    wave.innerHTML = '';
+    heights.forEach((h, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'pod-wave-bar';
+      bar.style.height = h + 'px';
+      bar.style.animationDelay = (i * 0.07) + 's';
+      wave.appendChild(bar);
+    });
+    const badge = wrap.querySelector('.pod-skin-badge');
+    if (badge) badge.innerHTML = '<div class="pod-skin-dot"></div>Reproduciendo';
+  }
+
+  wrap._playing = !wrap._playing;
+
+  const pauseIcon = `<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>`;
+  const playIcon = `<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>`;
+  playBtn.innerHTML = wrap._playing ? pauseIcon : playIcon;
+
+  const bars = wave.querySelectorAll('.pod-wave-bar');
+  bars.forEach(b => { b.style.animationPlayState = wrap._playing ? 'running' : 'paused'; });
+
+  if (wrap._playing) {
+    wrap._interval = setInterval(() => {
+      wrap._pct = Math.min(wrap._pct + 0.1, 100);
+      prog.style.width = wrap._pct + '%';
+      const playedCount = Math.floor((wrap._pct / 100) * bars.length);
+      bars.forEach((b, i) => {
+        if (i < playedCount) { b.classList.add('pod-played'); b.style.animationPlayState = 'paused'; }
+        else { b.classList.remove('pod-played'); b.style.animationPlayState = 'running'; }
+      });
+      if (wrap._pct >= 100) clearInterval(wrap._interval);
+    }, 500);
+  } else {
+    clearInterval(wrap._interval);
+  }
+}
+
+function getBunnyUrl(videoId) {
   try {
     const fn = firebase.functions().httpsCallable('getSignedVideoUrl');
     const result = await fn({ videoId: videoId });
@@ -6939,7 +7014,7 @@ const SECTION_ICONS = {
   s6: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
   s7: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>`,
   s8: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-  s9: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  s9: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`,
   s10:`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`
 };
 
@@ -9070,7 +9145,40 @@ function _buildSlideContent(slide, sectionId) {
     const libId = tema.bunnyLibrary || '636956';
     let html = '';
     if (tema.bunnyVideoId && tema.bunnyVideoId !== 'PENDIENTE_T1' && tema.bunnyVideoId !== 'PENDIENTE_T2' && tema.bunnyVideoId !== 'PENDIENTE_T3' && tema.bunnyVideoId !== 'PENDIENTE_T4' && tema.bunnyVideoId !== 'PENDIENTE_T5') {
-      html += `
+      if (tema.podcastSkin) {
+        html += `
+        <div class="pod-skin-wrap" id="pod-skin-${tema.num}">
+          <div class="pod-skin-bg-glow"></div>
+          <div class="pod-skin-label">Soberana · Episodio privado</div>
+          <div class="pod-skin-mic-ring">
+            <div class="pod-pulse-ring"></div>
+            <div class="pod-pulse-ring"></div>
+            <div class="pod-pulse-ring"></div>
+            <div class="pod-mic-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </div>
+          </div>
+          <div class="pod-skin-title">Lo que ya tienes</div>
+          <div class="pod-skin-subtitle">Sección 09 · Lección final</div>
+          <div class="pod-skin-waveform" id="pod-wave-${tema.num}"></div>
+          <div class="pod-skin-time"><span>0:00</span><span>—:——</span></div>
+          <div class="pod-skin-progress-track"><div class="pod-skin-progress-fill" id="pod-prog-${tema.num}"></div></div>
+          <div class="pod-skin-controls">
+            <div class="pod-skin-btn-play" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+            </div>
+          </div>
+          <div class="pod-skin-badge"><div class="pod-skin-dot"></div>Toca para escuchar</div>
+          <div style="display:none">
+            <iframe id="pod-iframe-${tema.num}"
+              src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+              allowfullscreen style="width:1px;height:1px">
+            </iframe>
+          </div>
+        </div>`;
+      } else {
+        html += `
         <div class="slide-video-wrap">
           <iframe
             src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
@@ -9078,6 +9186,7 @@ function _buildSlideContent(slide, sectionId) {
             allowfullscreen>
           </iframe>
         </div>`;
+      }
     } else {
       html += `
         <div style="margin:20px 16px;padding:40px 20px;background:rgba(184,137,42,0.06);border:1px dashed rgba(184,137,42,0.3);border-radius:16px;text-align:center;">

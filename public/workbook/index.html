@@ -7305,7 +7305,13 @@ function renderSectionsList() {
     else if (i === firstWorkshopUndoneIdx) gemState = 'current';
     else                               gemState = 'locked';
 
-    node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
+    if (sec.id === 's9') {
+      const micColor = done ? '#B8892A' : (gemState === 'locked' ? '#555' : '#B8892A');
+      const micOpacity = gemState === 'locked' ? '0.35' : '1';
+      node.insertAdjacentHTML('afterbegin', `<div style="width:64px;height:64px;border-radius:50%;background:${gemState==='locked'?'#2a2a2a':'#1a1015'};border:2px solid ${micColor};display:flex;align-items:center;justify-content:center;opacity:${micOpacity};${gemState==='current'?'box-shadow:0 0 18px rgba(184,137,42,0.5);':''}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${micColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></div>`);
+    } else {
+      node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
+    }
     if (gemState === 'current') {
       node.style.perspective = '400px';
       // 3 arcos de progreso alrededor del hito (solo nodos con ejercicios)

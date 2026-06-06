@@ -2557,6 +2557,9 @@
   .slide-header.s10-mode {
     background: #0A1F12 !important;
   }
+  .slide-header.podcast-mode {
+    background: #0F0A0B !important;
+  }
   .slide-header-inner {
     display: flex;
     align-items: center;
@@ -9129,6 +9132,8 @@ function openLesson(sectionId) {
   // Open — color del viaje
   const _lc = (typeof SECCION_COLORES!=='undefined' && SECCION_COLORES[sectionId]) ? SECCION_COLORES[sectionId] : '#B8892A';
   window._lessonAccent = _lc;
+  const _sh = document.querySelector('.slide-header');
+  if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9') _sh.classList.add('podcast-mode'); }
   const _pf = document.getElementById('slide-prog-fill');
   if (_pf) _pf.style.background = 'linear-gradient(90deg,'+_lc+','+_lc+'cc)';
   setTimeout(function(){

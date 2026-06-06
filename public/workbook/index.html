@@ -4305,6 +4305,7 @@
 .pod-skin-badge{display:flex;align-items:center;gap:8px;background:rgba(184,137,42,0.08);border:1px solid rgba(184,137,42,0.2);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(184,137,42,0.7);letter-spacing:0.1em;text-transform:uppercase;z-index:1;}
 .pod-skin-dot{width:6px;height:6px;border-radius:50%;background:#B8892A;animation:podBlink 1.5s ease-in-out infinite;}
 @keyframes podBlink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+@keyframes micPulse{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.3);}}
 </style>
 </head>
 <body>
@@ -7308,7 +7309,7 @@ function renderSectionsList() {
     if (sec.id === 's9') {
       const micColor = done ? '#B8892A' : (gemState === 'locked' ? '#555' : '#B8892A');
       const micOpacity = gemState === 'locked' ? '0.35' : '1';
-      node.insertAdjacentHTML('afterbegin', `<div style="width:64px;height:64px;border-radius:50%;background:${gemState==='locked'?'#2a2a2a':'#1a1015'};border:2px solid ${micColor};display:flex;align-items:center;justify-content:center;opacity:${micOpacity};${gemState==='current'?'box-shadow:0 0 18px rgba(184,137,42,0.5);':''}"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${micColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></div>`);
+      node.insertAdjacentHTML('afterbegin', `<div style="position:relative;width:68px;height:68px;display:flex;align-items:center;justify-content:center;opacity:${micOpacity}"><div style="position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(184,137,42,0.25);animation:micPulse 2s ease-out infinite;"></div><div style="position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(184,137,42,0.12);animation:micPulse 2s ease-out infinite 0.7s;"></div><div style="width:68px;height:68px;border-radius:50%;background:#0F0A0B;border:2px solid ${micColor};display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(184,137,42,0.12),0 0 24px rgba(184,137,42,0.35),inset 0 1px 0 rgba(255,255,255,0.06);position:relative;"><div style="position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(184,137,42,0.18),transparent 60%);pointer-events:none;"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="${micColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></div></div>`);
     } else {
       node.insertAdjacentHTML('afterbegin', makeGemSVG('workshop', gemState));
     }

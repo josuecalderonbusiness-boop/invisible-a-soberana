@@ -4279,7 +4279,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 .debug-btn:active { background: rgba(255,255,255,0.08); }
-.pod-skin-wrap{position:relative;background:#0F0A0B;min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;overflow:hidden;border-radius:0;}
+.pod-skin-wrap{position:relative;background:#0F0A0B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;overflow:hidden;border-radius:0;}
+.slide-panel-podcast{padding:0!important;background:#0F0A0B!important;min-height:100vh;}
+.slide-panel-podcast .pod-skin-wrap{min-height:100vh;width:100%;flex:1;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
 .pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
 .pod-skin-mic-ring{position:relative;width:140px;height:140px;margin-bottom:2rem;z-index:1;}
@@ -5693,9 +5695,9 @@ const SECTIONS = [
     desc:'Aquí es donde todo se vuelve real',
     palanca:'No el caso genérico. El tuyo. Con los detalles reales. Con lo que él diría. Con lo que tú sentirías. Con lo que cambiarías.',
     temas: [
-      { num:1, titulo:'El engranaje completo — como funcionan los 3 protocolos juntos', bunnyVideoId:'PENDIENTE_S8T1', bunnyLibrary:'636956' },
-      { num:2, titulo:'Los 3 protocolos en situaciones reales', bunnyVideoId:'PENDIENTE_S8T2', bunnyLibrary:'636956' },
-      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'PENDIENTE_S8T3', bunnyLibrary:'636956' }
+      { num:1, titulo:'El engranaje completo — como funcionan los 3 protocolos juntos', bunnyVideoId:'c8a70608-3db8-4755-aa16-ed49251887b1', bunnyLibrary:'636956' },
+      { num:2, titulo:'Los 3 protocolos en situaciones reales', bunnyVideoId:'49b86fc5-e97a-476b-bf79-d218610b3764', bunnyLibrary:'636956' },
+      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956' }
     ],
     exercises: [
       {
@@ -9110,7 +9112,8 @@ function openLesson(sectionId) {
   _slides.forEach((slide, i) => {
     const panel = document.createElement('div');
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
-    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : 'slide-panel';
+    const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
+    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));
     track.appendChild(panel);

@@ -5889,7 +5889,7 @@ async function podToggle(temaNum) {
   }
 }
 
-function getBunnyUrl(videoId) {
+async function getBunnyUrl(videoId) {
   try {
     const fn = firebase.functions().httpsCallable('getSignedVideoUrl');
     const result = await fn({ videoId: videoId });

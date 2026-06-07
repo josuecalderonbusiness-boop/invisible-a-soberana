@@ -9188,21 +9188,42 @@ function sitAvanzar(secId, idx, total) {
 
 function sdInitDrag(exId) {
   var slotData = [null, null, null];
-  var dragCard = null, ghost = null, offX = 0, offY = 0;
-  var ph = ['Arrastra aqui el primero','Arrastra aqui el segundo','Arrastra aqui el tercero'];
-  var slotStyle = 'flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
+  var selected = null;
+  var ph = ['Toca el primero','Toca el segundo','Toca el tercero'];
+  var slotStyle = 'flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4;cursor:pointer';
 
   function getSlot(i){ return document.getElementById('sdslot_'+exId+'_'+i); }
   function getNum(i){ return document.getElementById('sdnum_'+exId+'_'+i); }
 
-  function dropCard(card, si) {
-    if (slotData[si]) return;
-    slotData[si] = card;
+  function selectCard(card) {
+    if (card.dataset.used === '1') return;
+    if (selected === card) {
+      card.style.border = '1px solid rgba(237,227,206,0.15)';
+      card.style.background = 'rgba(255,255,255,0.04)';
+      selected = null; return;
+    }
+    if (selected) {
+      selected.style.border = '1px solid rgba(237,227,206,0.15)';
+      selected.style.background = 'rgba(255,255,255,0.04)';
+    }
+    selected = card;
+    card.style.border = '2px solid rgba(184,137,42,0.8)';
+    card.style.background = 'rgba(184,137,42,0.15)';
+  }
+
+  function placeInSlot(si) {
+    if (!selected) return;
+    slotData[si] = selected;
     var sl = getSlot(si);
-    sl.textContent = card.textContent;
-    sl.style.cssText = 'flex:1;min-height:62px;border-radius:14px;border:2px solid rgba(184,137,42,0.5);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:#1a0a0f;font-style:normal;transition:all .25s;line-height:1.4';
+    sl.textContent = selected.textContent;
+    sl.style.cssText = 'flex:1;min-height:62px;border-radius:14px;border:2px solid rgba(184,137,42,0.5);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:#1a0a0f;font-style:normal;transition:all .25s;line-height:1.4;cursor:pointer';
     sl.onclick = function(){ returnCard(si); };
-    card.style.opacity = '0.15'; card.style.pointerEvents = 'none'; card.style.borderStyle = 'dashed';
+    selected.dataset.used = '1';
+    selected.style.opacity = '0.2';
+    selected.style.border = '1px dashed rgba(237,227,206,0.15)';
+    selected.style.background = 'rgba(255,255,255,0.02)';
+    selected.style.cursor = 'default';
+    selected = null;
     if (slotData.every(function(s){ return s !== null; })) setTimeout(verificar, 300);
   }
 
@@ -9212,7 +9233,10 @@ function sdInitDrag(exId) {
     var card = slotData[si]; if (!card) return;
     var sl = getSlot(si);
     sl.style.cssText = slotStyle; sl.textContent = ph[si]; sl.onclick = null;
-    card.style.opacity = '1'; card.style.pointerEvents = 'auto'; card.style.borderStyle = 'solid';
+    card.dataset.used = '0';
+    card.style.opacity = '1'; card.style.cursor = 'pointer';
+    card.style.border = '1px solid rgba(237,227,206,0.15)';
+    card.style.background = 'rgba(255,255,255,0.04)';
     slotData[si] = null;
   }
 
@@ -9247,51 +9271,19 @@ function sdInitDrag(exId) {
   };
 
   var cards = document.querySelectorAll('#sdcards_'+exId+' > div');
-  cards.forEach(function(card) {
-    card.addEventListener('dragstart', function(e){ dragCard=card; card.style.opacity='0.3'; e.dataTransfer.effectAllowed='move'; });
-    card.addEventListener('dragend', function(){ card.style.opacity = slotData.indexOf(card)>-1?'0.15':'1'; dragCard=null; });
-    card.addEventListener('touchstart', function(e){
-      if (card.style.pointerEvents==='none') return;
-      dragCard=card; var t=e.touches[0], r=card.getBoundingClientRect();
-      offX=t.clientX-r.left; offY=t.clientY-r.top;
-      ghost=document.createElement('div');
-      ghost.style.cssText='position:fixed;pointer-events:none;z-index:9999;border-radius:14px;border:1px solid rgba(184,137,42,0.6);background:rgba(26,10,15,0.97);padding:18px;font-family:Jost,sans-serif;font-size:17px;color:#D4AF6A;line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:300px;transform:rotate(2deg)';
-      ghost.textContent=card.textContent;
-      ghost.style.left=(t.clientX-offX)+'px'; ghost.style.top=(t.clientY-offY)+'px'; ghost.style.width=r.width+'px';
-      document.body.appendChild(ghost); card.style.opacity='0.3'; e.preventDefault();
-    },{passive:false});
-    card.addEventListener('touchmove', function(e){
-      if (!ghost) return; var t=e.touches[0];
-      ghost.style.left=(t.clientX-offX)+'px'; ghost.style.top=(t.clientY-offY)+'px'; e.preventDefault();
-    },{passive:false});
-    card.addEventListener('touchend', function(e){
-      if (!ghost||!dragCard) return; var t=e.changedTouches[0];
-      ghost.remove(); ghost=null; dragCard.style.opacity='1';
-      var el=document.elementFromPoint(t.clientX,t.clientY);
-      var target=el?el.closest('[id^="sdslot_'+exId+'"]'):null;
-      if (!target) {
-        var best=null,bestDist=999;
-        for (var si=0;si<3;si++){
-          var slEl=document.getElementById('sdslot_'+exId+'_'+si);
-          if (!slEl||slotData[si]) continue;
-          var sr=slEl.getBoundingClientRect();
-          var cx=sr.left+sr.width/2,cy=sr.top+sr.height/2;
-          var dist=Math.sqrt(Math.pow(t.clientX-cx,2)+Math.pow(t.clientY-cy,2));
-          if (dist<bestDist){bestDist=dist;best=slEl;}
-        }
-        if (best&&bestDist<120) target=best;
-      }
-      if (target&&!slotData[parseInt(target.dataset.slot)]) dropCard(dragCard,parseInt(target.dataset.slot));
-      dragCard=null;
-    });
+  cards.forEach(function(card){
+    card.dataset.used = '0';
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(){ selectCard(card); });
   });
 
   for (var i=0;i<3;i++){
     (function(si){
       var sl=getSlot(si);
-      sl.addEventListener('dragover',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.8)';sl.style.background='#fffbf0';});
-      sl.addEventListener('dragleave',function(){if(!slotData[si]){sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';}});
-      sl.addEventListener('drop',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';if(!dragCard||slotData[si])return;dropCard(dragCard,si);});
+      sl.addEventListener('click', function(){
+        if (slotData[si]) { returnCard(si); }
+        else if (selected) { placeInSlot(si); }
+      });
     })(i);
   }
 }

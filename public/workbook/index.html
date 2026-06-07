@@ -5699,8 +5699,12 @@ const SECTIONS = [
     palanca:'No el caso genérico. El tuyo. Con los detalles reales. Con lo que él diría. Con lo que tú sentirías. Con lo que cambiarías.',
     temas: [
       { num:1, titulo:'El engranaje completo — como funcionan los 3 protocolos juntos', bunnyVideoId:'c8a70608-3db8-4755-aa16-ed49251887b1', bunnyLibrary:'636956' },
-      { num:2, titulo:'Los 3 protocolos en situaciones reales', bunnyVideoId:'49b86fc5-e97a-476b-bf79-d218610b3764', bunnyLibrary:'636956' },
-      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956' }
+      { num:2, tipo:'situaciones', titulo:'Los 3 protocolos en situaciones reales', situaciones:[
+        { num:1, titulo:'Situacion 1 — El saludo', bunnyVideoId:'49b86fc5-e97a-476b-bf79-d218610b3764', bunnyLibrary:'636956' },
+        { num:2, titulo:'Situacion 2 — La decision', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956' },
+        { num:3, titulo:'Situacion 3 — El dinero', bunnyVideoId:'20f71e2c-a101-40f1-955e-e6e21ce5f50d', bunnyLibrary:'636956' }
+      ]},
+      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'PENDIENTE_S8WB', bunnyLibrary:'636956' }
     ],
     exercises: [
       {
@@ -9089,7 +9093,11 @@ function openLesson(sectionId) {
     // Nueva estructura: por cada tema → video del tema → ejercicios de ese tema
     sec.temas.forEach(tema => {
       // Slide de video del tema
-      _slides.push({ type: 'tema-video', tema, sec });
+      if (tema.tipo === 'situaciones') {
+        _slides.push({ type: 'situaciones', tema, sec });
+      } else {
+        _slides.push({ type: 'tema-video', tema, sec });
+      }
       // Ejercicios que pertenecen a este tema
       const exsTema = sec.exercises.filter(ex => ex.tema === tema.num);
       exsTema.forEach(ex => {
@@ -9149,6 +9157,51 @@ function openLesson(sectionId) {
 
   updateLessonProgress(sectionId);
   setupMinCharsGuard(sectionId);
+}
+
+function completarSituacion(secId, idx, total) {
+  const btn = document.getElementById('sit-btn-' + secId + '-' + idx);
+  if (btn) {
+    btn.textContent = 'Vista';
+    btn.style.background = 'rgba(74,158,110,0.15)';
+    btn.style.borderColor = 'rgba(74,158,110,0.5)';
+    btn.style.color = '#7dd4a8';
+    btn.disabled = true;
+  }
+  const icon = document.getElementById('sit-icon-' + secId + '-' + idx);
+  if (icon) {
+    icon.style.background = 'rgba(74,158,110,0.15)';
+    icon.style.borderColor = 'rgba(74,158,110,0.5)';
+    icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7dd4a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  const next = idx + 1;
+  if (next < total) {
+    const nextCard = document.getElementById('sit-card-' + secId + '-' + next);
+    if (nextCard) {
+      nextCard.style.border = '1px solid rgba(184,137,42,0.3)';
+      nextCard.style.background = 'rgba(184,137,42,0.06)';
+      const nextIcon = document.getElementById('sit-icon-' + secId + '-' + next);
+      if (nextIcon) {
+        nextIcon.style.borderColor = 'rgba(184,137,42,0.5)';
+        nextIcon.innerHTML = '<span style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:600;color:#B8892A">' + (next + 1) + '</span>';
+      }
+      nextCard.innerHTML += `
+        <div id="sit-video-${secId}-${next}" style="margin:0 16px 16px;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#0f0508">
+          <iframe src="https://iframe.mediadelivery.net/embed/636956/${document.getElementById('sit-card-' + secId + '-' + next).dataset.videoid}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+            allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+            allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+        </div>
+        <div style="padding:0 16px 16px">
+          <button id="sit-btn-${secId}-${next}" onclick="completarSituacion('${secId}',${next},${total})"
+            style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(184,137,42,0.4);background:rgba(184,137,42,0.1);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#D4AF6A;cursor:pointer">
+            Situacion vista — continuar
+          </button>
+        </div>`;
+      nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else {
+    setTimeout(() => { goNext(); }, 600);
+  }
 }
 
 function _buildSlideContent(slide, sectionId) {
@@ -9215,6 +9268,52 @@ function _buildSlideContent(slide, sectionId) {
         <div style="font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin-bottom:6px">Lección ${sec.num} · Tema ${tema.num}</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F0E6EA;line-height:1.25">${tema.titulo}</div>
       </div>`;
+    wrap.innerHTML = html;
+
+  } else if (slide.type === 'situaciones') {
+    const tema = slide.tema;
+    const sec = slide.sec;
+    const sits = tema.situaciones || [];
+    const stateKey = '_sits_done_' + sec.id;
+    let html = `
+      <div style="padding:20px 20px 8px">
+        <div style="font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F0E6EA;line-height:1.25;margin-bottom:4px">${tema.titulo}</div>
+        <div style="font-size:12px;color:rgba(237,227,206,0.4);margin-bottom:20px">Completa cada situacion para desbloquear la siguiente</div>
+      </div>
+      <div id="sits-wrap-${sec.id}" style="padding:0 16px;display:flex;flex-direction:column;gap:14px">`;
+    sits.forEach((sit, idx) => {
+      const libId = sit.bunnyLibrary || '636956';
+      const locked = idx > 0;
+      html += `
+        <div id="sit-card-${sec.id}-${idx}" data-videoid="${sit.bunnyVideoId}" style="border-radius:14px;border:1px solid ${locked ? 'rgba(237,227,206,0.08)' : 'rgba(184,137,42,0.3)'};background:${locked ? 'rgba(255,255,255,0.02)' : 'rgba(184,137,42,0.06)'};overflow:hidden;transition:all .3s">
+          <div style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+            <div id="sit-icon-${sec.id}-${idx}" style="width:32px;height:32px;border-radius:50%;border:1px solid ${locked ? 'rgba(237,227,206,0.15)' : 'rgba(184,137,42,0.5)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s">
+              ${locked
+                ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(237,227,206,0.3)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+                : `<span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#B8892A">${idx + 1}</span>`
+              }
+            </div>
+            <div style="flex:1">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:${locked ? 'rgba(237,227,206,0.2)' : 'rgba(184,137,42,0.6)'};margin-bottom:3px">Situacion ${idx + 1}</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:${locked ? 'rgba(237,227,206,0.25)' : '#EDE3CE'};line-height:1.3">${sit.titulo}</div>
+            </div>
+          </div>
+          ${locked ? '' : `
+          <div id="sit-video-${sec.id}-${idx}" style="margin:0 16px 16px;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#0f0508">
+            <iframe src="https://iframe.mediadelivery.net/embed/${libId}/${sit.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+              allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+          </div>
+          <div style="padding:0 16px 16px">
+            <button id="sit-btn-${sec.id}-${idx}" onclick="completarSituacion('${sec.id}',${idx},${sits.length})"
+              style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(184,137,42,0.4);background:rgba(184,137,42,0.1);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#D4AF6A;cursor:pointer">
+              Situacion vista — continuar
+            </button>
+          </div>`}
+        </div>`;
+    });
+    html += `</div><div style="height:24px"></div>`;
     wrap.innerHTML = html;
 
   } else if (slide.type === 'intro') {

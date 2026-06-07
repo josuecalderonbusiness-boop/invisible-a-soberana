@@ -5710,7 +5710,7 @@ const SECTIONS = [
       {
         id:'s8_e1', type:'tool', tema:1,
         question:'Ordena los 3 protocolos en el orden correcto',
-        body:'Toca una tarjeta para seleccionarla, luego toca la posicion donde quieres colocarla.',
+        body:'Toca una tarjeta — se resalta en dorado. Luego toca la posicion donde va.',
         items:[
           {id:'card_b', texto:'Convierte la emocion en informacion util', correctPos:1},
           {id:'card_a', texto:'Limpia lo que percibes antes de reaccionar', correctPos:0},
@@ -10343,7 +10343,7 @@ function buildExerciseBlock(ex, sec) {
     const items = ex.items || [];
     const feedbackOk = ex.feedback || '';
     const hintTxt = ex.hint || '';
-    const placeholders = ['Toca para colocar aqui','Toca para colocar aqui','Toca para colocar aqui'];
+    const placeholders = ['Posicion 1','Posicion 2','Posicion 3'];
     bodyHtml += `
       <div id="sdwrap_${ex.id}" style="user-select:none">
         <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">

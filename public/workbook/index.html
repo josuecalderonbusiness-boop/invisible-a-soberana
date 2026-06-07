@@ -9186,6 +9186,116 @@ function sitAvanzar(secId, idx, total) {
   }, 400);
 }
 
+function sdInitDrag(exId) {
+  var slotData = [null, null, null];
+  var dragCard = null, ghost = null, offX = 0, offY = 0;
+  var ph = ['Arrastra aqui el primero','Arrastra aqui el segundo','Arrastra aqui el tercero'];
+  var slotStyle = 'flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
+
+  function getSlot(i){ return document.getElementById('sdslot_'+exId+'_'+i); }
+  function getNum(i){ return document.getElementById('sdnum_'+exId+'_'+i); }
+
+  function dropCard(card, si) {
+    if (slotData[si]) return;
+    slotData[si] = card;
+    var sl = getSlot(si);
+    sl.textContent = card.textContent;
+    sl.style.cssText = 'flex:1;min-height:62px;border-radius:14px;border:2px solid rgba(184,137,42,0.5);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:#1a0a0f;font-style:normal;transition:all .25s;line-height:1.4';
+    sl.onclick = function(){ returnCard(si); };
+    card.style.opacity = '0.15'; card.style.pointerEvents = 'none'; card.style.borderStyle = 'dashed';
+    if (slotData.every(function(s){ return s !== null; })) setTimeout(verificar, 300);
+  }
+
+  function returnCard(si) {
+    var res = document.getElementById('sdresult_'+exId);
+    if (res && res.style.display === 'block' && res.innerHTML.indexOf('protocolo') > -1) return;
+    var card = slotData[si]; if (!card) return;
+    var sl = getSlot(si);
+    sl.style.cssText = slotStyle; sl.textContent = ph[si]; sl.onclick = null;
+    card.style.opacity = '1'; card.style.pointerEvents = 'auto'; card.style.borderStyle = 'solid';
+    slotData[si] = null;
+  }
+
+  function verificar() {
+    var ok = true;
+    for (var i = 0; i < 3; i++) {
+      var sl = getSlot(i);
+      var correct = parseInt(slotData[i].dataset.correct) === i;
+      if (correct) { sl.style.borderColor = 'rgba(74,158,110,0.7)'; sl.style.background = '#f0fdf4'; sl.style.color = '#166534'; }
+      else { sl.style.borderColor = 'rgba(180,60,60,0.5)'; sl.style.background = '#fff5f5'; sl.style.color = '#991b1b'; ok = false; }
+    }
+    document.getElementById('sdcards_'+exId).style.display = 'none';
+    var res = document.getElementById('sdresult_'+exId);
+    res.style.display = 'block';
+    if (ok) {
+      for (var j = 0; j < 3; j++) { var n = getNum(j); n.style.borderColor = 'rgba(74,158,110,0.5)'; n.style.color = '#7dd4a8'; }
+      res.innerHTML = '<div style="padding:16px 18px;border-radius:13px;background:rgba(184,137,42,0.08);border-left:3px solid rgba(184,137,42,0.5);font-size:16px;color:rgba(237,227,206,0.85);line-height:1.75">Asi funciona el engranaje — cada protocolo le pasa el trabajo limpio al siguiente. Sin el 1, el 2 opera sobre una historia distorsionada. Sin el 2, el 3 sale desde el caos.</div>';
+    } else {
+      res.innerHTML = '<div style="padding:16px 18px;border-radius:13px;background:rgba(180,60,60,0.06);border-left:3px solid rgba(180,60,60,0.5);font-size:16px;color:rgba(237,200,200,0.8);line-height:1.75">Ese no es el orden correcto. Piensa que tiene que pasar primero para que lo siguiente tenga sentido.<br><button onclick="sdReset(\''+exId+'\')" style="margin-top:14px;width:100%;padding:16px;border-radius:12px;border:1px solid rgba(184,137,42,0.3);background:transparent;font-family:Jost,sans-serif;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(184,137,42,0.7);cursor:pointer">Intentar de nuevo</button></div>';
+    }
+  }
+
+  window['sdReset'] = function(id) {
+    for (var i = 0; i < 3; i++) {
+      var sl = getSlot(i);
+      if (slotData[i]) { slotData[i].style.opacity='1'; slotData[i].style.pointerEvents='auto'; slotData[i].style.borderStyle='solid'; slotData[i]=null; }
+      sl.style.cssText = slotStyle; sl.textContent = ph[i]; sl.onclick = null;
+      getNum(i).style.borderColor = ''; getNum(i).style.color = '';
+    }
+    document.getElementById('sdresult_'+exId).style.display = 'none';
+    document.getElementById('sdcards_'+exId).style.display = 'flex';
+  };
+
+  var cards = document.querySelectorAll('#sdcards_'+exId+' > div');
+  cards.forEach(function(card) {
+    card.addEventListener('dragstart', function(e){ dragCard=card; card.style.opacity='0.3'; e.dataTransfer.effectAllowed='move'; });
+    card.addEventListener('dragend', function(){ card.style.opacity = slotData.indexOf(card)>-1?'0.15':'1'; dragCard=null; });
+    card.addEventListener('touchstart', function(e){
+      if (card.style.pointerEvents==='none') return;
+      dragCard=card; var t=e.touches[0], r=card.getBoundingClientRect();
+      offX=t.clientX-r.left; offY=t.clientY-r.top;
+      ghost=document.createElement('div');
+      ghost.style.cssText='position:fixed;pointer-events:none;z-index:9999;border-radius:14px;border:1px solid rgba(184,137,42,0.6);background:rgba(26,10,15,0.97);padding:18px;font-family:Jost,sans-serif;font-size:17px;color:#D4AF6A;line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:300px;transform:rotate(2deg)';
+      ghost.textContent=card.textContent;
+      ghost.style.left=(t.clientX-offX)+'px'; ghost.style.top=(t.clientY-offY)+'px'; ghost.style.width=r.width+'px';
+      document.body.appendChild(ghost); card.style.opacity='0.3'; e.preventDefault();
+    },{passive:false});
+    card.addEventListener('touchmove', function(e){
+      if (!ghost) return; var t=e.touches[0];
+      ghost.style.left=(t.clientX-offX)+'px'; ghost.style.top=(t.clientY-offY)+'px'; e.preventDefault();
+    },{passive:false});
+    card.addEventListener('touchend', function(e){
+      if (!ghost||!dragCard) return; var t=e.changedTouches[0];
+      ghost.remove(); ghost=null; dragCard.style.opacity='1';
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      var target=el?el.closest('[id^="sdslot_'+exId+'"]'):null;
+      if (!target) {
+        var best=null,bestDist=999;
+        for (var si=0;si<3;si++){
+          var slEl=document.getElementById('sdslot_'+exId+'_'+si);
+          if (!slEl||slotData[si]) continue;
+          var sr=slEl.getBoundingClientRect();
+          var cx=sr.left+sr.width/2,cy=sr.top+sr.height/2;
+          var dist=Math.sqrt(Math.pow(t.clientX-cx,2)+Math.pow(t.clientY-cy,2));
+          if (dist<bestDist){bestDist=dist;best=slEl;}
+        }
+        if (best&&bestDist<120) target=best;
+      }
+      if (target&&!slotData[parseInt(target.dataset.slot)]) dropCard(dragCard,parseInt(target.dataset.slot));
+      dragCard=null;
+    });
+  });
+
+  for (var i=0;i<3;i++){
+    (function(si){
+      var sl=getSlot(si);
+      sl.addEventListener('dragover',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.8)';sl.style.background='#fffbf0';});
+      sl.addEventListener('dragleave',function(){if(!slotData[si]){sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';}});
+      sl.addEventListener('drop',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';if(!dragCard||slotData[si])return;dropCard(dragCard,si);});
+    })(i);
+  }
+}
+
 function completarSituacion(secId, idx, total) {
   const btn = document.getElementById('sit-btn-' + secId + '-' + idx);
   if (btn) {
@@ -10256,121 +10366,10 @@ function buildExerciseBlock(ex, sec) {
         </div>
         <div id="sdresult_${ex.id}" style="display:none"></div>
       </div>`;
-    bodyHtml += `<script>
-(function(){
-  var exId='${ex.id}';
-  var slotData=[null,null,null];
-  var ph=${JSON.stringify(placeholders)};
-  var dragCard=null,ghost=null,offX=0,offY=0;
-  function getSlot(i){return document.getElementById('sdslot_'+exId+'_'+i);}
-  function getNum(i){return document.getElementById('sdnum_'+exId+'_'+i);}
-  function getCards(){return document.querySelectorAll('#sdcards_'+exId+' > div');}
-  function dropCard(card,si){
-    if(slotData[si])return;
-    slotData[si]=card;
-    var sl=getSlot(si);
-    sl.textContent=card.textContent;
-    sl.style.borderStyle='solid';sl.style.borderColor='rgba(184,137,42,0.5)';sl.style.background='#fff';sl.style.color='#1a0a0f';sl.style.fontStyle='normal';
-    sl.onclick=function(){returnCard(si);};
-    card.style.opacity='0.15';card.style.pointerEvents='none';card.style.borderStyle='dashed';
-    if(slotData.every(function(s){return s!==null;}))setTimeout(verificar,300);
-  }
-  function returnCard(si){
-    var res=document.getElementById('sdresult_'+exId);
-    if(res&&res.style.display==='block'&&res.innerHTML.indexOf('Asi funciona')>-1)return;
-    var card=slotData[si];if(!card)return;
-    var sl=getSlot(si);
-    sl.textContent=ph[si];sl.style.cssText='flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
-    sl.onclick=null;
-    card.style.opacity='1';card.style.pointerEvents='auto';card.style.borderStyle='solid';
-    slotData[si]=null;
-  }
-  function verificar(){
-    var ok=true;
-    for(var i=0;i<3;i++){
-      var sl=getSlot(i);
-      var correct=parseInt(slotData[i].dataset.correct)===i;
-      if(correct){sl.style.borderColor='rgba(74,158,110,0.7)';sl.style.background='#f0fdf4';sl.style.color='#166534';}
-      else{sl.style.borderColor='rgba(180,60,60,0.5)';sl.style.background='#fff5f5';sl.style.color='#991b1b';ok=false;}
-    }
-    document.getElementById('sdcards_'+exId).style.display='none';
-    var res=document.getElementById('sdresult_'+exId);
-    res.style.display='block';
-    if(ok){
-      for(var j=0;j<3;j++){var n=getNum(j);n.style.borderColor='rgba(74,158,110,0.5)';n.style.color='#7dd4a8';}
-      res.innerHTML='<div style="padding:16px 18px;border-radius:13px;background:rgba(184,137,42,0.08);border-left:3px solid rgba(184,137,42,0.5);font-size:16px;color:rgba(237,227,206,0.85);line-height:1.75">${feedbackOk}</div>';
-    } else {
-      res.innerHTML='<div style="padding:16px 18px;border-radius:13px;background:rgba(180,60,60,0.06);border-left:3px solid rgba(180,60,60,0.5);font-size:16px;color:rgba(237,200,200,0.8);line-height:1.75">${hintTxt}<br><button onclick="sdReset_'+exId+'()" style="margin-top:14px;width:100%;padding:16px;border-radius:12px;border:1px solid rgba(184,137,42,0.3);background:transparent;font-family:Jost,sans-serif;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(184,137,42,0.7);cursor:pointer">Intentar de nuevo</button></div>';
-    }
-  }
-  window['sdReset_'+exId]=function(){
-    for(var i=0;i<3;i++){
-      var sl=getSlot(i);
-      if(slotData[i]){slotData[i].style.opacity='1';slotData[i].style.pointerEvents='auto';slotData[i].style.borderStyle='solid';slotData[i]=null;}
-      sl.textContent=ph[i];sl.style.cssText='flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
-      sl.onclick=null;getNum(i).style.borderColor='';getNum(i).style.color='';
-    }
-    document.getElementById('sdresult_'+exId).style.display='none';
-    document.getElementById('sdcards_'+exId).style.display='flex';
-  };
-  window['sdInitDrag_'+exId]=function(){
-    setTimeout(function(){
-      var cards=document.querySelectorAll('#sdcards_'+exId+' > div');
-      cards.forEach(function(card){
-        card.addEventListener('dragstart',function(e){dragCard=card;card.style.opacity='0.3';e.dataTransfer.effectAllowed='move';});
-        card.addEventListener('dragend',function(){card.style.opacity=slotData.indexOf(card)>-1?'0.15':'1';dragCard=null;});
-        card.addEventListener('touchstart',function(e){
-          if(card.style.pointerEvents==='none')return;
-          dragCard=card;var t=e.touches[0],r=card.getBoundingClientRect();
-          offX=t.clientX-r.left;offY=t.clientY-r.top;
-          ghost=document.createElement('div');
-          ghost.style.cssText='position:fixed;pointer-events:none;z-index:9999;border-radius:14px;border:1px solid rgba(184,137,42,0.6);background:rgba(26,10,15,0.97);padding:18px;font-family:Jost,sans-serif;font-size:17px;color:#D4AF6A;line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:300px;transform:rotate(2deg)';
-          ghost.textContent=card.textContent;
-          ghost.style.left=(t.clientX-offX)+'px';ghost.style.top=(t.clientY-offY)+'px';ghost.style.width=r.width+'px';
-          document.body.appendChild(ghost);card.style.opacity='0.3';e.preventDefault();
-        },{passive:false});
-        card.addEventListener('touchmove',function(e){
-          if(!ghost)return;var t=e.touches[0];
-          ghost.style.left=(t.clientX-offX)+'px';ghost.style.top=(t.clientY-offY)+'px';e.preventDefault();
-        },{passive:false});
-        card.addEventListener('touchend',function(e){
-          if(!ghost||!dragCard)return;var t=e.changedTouches[0];
-          ghost.remove();ghost=null;dragCard.style.opacity='1';
-          var el=document.elementFromPoint(t.clientX,t.clientY);
-          var target=el?el.closest('[id^="sdslot_'+exId+'"]'):null;
-          if(!target){
-            var best=null,bestDist=999;
-            for(var si=0;si<3;si++){
-              var slEl=document.getElementById('sdslot_'+exId+'_'+si);
-              if(!slEl||slotData[si])continue;
-              var sr=slEl.getBoundingClientRect();
-              var cx=sr.left+sr.width/2,cy=sr.top+sr.height/2;
-              var dist=Math.sqrt(Math.pow(t.clientX-cx,2)+Math.pow(t.clientY-cy,2));
-              if(dist<bestDist){bestDist=dist;best=slEl;}
-            }
-            if(best&&bestDist<120)target=best;
-          }
-          if(target&&!slotData[parseInt(target.dataset.slot)]){dropCard(dragCard,parseInt(target.dataset.slot));}
-          dragCard=null;
-        });
-      });
-      for(var i=0;i<3;i++){
-        (function(si){
-          var sl=getSlot(si);
-          sl.addEventListener('dragover',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.8)';sl.style.background='#fffbf0';});
-          sl.addEventListener('dragleave',function(){if(!slotData[si]){sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';}});
-          sl.addEventListener('drop',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';if(!dragCard||slotData[si])return;dropCard(dragCard,si);});
-        })(i);
-      }
-    },100);
-  };
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){window['sdInitDrag_'+exId]();});
-  } else {
-    window['sdInitDrag_'+exId]();
-  }
-})();
-<\/script>`;
+    setTimeout(function(){ sdInitDrag('${ex.id}'); }, 300);
+    bodyHtml += `<div style="display:none" id="sdinit_noop"></div>`;
+    bodyHtml += `<div style="display:none">
+  </div>`;
   }
 
   else if (ex.field === 'espejo-transformacion') {

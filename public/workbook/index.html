@@ -9159,6 +9159,76 @@ function openLesson(sectionId) {
   setupMinCharsGuard(sectionId);
 }
 
+function sitResponder(secId, idx, btn, correcto, hintId, fbkId) {
+  if (btn.style.borderColor === 'rgba(74, 158, 110, 0.6)') return;
+  if (btn.disabled) return;
+  if (correcto) {
+    const ops = document.getElementById('sitops_' + secId + '_' + idx);
+    ops.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.cursor = 'default'; });
+    btn.style.borderColor = 'rgba(74,158,110,0.6)';
+    btn.style.background = 'rgba(74,158,110,0.12)';
+    btn.style.color = '#7dd4a8';
+    document.getElementById(hintId).style.display = 'none';
+    document.getElementById(fbkId).style.display = 'block';
+    const sitBtn = document.getElementById('sitbtn_' + secId + '_' + idx);
+    sitBtn.style.borderColor = 'rgba(184,137,42,0.5)';
+    sitBtn.style.background = 'rgba(184,137,42,0.12)';
+    sitBtn.style.color = '#D4AF6A';
+    sitBtn.style.cursor = 'pointer';
+    sitBtn.disabled = false;
+  } else {
+    btn.style.borderColor = 'rgba(180,60,60,0.4)';
+    btn.style.background = 'rgba(180,60,60,0.08)';
+    btn.style.color = 'rgba(237,157,157,0.8)';
+    btn.disabled = true;
+    document.getElementById(hintId).style.display = 'block';
+    setTimeout(() => {
+      btn.style.borderColor = 'rgba(237,227,206,0.12)';
+      btn.style.background = 'transparent';
+      btn.style.color = 'rgba(237,227,206,0.7)';
+      btn.disabled = false;
+      document.getElementById(hintId).style.display = 'none';
+    }, 1800);
+  }
+}
+
+function sitAvanzar(secId, idx, total) {
+  const btn = document.getElementById('sitbtn_' + secId + '_' + idx);
+  btn.style.background = 'rgba(74,158,110,0.15)';
+  btn.style.borderColor = 'rgba(74,158,110,0.4)';
+  btn.style.color = '#7dd4a8';
+  btn.style.cursor = 'default';
+  btn.disabled = true;
+  btn.textContent = 'Vista';
+  const num = document.getElementById('sitnum_' + secId + '_' + idx);
+  if (num) {
+    num.style.background = 'rgba(74,158,110,0.15)';
+    num.style.borderColor = 'rgba(74,158,110,0.4)';
+    num.style.color = '#7dd4a8';
+    num.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7dd4a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
+  const pip = document.getElementById('sitpip_' + secId + '_' + idx);
+  if (pip) pip.style.background = '#B8892A';
+  setTimeout(() => {
+    document.getElementById('sitep_' + secId + '_' + idx).style.display = 'none';
+    const next = idx + 1;
+    if (next < total) {
+      document.getElementById('sitep_' + secId + '_' + next).style.display = 'block';
+      const nextPip = document.getElementById('sitpip_' + secId + '_' + next);
+      if (nextPip) nextPip.style.background = '#D4AF6A';
+      const count = document.getElementById('sitcount_' + secId);
+      if (count) count.textContent = (next + 1) + ' de ' + total;
+      document.getElementById('sitep_' + secId + '_' + next).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      const stage = document.getElementById('sitstage_' + secId);
+      stage.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;color:#EDE3CE;line-height:1.35">Las 3 situaciones<br>completadas</div><div style="font-size:15px;color:rgba(237,227,206,0.4);line-height:1.7">Ya tienes el mapa completo.<br>El siguiente paso es aplicarlo.</div></div>';
+      const count = document.getElementById('sitcount_' + secId);
+      if (count) count.textContent = '3 de 3';
+      setTimeout(() => { goNext(); }, 1200);
+    }
+  }, 400);
+}
+
 function completarSituacion(secId, idx, total) {
   const btn = document.getElementById('sit-btn-' + secId + '-' + idx);
   if (btn) {
@@ -9274,46 +9344,87 @@ function _buildSlideContent(slide, sectionId) {
     const tema = slide.tema;
     const sec = slide.sec;
     const sits = tema.situaciones || [];
+    const sitData = [
+      {
+        q: '¿Que produce esa reaccion?',
+        body: 'Ella va al cuarto y le dice: "¿Por que nunca me saludas cuando llegas? ¿Tan dificil es?"',
+        opciones: [
+          { txt: 'El escucha, reconoce el error y cambia desde esa noche.', ok: false },
+          { txt: 'El se defiende. La conversacion explota. El ambiente queda peor.', ok: true },
+          { txt: 'El se disculpa y le pregunta como estuvo su dia.', ok: false },
+          { txt: 'Ella se siente mejor por haber dicho lo que pensaba.', ok: false }
+        ],
+        hint: 'Esa no es la consecuencia. Piensa en como reacciona alguien cuando recibe una acusacion directa.',
+        feedback: 'Cuando el mensaje llega como acusacion, el cerebro activa el protocolo de defensa de manera automatica. No hay escucha posible en ese estado.'
+      },
+      {
+        q: '¿Que produce esa reaccion?',
+        body: 'Ella le dice: "¿Por que siempre tomas decisiones sin preguntarme? Nunca me consultas nada."',
+        opciones: [
+          { txt: 'El entiende y lo hace diferente la proxima vez.', ok: false },
+          { txt: 'Propone un sistema para coordinar los planes.', ok: false },
+          { txt: 'El se pone a la defensiva. Ella escala. El se cierra.', ok: true },
+          { txt: 'Acuerdan un sistema para tomar decisiones juntos.', ok: false }
+        ],
+        hint: 'Esa no es la consecuencia. Piensa en que produce generalizar con "siempre" y "nunca".',
+        feedback: '"Siempre" y "nunca" convierten una situacion especifica en un veredicto sobre su caracter. La defensa es automatica — no hay escucha posible desde ahi.'
+      },
+      {
+        q: '¿Cual es el problema real?',
+        body: 'Cada vez que el tema del dinero sale, termina en conflicto. El dice que gastas demasiado. Tu sientes que el controla y no te toma en cuenta.',
+        opciones: [
+          { txt: 'El quiere controlar las finanzas y no confia en ella.', ok: false },
+          { txt: 'Ella gasta sin criterio y no mide las consecuencias.', ok: false },
+          { txt: 'No tienen un sistema acordado — y cada uno opera desde su miedo.', ok: true },
+          { txt: 'El dinero es demasiado sensible para hablarlo en pareja.', ok: false }
+        ],
+        hint: 'Esa respuesta apunta a culpar a uno de los dos. El problema esta en otro lugar.',
+        feedback: 'El problema no es quien tiene razon. Es que no hay un acuerdo. Cuando no hay sistema, cada gasto se convierte en un veredicto sobre el otro.'
+      }
+    ];
     const stateKey = '_sits_done_' + sec.id;
     let html = `
-      <div style="padding:20px 20px 8px">
-        <div style="font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F0E6EA;line-height:1.25;margin-bottom:4px">${tema.titulo}</div>
-        <div style="font-size:12px;color:rgba(237,227,206,0.4);margin-bottom:20px">Completa cada situacion para desbloquear la siguiente</div>
+      <div style="padding:20px 18px 10px;border-bottom:1px solid rgba(184,137,42,0.12)">
+        <div style="font-size:11px;letter-spacing:2.5px;color:rgba(184,137,42,0.6);text-transform:uppercase;margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;line-height:1.25">${tema.titulo}</div>
       </div>
-      <div id="sits-wrap-${sec.id}" style="padding:0 16px;display:flex;flex-direction:column;gap:14px">`;
+      <div style="display:flex;align-items:center;gap:8px;padding:16px 18px 12px">
+        <div id="sitpip_${sec.id}_0" style="height:5px;border-radius:3px;flex:1;background:#D4AF6A;transition:all .4s"></div>
+        <div id="sitpip_${sec.id}_1" style="height:5px;border-radius:3px;flex:1;background:rgba(237,227,206,0.1);transition:all .4s"></div>
+        <div id="sitpip_${sec.id}_2" style="height:5px;border-radius:3px;flex:1;background:rgba(237,227,206,0.1);transition:all .4s"></div>
+        <div id="sitcount_${sec.id}" style="font-size:13px;color:rgba(184,137,42,0.6);letter-spacing:1px;white-space:nowrap;margin-left:4px">1 de 3</div>
+      </div>
+      <div id="sitstage_${sec.id}" style="padding:0 16px 24px">`;
     sits.forEach((sit, idx) => {
       const libId = sit.bunnyLibrary || '636956';
-      const locked = idx > 0;
+      const ex = sitData[idx] || {};
       html += `
-        <div id="sit-card-${sec.id}-${idx}" data-videoid="${sit.bunnyVideoId}" style="border-radius:14px;border:1px solid ${locked ? 'rgba(237,227,206,0.08)' : 'rgba(184,137,42,0.3)'};background:${locked ? 'rgba(255,255,255,0.02)' : 'rgba(184,137,42,0.06)'};overflow:hidden;transition:all .3s">
-          <div style="padding:14px 16px;display:flex;align-items:center;gap:12px">
-            <div id="sit-icon-${sec.id}-${idx}" style="width:32px;height:32px;border-radius:50%;border:1px solid ${locked ? 'rgba(237,227,206,0.15)' : 'rgba(184,137,42,0.5)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s">
-              ${locked
-                ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(237,227,206,0.3)" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
-                : `<span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#B8892A">${idx + 1}</span>`
-              }
-            </div>
-            <div style="flex:1">
-              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:${locked ? 'rgba(237,227,206,0.2)' : 'rgba(184,137,42,0.6)'};margin-bottom:3px">Situacion ${idx + 1}</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:${locked ? 'rgba(237,227,206,0.25)' : '#EDE3CE'};line-height:1.3">${sit.titulo}</div>
-            </div>
+        <div id="sitep_${sec.id}_${idx}" style="${idx > 0 ? 'display:none' : ''}">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:4px">
+            <div id="sitnum_${sec.id}_${idx}" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(184,137,42,0.5);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#B8892A;flex-shrink:0;transition:all .3s">${idx + 1}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#EDE3CE;line-height:1.3">${sit.titulo}</div>
           </div>
-          ${locked ? '' : `
-          <div id="sit-video-${sec.id}-${idx}" style="margin:0 16px 16px;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#0f0508">
+          <div style="border-radius:12px;overflow:hidden;background:#0f0508;aspect-ratio:16/9;width:100%">
             <iframe src="https://iframe.mediadelivery.net/embed/${libId}/${sit.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
               allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
-              allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+              allowfullscreen style="width:100%;height:100%;border:none;display:block"></iframe>
           </div>
-          <div style="padding:0 16px 16px">
-            <button id="sit-btn-${sec.id}-${idx}" onclick="completarSituacion('${sec.id}',${idx},${sits.length})"
-              style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(184,137,42,0.4);background:rgba(184,137,42,0.1);font-family:'Jost',sans-serif;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#D4AF6A;cursor:pointer">
-              Situacion vista — continuar
-            </button>
-          </div>`}
+          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(184,137,42,0.15);border-radius:14px;padding:18px;margin-top:14px">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#EDE3CE;line-height:1.35;margin-bottom:10px">${ex.q || ''}</div>
+            <div style="font-size:16px;color:rgba(237,227,206,0.5);line-height:1.65;margin-bottom:14px">${ex.body || ''}</div>
+            <div id="sitops_${sec.id}_${idx}">
+              ${(ex.opciones || []).map(op => `<button onclick="sitResponder('${sec.id}',${idx},this,${op.ok},'sithint_${sec.id}_${idx}','sitfbk_${sec.id}_${idx}')" style="display:block;width:100%;padding:16px;border-radius:12px;border:1px solid rgba(237,227,206,0.12);background:transparent;font-family:'Jost',sans-serif;font-size:17px;color:rgba(237,227,206,0.7);text-align:left;cursor:pointer;line-height:1.5;margin-bottom:9px;transition:all .2s">${op.txt}</button>`).join('')}
+            </div>
+            <div id="sithint_${sec.id}_${idx}" style="display:none;padding:14px 16px;border-radius:11px;background:rgba(180,60,60,0.06);border-left:3px solid rgba(180,60,60,0.5);font-size:15px;color:rgba(237,200,200,0.75);line-height:1.7;margin-top:4px">${ex.hint || ''}</div>
+            <div id="sitfbk_${sec.id}_${idx}" style="display:none;padding:14px 16px;border-radius:11px;background:rgba(184,137,42,0.07);border-left:3px solid rgba(184,137,42,0.5);font-size:15px;color:rgba(237,227,206,0.75);line-height:1.7;margin-top:4px">${ex.feedback || ''}</div>
+          </div>
+          <button id="sitbtn_${sec.id}_${idx}" onclick="sitAvanzar('${sec.id}',${idx},${sits.length})" disabled
+            style="width:100%;padding:18px;border-radius:13px;border:1px solid rgba(184,137,42,0.2);background:rgba(184,137,42,0.05);font-family:'Jost',sans-serif;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:rgba(184,137,42,0.3);cursor:not-allowed;transition:all .3s;margin-top:10px">
+            Situacion vista — continuar
+          </button>
         </div>`;
     });
-    html += `</div><div style="height:24px"></div>`;
+    html += `</div>`;
     wrap.innerHTML = html;
 
   } else if (slide.type === 'intro') {

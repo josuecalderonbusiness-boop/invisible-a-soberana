@@ -10338,7 +10338,19 @@ function buildExerciseBlock(ex, sec) {
           ghost.remove();ghost=null;dragCard.style.opacity='1';
           var el=document.elementFromPoint(t.clientX,t.clientY);
           var target=el?el.closest('[id^="sdslot_'+exId+'"]'):null;
-          if(target&&target.style.fontStyle==='italic'){dropCard(dragCard,parseInt(target.dataset.slot));}
+          if(!target){
+            var best=null,bestDist=999;
+            for(var si=0;si<3;si++){
+              var slEl=document.getElementById('sdslot_'+exId+'_'+si);
+              if(!slEl||slotData[si])continue;
+              var sr=slEl.getBoundingClientRect();
+              var cx=sr.left+sr.width/2,cy=sr.top+sr.height/2;
+              var dist=Math.sqrt(Math.pow(t.clientX-cx,2)+Math.pow(t.clientY-cy,2));
+              if(dist<bestDist){bestDist=dist;best=slEl;}
+            }
+            if(best&&bestDist<120)target=best;
+          }
+          if(target&&!slotData[parseInt(target.dataset.slot)]){dropCard(dragCard,parseInt(target.dataset.slot));}
           dragCard=null;
         });
       });

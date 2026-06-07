@@ -10358,8 +10358,7 @@ function buildExerciseBlock(ex, sec) {
         </div>
         <div id="sdresult_${ex.id}" style="display:none"></div>
       </div>`;
-    setTimeout(function(){ sdInitDrag('${ex.id}'); }, 300);
-    bodyHtml += `<div style="display:none" id="sdinit_noop"></div>`;
+    bodyHtml += `<img src="" style="display:none" onerror="sdInitDrag('${ex.id}')">`;
     bodyHtml += `<div style="display:none">
   </div>`;
   }

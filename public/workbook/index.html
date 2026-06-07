@@ -9206,6 +9206,8 @@ function sitAvanzar(secId, idx, total) {
       stage.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;color:#EDE3CE;line-height:1.35">Las 3 situaciones<br>completadas</div><div style="font-size:15px;color:rgba(237,227,206,0.4);line-height:1.7">Ya tienes el mapa completo.<br>El siguiente paso es aplicarlo.</div></div>';
       const count = document.getElementById('sitcount_' + secId);
       if (count) count.textContent = '3 de 3';
+      const contBtn = document.getElementById('slide-continue-btn');
+      if (contBtn) { contBtn.style.display = 'flex'; contBtn.innerHTML = 'Continuar <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
       setTimeout(() => { goNext(); }, 1200);
     }
   }, 400);

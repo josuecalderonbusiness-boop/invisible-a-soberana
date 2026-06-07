@@ -9840,6 +9840,9 @@ function _updateSlideUI() {
     if (curSlide && curSlide.type === 'exercise' && curSlide.ex && curSlide.ex.label && curSlide.ex.label.includes('Pausa Workbook')) {
       btn.style.display = 'none';
     }
+    if (curSlide && curSlide.type === 'situaciones') {
+      btn.style.display = 'none';
+    }
   }
 
   // Move track
@@ -13438,6 +13441,9 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
+
 
 
 

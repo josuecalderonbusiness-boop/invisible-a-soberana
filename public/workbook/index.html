@@ -10313,7 +10313,7 @@ function buildExerciseBlock(ex, sec) {
     document.getElementById('sdresult_'+exId).style.display='none';
     document.getElementById('sdcards_'+exId).style.display='flex';
   };
-  document.addEventListener('DOMContentLoaded',function(){
+  window['sdInitDrag_'+exId]=function(){
     setTimeout(function(){
       var cards=document.querySelectorAll('#sdcards_'+exId+' > div');
       cards.forEach(function(card){
@@ -10363,7 +10363,12 @@ function buildExerciseBlock(ex, sec) {
         })(i);
       }
     },100);
-  });
+  };
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){window['sdInitDrag_'+exId]();});
+  } else {
+    window['sdInitDrag_'+exId]();
+  }
 })();
 <\/script>`;
   }

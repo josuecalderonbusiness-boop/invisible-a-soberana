@@ -10358,7 +10358,6 @@ function buildExerciseBlock(ex, sec) {
         </div>
         <div id="sdresult_${ex.id}" style="display:none"></div>
       </div>`;
-    bodyHtml += `<img src="" style="display:none" onerror="sdInitDrag('${ex.id}')">`;
     bodyHtml += `<div style="display:none">
   </div>`;
   }
@@ -10600,6 +10599,9 @@ function buildExerciseBlock(ex, sec) {
   }
 
   block.innerHTML = headerHtml + bodyHtml;
+  if (ex.field === 'sequence-drag') {
+    setTimeout(function(){ sdInitDrag(ex.id); }, 50);
+  }
   return block;
 }
 

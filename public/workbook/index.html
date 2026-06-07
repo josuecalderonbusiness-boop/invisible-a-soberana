@@ -5709,59 +5709,16 @@ const SECTIONS = [
     exercises: [
       {
         id:'s8_e1', type:'tool', tema:1,
-        question:'¿Que produce cada reaccion?',
-        body:'Mira la situacion y elige la consecuencia correcta.',
-        scenarios:[
-          {
-            situacion:'El llega a casa y no saluda. Sin protocolos activos, ella va al cuarto y le dice: "¿Por que nunca me saludas cuando llegas? ¿Tan dificil es?"',
-            opciones:[
-              {id:'a', texto:'El escucha, reconoce el error y cambia su habito desde esa noche.'},
-              {id:'b', texto:'El se defiende. La conversacion explota. El ambiente queda peor.', correcto:true},
-              {id:'c', texto:'El se disculpa y le pregunta como estuvo su dia.'},
-              {id:'d', texto:'Ella se siente mejor por haber dicho lo que pensaba.'}
-            ],
-            explicacion:'Cuando el mensaje llega como acusacion, el cerebro activa el protocolo de defensa de manera automatica. No hay escucha posible en ese estado.'
-          },
-          {
-            situacion:'El toma una decision sobre los hijos sin consultarla. Sin protocolos, ella le dice: "¿Por que siempre tomas decisiones sin preguntarme? Nunca me consultas nada."',
-            opciones:[
-              {id:'a', texto:'El entiende que debe consultarla y lo hace diferente la proxima vez.'},
-              {id:'b', texto:'El propone una solucion para coordinar mejor los planes.'},
-              {id:'c', texto:'El se pone a la defensiva. Ella escala. El se cierra.', correcto:true},
-              {id:'d', texto:'Ambos acuerdan un sistema para tomar decisiones juntos.'}
-            ],
-            explicacion:'Las generalizaciones "siempre" y "nunca" convierten una situacion especifica en un veredicto sobre el caracter de el. La defensa es inevitable.'
-          }
+        question:'Ordena los 3 protocolos en el orden correcto',
+        body:'Arrastra cada protocolo a su posicion — del primero al ultimo.',
+        items:[
+          {id:'card_b', texto:'Convierte la emocion en informacion util', correctPos:1},
+          {id:'card_a', texto:'Limpia lo que percibes antes de reaccionar', correctPos:0},
+          {id:'card_c', texto:'Lleva lo que sentiste al otro en una forma que el pueda recibir', correctPos:2}
         ],
-        field:'consequence'
-      },
-      {
-        id:'s8_e2', type:'tool', tema:2,
-        question:'¿Que produce cada reaccion?',
-        body:'Mira la situacion y elige la consecuencia correcta.',
-        scenarios:[
-          {
-            situacion:'El toma una decision sobre los hijos sin consultarla. Sin protocolos, ella le dice: "¿Por que siempre tomas decisiones sin preguntarme? Ya tenia planes para ese dia. Nunca me consultas nada."',
-            opciones:[
-              {id:'a', texto:'El entiende que debe consultarla y lo hace diferente la proxima vez.'},
-              {id:'b', texto:'El se pone a la defensiva. Ella escala. El se cierra. El ambiente queda tenso por dias.', correcto:true},
-              {id:'c', texto:'El propone un sistema para coordinar los planes familiares.'},
-              {id:'d', texto:'Ambos acuerdan hablar antes de confirmar cualquier plan.'}
-            ],
-            explicacion:'"Siempre" y "nunca" convierten una situacion especifica en un veredicto sobre su caracter. La defensa es automatica — no hay escucha posible desde ahi.'
-          },
-          {
-            situacion:'El tema del dinero sale en la conversacion. Sin protocolos: "Tu siempre gastas de mas. Desde el ano pasado que esto no funciona."',
-            opciones:[
-              {id:'a', texto:'Resuelven el tema financiero y acuerdan un presupuesto.'},
-              {id:'b', texto:'El escucha y reconoce que necesitan un sistema mejor.'},
-              {id:'c', texto:'La conversacion no resuelve nada. Se acumula mas carga emocional y el silencio vuelve a ganar.', correcto:true},
-              {id:'d', texto:'Ella se siente mejor por haber expresado lo que sentia.'}
-            ],
-            explicacion:'Sacar el historial en una conversacion sobre dinero convierte el problema financiero en un conflicto de caracter. Nadie resuelve nada cuando esta en modo defensa.'
-          }
-        ],
-        field:'consequence'
+        feedback:'Asi funciona el engranaje — cada protocolo le pasa el trabajo limpio al siguiente. Sin el 1, el 2 opera sobre una historia distorsionada. Sin el 2, el 3 sale desde el caos.',
+        hint:'Ese no es el orden correcto. Piensa que tiene que pasar primero para que lo siguiente tenga sentido.',
+        field:'sequence-drag'
       },
       {
         id:'s8_e3', type:'checkpoint', tema:3,
@@ -10278,6 +10235,125 @@ function buildExerciseBlock(ex, sec) {
       if (bi < savedBS.length - 1) bodyHtml += `<div style="height:12px"></div>`;
     });
     bodyHtml += `</div><button class="add-row-btn" onclick="addBeliefSeqEntry('${ex.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Agregar otra situación</button>`;
+  }
+
+  else if (ex.field === 'sequence-drag') {
+    const items = ex.items || [];
+    const feedbackOk = ex.feedback || '';
+    const hintTxt = ex.hint || '';
+    const placeholders = ['Arrastra aqui el primero','Arrastra aqui el segundo','Arrastra aqui el tercero'];
+    bodyHtml += `
+      <div id="sdwrap_${ex.id}" style="user-select:none">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+          ${[0,1,2].map(i => `
+          <div style="display:flex;align-items:center;gap:14px">
+            <div id="sdnum_${ex.id}_${i}" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:rgba(184,137,42,0.5);flex-shrink:0;transition:all .3s">${i+1}</div>
+            <div id="sdslot_${ex.id}_${i}" data-slot="${i}" style="flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4">${placeholders[i]}</div>
+          </div>`).join('')}
+        </div>
+        <div id="sdcards_${ex.id}" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px">
+          ${items.map(item => `<div id="${item.id}_${ex.id}" data-correct="${item.correctPos}" draggable="true" style="padding:18px;border-radius:14px;border:1px solid rgba(237,227,206,0.15);background:rgba(255,255,255,0.04);font-family:'Jost',sans-serif;font-size:17px;color:#EDE3CE;text-align:left;cursor:grab;line-height:1.55;transition:all .2s;touch-action:none">${item.texto}</div>`).join('')}
+        </div>
+        <div id="sdresult_${ex.id}" style="display:none"></div>
+      </div>`;
+    bodyHtml += `<script>
+(function(){
+  var exId='${ex.id}';
+  var slotData=[null,null,null];
+  var ph=${JSON.stringify(placeholders)};
+  var dragCard=null,ghost=null,offX=0,offY=0;
+  function getSlot(i){return document.getElementById('sdslot_'+exId+'_'+i);}
+  function getNum(i){return document.getElementById('sdnum_'+exId+'_'+i);}
+  function getCards(){return document.querySelectorAll('#sdcards_'+exId+' > div');}
+  function dropCard(card,si){
+    if(slotData[si])return;
+    slotData[si]=card;
+    var sl=getSlot(si);
+    sl.textContent=card.textContent;
+    sl.style.borderStyle='solid';sl.style.borderColor='rgba(184,137,42,0.5)';sl.style.background='#fff';sl.style.color='#1a0a0f';sl.style.fontStyle='normal';
+    sl.onclick=function(){returnCard(si);};
+    card.style.opacity='0.15';card.style.pointerEvents='none';card.style.borderStyle='dashed';
+    if(slotData.every(function(s){return s!==null;}))setTimeout(verificar,300);
+  }
+  function returnCard(si){
+    var res=document.getElementById('sdresult_'+exId);
+    if(res&&res.style.display==='block'&&res.innerHTML.indexOf('Asi funciona')>-1)return;
+    var card=slotData[si];if(!card)return;
+    var sl=getSlot(si);
+    sl.textContent=ph[si];sl.style.cssText='flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
+    sl.onclick=null;
+    card.style.opacity='1';card.style.pointerEvents='auto';card.style.borderStyle='solid';
+    slotData[si]=null;
+  }
+  function verificar(){
+    var ok=true;
+    for(var i=0;i<3;i++){
+      var sl=getSlot(i);
+      var correct=parseInt(slotData[i].dataset.correct)===i;
+      if(correct){sl.style.borderColor='rgba(74,158,110,0.7)';sl.style.background='#f0fdf4';sl.style.color='#166534';}
+      else{sl.style.borderColor='rgba(180,60,60,0.5)';sl.style.background='#fff5f5';sl.style.color='#991b1b';ok=false;}
+    }
+    document.getElementById('sdcards_'+exId).style.display='none';
+    var res=document.getElementById('sdresult_'+exId);
+    res.style.display='block';
+    if(ok){
+      for(var j=0;j<3;j++){var n=getNum(j);n.style.borderColor='rgba(74,158,110,0.5)';n.style.color='#7dd4a8';}
+      res.innerHTML='<div style="padding:16px 18px;border-radius:13px;background:rgba(184,137,42,0.08);border-left:3px solid rgba(184,137,42,0.5);font-size:16px;color:rgba(237,227,206,0.85);line-height:1.75">${feedbackOk}</div>';
+    } else {
+      res.innerHTML='<div style="padding:16px 18px;border-radius:13px;background:rgba(180,60,60,0.06);border-left:3px solid rgba(180,60,60,0.5);font-size:16px;color:rgba(237,200,200,0.8);line-height:1.75">${hintTxt}<br><button onclick="sdReset_'+exId+'()" style="margin-top:14px;width:100%;padding:16px;border-radius:12px;border:1px solid rgba(184,137,42,0.3);background:transparent;font-family:Jost,sans-serif;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(184,137,42,0.7);cursor:pointer">Intentar de nuevo</button></div>';
+    }
+  }
+  window['sdReset_'+exId]=function(){
+    for(var i=0;i<3;i++){
+      var sl=getSlot(i);
+      if(slotData[i]){slotData[i].style.opacity='1';slotData[i].style.pointerEvents='auto';slotData[i].style.borderStyle='solid';slotData[i]=null;}
+      sl.textContent=ph[i];sl.style.cssText='flex:1;min-height:62px;border-radius:14px;border:2px dashed rgba(184,137,42,0.25);background:#fff;display:flex;align-items:center;padding:0 18px;font-size:17px;color:rgba(30,10,15,0.28);font-style:italic;transition:all .25s;line-height:1.4';
+      sl.onclick=null;getNum(i).style.borderColor='';getNum(i).style.color='';
+    }
+    document.getElementById('sdresult_'+exId).style.display='none';
+    document.getElementById('sdcards_'+exId).style.display='flex';
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){
+      var cards=document.querySelectorAll('#sdcards_'+exId+' > div');
+      cards.forEach(function(card){
+        card.addEventListener('dragstart',function(e){dragCard=card;card.style.opacity='0.3';e.dataTransfer.effectAllowed='move';});
+        card.addEventListener('dragend',function(){card.style.opacity=slotData.indexOf(card)>-1?'0.15':'1';dragCard=null;});
+        card.addEventListener('touchstart',function(e){
+          if(card.style.pointerEvents==='none')return;
+          dragCard=card;var t=e.touches[0],r=card.getBoundingClientRect();
+          offX=t.clientX-r.left;offY=t.clientY-r.top;
+          ghost=document.createElement('div');
+          ghost.style.cssText='position:fixed;pointer-events:none;z-index:9999;border-radius:14px;border:1px solid rgba(184,137,42,0.6);background:rgba(26,10,15,0.97);padding:18px;font-family:Jost,sans-serif;font-size:17px;color:#D4AF6A;line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:300px;transform:rotate(2deg)';
+          ghost.textContent=card.textContent;
+          ghost.style.left=(t.clientX-offX)+'px';ghost.style.top=(t.clientY-offY)+'px';ghost.style.width=r.width+'px';
+          document.body.appendChild(ghost);card.style.opacity='0.3';e.preventDefault();
+        },{passive:false});
+        card.addEventListener('touchmove',function(e){
+          if(!ghost)return;var t=e.touches[0];
+          ghost.style.left=(t.clientX-offX)+'px';ghost.style.top=(t.clientY-offY)+'px';e.preventDefault();
+        },{passive:false});
+        card.addEventListener('touchend',function(e){
+          if(!ghost||!dragCard)return;var t=e.changedTouches[0];
+          ghost.remove();ghost=null;dragCard.style.opacity='1';
+          var el=document.elementFromPoint(t.clientX,t.clientY);
+          var target=el?el.closest('[id^="sdslot_'+exId+'"]'):null;
+          if(target&&target.style.fontStyle==='italic'){dropCard(dragCard,parseInt(target.dataset.slot));}
+          dragCard=null;
+        });
+      });
+      for(var i=0;i<3;i++){
+        (function(si){
+          var sl=getSlot(si);
+          sl.addEventListener('dragover',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.8)';sl.style.background='#fffbf0';});
+          sl.addEventListener('dragleave',function(){if(!slotData[si]){sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';}});
+          sl.addEventListener('drop',function(e){e.preventDefault();sl.style.borderColor='rgba(184,137,42,0.25)';sl.style.background='#fff';if(!dragCard||slotData[si])return;dropCard(dragCard,si);});
+        })(i);
+      }
+    },100);
+  });
+})();
+<\/script>`;
   }
 
   else if (ex.field === 'espejo-transformacion') {

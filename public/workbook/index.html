@@ -5704,7 +5704,7 @@ const SECTIONS = [
         { num:2, titulo:'Situacion 2 — La decision', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956' },
         { num:3, titulo:'Situacion 3 — El dinero', bunnyVideoId:'20f71e2c-a101-40f1-955e-e6e21ce5f50d', bunnyLibrary:'636956' }
       ]},
-      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'PENDIENTE_S8WB', bunnyLibrary:'636956' }
+      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'76fb1615-42be-4b66-843c-8d63838a0e0f', bunnyLibrary:'636956' }
     ],
     exercises: [
       {
@@ -9481,6 +9481,7 @@ function _buildSlideContent(slide, sectionId) {
       <div id="sitstage_${sec.id}" style="padding:0 16px 24px">`;
     sits.forEach((sit, idx) => {
       const libId = sit.bunnyLibrary || '636956';
+
       const ex = sitData[idx] || {};
       html += `
         <div id="sitep_${sec.id}_${idx}" style="${idx > 0 ? 'display:none' : ''}">

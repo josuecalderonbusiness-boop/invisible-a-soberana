@@ -5825,7 +5825,7 @@ const BUNNY_LIBRARY_ID = '636956';
 const BUNNY_VIDEO_PRUEBA = 'a24ce52e-4395-4b7c-8b6b-50a154ec746c';
 
 function _parseSRT(text) {
-  const blocks = text.trim().split(/\n\n+/);
+  const blocks = text.trim().replace(/\r\n/g,'\n').replace(/\r/g,'\n').split(/\n\n+/);
   const lines = [];
   blocks.forEach(b => {
     const parts = b.trim().split('\n');

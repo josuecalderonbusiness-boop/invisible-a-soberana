@@ -4313,7 +4313,7 @@
 .pod-skin-progress-fill{height:100%;width:0%;background:#B8892A;border-radius:2px;transition:width 0.5s linear;position:relative;}
 .pod-skin-progress-fill::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#B8892A;}
 .pod-skin-controls{display:flex;align-items:center;gap:2rem;margin-bottom:2rem;z-index:1;}
-.pod-skin-btn-play{width:64px;height:64px;border-radius:50%;background:#B8892A;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;padding-left:4px;}
+.pod-skin-btn-play{width:64px;height:64px;border-radius:50%;background:#B8892A;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;padding-left:4px;margin-bottom:80px;}
 .pod-skin-btn-play:active{transform:scale(0.95);}
 .pod-skin-badge{display:flex;align-items:center;gap:8px;background:rgba(184,137,42,0.08);border:1px solid rgba(184,137,42,0.2);border-radius:20px;padding:6px 14px;font-size:11px;color:rgba(184,137,42,0.7);letter-spacing:0.1em;text-transform:uppercase;z-index:1;}
 .pod-skin-dot{width:6px;height:6px;border-radius:50%;background:#B8892A;animation:podBlink 1.5s ease-in-out infinite;}
@@ -9945,7 +9945,8 @@ function _updateSlideUI() {
       const dimRevDone = isDimRev && window._dimRevState && window._dimRevState[curSlideData.ex.id] && window._dimRevState[curSlideData.ex.id].done === true;
       const isET = curSlideData && curSlideData.ex && curSlideData.ex.field === 'espejo-transformacion';
       const etDone = isET && (()=>{ try{ var s=state.answers[curSlideData.ex.id]; return s&&JSON.parse(s).futuro; }catch(e){return false;} })();
-      if ((isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone)) {
+      const isPodcastSlide = curSlideData && curSlideData.type === 'tema-video' && curSlideData.tema && curSlideData.tema.podcastSkin;
+      if (isPodcastSlide || (isMatchSlide && !matchDone) || (isConseq && !conseqDone) || (isIntruder && !intruderDone) || (isPS && !psDone) || (isDimRev && !dimRevDone) || (isET && !etDone)) {
         btn.style.display = 'none';
       } else {
         btn.style.display = 'flex';

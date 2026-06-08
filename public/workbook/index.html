@@ -4290,7 +4290,7 @@
 .pod-line-active{font-family:"Playfair Display",serif;font-size:36px;font-weight:700;color:#FFFFFF;text-align:left;line-height:1.2;transition:all .4s ease;}
 .pod-line-active em{font-style:italic;font-weight:400;color:#D4AF6A;}
 .pod-line-next{font-family:"Playfair Display",serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.07);text-align:left;line-height:1.2;transition:all .4s ease;}
-.pod-controls-wrap{background:#111009;border-top:1px solid rgba(184,137,42,0.15);padding:20px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.pod-controls-wrap{background:#0F0A0B;border-top:1px solid rgba(184,137,42,0.15);padding:20px 24px 100px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 .slide-panel-podcast{padding:0!important;background:#0F0A0B!important;min-height:100vh;}
 .slide-panel-podcast .pod-skin-wrap{min-height:100vh;width:100%;flex:1;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
@@ -5912,10 +5912,11 @@ function podToggle(temaNum) {
       wave.appendChild(bar);
     });
 
-    const srtUrl = 'https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volalto.srt?alt=media&token=4dabe723-ff29-491a-bf84-d6f776e6ec3a';
-    fetch(srtUrl).then(r => r.text()).then(txt => {
-      wrap._srtLines = _parseSRT(txt);
-      if (wrap._srtLines.length > 0) _podRenderLines(temaNum, wrap._srtLines, 0);
+    const jsonUrl = 'https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volalto.json?alt=media&token=b8262a47-e4b7-4b11-a39b-dc2f06080lab';
+    fetch(jsonUrl).then(r => r.json()).then(words => {
+      wrap._wordData = words;
+      wrap._srtLines = [];
+      if (words.length > 0) _podRenderLines(temaNum, wrap._srtLines, 0);
     }).catch(() => {});
 
     if (audio) {
@@ -9507,7 +9508,7 @@ function _buildSlideContent(slide, sectionId) {
               </div>
             </div>
           </div>
-          <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volalto.mp3?alt=media&token=b566245a-07a3-455c-b223-48054bc7a555" preload="metadata" style="display:none"></audio>
+          <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volbajo.mp3?alt=media&token=d1f5c39b-a131-42a5-b49c-04061910422d" preload="metadata" style="display:none"></audio>
         </div>
         <div class="pod-reveal-screen" id="pod-reveal-${tema.num}">
           <button class="pod-reveal-btn" onclick="slideAvanzar()">

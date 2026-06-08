@@ -17,47 +17,58 @@ $old = 'function _podRenderWords(temaNum, words, curIdx) {
   if (next) next.innerHTML = _podWordHtml(nextWord, false);
 }'
 
-$new = 'function _podRenderWords(temaNum, words, curIdx) {
+$new = 'function _podBuildPhrases(words) {
+  const phrases = [];
+  let cur = [];
+  for (let i = 0; i < words.length; i++) {
+    cur.push(i);
+    const gap = i < words.length-1 ? words[i+1].t - words[i].t : 99;
+    if (gap > 0.7 || cur.length >= 4) { phrases.push(cur.slice()); cur = []; }
+  }
+  if (cur.length > 0) phrases.push(cur);
+  return phrases;
+}
+
+function _podGetPhraseIdx(phrases, wordIdx) {
+  for (let i = 0; i < phrases.length; i++) { if (phrases[i].includes(wordIdx)) return i; }
+  return 0;
+}
+
+function _podRenderWords(temaNum, words, curIdx) {
   const stage = document.getElementById(''pod-stage-'' + temaNum);
   if (!stage) return;
-  let lyricsEl = stage.querySelector(''.pod-lyrics-3'');
+  const lyricsEl = stage.querySelector(''.pod-lyrics-3'');
   if (!lyricsEl) return;
-
-  const total = words.length;
-  const w2 = curIdx > 1 ? words[curIdx-2].w : '''';
-  const w1 = curIdx > 0 ? words[curIdx-1].w : '''';
-  const w0 = words[curIdx] ? words[curIdx].w : '''';
-  const w3 = curIdx < total-1 ? words[curIdx+1].w : '''';
-  const w4 = curIdx < total-2 ? words[curIdx+2].w : '''';
-
+  if (!stage._phrases) stage._phrases = _podBuildPhrases(words);
+  const phrases = stage._phrases;
+  const phraseIdx = _podGetPhraseIdx(phrases, curIdx);
   const isGold = w => POD_GOLD.some(g => w.toLowerCase().replace(/[.,!?]/g,'''') === g.toLowerCase());
 
-  const mkWord = (w, role) => {
-    if (!w) return '''';
-    let color, fontSize, opacity;
-    if (role === ''active'') {
-      color = isGold(w) ? ''#D4AF6A'' : ''#FFFFFF'';
-      fontSize = ''38px'';
-      opacity = ''1'';
-    } else if (role === ''near'') {
-      color = isGold(w) ? ''rgba(212,175,58,0.45)'' : ''rgba(255,255,255,0.3)'';
-      fontSize = ''26px'';
-      opacity = ''1'';
-    } else {
-      color = isGold(w) ? ''rgba(212,175,58,0.2)'' : ''rgba(255,255,255,0.1)'';
-      fontSize = ''20px'';
-      opacity = ''1'';
-    }
-    return ''<span style="color:'' + color + '';font-size:'' + fontSize + '';opacity:'' + opacity + '';margin:0 5px;transition:all .25s ease;display:inline-block;line-height:1.3;font-weight:700;font-family:Playfair Display,serif">'' + w + ''</span>'';
+  const renderPhrase = (pIdx, role) => {
+    if (pIdx < 0 || pIdx >= phrases.length) return ''<div style="min-height:32px"></div>'';
+    const wIdxs = phrases[pIdx];
+    const isActive = role === ''active'';
+    let html2 = ''<div style="min-height:'' + (isActive?''48px'':''32px'') + '';display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px 0">'';
+    wIdxs.forEach(wi => {
+      const w = words[wi].w;
+      const isCur = isActive && wi === curIdx;
+      const gold = isGold(w);
+      let color, fsize, fw;
+      if (isCur) { color = gold ? ''#D4AF6A'' : ''#FFFFFF''; fsize = ''34px''; fw = ''700''; }
+      else if (isActive) { color = gold ? ''rgba(212,175,58,0.35)'' : ''rgba(255,255,255,0.2)''; fsize = ''28px''; fw = ''600''; }
+      else if (role===''prev'') { color = ''rgba(255,255,255,0.2)''; fsize = ''20px''; fw = ''600''; }
+      else { color = ''rgba(255,255,255,0.08)''; fsize = ''18px''; fw = ''600''; }
+      html2 += ''<span style="color:'' + color + '';font-size:'' + fsize + '';font-weight:'' + fw + '';font-family:Playfair Display,serif;transition:all .2s ease;line-height:1.25">'' + w + ''</span>'';
+    });
+    html2 += ''</div>'';
+    return html2;
   };
 
-  const html = ''<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:0 28px;width:100%">''
-    + ''<div style="min-height:32px">'' + mkWord(w2, ''far'') + mkWord(w1, ''near'') + ''</div>''
-    + ''<div style="min-height:48px">'' + mkWord(w0, ''active'') + ''</div>''
-    + ''<div style="min-height:28px">'' + mkWord(w3, ''near'') + mkWord(w4, ''far'') + ''</div>''
+  lyricsEl.innerHTML = ''<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:0 28px;width:100%">''
+    + renderPhrase(phraseIdx-1, ''prev'')
+    + renderPhrase(phraseIdx, ''active'')
+    + renderPhrase(phraseIdx+1, ''next'')
     + ''</div>'';
-
-  lyricsEl.innerHTML = html;
 }'
 
 $content = $content.Replace($old, $new)

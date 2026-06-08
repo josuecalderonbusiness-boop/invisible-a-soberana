@@ -1,41 +1,7 @@
 ﻿$path = "public\workbook\index.html"
 $content = Get-Content $path -Encoding UTF8 -Raw
 
-# Cambio 1: reemplazar _podGetIdx y _podRenderLines para word-level
-$old1 = 'function _podGetIdx(lines, time) {
-  let cur = 0;
-  for (let i = 0; i < lines.length; i++) { if (time >= lines[i].t) cur = i; else break; }
-  return cur;
-}
-
-function _podRenderLines(temaNum, lines, idx) {
-  const past = document.getElementById(''pod-past-'' + temaNum);
-  const active = document.getElementById(''pod-active-'' + temaNum);
-  const next = document.getElementById(''pod-next-'' + temaNum);
-  if (past) past.textContent = idx > 0 ? lines[idx-1].txt : '''';
-  if (active && active.textContent !== lines[idx].txt) {
-    active.style.opacity = ''0'';
-    setTimeout(() => { active.textContent = lines[idx].txt; active.style.opacity = ''1''; }, 150);
-  }
-  if (next) next.textContent = idx < lines.length-1 ? lines[idx+1].txt : '''';
-}'
-
-$new1 = 'function _podGetWordIdx(words, time) {
-  let cur = 0;
-  for (let i = 0; i < words.length; i++) { if (time >= words[i].t) cur = i; else break; }
-  return cur;
-}
-
-const POD_GOLD = [''quiebre'',''irreversible'',''influencia'',''soberana'',''eres'',''ERES'',''mental'',''emocional'',''relacional'',''creencias'',''siete'',''techo'',''arrastra'',''elegir'',''autoridad''];
-
-function _podWordHtml(word, isActive) {
-  const isGold = POD_GOLD.some(g => word.toLowerCase().replace(/[.,]/g,'''') === g.toLowerCase());
-  const color = isGold ? ''#D4AF6A'' : (isActive ? ''#FFFFFF'' : ''rgba(255,255,255,0.18)'');
-  const size = isActive ? ''36px'' : ''22px'';
-  return ''<span style="color:'' + color + '';font-size:'' + size + '';transition:all .2s ease;margin-right:6px;line-height:1.3;display:inline-block">'' + word + ''</span>'';
-}
-
-function _podRenderWords(temaNum, words, curIdx) {
+$old = 'function _podRenderWords(temaNum, words, curIdx) {
   const active = document.getElementById(''pod-active-'' + temaNum);
   const past = document.getElementById(''pod-past-'' + temaNum);
   const next = document.getElementById(''pod-next-'' + temaNum);
@@ -49,40 +15,51 @@ function _podRenderWords(temaNum, words, curIdx) {
   if (past) past.innerHTML = _podWordHtml(prevWord, false);
   active.innerHTML = _podWordHtml(curWord, true);
   if (next) next.innerHTML = _podWordHtml(nextWord, false);
-}
-
-function _podGetIdx(lines, time) {
-  let cur = 0;
-  for (let i = 0; i < lines.length; i++) { if (time >= lines[i].t) cur = i; else break; }
-  return cur;
-}
-
-function _podRenderLines(temaNum, lines, idx) {
-  const past = document.getElementById(''pod-past-'' + temaNum);
-  const active = document.getElementById(''pod-active-'' + temaNum);
-  const next = document.getElementById(''pod-next-'' + temaNum);
-  if (past) past.textContent = idx > 0 ? lines[idx-1].txt : '''';
-  if (active && active.textContent !== lines[idx].txt) {
-    active.style.opacity = ''0'';
-    setTimeout(() => { active.textContent = lines[idx].txt; active.style.opacity = ''1''; }, 150);
-  }
-  if (next) next.textContent = idx < lines.length-1 ? lines[idx+1].txt : '''';
 }'
 
-$content = $content.Replace($old1, $new1)
+$new = 'function _podRenderWords(temaNum, words, curIdx) {
+  const stage = document.getElementById(''pod-stage-'' + temaNum);
+  if (!stage) return;
+  let lyricsEl = stage.querySelector(''.pod-lyrics-3'');
+  if (!lyricsEl) return;
 
-# Cambio 2: usar _wordData en timeupdate
-$old2 = '        if (wrap._srtLines && wrap._srtLines.length > 0) {
-          _podRenderLines(temaNum, wrap._srtLines, _podGetIdx(wrap._srtLines, audio.currentTime));
-        }'
+  const total = words.length;
+  const w2 = curIdx > 1 ? words[curIdx-2].w : '''';
+  const w1 = curIdx > 0 ? words[curIdx-1].w : '''';
+  const w0 = words[curIdx] ? words[curIdx].w : '''';
+  const w3 = curIdx < total-1 ? words[curIdx+1].w : '''';
+  const w4 = curIdx < total-2 ? words[curIdx+2].w : '''';
 
-$new2 = '        if (wrap._wordData && wrap._wordData.length > 0) {
-          _podRenderWords(temaNum, wrap._wordData, _podGetWordIdx(wrap._wordData, audio.currentTime));
-        } else if (wrap._srtLines && wrap._srtLines.length > 0) {
-          _podRenderLines(temaNum, wrap._srtLines, _podGetIdx(wrap._srtLines, audio.currentTime));
-        }'
+  const isGold = w => POD_GOLD.some(g => w.toLowerCase().replace(/[.,!?]/g,'''') === g.toLowerCase());
 
-$content = $content.Replace($old2, $new2)
+  const mkWord = (w, role) => {
+    if (!w) return '''';
+    let color, fontSize, opacity;
+    if (role === ''active'') {
+      color = isGold(w) ? ''#D4AF6A'' : ''#FFFFFF'';
+      fontSize = ''38px'';
+      opacity = ''1'';
+    } else if (role === ''near'') {
+      color = isGold(w) ? ''rgba(212,175,58,0.45)'' : ''rgba(255,255,255,0.3)'';
+      fontSize = ''26px'';
+      opacity = ''1'';
+    } else {
+      color = isGold(w) ? ''rgba(212,175,58,0.2)'' : ''rgba(255,255,255,0.1)'';
+      fontSize = ''20px'';
+      opacity = ''1'';
+    }
+    return ''<span style="color:'' + color + '';font-size:'' + fontSize + '';opacity:'' + opacity + '';margin:0 5px;transition:all .25s ease;display:inline-block;line-height:1.3;font-weight:700;font-family:Playfair Display,serif">'' + w + ''</span>'';
+  };
 
+  const html = ''<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:0 28px;width:100%">''
+    + ''<div style="min-height:32px">'' + mkWord(w2, ''far'') + mkWord(w1, ''near'') + ''</div>''
+    + ''<div style="min-height:48px">'' + mkWord(w0, ''active'') + ''</div>''
+    + ''<div style="min-height:28px">'' + mkWord(w3, ''near'') + mkWord(w4, ''far'') + ''</div>''
+    + ''</div>'';
+
+  lyricsEl.innerHTML = html;
+}'
+
+$content = $content.Replace($old, $new)
 $content | Set-Content $path -Encoding UTF8
 Write-Host "Listo."

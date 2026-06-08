@@ -4282,7 +4282,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 .debug-btn:active { background: rgba(255,255,255,0.08); }
-.pod-skin-wrap{position:relative;background:#0F0A0B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;overflow:hidden;border-radius:0;}
+.pod-skin-wrap{position:relative;background:#0F0A0B;display:flex;flex-direction:column;overflow:hidden;border-radius:0;}
+.pod-stage{position:relative;height:340px;overflow:hidden;background:linear-gradient(160deg,#0A1F12 0%,#1a3020 40%,#0d150a 70%,#1a1205 100%);}
+.pod-stage canvas{position:absolute;inset:0;width:100%;height:100%;}
+.pod-lyrics-3{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:0 28px;z-index:2;}
+.pod-line-past{font-family:"Playfair Display",serif;font-size:22px;font-weight:700;color:rgba(255,255,255,0.15);text-align:left;line-height:1.2;transition:all .4s ease;}
+.pod-line-active{font-family:"Playfair Display",serif;font-size:36px;font-weight:700;color:#FFFFFF;text-align:left;line-height:1.2;transition:all .4s ease;}
+.pod-line-active em{font-style:italic;font-weight:400;color:#D4AF6A;}
+.pod-line-next{font-family:"Playfair Display",serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.07);text-align:left;line-height:1.2;transition:all .4s ease;}
+.pod-controls-wrap{background:#111009;border-top:1px solid rgba(184,137,42,0.15);padding:20px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 .slide-panel-podcast{padding:0!important;background:#0F0A0B!important;min-height:100vh;}
 .slide-panel-podcast .pod-skin-wrap{min-height:100vh;width:100%;flex:1;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
@@ -5816,6 +5824,70 @@ const SECTIONS = [
 const BUNNY_LIBRARY_ID = '636956';
 const BUNNY_VIDEO_PRUEBA = 'a24ce52e-4395-4b7c-8b6b-50a154ec746c';
 
+function _parseSRT(text) {
+  const blocks = text.trim().split(/\n\n+/);
+  const lines = [];
+  blocks.forEach(b => {
+    const parts = b.trim().split('\n');
+    if (parts.length < 3) return;
+    const time = parts[1].split(' --> ')[0];
+    const hms = time.replace(',','.'). split(':');
+    const secs = parseInt(hms[0])*3600 + parseInt(hms[1])*60 + parseFloat(hms[2]);
+    const txt = parts.slice(2).join(' ').trim();
+    if (lines.length > 0 && secs - lines[lines.length-1].t < 1.5) {
+      lines[lines.length-1].txt += ' ' + txt;
+    } else {
+      lines.push({t: Math.round(secs*100)/100, txt});
+    }
+  });
+  return lines;
+}
+
+function _podGetIdx(lines, time) {
+  let cur = 0;
+  for (let i = 0; i < lines.length; i++) { if (time >= lines[i].t) cur = i; else break; }
+  return cur;
+}
+
+function _podRenderLines(temaNum, lines, idx) {
+  const past = document.getElementById('pod-past-' + temaNum);
+  const active = document.getElementById('pod-active-' + temaNum);
+  const next = document.getElementById('pod-next-' + temaNum);
+  if (past) past.textContent = idx > 0 ? lines[idx-1].txt : '';
+  if (active && active.textContent !== lines[idx].txt) {
+    active.style.opacity = '0';
+    setTimeout(() => { active.textContent = lines[idx].txt; active.style.opacity = '1'; }, 150);
+  }
+  if (next) next.textContent = idx < lines.length-1 ? lines[idx+1].txt : '';
+}
+
+function _podInitCanvas(temaNum) {
+  const canvas = document.getElementById('pod-canvas-' + temaNum);
+  if (!canvas || canvas._podInit) return;
+  canvas._podInit = true;
+  const stage = document.getElementById('pod-stage-' + temaNum);
+  canvas.width = stage ? stage.offsetWidth : 340;
+  canvas.height = 340;
+  const ctx = canvas.getContext('2d');
+  const pts = Array.from({length:40}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: Math.random()*1.4+0.3, vy: -(Math.random()*0.4+0.15),
+    vx: (Math.random()-.5)*0.2, a: Math.random()*0.5+0.15, p: Math.random()*Math.PI*2
+  }));
+  (function frame() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p => {
+      p.p+=.02; p.y+=p.vy; p.x+=p.vx;
+      if(p.y<-4){p.y=canvas.height+4;p.x=Math.random()*canvas.width;}
+      if(p.x<0||p.x>canvas.width) p.vx*=-1;
+      const a=p.a*(0.5+0.5*Math.sin(p.p));
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(212,175,58,'+a+')';ctx.fill();
+    });
+    if(document.getElementById('pod-canvas-'+temaNum)) requestAnimationFrame(frame);
+  })();
+}
+
 function podToggle(temaNum) {
   const wrap = document.getElementById('pod-skin-' + temaNum);
   const playBtn = document.getElementById('pod-play-' + temaNum);
@@ -5823,11 +5895,13 @@ function podToggle(temaNum) {
   const wave = document.getElementById('pod-wave-' + temaNum);
   if (!wrap) return;
 
+  _podInitCanvas(temaNum);
   const audio = document.getElementById('pod-audio-' + temaNum);
 
   if (!wrap._podReady) {
     wrap._podReady = true;
     wrap._playing = false;
+    wrap._srtLines = [];
     const heights = [8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16,22,12,18,8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16];
     wave.innerHTML = '';
     heights.forEach((h, i) => {
@@ -5837,20 +5911,22 @@ function podToggle(temaNum) {
       bar.style.animationDelay = (i * 0.07) + 's';
       wave.appendChild(bar);
     });
-    const badge = wrap.querySelector('.pod-skin-badge');
-    if (badge) badge.innerHTML = '<div class="pod-skin-dot"></div>Reproduciendo';
+
+    const srtUrl = 'https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volalto.srt?alt=media&token=4dabe723-ff29-491a-bf84-d6f776e6ec3a';
+    fetch(srtUrl).then(r => r.text()).then(txt => {
+      wrap._srtLines = _parseSRT(txt);
+      if (wrap._srtLines.length > 0) _podRenderLines(temaNum, wrap._srtLines, 0);
+    }).catch(() => {});
 
     if (audio) {
       audio.addEventListener('timeupdate', function() {
         if (!audio.duration) return;
         const pct = (audio.currentTime / audio.duration) * 100;
         if (prog) prog.style.width = pct + '%';
-        const timeEl = wrap.querySelector('.pod-skin-time');
-        if (timeEl) {
-          const spans = timeEl.querySelectorAll('span');
-          if (spans[0]) spans[0].textContent = _podFmtTime(audio.currentTime);
-          if (spans[1]) spans[1].textContent = _podFmtTime(audio.duration);
-        }
+        const curEl = document.getElementById('pod-cur-' + temaNum);
+        const durEl = document.getElementById('pod-dur-' + temaNum);
+        if (curEl) curEl.textContent = _podFmtTime(audio.currentTime);
+        if (durEl) durEl.textContent = _podFmtTime(audio.duration);
         const allBars = wave.querySelectorAll('.pod-wave-bar');
         const playedIdx = Math.floor(pct / 100 * allBars.length);
         allBars.forEach((b, i) => {
@@ -5858,6 +5934,9 @@ function podToggle(temaNum) {
           else if (i === playedIdx) { b.classList.remove('pod-played'); b.classList.add('pod-active'); b.style.animationPlayState = 'running'; }
           else { b.classList.remove('pod-played', 'pod-active'); b.style.animationPlayState = 'running'; }
         });
+        if (wrap._srtLines && wrap._srtLines.length > 0) {
+          _podRenderLines(temaNum, wrap._srtLines, _podGetIdx(wrap._srtLines, audio.currentTime));
+        }
       });
 
       audio.addEventListener('ended', function() {
@@ -5865,9 +5944,7 @@ function podToggle(temaNum) {
         if (playBtn) playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>';
         wave.querySelectorAll('.pod-wave-bar').forEach(b => { b.style.animationPlayState = 'paused'; });
         const revealScreen = document.getElementById('pod-reveal-' + temaNum);
-        if (revealScreen) {
-          setTimeout(function() { revealScreen.classList.add('visible'); }, 600);
-        }
+        if (revealScreen) setTimeout(function() { revealScreen.classList.add('visible'); }, 600);
       });
     }
   }
@@ -5879,11 +5956,6 @@ function podToggle(temaNum) {
   if (playBtn) playBtn.innerHTML = wrap._playing ? pauseIcon : playIcon;
 
   wave.querySelectorAll('.pod-wave-bar').forEach(b => { b.style.animationPlayState = wrap._playing ? 'running' : 'paused'; });
-
-  const badge = wrap.querySelector('.pod-skin-badge');
-  if (badge) badge.innerHTML = wrap._playing
-    ? '<div class="pod-skin-dot"></div>Reproduciendo'
-    : '<div class="pod-skin-dot"></div>Pausado';
 
   if (navigator.vibrate) navigator.vibrate(8);
 
@@ -9415,29 +9487,27 @@ function _buildSlideContent(slide, sectionId) {
     if (tema.bunnyVideoId && tema.bunnyVideoId !== 'PENDIENTE_T1' && tema.bunnyVideoId !== 'PENDIENTE_T2' && tema.bunnyVideoId !== 'PENDIENTE_T3' && tema.bunnyVideoId !== 'PENDIENTE_T4' && tema.bunnyVideoId !== 'PENDIENTE_T5') {
       if (tema.podcastSkin) {
         html += `
-        <div class="pod-skin-wrap" id="pod-skin-${tema.num}">
-          <div class="pod-skin-bg-glow"></div>
-          <div class="pod-skin-label">Soberana · Episodio privado</div>
-          <div class="pod-skin-mic-ring">
-            <div class="pod-pulse-ring"></div>
-            <div class="pod-pulse-ring"></div>
-            <div class="pod-pulse-ring"></div>
-            <div class="pod-mic-circle">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+       <div class="pod-skin-wrap" id="pod-skin-${tema.num}">
+          <div class="pod-stage" id="pod-stage-${tema.num}">
+            <canvas id="pod-canvas-${tema.num}"></canvas>
+            <div class="pod-lyrics-3">
+              <div class="pod-line-past" id="pod-past-${tema.num}"></div>
+              <div class="pod-line-active" id="pod-active-${tema.num}">Toca para escuchar</div>
+              <div class="pod-line-next" id="pod-next-${tema.num}"></div>
             </div>
           </div>
-          <div class="pod-skin-title">Lo que ya tienes</div>
-          <div class="pod-skin-subtitle">Sección 09 · Lección final</div>
-          <div class="pod-skin-waveform" id="pod-wave-${tema.num}"></div>
-          <div class="pod-skin-time"><span>0:00</span><span>—:——</span></div>
-          <div class="pod-skin-progress-track"><div class="pod-skin-progress-fill" id="pod-prog-${tema.num}"></div></div>
-          <div class="pod-skin-controls">
-            <div class="pod-skin-btn-play" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+          <div class="pod-controls-wrap">
+            <div class="pod-skin-label">Soberana · Episodio privado</div>
+            <div class="pod-skin-waveform" id="pod-wave-${tema.num}"></div>
+            <div class="pod-skin-time"><span id="pod-cur-${tema.num}">0:00</span><span id="pod-dur-${tema.num}">—:——</span></div>
+            <div class="pod-skin-progress-track"><div class="pod-skin-progress-fill" id="pod-prog-${tema.num}"></div></div>
+            <div class="pod-skin-controls">
+              <div class="pod-skin-btn-play" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
             </div>
           </div>
-          <div class="pod-skin-badge"><div class="pod-skin-dot"></div>Toca para escuchar</div>
-          <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/Podcast-1-leccion9_volalto.mp3?alt=media&token=3789a80d-bb0b-441d-9e01-81aa61483602" preload="metadata" style="display:none"></audio>
+          <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volalto.mp3?alt=media&token=b566245a-07a3-455c-b223-48054bc7a555" preload="metadata" style="display:none"></audio>
         </div>
         <div class="pod-reveal-screen" id="pod-reveal-${tema.num}">
           <button class="pod-reveal-btn" onclick="slideAvanzar()">
@@ -13490,6 +13560,12 @@ function setupMinCharsGuard(secId) {
 
 </body>
 </html>
+
+
+
+
+
+
 
 
 

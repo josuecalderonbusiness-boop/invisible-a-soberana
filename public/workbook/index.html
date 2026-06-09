@@ -9303,6 +9303,7 @@ function openLesson(sectionId) {
   if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9') _sh.classList.add('podcast-mode'); }
 const _lv = document.getElementById('lesson-view');
 if (_lv) { _lv.style.background = (sectionId === 's9') ? '#0F0A0B' : ''; }
+document.body.style.background = (sectionId === 's9') ? '#0F0A0B' : '';
 let _podCover = document.getElementById('pod-bg-cover');
 if (sectionId === 's9') {
   if (!_podCover) {

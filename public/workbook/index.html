@@ -5995,16 +5995,25 @@ function nfApuntes(num) {
   if (!state.user) return;
   _apuntesKey = _currentSectionId + '_' + num;
   const sec = state.sections && state.sections.find(s => s.id === _currentSectionId);
-  const tema = sec && sec.temas && sec.temas.find(t => t.num === num);
   const titulo = document.getElementById('apuntes-modal-titulo');
   if (titulo) titulo.textContent = (sec ? sec.titulo : '') + ' · Tema ' + num;
   const textarea = document.getElementById('apuntes-textarea');
-  if (textarea) {
-    textarea.value = '';
-    db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).get().then(snap => {
-      if (snap.exists) textarea.value = snap.data().texto || '';
-    });
-  }
+  if (textarea) textarea.value = '';
+  const historial = document.getElementById('apuntes-historial');
+  if (historial) historial.innerHTML = '<div style="font-size:12px;color:rgba(61,12,17,0.4);text-align:center;padding:8px">Cargando...</div>';
+  db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').orderBy('creadoEn','desc').get().then(snap => {
+    if (!historial) return;
+    if (snap.empty) { historial.innerHTML = ''; return; }
+    historial.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      const fecha = d.creadoEn ? new Date(d.creadoEn.toDate()).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}) : '';
+      return `<div style="background:rgba(255,255,255,0.6);border-radius:8px;padding:12px 14px;border-left:3px solid #B8892A;position:relative;">
+        <div style="font-size:10px;color:rgba(61,12,17,0.45);margin-bottom:6px;letter-spacing:0.05em;">${fecha}</div>
+        <div style="font-size:13px;color:#1a0a0f;line-height:1.65;white-space:pre-wrap;">${d.texto || ''}</div>
+        <button onclick="borrarApunte('${doc.id}')" style="position:absolute;top:8px;right:8px;background:none;border:none;color:rgba(61,12,17,0.3);cursor:pointer;font-size:14px;">✕</button>
+      </div>`;
+    }).join('');
+  });
   const modal = document.getElementById('apuntes-modal');
   if (modal) modal.style.display = 'flex';
 }
@@ -6014,14 +6023,24 @@ async function guardarApuntes() {
   if (!_apuntesKey) { showToast('Error: no se identificó el tema'); return; }
   const textarea = document.getElementById('apuntes-textarea');
   const texto = textarea ? textarea.value.trim() : '';
-  await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).set({
+  if (!texto) { showToast('Escribe algo primero'); return; }
+  await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').add({
     texto,
     key: _apuntesKey,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-  cerrarApuntes();
+    creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  if (textarea) textarea.value = '';
   showToast('📝 Apunte guardado');
+  nfApuntes(parseInt(_apuntesKey.split('_')[1]));
   cargarApuntes();
+}
+
+async function borrarApunte(entradaId) {
+  if (!state.user || !_apuntesKey) return;
+  if (!confirm('¿Borrar este apunte?')) return;
+  await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').doc(entradaId).delete();
+  nfApuntes(parseInt(_apuntesKey.split('_')[1]));
+  showToast('Apunte eliminado');
 }
 
 function cerrarApuntes() {

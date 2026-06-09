@@ -9736,6 +9736,14 @@ if (sectionId === 's9') {
       const num = wrap.id.replace('nf-wrap-','');
       const dur = wrap.querySelector('.nf-time-row span:last-child');
       if (dur) nfSetDur(num, dur.textContent);
+      // Suscribir contador de likes en tiempo real
+      if (window.db) {
+        const key = sectionId + '_' + num;
+        db.collection('workbook_likes').doc(key).onSnapshot(function(doc) {
+          const el = document.getElementById('nf-like-count-' + num);
+          if (el) { const c = doc.exists ? (doc.data().count || 0) : 0; el.textContent = c > 0 ? c : ''; }
+        });
+      }
     });
   }, 200);
 

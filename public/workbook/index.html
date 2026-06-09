@@ -6032,7 +6032,9 @@ async function guardarApuntes() {
   const textarea = document.getElementById('apuntes-textarea');
   const texto = textarea ? textarea.value.trim() : '';
   if (!texto) { showToast('Escribe algo primero'); return; }
-  await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(_apuntesKey).collection('entradas').add({
+  const temaRef = db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(_apuntesKey);
+  await temaRef.set({ key: _apuntesKey }, { merge: true });
+  await temaRef.collection('entradas').add({
     texto,
     key: _apuntesKey,
     creadoEn: firebase.firestore.FieldValue.serverTimestamp()

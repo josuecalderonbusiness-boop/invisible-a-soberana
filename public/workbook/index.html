@@ -9693,6 +9693,21 @@ if (sectionId === 's9') {
       });
     }
   }
+  // Fallback directo desde Firestore
+  setTimeout(async function(){
+    if (!state.user) return;
+    const key = sectionId + '_1';
+    const favBtn = document.getElementById('nf-fav-1');
+    const likeBtn = document.getElementById('nf-like-1');
+    if (favBtn) {
+      const s = await db.collection('workbook_guardados').doc(state.user.email).collection('items').doc(key).get();
+      if (s.exists) { favBtn.classList.add('active'); favBtn.style.color='#B8892A'; }
+    }
+    if (likeBtn) {
+      const s = await db.collection('workbook_likes').doc(key).collection('users').doc(state.user.email).get();
+      if (s.exists) { likeBtn.classList.add('active'); likeBtn.style.color='#B8892A'; }
+    }
+  }, 1500);
   // Reintentar restore estados después de más tiempo
   setTimeout(async function() {
     if (!state.user) return;

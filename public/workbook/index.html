@@ -5941,7 +5941,7 @@ function nfPlay(num, libId, videoId) {
 }
 async function nfFav(num) {
   if (!state.user) return;
-  const uid = state.user.uid;
+  const uid = state.user.email;
   const key = _currentSectionId + '_' + num;
   const ref = db.collection('workbook_guardados').doc(uid).collection('items').doc(key);
   const btn = document.getElementById('nf-fav-' + num);
@@ -5968,7 +5968,7 @@ async function nfFav(num) {
 
 async function nfLike(num) {
   if (!state.user) return;
-  const uid = state.user.uid;
+  const uid = state.user.email;
   const key = _currentSectionId + '_' + num;
   const likeRef = db.collection('workbook_likes').doc(key);
   const userLikeRef = db.collection('workbook_likes').doc(key).collection('users').doc(uid);
@@ -6001,7 +6001,7 @@ function nfApuntes(num) {
   if (textarea) textarea.value = '';
   const historial = document.getElementById('apuntes-historial');
   if (historial) historial.innerHTML = '<div style="font-size:12px;color:rgba(61,12,17,0.4);text-align:center;padding:8px">Cargando...</div>';
-  db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').orderBy('creadoEn','desc').get().then(snap => {
+  db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(_apuntesKey).collection('entradas').orderBy('creadoEn','desc').get().then(snap => {
     if (!historial) return;
     if (snap.empty) { historial.innerHTML = ''; return; }
     historial.innerHTML = snap.docs.map(doc => {
@@ -6024,7 +6024,7 @@ async function guardarApuntes() {
   const textarea = document.getElementById('apuntes-textarea');
   const texto = textarea ? textarea.value.trim() : '';
   if (!texto) { showToast('Escribe algo primero'); return; }
-  await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').add({
+  await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(_apuntesKey).collection('entradas').add({
     texto,
     key: _apuntesKey,
     creadoEn: firebase.firestore.FieldValue.serverTimestamp()
@@ -6052,7 +6052,7 @@ async function cargarGuardados() {
   if (!state.user) return;
   const lista = document.getElementById('guardados-lista');
   if (!lista) return;
-  const snap = await db.collection('workbook_guardados').doc(state.user.uid).collection('items').orderBy('savedAt', 'desc').get();
+  const snap = await db.collection('workbook_guardados').doc(state.user.email).collection('items').orderBy('savedAt', 'desc').get();
   if (snap.empty) {
     lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no has guardado ningún video</div>';
     return;
@@ -6074,7 +6074,7 @@ async function cargarApuntes() {
   if (!state.user) return;
   const lista = document.getElementById('apuntes-lista');
   if (!lista) return;
-  const snap = await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').orderBy('updatedAt', 'desc').get();
+  const snap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
   if (snap.empty) {
     lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
     return;
@@ -9642,7 +9642,7 @@ if (sectionId === 's9') {
       const key = sectionId + '_' + tema.num;
       const likeRef = db.collection('workbook_likes').doc(key);
       const userLikeRef = likeRef.collection('users').doc(state.user.uid);
-      const favRef = db.collection('workbook_guardados').doc(state.user.uid).collection('items').doc(key);
+      const favRef = db.collection('workbook_guardados').doc(state.user.email).collection('items').doc(key);
       const [likeSnap, userLikeSnap, favSnap] = await Promise.all([likeRef.get(), userLikeRef.get(), favRef.get()]);
       const countEl = document.getElementById('nf-like-count-' + tema.num);
       const likeBtn = document.getElementById('nf-like-' + tema.num);

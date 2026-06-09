@@ -4597,13 +4597,13 @@
 
       <!-- MODAL APUNTES -->
       <div id="apuntes-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);align-items:flex-end;justify-content:center;">
-        <div style="background:#1a0a0f;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:24px 20px 40px;max-height:80vh;overflow-y:auto;">
+        <div style="background:#F5EDD8;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:24px 20px 40px;max-height:80vh;overflow-y:auto;background-image:repeating-linear-gradient(transparent,transparent 27px,rgba(180,160,120,0.3) 27px,rgba(180,160,120,0.3) 28px);background-size:100% 28px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <div id="apuntes-modal-titulo" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#F0E6EA;font-weight:600;">Mis Apuntes</div>
-            <button onclick="cerrarApuntes()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;">✕</button>
+            <div id="apuntes-modal-titulo" style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#3D0C11;font-weight:700;">Mis Apuntes</div>
+            <button onclick="cerrarApuntes()" style="background:rgba(61,12,17,0.1);border:none;border-radius:50%;width:32px;height:32px;color:#3D0C11;font-size:16px;cursor:pointer;">✕</button>
           </div>
-          <textarea id="apuntes-textarea" placeholder="Escribe tus apuntes aquí..." style="width:100%;min-height:200px;background:rgba(255,255,255,0.05);border:1px solid rgba(184,137,42,0.3);border-radius:12px;padding:14px;color:#F0E6EA;font-family:'Jost',sans-serif;font-size:14px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;"></textarea>
-          <button onclick="guardarApuntes()" style="margin-top:14px;width:100%;padding:14px;background:#B8892A;border:none;border-radius:10px;color:#0F0A0B;font-family:'Jost',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Guardar apunte</button>
+          <textarea id="apuntes-textarea" placeholder="Escribe tus apuntes aquí..." style="width:100%;min-height:220px;background:rgba(255,255,255,0.7);border:1px solid rgba(180,160,120,0.4);border-radius:8px;padding:14px;color:#1a0a0f;font-family:'Jost',sans-serif;font-size:14px;line-height:1.75;resize:vertical;outline:none;box-sizing:border-box;"></textarea>
+          <button onclick="guardarApuntes()" style="margin-top:14px;width:100%;padding:14px;background:#3D0C11;border:none;border-radius:10px;color:#F5EDD8;font-family:'Jost',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Guardar apunte</button>
         </div>
       </div>
 
@@ -6010,7 +6010,8 @@ function nfApuntes(num) {
 }
 
 async function guardarApuntes() {
-  if (!state.user || !_apuntesKey) return;
+  if (!state.user) return;
+  if (!_apuntesKey) { showToast('Error: no se identificó el tema'); return; }
   const textarea = document.getElementById('apuntes-textarea');
   const texto = textarea ? textarea.value.trim() : '';
   await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).set({

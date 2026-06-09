@@ -9635,11 +9635,11 @@ function _buildSlideContent(slide, sectionId) {
           <div style="font-size:12px;color:rgba(237,227,206,0.45);line-height:1.5">Este tema estará disponible cuando se publique el video.</div>
         </div>`;
     }
-    html += `
+    if (!tema.podcastSkin) { html += `
       <div style="padding:0 20px 8px">
         <div style="font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(184,137,42,0.5);margin-bottom:6px">Lección ${sec.num} · Tema ${tema.num}</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#F0E6EA;line-height:1.25">${tema.titulo}</div>
-      </div>`;
+      </div>`; }
     wrap.innerHTML = html;
 
   } else if (slide.type === 'situaciones') {

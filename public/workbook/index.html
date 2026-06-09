@@ -9296,6 +9296,18 @@ function openLesson(sectionId) {
   if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9') _sh.classList.add('podcast-mode'); }
 const _lv = document.getElementById('lesson-view');
 if (_lv) { _lv.style.background = (sectionId === 's9') ? '#0F0A0B' : ''; }
+let _podCover = document.getElementById('pod-bg-cover');
+if (sectionId === 's9') {
+  if (!_podCover) {
+    _podCover = document.createElement('div');
+    _podCover.id = 'pod-bg-cover';
+    _podCover.style.cssText = 'position:fixed;bottom:0;left:0;right:0;height:200px;background:#0F0A0B;z-index:49;pointer-events:none;';
+    document.body.appendChild(_podCover);
+  }
+  _podCover.style.display = 'block';
+} else {
+  if (_podCover) _podCover.style.display = 'none';
+}
   const _pf = document.getElementById('slide-prog-fill');
   if (_pf) _pf.style.background = 'linear-gradient(90deg,'+_lc+','+_lc+'cc)';
   setTimeout(function(){

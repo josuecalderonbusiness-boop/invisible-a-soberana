@@ -6074,23 +6074,38 @@ async function cargarApuntes() {
   if (!state.user) return;
   const lista = document.getElementById('apuntes-lista');
   if (!lista) return;
-  const snap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
-  if (snap.empty) {
+  lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Cargando...</div>';
+  const temasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
+  if (temasSnap.empty) {
     lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
     return;
   }
-  lista.innerHTML = snap.docs.map(doc => {
-    const d = doc.data();
-    const parts = (d.key || '').split('_');
-    return `<div class="profile-item" onclick="nfApuntes(${parts[1] || 1})" style="cursor:pointer;">
+  const items = [];
+  for (const temaDoc of temasSnap.docs) {
+    const entradasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(temaDoc.id).collection('entradas').orderBy('creadoEn','desc').limit(1).get();
+    if (!entradasSnap.empty) {
+      const ultima = entradasSnap.docs[0].data();
+      const parts = temaDoc.id.split('_');
+      const secId = parts[0];
+      const temaNum = parseInt(parts[1]) || 1;
+      const sec = state.sections && state.sections.find(s => s.id === secId);
+      const temaObj = sec && sec.temas && sec.temas.find(t => t.num === temaNum);
+      items.push({ key: temaDoc.id, secId, temaNum, titulo: temaObj ? temaObj.titulo : temaDoc.id, secTitulo: sec ? sec.titulo : secId, texto: ultima.texto || '' });
+    }
+  }
+  if (items.length === 0) {
+    lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
+    return;
+  }
+  lista.innerHTML = items.map(item => `
+    <div class="profile-item" onclick="_currentSectionId='${item.secId}';nfApuntes(${item.temaNum})" style="cursor:pointer;">
       <div class="profile-item-icon">📝</div>
       <div class="profile-item-text">
-        <div class="profile-item-label">${d.key || 'Apunte'}</div>
-        <div class="profile-item-sub">${(d.texto || '').substring(0, 60)}...</div>
+        <div class="profile-item-label">${item.titulo}</div>
+        <div class="profile-item-sub">${item.texto.substring(0, 60)}${item.texto.length > 60 ? '...' : ''}</div>
       </div>
       <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
 function irASeccion(sectionId, temaNum) {

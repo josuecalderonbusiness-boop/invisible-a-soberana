@@ -9630,6 +9630,9 @@ function _buildSlideContent(slide, sectionId) {
       if (tema.podcastSkin) {
         html += `
        <div class="pod-skin-wrap" id="pod-skin-${tema.num}">
+          <button onclick="closeLesson()" style="position:absolute;top:16px;left:16px;z-index:20;background:rgba(255,255,255,0.08);border:1px solid rgba(184,137,42,0.3);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
           <div class="pod-stage" id="pod-stage-${tema.num}">
             <canvas id="pod-canvas-${tema.num}"></canvas>
             <div class="pod-lyrics-3">

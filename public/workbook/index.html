@@ -6039,8 +6039,15 @@ function podToggle(temaNum) {
   if (navigator.vibrate) navigator.vibrate(8);
 
   if (audio) {
-    if (wrap._playing) { audio.play().catch(() => {}); }
-    else { audio.pause(); }
+    if (wrap._playing) {
+      audio.play().catch(() => {});
+      if ('wakeLock' in navigator && !wrap._wakeLock) {
+        navigator.wakeLock.request('screen').then(lock => { wrap._wakeLock = lock; }).catch(() => {});
+      }
+    } else {
+      audio.pause();
+      if (wrap._wakeLock) { wrap._wakeLock.release(); wrap._wakeLock = null; }
+    }
   }
 }
 

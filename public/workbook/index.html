@@ -4355,7 +4355,8 @@
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
 .slide-panel-vertical .slide-vertical-wrap{position:relative;width:100%;height:100%;z-index:1;}
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
-.slide-panel-vertical:not(.slide-active) .slide-vertical-wrap{height:0;overflow:hidden;pointer-events:none;}
+}.slide-panel-vertical:not(.slide-active) .slide-vertical-wrap{height:0;overflow:hidden;pointer-events:none;}
+.slide-panel:has(.nf-player-wrap){padding:0!important;}
 .pod-reveal-screen{position:absolute;inset:0;background:#0F0A0B;display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.6s ease;}
 .pod-reveal-screen.visible{opacity:1;pointer-events:all;}
 @keyframes podRevealPulse{0%{box-shadow:0 0 0 0 rgba(60,180,80,0.5),0 4px 24px rgba(40,160,60,0.35);}70%{box-shadow:0 0 0 18px rgba(60,180,80,0),0 4px 24px rgba(40,160,60,0.35);}100%{box-shadow:0 0 0 0 rgba(60,180,80,0),0 4px 24px rgba(40,160,60,0.35);}}

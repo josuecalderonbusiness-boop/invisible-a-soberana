@@ -1,0 +1,15 @@
+[33me387b34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: video vertical fullscreen solo cuando slide esta activo
+[33m56e261a[m S9: ocultar header y progress, video vertical fullscreen real
+[33md3178d3[m S9T2: autoplay solo al tocar Ver el mapa
+[33m947faf8[m S9T2: video vertical fullscreen con autoplay
+[33m650565e[m S9: ejercicios de T1 movidos a T2 para ir despues del video
+[33m4120608[m S9 podcast: boton Ver el mapa salta directo a S9T2
+[33m0375237[m S9T2: video ID conectado correctamente
+[33m326dbb5[m fix: body negro en S9 podcast
+[33m4dfe817[m fix: overlay negro mas pequeno para no tapar controles
+[33m88bc0ef[m fix: podcast altura responsive para movil pequeno
+[33m41d7827[m fix: overlay negro mas alto sobre fondo vino
+[33mdffef81[m fix: ocultar titulo leccion en slide podcast
+[33m5440e96[m S9 podcast: WakeLock evita que pantalla se apague durante audio
+[33mbe1c2d7[m fix: cubrir fondo vino con overlay negro en S9
+[33m8b582d8[m S9 podcast: letras prev y next mas grandes

@@ -4329,7 +4329,7 @@
 @keyframes micPulse{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.3);}}
 .slide-panel-vertical{padding:0!important;background:#000!important;}
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
-.slide-panel-vertical .slide-vertical-wrap{position:fixed;inset:0;width:100%;height:100%;z-index:100;}
+.slide-panel-vertical .slide-vertical-wrap{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
 .pod-reveal-screen{position:absolute;inset:0;background:#0F0A0B;display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.6s ease;}
 .pod-reveal-screen.visible{opacity:1;pointer-events:all;}
@@ -6262,6 +6262,8 @@ function showAccesoDenegado(email) {
 // APP INIT
 // ═══════════════════════════════════════════
 async function initApp() {
+  history.scrollRestoration = 'manual';
+  document.getElementById('app-main').scrollTop = 0;
   const _urlParams = new URLSearchParams(window.location.search);
   if (_urlParams.get('debug') === 'true') {
     localStorage.setItem('soberana_debug', 'true');
@@ -9653,7 +9655,7 @@ function _buildSlideContent(slide, sectionId) {
           html += `<div class="slide-vertical-wrap">
             <iframe
               id="vertical-iframe-${tema.num}"
-              src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+              data-src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
               allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
               allowfullscreen>
             </iframe>
@@ -10051,6 +10053,16 @@ function _syncSlideAnswer(id, val) {
 }
 
 function _updateSlideUI() {
+  // Lazy-load vertical iframes: solo inyectar src cuando el slide es el activo
+  setTimeout(function(){
+    const curSlide = _slides[_slideIndex];
+    if (curSlide && curSlide.type === 'tema-video' && curSlide.tema && curSlide.tema.verticalSkin) {
+      const iframe = document.getElementById('vertical-iframe-' + curSlide.tema.num);
+      if (iframe && iframe.dataset.src && !iframe.src.includes('mediadelivery')) {
+        iframe.src = iframe.dataset.src;
+      }
+    }
+  }, 50);
   const total = _slides.length;
   const current = _slideIndex;
   const pct = total <= 1 ? 100 : Math.round((current / (total - 1)) * 100);

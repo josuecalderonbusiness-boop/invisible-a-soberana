@@ -4321,6 +4321,9 @@
 .pod-skin-dot{width:6px;height:6px;border-radius:50%;background:#B8892A;animation:podBlink 1.5s ease-in-out infinite;}
 @keyframes podBlink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 @keyframes micPulse{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.3);}}
+.slide-panel-vertical{padding:0!important;background:#000!important;}
+.slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
+.slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
 .pod-reveal-screen{position:absolute;inset:0;background:#0F0A0B;display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.6s ease;}
 .pod-reveal-screen.visible{opacity:1;pointer-events:all;}
 @keyframes podRevealPulse{0%{box-shadow:0 0 0 0 rgba(60,180,80,0.5),0 4px 24px rgba(40,160,60,0.35);}70%{box-shadow:0 0 0 18px rgba(60,180,80,0),0 4px 24px rgba(40,160,60,0.35);}100%{box-shadow:0 0 0 0 rgba(60,180,80,0),0 4px 24px rgba(40,160,60,0.35);}}
@@ -5755,7 +5758,7 @@ const SECTIONS = [
     palanca: null,
     temas: [
       { num:1, titulo:'Lo que ya tienes — los 3 sistemas que cambiaron tu dinamica', bunnyVideoId:'PENDIENTE_S9T1', bunnyLibrary:'636956', podcastSkin:true },
-      { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'a24ce52e-4395-4b7c-8b6b-50a154ec746c', bunnyLibrary:'636956' }
+      { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'a24ce52e-4395-4b7c-8b6b-50a154ec746c', bunnyLibrary:'636956', verticalSkin:true }
     ],
     exercises: [
       {
@@ -9296,7 +9299,8 @@ function openLesson(sectionId) {
     const panel = document.createElement('div');
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
-    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : 'slide-panel';
+    const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
+    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));
     track.appendChild(panel);
@@ -9632,14 +9636,24 @@ function _buildSlideContent(slide, sectionId) {
           </button>
         </div>`;
       } else {
-        html += `
-        <div class="slide-video-wrap">
-          <iframe
-            src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
-            allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
-            allowfullscreen>
-          </iframe>
-        </div>`;
+        if (tema.verticalSkin) {
+          html += `<div class="slide-vertical-wrap">
+            <iframe
+              id="vertical-iframe-${tema.num}"
+              src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+              allowfullscreen>
+            </iframe>
+          </div>`;
+        } else {
+          html += `<div class="slide-video-wrap">
+            <iframe
+              src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
+              allowfullscreen>
+            </iframe>
+          </div>`;
+        }
       }
     } else {
       html += `

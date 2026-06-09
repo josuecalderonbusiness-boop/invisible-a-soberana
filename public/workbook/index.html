@@ -9655,26 +9655,44 @@ if (sectionId === 's9') {
   if (sectionId === 's9') {
     setTimeout(function() { _podInitCanvas(1); }, 100);
   }
-  // Cargar likes del tema activo
-  setTimeout(async function() {
-    if (!state.user) return;
+  // Cargar likes del tema activo — esperar a que los botones existan en el DOM
+  if (state.user) {
     const sec = state.sections && state.sections.find(s => s.id === sectionId);
-    if (!sec || !sec.temas) return;
-    for (const tema of sec.temas) {
-      if (!tema.netflixSkin) continue;
-      const key = sectionId + '_' + tema.num;
-      const likeRef = db.collection('workbook_likes').doc(key);
-      const userLikeRef = likeRef.collection('users').doc(state.user.email);
-      const favRef = db.collection('workbook_guardados').doc(state.user.email).collection('items').doc(key);
-      const [likeSnap, userLikeSnap, favSnap] = await Promise.all([likeRef.get(), userLikeRef.get(), favRef.get()]);
-      const countEl = document.getElementById('nf-like-count-' + tema.num);
-      const likeBtn = document.getElementById('nf-like-' + tema.num);
-      const favBtn = document.getElementById('nf-fav-' + tema.num);
-      if (likeSnap.exists && countEl) { const c = likeSnap.data().count || 0; if (c > 0) countEl.textContent = c; }
-      if (userLikeSnap.exists && likeBtn) { likeBtn.classList.add('active'); likeBtn.style.color='#B8892A'; }
-      if (favSnap.exists && favBtn) { favBtn.classList.add('active'); favBtn.style.color='#B8892A'; }
+    if (sec && sec.temas) {
+      sec.temas.filter(t => t.netflixSkin).forEach(tema => {
+        const key = sectionId + '_' + tema.num;
+        const favId = 'nf-fav-' + tema.num;
+        const likeId = 'nf-like-' + tema.num;
+        const countId = 'nf-like-count-' + tema.num;
+        function applyNfState(likeSnap, userLikeSnap, favSnap) {
+          const favBtn = document.getElementById(favId);
+          const likeBtn = document.getElementById(likeId);
+          const countEl = document.getElementById(countId);
+          if (likeSnap && likeSnap.exists && countEl) { const c = likeSnap.data().count||0; if(c>0) countEl.textContent=c; }
+          if (userLikeSnap && userLikeSnap.exists && likeBtn) { likeBtn.classList.add('active'); likeBtn.style.color='#B8892A'; }
+          if (favSnap && favSnap.exists && favBtn) { favBtn.classList.add('active'); favBtn.style.color='#B8892A'; }
+        }
+        Promise.all([
+          db.collection('workbook_likes').doc(key).get(),
+          db.collection('workbook_likes').doc(key).collection('users').doc(state.user.email).get(),
+          db.collection('workbook_guardados').doc(state.user.email).collection('items').doc(key).get()
+        ]).then(([likeSnap, userLikeSnap, favSnap]) => {
+          if (document.getElementById(favId)) {
+            applyNfState(likeSnap, userLikeSnap, favSnap);
+          } else {
+            const observer = new MutationObserver(function(_, obs) {
+              if (document.getElementById(favId)) {
+                obs.disconnect();
+                applyNfState(likeSnap, userLikeSnap, favSnap);
+              }
+            });
+            observer.observe(document.getElementById('slide-track'), { childList: true, subtree: true });
+            setTimeout(() => observer.disconnect(), 5000);
+          }
+        });
+      });
     }
-  }, 800);
+  }
   // Reintentar restore estados después de más tiempo
   setTimeout(async function() {
     if (!state.user) return;

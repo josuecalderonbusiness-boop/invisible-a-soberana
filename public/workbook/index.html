@@ -9790,12 +9790,13 @@ function _buildSlideContent(slide, sectionId) {
             </div>
           </div>`;
         } else {
-          html += `<div class="slide-video-wrap">
+          html += `<div class="slide-video-wrap" style="position:relative">
             <iframe
               src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
               allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
               allowfullscreen>
             </iframe>
+            <div id="video-tap-overlay-${tema.num}" style="position:absolute;inset:0;z-index:10;cursor:pointer;background:transparent;" onclick="document.getElementById('video-tap-overlay-${tema.num}').style.display='none'"></div>
           </div>`;
         }
       }

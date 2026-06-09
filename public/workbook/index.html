@@ -5860,6 +5860,19 @@ function _podWordHtml(word, isActive) {
   return '<span style="color:' + color + ';font-size:' + size + ';transition:all .2s ease;margin-right:6px;line-height:1.3;display:inline-block">' + word + '</span>';
 }
 
+function podIrAT2() {
+  const idx = _slides.findIndex(s => s.type === 'tema-video' && s.tema && s.tema.num === 2);
+  if (idx !== -1) {
+    _slideIndex = idx;
+    const track = document.getElementById('slide-track');
+    if (track) {
+      track.style.transition = 'transform 0.4s ease';
+      track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    }
+    _updateSlideUI();
+  }
+}
+
 function _podBuildPhrases(words) {
   const phrases = [];
   let cur = [];
@@ -9611,7 +9624,7 @@ function _buildSlideContent(slide, sectionId) {
           <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volbajo.mp3?alt=media&token=d1f5c39b-a131-42a5-b49c-04061910422d" preload="metadata" style="display:none"></audio>
         </div>
         <div class="pod-reveal-screen" id="pod-reveal-${tema.num}">
-          <button class="pod-reveal-btn" onclick="nextSlide()">
+          <button class="pod-reveal-btn" onclick="podIrAT2()">
             <div class="pod-reveal-btn-text">Ver el mapa</div>
             <div class="pod-reveal-btn-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>

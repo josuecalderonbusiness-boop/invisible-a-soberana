@@ -9641,7 +9641,7 @@ if (sectionId === 's9') {
       if (!tema.netflixSkin) continue;
       const key = sectionId + '_' + tema.num;
       const likeRef = db.collection('workbook_likes').doc(key);
-      const userLikeRef = likeRef.collection('users').doc(state.user.uid);
+      const userLikeRef = likeRef.collection('users').doc(state.user.email);
       const favRef = db.collection('workbook_guardados').doc(state.user.email).collection('items').doc(key);
       const [likeSnap, userLikeSnap, favSnap] = await Promise.all([likeRef.get(), userLikeRef.get(), favRef.get()]);
       const countEl = document.getElementById('nf-like-count-' + tema.num);

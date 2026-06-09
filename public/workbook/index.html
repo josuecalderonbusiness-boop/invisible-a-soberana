@@ -4357,6 +4357,7 @@
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
 .slide-panel-vertical:not(.slide-active) .slide-vertical-wrap{height:0;overflow:hidden;pointer-events:none;}
 .slide-panel.nf-mode{padding:0!important;}
+.slide-panel-netflix{padding:0!important;background:#0F0A0B!important;}
 .nf-player-wrap.nf-mode ~ *{padding-left:20px;padding-right:20px;}
 .pod-reveal-screen{position:absolute;inset:0;background:#0F0A0B;display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.6s ease;}
 .pod-reveal-screen.visible{opacity:1;pointer-events:all;}
@@ -9401,7 +9402,8 @@ function openLesson(sectionId) {
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
-    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : 'slide-panel';
+    const isNetflix = tema && tema.netflixSkin;
+    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));
     track.appendChild(panel);

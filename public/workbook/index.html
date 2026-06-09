@@ -2542,6 +2542,18 @@
     height: 100%;
     overflow: hidden;
   }
+  @media (min-width: 600px) {
+    #lesson-view {
+      left: 50%;
+      transform: translateX(-50%);
+      width: 420px;
+      height: 100%;
+      inset: auto;
+      top: 0;
+      bottom: 0;
+      box-shadow: 0 0 80px rgba(0,0,0,0.8);
+    }
+  }
   #lesson-view.open { display: flex; }
 
   /* ── SLIDE HEADER ── */

@@ -9621,9 +9621,11 @@ function openLesson(sectionId) {
   const _lc = (typeof SECCION_COLORES!=='undefined' && SECCION_COLORES[sectionId]) ? SECCION_COLORES[sectionId] : '#B8892A';
   window._lessonAccent = _lc;
   const _sh = document.querySelector('.slide-header');
-  if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9') _sh.classList.add('podcast-mode'); }
+  const _secObjNf = state.sections && state.sections.find(s => s.id === sectionId);
+  const _hasNetflix = _secObjNf && _secObjNf.temas && _secObjNf.temas.some(t => t.netflixSkin);
+  if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9' || _hasNetflix) _sh.classList.add('podcast-mode'); }
 const _lv = document.getElementById('lesson-view');
-if (_lv) { _lv.style.background = (sectionId === 's9') ? '#0F0A0B' : ''; }
+if (_lv) { _lv.style.background = (sectionId === 's9' || _hasNetflix) ? '#0F0A0B' : ''; }
 document.body.style.background = (sectionId === 's9') ? '#0F0A0B' : '';
 let _podCover = document.getElementById('pod-bg-cover');
 if (sectionId === 's9') {

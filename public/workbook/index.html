@@ -4566,9 +4566,14 @@
 
           <div class="profile-section-title" style="margin-top:24px">📝 Mis Apuntes</div>
           <div class="profile-cards">
-            <div class="profile-card" id="apuntes-lista">
-              <div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">
-                Aún no tienes apuntes
+            <div class="profile-card" id="apuntes-lista" onclick="abrirMisApuntes()" style="cursor:pointer;">
+              <div class="profile-item">
+                <div class="profile-item-icon">📝</div>
+                <div class="profile-item-text">
+                  <div class="profile-item-label">Ver mis apuntes</div>
+                  <div class="profile-item-sub" id="apuntes-resumen">Cargando...</div>
+                </div>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               </div>
             </div>
           </div>
@@ -4604,6 +4609,30 @@
           </div>
           <textarea id="apuntes-textarea" placeholder="Escribe tus apuntes aquí..." style="width:100%;min-height:220px;background:rgba(255,255,255,0.7);border:1px solid rgba(180,160,120,0.4);border-radius:8px;padding:14px;color:#1a0a0f;font-family:'Jost',sans-serif;font-size:14px;line-height:1.75;resize:vertical;outline:none;box-sizing:border-box;"></textarea>
           <button onclick="guardarApuntes()" style="margin-top:14px;width:100%;padding:14px;background:#3D0C11;border:none;border-radius:10px;color:#F5EDD8;font-family:'Jost',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Guardar apunte</button>
+        </div>
+      </div>
+
+      <!-- MODAL MIS APUNTES FULLSCREEN -->
+      <div id="mis-apuntes-modal" style="display:none;position:fixed;inset:0;z-index:300;background:#F5F0E8;background-image:linear-gradient(rgba(180,160,120,0.15) 1px,transparent 1px),linear-gradient(90deg,rgba(180,160,120,0.15) 1px,transparent 1px);background-size:28px 28px;overflow-y:auto;font-family:'Cormorant Garamond',serif;">
+        <div style="padding:60px 20px 40px;max-width:500px;margin:0 auto;">
+          <div id="nb-list-view">
+            <div style="font-size:34px;font-weight:600;color:#3D2409;margin-bottom:4px;">Mis Apuntes</div>
+            <div style="font-size:16px;color:rgba(61,36,9,0.5);font-style:italic;margin-bottom:24px;" id="nb-total-label">Cargando...</div>
+            <div id="nb-secciones"></div>
+          </div>
+          <div id="nb-notas-view" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <button onclick="nbBackToList()" style="background:none;border:0.5px solid rgba(100,80,40,0.3);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5C3D1A;flex-shrink:0;">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+              <div>
+                <div style="font-size:22px;font-weight:600;color:#3D2409;line-height:1.2;" id="nb-nota-titulo"></div>
+                <div style="font-size:14px;color:rgba(61,36,9,0.45);font-style:italic;" id="nb-nota-subtitulo"></div>
+              </div>
+            </div>
+            <div id="nb-notas-lista"></div>
+          </div>
+          <button onclick="cerrarMisApuntes()" style="position:fixed;top:16px;right:16px;background:rgba(61,36,9,0.12);border:none;border-radius:50%;width:40px;height:40px;font-size:18px;cursor:pointer;color:#3D2409;display:flex;align-items:center;justify-content:center;">✕</button>
         </div>
       </div>
 
@@ -6082,40 +6111,102 @@ async function cargarGuardados() {
 
 async function cargarApuntes() {
   if (!state.user) return;
-  const lista = document.getElementById('apuntes-lista');
-  if (!lista) return;
-  lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Cargando...</div>';
   const temasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
+  const resumen = document.getElementById('apuntes-resumen');
   if (temasSnap.empty) {
-    lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
+    if (resumen) resumen.textContent = 'Aún no tienes apuntes';
+    return;
+  }
+  const total = temasSnap.size;
+  if (resumen) resumen.textContent = total + ' tema' + (total !== 1 ? 's' : '') + ' con apuntes';
+}
+
+async function abrirMisApuntes() {
+  const modal = document.getElementById('mis-apuntes-modal');
+  if (modal) modal.style.display = 'block';
+  nbBackToList();
+  if (!state.user) return;
+  const temasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
+  const totalLabel = document.getElementById('nb-total-label');
+  if (temasSnap.empty) {
+    if (totalLabel) totalLabel.textContent = 'Aún no tienes apuntes';
+    document.getElementById('nb-secciones').innerHTML = '';
     return;
   }
   const items = [];
   for (const temaDoc of temasSnap.docs) {
-    const entradasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(temaDoc.id).collection('entradas').orderBy('creadoEn','desc').limit(1).get();
+    const parts = temaDoc.id.split('_');
+    const secId = parts[0];
+    const temaNum = parseInt(parts[1]) || 1;
+    const sec = state.sections && state.sections.find(s => s.id === secId);
+    const temaObj = sec && sec.temas && sec.temas.find(t => t.num === temaNum);
+    const entradasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(temaDoc.id).collection('entradas').orderBy('creadoEn','asc').get();
     if (!entradasSnap.empty) {
-      const ultima = entradasSnap.docs[0].data();
-      const parts = temaDoc.id.split('_');
-      const secId = parts[0];
-      const temaNum = parseInt(parts[1]) || 1;
-      const sec = state.sections && state.sections.find(s => s.id === secId);
-      const temaObj = sec && sec.temas && sec.temas.find(t => t.num === temaNum);
-      items.push({ key: temaDoc.id, secId, temaNum, titulo: temaObj ? temaObj.titulo : temaDoc.id, secTitulo: sec ? sec.titulo : secId, texto: ultima.texto || '' });
+      items.push({ key: temaDoc.id, secId, temaNum, secNum: sec ? sec.num : 0, secTitulo: sec ? sec.titulo : secId, temaTitulo: temaObj ? temaObj.titulo : ('Tema ' + temaNum), entradas: entradasSnap.docs.map(d => d.data()) });
     }
   }
-  if (items.length === 0) {
-    lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
-    return;
-  }
-  lista.innerHTML = items.map(item => `
-    <div class="profile-item" onclick="_currentSectionId='${item.secId}';nfApuntes(${item.temaNum})" style="cursor:pointer;">
-      <div class="profile-item-icon">📝</div>
-      <div class="profile-item-text">
-        <div class="profile-item-label">${item.titulo}</div>
-        <div class="profile-item-sub">${item.texto.substring(0, 60)}${item.texto.length > 60 ? '...' : ''}</div>
+  if (totalLabel) totalLabel.textContent = items.length + ' tema' + (items.length !== 1 ? 's' : '') + ' con apuntes';
+  const bySeccion = {};
+  items.forEach(item => {
+    if (!bySeccion[item.secId]) bySeccion[item.secId] = { secNum: item.secNum, secTitulo: item.secTitulo, temas: [] };
+    bySeccion[item.secId].temas.push(item);
+  });
+  const secs = Object.values(bySeccion).sort((a,b) => a.secNum - b.secNum);
+  document.getElementById('nb-secciones').innerHTML = secs.map((sec, i) => `
+    <div style="margin-bottom:12px;border-radius:14px;overflow:hidden;border:0.5px solid rgba(140,110,60,0.25);background:rgba(255,252,245,0.7);">
+      <div onclick="nbToggleSec(${i})" style="display:flex;align-items:center;justify-content:space-between;padding:16px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="background:#3D2409;color:#F5ECD6;font-size:11px;padding:4px 11px;border-radius:20px;font-family:'Jost',sans-serif;letter-spacing:0.1em;">L${sec.secNum}</span>
+          <div>
+            <div style="font-size:20px;font-weight:600;color:#3D2409;">${sec.secTitulo}</div>
+            <div style="font-size:13px;color:rgba(61,36,9,0.45);font-style:italic;">${sec.temas.length} tema${sec.temas.length !== 1 ? 's' : ''} con apuntes</div>
+          </div>
+        </div>
+        <svg id="nb-chev-${i}" width="16" height="16" fill="none" viewBox="0 0 24 24" style="transition:transform 0.2s;color:rgba(61,36,9,0.4)"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
-      <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div id="nb-sec-${i}" style="display:none;border-top:0.5px solid rgba(140,110,60,0.15);">
+        ${sec.temas.map(t => `
+          <div onclick='nbOpenNotas(${JSON.stringify(t.temaTitulo)}, "L${sec.secNum} · Tema ${t.temaNum}", ${JSON.stringify(t.entradas)})' style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:0.5px solid rgba(140,110,60,0.1);cursor:pointer;">
+            <div>
+              <div style="font-size:17px;font-weight:600;color:#5C3D1A;">Tema ${t.temaNum} · ${t.temaTitulo}</div>
+              <div style="font-size:13px;color:rgba(61,36,9,0.4);font-style:italic;">${t.entradas.length} apunte${t.entradas.length !== 1 ? 's' : ''}</div>
+            </div>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>`).join('')}
+      </div>
     </div>`).join('');
+}
+
+function nbToggleSec(i) {
+  const el = document.getElementById('nb-sec-' + i);
+  const chev = document.getElementById('nb-chev-' + i);
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (chev) chev.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+function nbOpenNotas(titulo, badge, entradas) {
+  document.getElementById('nb-list-view').style.display = 'none';
+  document.getElementById('nb-notas-view').style.display = 'block';
+  document.getElementById('nb-nota-titulo').textContent = titulo;
+  document.getElementById('nb-nota-subtitulo').textContent = badge + ' · ' + entradas.length + ' apunte' + (entradas.length !== 1 ? 's' : '');
+  document.getElementById('nb-notas-lista').innerHTML = entradas.map(e => {
+    const fecha = e.creadoEn && e.creadoEn.toDate ? e.creadoEn.toDate().toLocaleDateString('es-CO', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div style="background:rgba(255,252,245,0.9);border:0.5px solid rgba(140,110,60,0.25);border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+      <div style="font-size:12px;color:rgba(61,36,9,0.4);margin-bottom:8px;font-family:'Jost',sans-serif;">${fecha}</div>
+      <div style="font-size:18px;color:#3D2409;line-height:1.65;">${e.texto || ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function nbBackToList() {
+  document.getElementById('nb-list-view').style.display = 'block';
+  document.getElementById('nb-notas-view').style.display = 'none';
+}
+
+function cerrarMisApuntes() {
+  const modal = document.getElementById('mis-apuntes-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function irASeccion(sectionId, temaNum) {

@@ -5990,6 +5990,7 @@ async function nfLike(num) {
 }
 
 let _apuntesKey = '';
+let _currentSectionId = '';
 function nfApuntes(num) {
   if (!state.user) return;
   _apuntesKey = _currentSectionId + '_' + num;
@@ -9607,6 +9608,7 @@ if (sectionId === 's9') {
   document.getElementById('lesson-view').classList.add('open');
 
   // Inicializar canvas del podcast si es S9
+  _currentSectionId = sectionId;
   if (sectionId === 's9') {
     setTimeout(function() { _podInitCanvas(1); }, 100);
   }

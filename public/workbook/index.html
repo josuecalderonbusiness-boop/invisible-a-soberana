@@ -6046,7 +6046,7 @@ async function guardarApuntes() {
 async function borrarApunte(entradaId) {
   if (!state.user || !_apuntesKey) return;
   if (!confirm('¿Borrar este apunte?')) return;
-  await db.collection('workbook_apuntes').doc(state.user.uid).collection('temas').doc(_apuntesKey).collection('entradas').doc(entradaId).delete();
+  await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').doc(_apuntesKey).collection('entradas').doc(entradaId).delete();
   nfApuntes(parseInt(_apuntesKey.split('_')[1]));
   showToast('Apunte eliminado');
 }

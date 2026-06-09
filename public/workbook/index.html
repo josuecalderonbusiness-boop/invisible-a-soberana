@@ -4344,8 +4344,8 @@
 .nf-actions{display:flex;gap:0;border-top:1px solid rgba(255,255,255,0.08);padding:8px 20px 20px;justify-content:space-around;}
 .nf-action-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 16px;color:rgba(255,255,255,0.6);font-family:'Jost',sans-serif;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;}
 .nf-action-btn svg{opacity:0.7;}
-.nf-action-btn.active{color:#B8892A;}
-.nf-action-btn.active svg{opacity:1;}
+.nf-action-btn.active{color:#B8892A!important;}
+.nf-action-btn.active svg{opacity:1;stroke:#B8892A;}
 .nf-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.65;margin:0 0 14px;}
 .nf-prog-bar{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:6px;cursor:pointer;}
 .nf-prog-fill{height:100%;background:#B8892A;border-radius:2px;width:0%;transition:width 0.5s linear;}
@@ -9663,10 +9663,10 @@ if (sectionId === 's9') {
       const likeBtn = document.getElementById('nf-like-' + tema.num);
       const favBtn = document.getElementById('nf-fav-' + tema.num);
       if (likeSnap.exists && countEl) { const c = likeSnap.data().count || 0; if (c > 0) countEl.textContent = c; }
-      if (userLikeSnap.exists && likeBtn) likeBtn.classList.add('active');
-      if (favSnap.exists && favBtn) favBtn.classList.add('active');
+      if (userLikeSnap.exists && likeBtn) { likeBtn.classList.add('active'); likeBtn.style.color='#B8892A'; }
+      if (favSnap.exists && favBtn) { favBtn.classList.add('active'); favBtn.style.color='#B8892A'; }
     }
-  }, 500);
+  }, 800);
   // Inicializar duracion reproductores Netflix
   setTimeout(function(){
     document.querySelectorAll('[id^="nf-wrap-"]').forEach(function(wrap){

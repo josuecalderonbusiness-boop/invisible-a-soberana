@@ -9402,7 +9402,7 @@ function openLesson(sectionId) {
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
-    const isNetflix = tema && tema.netflixSkin;
+    const isNetflix = slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin;
     panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));

@@ -4328,7 +4328,8 @@
 @keyframes podBlink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 @keyframes micPulse{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.3);}}
 .slide-panel-vertical{padding:0!important;background:#000!important;}
-.slide-vertical-wrap{position:fixed;inset:0;width:100%;height:100%;background:#000;overflow:hidden;z-index:100;}
+.slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
+.slide-panel-vertical .slide-vertical-wrap{position:fixed;inset:0;width:100%;height:100%;z-index:100;}
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
 .pod-reveal-screen{position:absolute;inset:0;background:#0F0A0B;display:flex;align-items:center;justify-content:center;z-index:10;opacity:0;pointer-events:none;transition:opacity 0.6s ease;}
 .pod-reveal-screen.visible{opacity:1;pointer-events:all;}

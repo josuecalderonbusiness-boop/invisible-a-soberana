@@ -6013,12 +6013,17 @@ function podToggle(temaNum) {
         }
       });
 
+      audio.addEventListener('timeupdate', function() {
+        if (audio.duration && !wrap._revealShown && audio.currentTime >= audio.duration - 4) {
+          wrap._revealShown = true;
+          const revealScreen = document.getElementById('pod-reveal-' + temaNum);
+          if (revealScreen) revealScreen.classList.add('visible');
+        }
+      });
       audio.addEventListener('ended', function() {
         wrap._playing = false;
         if (playBtn) playBtn.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>';
         wave.querySelectorAll('.pod-wave-bar').forEach(b => { b.style.animationPlayState = 'paused'; });
-        const revealScreen = document.getElementById('pod-reveal-' + temaNum);
-        if (revealScreen) setTimeout(function() { revealScreen.classList.add('visible'); }, 600);
       });
     }
   }

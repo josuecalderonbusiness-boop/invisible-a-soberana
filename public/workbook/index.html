@@ -4282,15 +4282,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 .debug-btn:active { background: rgba(255,255,255,0.08); }
-.pod-skin-wrap{position:relative;background:#0F0A0B;display:flex;flex-direction:column;overflow:hidden;border-radius:0;}
-.pod-stage{position:relative;height:340px;overflow:hidden;background:linear-gradient(160deg,#0A1F12 0%,#1a3020 40%,#0d150a 70%,#1a1205 100%);}
+.pod-skin-wrap{position:relative;background:#0F0A0B;display:flex;flex-direction:column;overflow:hidden;border-radius:0;max-height:100vh;max-height:100dvh;}
+.pod-stage{position:relative;height:55vh;max-height:320px;overflow:hidden;background:linear-gradient(160deg,#0A1F12 0%,#1a3020 40%,#0d150a 70%,#1a1205 100%);}
 .pod-stage canvas{position:absolute;inset:0;width:100%;height:100%;}
 .pod-lyrics-3{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:0 28px;z-index:2;}
 .pod-line-past{font-family:"Playfair Display",serif;font-size:22px;font-weight:700;color:rgba(255,255,255,0.15);text-align:left;line-height:1.2;transition:all .4s ease;}
 .pod-line-active{font-family:"Playfair Display",serif;font-size:36px;font-weight:700;color:#FFFFFF;text-align:left;line-height:1.2;transition:all .4s ease;}
 .pod-line-active em{font-style:italic;font-weight:400;color:#D4AF6A;}
 .pod-line-next{font-family:"Playfair Display",serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.07);text-align:left;line-height:1.2;transition:all .4s ease;}
-.pod-controls-wrap{background:#0F0A0B;border-top:1px solid rgba(184,137,42,0.15);padding:20px 24px 120px;display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:0;}
+.pod-controls-wrap{background:#0F0A0B;border-top:1px solid rgba(184,137,42,0.15);padding:16px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:0;}
 .slide-panel-podcast{background:#0F0A0B!important;min-height:100vh;min-height:100dvh;}
 .slide-panel-podcast{padding:0!important;background:#0F0A0B!important;min-height:100vh;min-height:100dvh;position:relative;z-index:1;}
 .slide-panel-podcast::after{content:'';position:fixed;bottom:0;left:0;right:0;height:120px;background:#0F0A0B;z-index:0;}
@@ -9610,7 +9610,7 @@ function _buildSlideContent(slide, sectionId) {
           <audio id="pod-audio-${tema.num}" src="https://firebasestorage.googleapis.com/v0/b/soberana-app.firebasestorage.app/o/podcast%2Fleccion_9%2FPodcast-1-leccion9_volbajo.mp3?alt=media&token=d1f5c39b-a131-42a5-b49c-04061910422d" preload="metadata" style="display:none"></audio>
         </div>
         <div class="pod-reveal-screen" id="pod-reveal-${tema.num}">
-          <button class="pod-reveal-btn" onclick="slideAvanzar()">
+          <button class="pod-reveal-btn" onclick="nextSlide()">
             <div class="pod-reveal-btn-text">Ver el mapa</div>
             <div class="pod-reveal-btn-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>

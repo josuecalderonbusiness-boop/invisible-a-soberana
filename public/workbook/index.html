@@ -6085,7 +6085,29 @@ async function cargarApuntes() {
   lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Cargando...</div>';
   const temasSnap = await db.collection('workbook_apuntes').doc(state.user.email).collection('temas').get();
   if (temasSnap.empty) {
-    lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
+    // Intentar collectionGroup como fallback
+    const groupSnap = await db.collectionGroup('entradas').where('key', '>=', '').get();
+    const misEntradas = groupSnap.docs.filter(d => d.ref.path.includes(state.user.email));
+    if (misEntradas.length === 0) {
+      lista.innerHTML = '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px">Aún no tienes apuntes</div>';
+      return;
+    }
+    const byTema = {};
+    misEntradas.forEach(d => { const data = d.data(); if (!byTema[data.key]) byTema[data.key] = data; });
+    lista.innerHTML = Object.values(byTema).map(d => {
+      const parts = (d.key||'').split('_');
+      const secId = parts[0]; const temaNum = parseInt(parts[1])||1;
+      const sec = state.sections && state.sections.find(s => s.id === secId);
+      const temaObj = sec && sec.temas && sec.temas.find(t => t.num === temaNum);
+      return `<div class="profile-item" onclick="_currentSectionId='${secId}';nfApuntes(${temaNum})" style="cursor:pointer;">
+        <div class="profile-item-icon">📝</div>
+        <div class="profile-item-text">
+          <div class="profile-item-label">${temaObj ? temaObj.titulo : d.key}</div>
+          <div class="profile-item-sub">${(d.texto||'').substring(0,60)}...</div>
+        </div>
+        <svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>`;
+    }).join('');
     return;
   }
   const items = [];

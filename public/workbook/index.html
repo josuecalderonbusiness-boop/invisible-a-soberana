@@ -9289,6 +9289,8 @@ function openLesson(sectionId) {
   window._lessonAccent = _lc;
   const _sh = document.querySelector('.slide-header');
   if (_sh) { _sh.classList.remove('podcast-mode'); if (sectionId === 's9') _sh.classList.add('podcast-mode'); }
+const _lv = document.getElementById('lesson-view');
+if (_lv) { _lv.style.background = (sectionId === 's9') ? '#0F0A0B' : ''; }
   const _pf = document.getElementById('slide-prog-fill');
   if (_pf) _pf.style.background = 'linear-gradient(90deg,'+_lc+','+_lc+'cc)';
   setTimeout(function(){

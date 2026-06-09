@@ -5881,9 +5881,12 @@ function podIrAT2() {
     }
     _updateSlideUI();
     setTimeout(function() {
-      const iframe = document.getElementById('vertical-iframe-2');
-      if (iframe) {
-        iframe.src = iframe.src.replace('autoplay=false', 'autoplay=true');
+      const wrap = document.getElementById('vertical-wrap-2');
+      if (wrap && !document.getElementById('vertical-iframe-2')) {
+        const tema = _slides[idx] && _slides[idx].tema;
+        const libId = (tema && tema.bunnyLibrary) || '636956';
+        const videoId = tema && tema.bunnyVideoId;
+        wrap.innerHTML = '<iframe id="vertical-iframe-2" src="https://iframe.mediadelivery.net/embed/' + libId + '/' + videoId + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>';
       }
     }, 600);
   }
@@ -9657,14 +9660,7 @@ function _buildSlideContent(slide, sectionId) {
         </div>`;
       } else {
         if (tema.verticalSkin) {
-          html += `<div class="slide-vertical-wrap">
-            <iframe
-              id="vertical-iframe-${tema.num}"
-              data-src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
-              allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock"
-              allowfullscreen>
-            </iframe>
-          </div>`;
+          html += `<div class="slide-vertical-wrap" id="vertical-wrap-${tema.num}"></div>`;
         } else {
           html += `<div class="slide-video-wrap">
             <iframe

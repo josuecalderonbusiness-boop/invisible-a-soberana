@@ -4327,6 +4327,22 @@
 .pod-skin-dot{width:6px;height:6px;border-radius:50%;background:#B8892A;animation:podBlink 1.5s ease-in-out infinite;}
 @keyframes podBlink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 @keyframes micPulse{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(1.3);}}
+.nf-player-wrap{background:#0F0A0B;border-radius:0;overflow:hidden;width:100%;}
+.nf-cover{position:relative;width:100%;height:280px;overflow:hidden;}
+.nf-cover-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(15,10,11,0.05) 0%,rgba(15,10,11,0) 25%,rgba(15,10,11,0.55) 65%,#0F0A0B 100%);}
+.nf-cover-badge{position:absolute;top:14px;left:14px;background:rgba(184,137,42,0.2);border:1px solid rgba(184,137,42,0.45);border-radius:20px;padding:4px 12px;font-size:10px;color:#D4AF6A;letter-spacing:0.08em;z-index:2;}
+.nf-cover-bottom{position:absolute;bottom:0;left:0;right:0;padding:16px 20px 14px;z-index:2;}
+.nf-cover-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;margin:0 0 10px;line-height:1.2;}
+.nf-cover-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.nf-tag{background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.3);border-radius:20px;padding:3px 10px;font-size:10px;color:#D4AF6A;}
+.nf-body{padding:14px 20px 20px;}
+.nf-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.65;margin:0 0 14px;}
+.nf-prog-bar{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:6px;cursor:pointer;}
+.nf-prog-fill{height:100%;background:#B8892A;border-radius:2px;width:0%;transition:width 0.5s linear;}
+.nf-time-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:16px;}
+.nf-controls{display:flex;align-items:center;justify-content:center;gap:28px;}
+.nf-ctrl-btn{background:none;border:none;cursor:pointer;padding:8px;color:rgba(255,255,255,0.5);}
+.nf-play-btn{width:56px;height:56px;border-radius:50%;background:rgba(184,137,42,0.15);border:2px solid rgba(184,137,42,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .slide-panel-vertical{padding:0!important;background:#000!important;}
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
 .slide-panel-vertical .slide-vertical-wrap{position:relative;width:100%;height:100%;z-index:1;}
@@ -5221,7 +5237,7 @@ const SECTIONS = [
     desc:'Quién eres antes de aprender',
     palanca: null,
     temas: [
-      { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956' },
+      { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956', netflixSkin:true, netflixCover:null, netflixDesc:'¿Llevas tiempo hablando con tu pareja y sintiendo que le hablas a una pared? Hoy entiendes por qué pasa eso — y qué vas a hacer diferente desde hoy mismo.', netflixTags:['Identidad','Relaciones','Sistema'], netflixDur:'2:32' },
       { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'f5b66696-2ca6-4ed3-9c4c-02746d23ede7', bunnyLibrary:'636956' },
       { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'5e07e2ec-bfa9-4ef0-8a73-6dd560b9cf99', bunnyLibrary:'636956' },
       { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'069011ae-ae68-453a-81c4-47f95103ab8b', bunnyLibrary:'636956' }
@@ -5871,6 +5887,42 @@ function _podWordHtml(word, isActive) {
   return '<span style="color:' + color + ';font-size:' + size + ';transition:all .2s ease;margin-right:6px;line-height:1.3;display:inline-block">' + word + '</span>';
 }
 
+const _nfState = {};
+function nfToggle(num) {
+  if (!_nfState[num]) _nfState[num] = { playing: false, cur: 0, total: 0, interval: null };
+  const s = _nfState[num];
+  const iframe = document.getElementById('nf-iframe-' + num);
+  const icon = document.getElementById('nf-play-icon-' + num);
+  s.playing = !s.playing;
+  if (s.playing) {
+    if (iframe) { iframe.style.display = 'block'; iframe.src = iframe.src.replace('autoplay=false','autoplay=true'); }
+    if (icon) icon.setAttribute('d','M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+    s.interval = setInterval(function(){
+      s.cur++;
+      const fill = document.getElementById('nf-fill-' + num);
+      const cur = document.getElementById('nf-cur-' + num);
+      if (fill && s.total > 0) fill.style.width = (s.cur / s.total * 100) + '%';
+      if (cur) { const m=Math.floor(s.cur/60); const ss=s.cur%60; cur.textContent = m+':'+(ss<10?'0':'')+ss; }
+    }, 1000);
+  } else {
+    if (icon) { icon.setAttribute('d',''); icon.outerHTML = '<svg id="nf-play-icon-'+num+'" width="24" height="24" viewBox="0 0 24 24" fill="#B8892A" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>'; }
+    clearInterval(s.interval);
+  }
+}
+function nfSkip(num, secs) {
+  if (!_nfState[num]) return;
+  _nfState[num].cur = Math.max(0, _nfState[num].cur + secs);
+  const fill = document.getElementById('nf-fill-' + num);
+  const cur = document.getElementById('nf-cur-' + num);
+  const s = _nfState[num];
+  if (fill && s.total > 0) fill.style.width = (s.cur / s.total * 100) + '%';
+  if (cur) { const m=Math.floor(s.cur/60); const ss=s.cur%60; cur.textContent = m+':'+(ss<10?'0':'')+ss; }
+}
+function nfSetDur(num, durStr) {
+  if (!_nfState[num]) _nfState[num] = { playing: false, cur: 0, total: 0, interval: null };
+  const parts = durStr.split(':');
+  _nfState[num].total = parseInt(parts[0])*60 + parseInt(parts[1]);
+}
 function podIrAT2() {
   const idx = _slides.findIndex(s => s.type === 'tema-video' && s.tema && s.tema.num === 2);
   if (idx !== -1) {
@@ -9369,6 +9421,14 @@ if (sectionId === 's9') {
   if (sectionId === 's9') {
     setTimeout(function() { _podInitCanvas(1); }, 100);
   }
+  // Inicializar duracion reproductores Netflix
+  setTimeout(function(){
+    document.querySelectorAll('[id^="nf-wrap-"]').forEach(function(wrap){
+      const num = wrap.id.replace('nf-wrap-','');
+      const dur = wrap.querySelector('.nf-time-row span:last-child');
+      if (dur) nfSetDur(num, dur.textContent);
+    });
+  }, 200);
 
   updateLessonProgress(sectionId);
   setupMinCharsGuard(sectionId);
@@ -9665,6 +9725,40 @@ function _buildSlideContent(slide, sectionId) {
       } else {
         if (tema.verticalSkin) {
           html += `<div class="slide-vertical-wrap" id="vertical-wrap-${tema.num}"></div>`;
+        } else if (tema.netflixSkin) {
+          html += `
+          <div class="nf-player-wrap" id="nf-wrap-${tema.num}">
+            <div class="nf-cover" style="${tema.netflixCover ? 'background-image:url('+tema.netflixCover+');background-size:cover;background-position:center top;' : 'background:linear-gradient(135deg,#3d1a0f 0%,#1a0a0f 60%,#0a0a1a 100%);'}">
+              <div class="nf-cover-gradient"></div>
+              <div class="nf-cover-badge">S${sec.num} · TEMA ${tema.num}</div>
+              <div class="nf-cover-bottom">
+                <div class="nf-cover-title">${tema.titulo}</div>
+                <div class="nf-cover-tags">${(tema.netflixTags||[]).map(t=>`<span class="nf-tag">${t}</span>`).join('')}</div>
+              </div>
+            </div>
+            <div class="nf-body">
+              <p class="nf-desc">${tema.netflixDesc||''}</p>
+              <div class="nf-prog-bar" id="nf-bar-${tema.num}">
+                <div class="nf-prog-fill" id="nf-fill-${tema.num}"></div>
+              </div>
+              <div class="nf-time-row">
+                <span id="nf-cur-${tema.num}">0:00</span>
+                <span>${tema.netflixDur||''}</span>
+              </div>
+              <div class="nf-controls">
+                <button class="nf-ctrl-btn" onclick="nfSkip(${tema.num},-15)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+                </button>
+                <button class="nf-play-btn" id="nf-play-${tema.num}" onclick="nfToggle(${tema.num})">
+                  <svg id="nf-play-icon-${tema.num}" width="24" height="24" viewBox="0 0 24 24" fill="#B8892A" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <button class="nf-ctrl-btn" onclick="nfSkip(${tema.num},15)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+                </button>
+              </div>
+            </div>
+            <iframe id="nf-iframe-${tema.num}" src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="display:none;"></iframe>
+          </div>`;
         } else {
           html += `<div class="slide-video-wrap">
             <iframe

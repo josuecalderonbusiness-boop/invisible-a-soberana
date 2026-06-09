@@ -5897,17 +5897,17 @@ function _podRenderWords(temaNum, words, curIdx) {
       const isCur = isActive && wi === curIdx;
       const gold = isGold(w);
       let color, fsize, fw;
-      if (isCur) { color = gold ? '#D4AF6A' : '#FFFFFF'; fsize = '34px'; fw = '700'; }
-      else if (isActive) { color = gold ? 'rgba(212,175,58,0.35)' : 'rgba(255,255,255,0.2)'; fsize = '28px'; fw = '600'; }
-      else if (role==='prev') { color = 'rgba(255,255,255,0.2)'; fsize = '20px'; fw = '600'; }
-      else { color = 'rgba(255,255,255,0.08)'; fsize = '18px'; fw = '600'; }
+      if (isCur) { color = gold ? '#D4AF6A' : '#FFFFFF'; fsize = '42px'; fw = '700'; }
+      else if (isActive) { color = gold ? 'rgba(212,175,58,0.35)' : 'rgba(255,255,255,0.2)'; fsize = '36px'; fw = '600'; }
+      else if (role==='prev') { color = 'rgba(255,255,255,0.2)'; fsize = '26px'; fw = '600'; }
+      else { color = 'rgba(255,255,255,0.08)'; fsize = '22px'; fw = '600'; }
       html2 += '<span style="color:' + color + ';font-size:' + fsize + ';font-weight:' + fw + ';font-family:Playfair Display,serif;transition:all .2s ease;line-height:1.25">' + w + '</span>';
     });
     html2 += '</div>';
     return html2;
   };
 
-  lyricsEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:0 28px;width:100%">'
+  lyricsEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:0 28px;width:100%">'
     + renderPhrase(phraseIdx-1, 'prev')
     + renderPhrase(phraseIdx, 'active')
     + renderPhrase(phraseIdx+1, 'next')

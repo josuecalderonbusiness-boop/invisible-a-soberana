@@ -4335,6 +4335,10 @@
 .nf-cover-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;margin:0 0 10px;line-height:1.2;}
 .nf-cover-tags{display:flex;gap:6px;flex-wrap:wrap;}
 .nf-tag{background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.3);border-radius:20px;padding:3px 10px;font-size:10px;color:#D4AF6A;}
+.nf-video-slot{width:100%;background:#000;position:relative;}
+.nf-cover-play{width:100%;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;background:rgba(0,0,0,0.3);}
+.nf-play-circle{width:64px;height:64px;border-radius:50%;background:#B8892A;display:flex;align-items:center;justify-content:center;}
+.nf-play-label{font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#fff;}
 .nf-body{padding:14px 20px 20px;}
 .nf-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.65;margin:0 0 14px;}
 .nf-prog-bar{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:6px;cursor:pointer;}
@@ -5888,6 +5892,16 @@ function _podWordHtml(word, isActive) {
 }
 
 const _nfState = {};
+function nfPlay(num, libId, videoId) {
+  const slot = document.getElementById('nf-slot-' + num);
+  const coverPlay = document.getElementById('nf-cover-play-' + num);
+  const iframe = document.getElementById('nf-iframe-' + num);
+  if (coverPlay) coverPlay.style.display = 'none';
+  if (iframe) {
+    iframe.src = 'https://iframe.mediadelivery.net/embed/' + libId + '/' + videoId + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true';
+    iframe.style.display = 'block';
+  }
+}
 function nfToggle(num) {
   if (!_nfState[num]) _nfState[num] = { playing: false, cur: 0, total: 0, interval: null };
   const s = _nfState[num];
@@ -9736,11 +9750,17 @@ function _buildSlideContent(slide, sectionId) {
                 <div class="nf-cover-tags">${(tema.netflixTags||[]).map(t=>`<span class="nf-tag">${t}</span>`).join('')}</div>
               </div>
             </div>
+            <div class="nf-video-slot" id="nf-slot-${tema.num}">
+              <div class="nf-cover-play" id="nf-cover-play-${tema.num}" onclick="nfPlay(${tema.num},'${libId}','${tema.bunnyVideoId}')">
+                <div class="nf-play-circle">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="6,3 20,12 6,21"/></svg>
+                </div>
+                <div class="nf-play-label">Reproducir</div>
+              </div>
+              <iframe id="nf-iframe-${tema.num}" src="" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="display:none;width:100%;aspect-ratio:16/9;border:none;"></iframe>
+            </div>
             <div class="nf-body">
               <p class="nf-desc">${tema.netflixDesc||''}</p>
-            </div>
-            <div style="width:100%;aspect-ratio:16/9;">
-              <iframe id="nf-iframe-${tema.num}" src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="width:100%;height:100%;border:none;display:block;"></iframe>
             </div>
           </div>`;
         } else {

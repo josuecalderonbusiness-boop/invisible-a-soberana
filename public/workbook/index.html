@@ -5946,9 +5946,11 @@ async function nfFav(num) {
   const ref = db.collection('workbook_guardados').doc(uid).collection('items').doc(key);
   const btn = document.getElementById('nf-fav-' + num);
   const snap = await ref.get();
+  const favs = JSON.parse(localStorage.getItem('nf_favs') || '{}');
   if (snap.exists) {
     await ref.delete();
-    if (btn) btn.classList.remove('active');
+    if (btn) { btn.classList.remove('active'); btn.style.color=''; }
+    delete favs[key];
     showToast('Eliminado de Guardados');
   } else {
     const sec = state.sections && state.sections.find(s => s.id === _currentSectionId);
@@ -5960,9 +5962,11 @@ async function nfFav(num) {
       secTitulo: sec ? sec.titulo : '',
       savedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    if (btn) btn.classList.add('active');
+    if (btn) { btn.classList.add('active'); btn.style.color='#B8892A'; }
+    favs[key] = true;
     showToast('⭐ Guardado en tu perfil');
   }
+  localStorage.setItem('nf_favs', JSON.stringify(favs));
   cargarGuardados();
 }
 
@@ -5975,15 +5979,19 @@ async function nfLike(num) {
   const btn = document.getElementById('nf-like-' + num);
   const countEl = document.getElementById('nf-like-count-' + num);
   const snap = await userLikeRef.get();
+  const likes = JSON.parse(localStorage.getItem('nf_likes') || '{}');
   if (snap.exists) {
     await userLikeRef.delete();
     await likeRef.set({ count: firebase.firestore.FieldValue.increment(-1) }, { merge: true });
-    if (btn) btn.classList.remove('active');
+    if (btn) { btn.classList.remove('active'); btn.style.color=''; }
+    delete likes[key];
   } else {
     await userLikeRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
     await likeRef.set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-    if (btn) btn.classList.add('active');
+    if (btn) { btn.classList.add('active'); btn.style.color='#B8892A'; }
+    likes[key] = true;
   }
+  localStorage.setItem('nf_likes', JSON.stringify(likes));
   const updated = await likeRef.get();
   const count = updated.exists ? (updated.data().count || 0) : 0;
   if (countEl) countEl.textContent = count > 0 ? count : '';
@@ -10012,11 +10020,11 @@ function _buildSlideContent(slide, sectionId) {
             <div class="nf-body">
               <p class="nf-desc">${tema.netflixDesc||''}</p>
               <div class="nf-actions">
-                <button class="nf-action-btn" id="nf-fav-${tema.num}" onclick="nfFav(${tema.num})">
+                <button class="nf-action-btn ${(()=>{try{const f=JSON.parse(localStorage.getItem('nf_favs')||'{}');return f[sectionId+'_'+tema.num]?'active':''}catch(e){return ''}})()}" id="nf-fav-${tema.num}" onclick="nfFav(${tema.num})" style="${(()=>{try{const f=JSON.parse(localStorage.getItem('nf_favs')||'{}');return f[sectionId+'_'+tema.num]?'color:#B8892A':''}catch(e){return ''}})()}">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
                   Guardar
                 </button>
-                <button class="nf-action-btn" id="nf-like-${tema.num}" onclick="nfLike(${tema.num})">
+                <button class="nf-action-btn ${(()=>{try{const l=JSON.parse(localStorage.getItem('nf_likes')||'{}');return l[sectionId+'_'+tema.num]?'active':''}catch(e){return ''}})()}" id="nf-like-${tema.num}" onclick="nfLike(${tema.num})" style="${(()=>{try{const l=JSON.parse(localStorage.getItem('nf_likes')||'{}');return l[sectionId+'_'+tema.num]?'color:#B8892A':''}catch(e){return ''}})()}">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
                   Me gusta <span id="nf-like-count-${tema.num}" style="margin-left:4px;font-size:11px;color:#B8892A;"></span>
                 </button>

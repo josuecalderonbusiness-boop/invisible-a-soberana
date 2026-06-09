@@ -9362,6 +9362,11 @@ if (sectionId === 's9') {
   },0);
   document.getElementById('lesson-view').classList.add('open');
 
+  // Inicializar canvas del podcast si es S9
+  if (sectionId === 's9') {
+    setTimeout(function() { _podInitCanvas(1); }, 100);
+  }
+
   updateLessonProgress(sectionId);
   setupMinCharsGuard(sectionId);
 }

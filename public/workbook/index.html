@@ -4337,6 +4337,9 @@
 @media(min-width:600px){.nf-video-block{aspect-ratio:16/9;max-height:70vh;}}
 @media(min-width:900px){.nf-video-block{aspect-ratio:16/9;max-height:75vh;}}
 .nf-video-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(15,10,11,0.2) 0%,rgba(15,10,11,0) 20%,rgba(15,10,11,0.5) 60%,rgba(15,10,11,0.9) 85%,#0F0A0B 100%);pointer-events:none;z-index:1;}
+.nf-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transition:opacity 0.4s ease;}
+.nf-poster.hidden{opacity:0;pointer-events:none;}
+.nf-slot-ready iframe{opacity:1;}
 .nf-video-info{position:absolute;bottom:0;left:0;right:0;padding:14px 20px 16px;z-index:2;}
 .nf-cover-badge{display:inline-block;background:rgba(184,137,42,0.2);border:1px solid rgba(184,137,42,0.45);border-radius:20px;padding:3px 10px;font-size:10px;color:#D4AF6A;letter-spacing:0.08em;margin-bottom:8px;}
 .nf-cover-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#fff;margin:0 0 8px;line-height:1.2;}
@@ -5979,9 +5982,15 @@ function nfPlay(num, libId, videoId) {
   const info = document.querySelector('#nf-slot-' + num + ' .nf-video-info');
   const overlay = document.querySelector('#nf-slot-' + num + ' .nf-video-overlay');
   const iframe = document.getElementById('nf-iframe-' + num);
+  const poster = document.getElementById('nf-poster-' + num);
   if (info) info.style.display = 'none';
   if (overlay) overlay.style.display = 'none';
-  if (iframe) iframe.src = 'https://iframe.mediadelivery.net/embed/' + libId + '/' + videoId + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true';
+  if (poster) poster.classList.add('hidden');
+  if (iframe) {
+    const src = iframe.dataset.src || ('https://iframe.mediadelivery.net/embed/' + libId + '/' + videoId + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true');
+    iframe.src = src;
+    setTimeout(() => { iframe.style.opacity = '1'; }, 300);
+  }
 }
 async function nfFav(num) {
   if (!state.user) return;
@@ -10182,7 +10191,8 @@ function _buildSlideContent(slide, sectionId) {
           html += `
           <div class="nf-player-wrap nf-mode" id="nf-wrap-${tema.num}">
             <div class="nf-video-block" id="nf-slot-${tema.num}">
-              <iframe id="nf-iframe-${tema.num}" src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=false&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen></iframe>
+              ${tema.netflixCover ? `<img class="nf-poster" id="nf-poster-${tema.num}" src="${tema.netflixCover}" alt="${tema.titulo}">` : ''}
+              <iframe id="nf-iframe-${tema.num}" src="" data-src="https://iframe.mediadelivery.net/embed/${libId}/${tema.bunnyVideoId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="opacity:0;transition:opacity 0.3s;"></iframe>
               <div class="nf-video-overlay"></div>
               <div class="nf-video-info">
                 <div class="nf-cover-title">${tema.titulo}</div>

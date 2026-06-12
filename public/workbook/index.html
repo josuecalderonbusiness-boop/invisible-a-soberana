@@ -4315,7 +4315,7 @@
 .slide-panel-podcast .pod-skin-wrap{flex:1;width:100%;display:flex;flex-direction:column;min-height:0;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
 .pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
-.pod-skin-new{width:100%;height:100%;min-height:640px;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;font-family:'Inter',sans-serif;}
+.pod-skin-new{width:100%;height:100%;min-height:100dvh;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;font-family:'Inter',sans-serif;}
 .pod-glass-layer{position:absolute;inset:0;background:rgba(255,255,255,0.04);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,0.10);pointer-events:none;z-index:1;}
 .pod-glow-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
 .pod-new-content{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;}
@@ -6482,7 +6482,7 @@ function podInitParticles(num) {
   const gc = document.getElementById('pod-canvas-' + num);
   const wrap = gc ? gc.parentElement : null;
   if (!gc || !wrap) return;
-  gc.width = wrap.offsetWidth; gc.height = wrap.offsetHeight;
+  if (!gc.width || gc.width < 100) { gc.width = wrap.offsetWidth; gc.height = wrap.offsetHeight; }
   const gctx = gc.getContext('2d');
   const pts = Array.from({length: 220}, () => ({
     x: Math.random()*gc.width, y: gc.height*(0.2+Math.random()*0.8),
@@ -6516,7 +6516,11 @@ function podToggle(temaNum) {
   const wrap = document.getElementById('pod-skin-' + temaNum);
   const playBtn = document.getElementById('pod-play-' + temaNum);
   if (!wrap) return;
-  podInitParticles(temaNum);
+  if (!document.getElementById('pod-canvas-' + temaNum)?._inited) {
+    const _gc = document.getElementById('pod-canvas-' + temaNum);
+    if (_gc) _gc._inited = true;
+    podInitParticles(temaNum);
+  }
   const prog = null;
   const wave = { querySelectorAll: () => [] };
   const audio = document.getElementById('pod-audio-' + temaNum);

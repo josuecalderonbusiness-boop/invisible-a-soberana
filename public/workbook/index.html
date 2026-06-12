@@ -10293,17 +10293,20 @@ function _buildSlideContent(slide, sectionId) {
     const sitTags = ['Protocolo 1 · Limpiar el lente','Protocolo 2 · Emocion util','Protocolo 3 · El canal correcto'];
     let html = `
       <div id="sitnf_intro_${sec.id}" style="background:#0F0A0B">
-        <div style="width:100%;aspect-ratio:16/9;background:${tema.netflixCover?`url('${tema.netflixCover}') center/cover no-repeat`:'linear-gradient(180deg,#0D2418 0%,#1A4A2E 40%,#0F0A0B 100%)'};position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:20px">
-          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,10,11,0.2) 0%,rgba(15,10,11,0.85) 100%)"></div>
-          <div style="position:relative;z-index:1;display:flex;flex-direction:column">
-          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(184,137,42,0.6);margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;line-height:1.15;margin-bottom:8px">${tema.titulo}</div>
-          <div style="font-size:12px;color:rgba(237,227,206,0.45);line-height:1.6;margin-bottom:14px">Observa cada situacion. Elige la respuesta correcta antes de continuar al siguiente caso.</div>
-          <button onclick="document.getElementById('sitnf_intro_${sec.id}').style.display='none';document.getElementById('sitnf_main_${sec.id}').style.display='block'" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;background:#FFFFFF;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#0F0A0B;cursor:pointer;border:none;width:fit-content">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="#0F0A0B"><polygon points="5,3 19,12 5,21"/></svg>
-            Comenzar
-          </button>
+        <div class="nf-player-wrap nf-mode" style="margin-top:-60px">
+        <div class="nf-video-block">
+          ${tema.netflixCover?`<img class="nf-poster" src="${tema.netflixCover}" alt="${tema.titulo}">`:''}
+          <div class="nf-video-overlay"></div>
+          <div class="nf-video-info">
+            <div class="nf-cover-badge">Leccion ${sec.num} · Tema ${tema.num}</div>
+            <div class="nf-cover-title">${tema.titulo}</div>
+            <div class="nf-cover-tags"><span class="nf-tag">Situaciones</span><span class="nf-tag">Entrenamiento</span><span class="nf-tag">Practica</span></div>
+            <button class="nf-reproducir-btn" onclick="document.getElementById('sitnf_intro_${sec.id}').style.display='none';document.getElementById('sitnf_main_${sec.id}').style.display='block'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="6,3 20,12 6,21"/></svg>
+              Comenzar
+            </button>
           </div>
+        </div>
         </div>
         <div style="height:1px;background:rgba(184,137,42,0.12)"></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px">

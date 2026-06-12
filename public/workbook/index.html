@@ -6518,7 +6518,7 @@ function podToggle(temaNum) {
   if (!wrap) return;
   setTimeout(() => { podInitParticles(temaNum); podDrawWave(temaNum, 0); }, 80);
   const prog = null;
-  const wave = { querySelectorAll: () => [] };
+  const wave = document.createElement('div');
   const audio = document.getElementById('pod-audio-' + temaNum);
 
   const audio0 = document.getElementById('pod-audio-' + temaNum);

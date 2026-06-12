@@ -7047,6 +7047,7 @@ function updateHeaderMode(mode) {
     if (avatarEl) avatarEl.style.borderColor = 'rgba(42,92,66,0.55)';
     if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-semana1.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #96C7B388)'; }
     if (gemLabel) gemLabel.style.color = '#96C7B3';
+    const bw = document.querySelector('.journey-banner-wrapper'); if (bw) bw.style.background = 'transparent';
   } else {
     header.style.background   = 'var(--burgundy-deep)';
     header.style.borderBottom = '1px solid rgba(212,175,106,0.1)';
@@ -7059,6 +7060,7 @@ function updateHeaderMode(mode) {
     if (avatarEl) avatarEl.style.borderColor = 'rgba(184,137,42,0.55)';
     if (gcImg) { gcImg.src = '/workbook/assets/gemas/gema-workshop.png'; gcImg.style.filter = 'drop-shadow(0 0 4px #B8892A88)'; }
     if (gemLabel) gemLabel.style.color = '#B8892A';
+    const bw2 = document.querySelector('.journey-banner-wrapper'); if (bw2) bw2.style.background = 'transparent';
   }
 }
 

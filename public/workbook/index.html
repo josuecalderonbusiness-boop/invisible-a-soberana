@@ -5327,10 +5327,10 @@ const SECTIONS = [
     desc:'Quién eres antes de aprender',
     palanca: null,
     temas: [
-      { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_1.webp', netflixDesc:'¿Llevas tiempo hablando con tu pareja y sintiendo que le hablas a una pared? Hoy entiendes por qué pasa eso — y qué vas a hacer diferente desde hoy mismo.', netflixTags:['Sección 1','Tema 1','Identidad'], netflixDur:'2:32' },
-      { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'f5b66696-2ca6-4ed3-9c4c-02746d23ede7', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_2.webp', netflixDesc:'Antes de seguir, necesitas saber quién está al otro lado. Por qué este sistema existe y por qué funciona.', netflixTags:['Sección 1','Tema 2','Contexto'], netflixDur:'--:--' },
-      { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'5e07e2ec-bfa9-4ef0-8a73-6dd560b9cf99', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_3.webp', netflixDesc:'Hay algo que está pasando en tu relación que nadie te ha dicho claramente. Hoy lo nombramos.', netflixTags:['Sección 1','Tema 3','Diagnóstico'], netflixDur:'--:--' },
-      { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'069011ae-ae68-453a-81c4-47f95103ab8b', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_4.webp', netflixDesc:'El sistema completo en una sola visión. Lo que vas a construir a partir de hoy.', netflixTags:['Sección 1','Tema 4','Sistema'], netflixDur:'--:--' }
+      { num:1, titulo:'¿Qué es el Código Soberana?', bunnyVideoId:'0f53ded4-8b9e-4d1c-8d43-a6e679e0e935', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_1b.webp', netflixDesc:'¿Llevas tiempo hablando con tu pareja y sintiendo que le hablas a una pared? Hoy entiendes por qué pasa eso — y qué vas a hacer diferente desde hoy mismo.', netflixTags:['Sección 1','Tema 1','Identidad'], netflixDur:'2:32' },
+      { num:2, titulo:'Quién soy y por qué puedo hablar de esto', bunnyVideoId:'f5b66696-2ca6-4ed3-9c4c-02746d23ede7', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_2b.webp', netflixDesc:'Antes de seguir, necesitas saber quién está al otro lado. Por qué este sistema existe y por qué funciona.', netflixTags:['Sección 1','Tema 2','Contexto'], netflixDur:'--:--' },
+      { num:3, titulo:'El problema que nadie está nombrando', bunnyVideoId:'5e07e2ec-bfa9-4ef0-8a73-6dd560b9cf99', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_3b.webp', netflixDesc:'Hay algo que está pasando en tu relación que nadie te ha dicho claramente. Hoy lo nombramos.', netflixTags:['Sección 1','Tema 3','Diagnóstico'], netflixDur:'--:--' },
+      { num:4, titulo:'Esto es el Código Soberana', bunnyVideoId:'069011ae-ae68-453a-81c4-47f95103ab8b', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion1_tema_4b.webp', netflixDesc:'El sistema completo en una sola visión. Lo que vas a construir a partir de hoy.', netflixTags:['Sección 1','Tema 4','Sistema'], netflixDur:'--:--' }
     ],
     exercises: [
       {
@@ -5840,7 +5840,7 @@ const SECTIONS = [
         { num:2, titulo:'Situacion 2 — La decision', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956', cover:'/workbook/assets/covers/leccion8_sit_2.webp' },
         { num:3, titulo:'Situacion 3 — El dinero', bunnyVideoId:'20f71e2c-a101-40f1-955e-e6e21ce5f50d', bunnyLibrary:'636956', cover:'/workbook/assets/covers/leccion8_sit_3.webp' }
       ]},
-      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'76fb1615-42be-4b66-843c-8d63838a0e0f', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/PENDIENTE.png', netflixDesc:'No el caso genérico. El tuyo. Con los detalles reales, con lo que él diría y con lo que tú harías diferente.', netflixTags:['Sección 8','Tema 3','Workbook'], netflixDur:'--:--' }
+      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'76fb1615-42be-4b66-843c-8d63838a0e0f', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/leccion8_tema_3.webp', netflixDesc:'No el caso genérico. El tuyo. Con los detalles reales, con lo que él diría y con lo que tú harías diferente.', netflixTags:['Sección 8','Tema 3','Workbook'], netflixDur:'--:--' }
     ],
     exercises: [
       {
@@ -9896,6 +9896,27 @@ if (sectionId === 's9') {
   setupMinCharsGuard(sectionId);
 }
 
+function sitIrA(secId, idx) {
+  document.getElementById('sitnf_intro_' + secId).style.display = 'none';
+  document.getElementById('sitnf_main_' + secId).style.display = 'block';
+  let i = 0;
+  while (document.getElementById('sitep_' + secId + '_' + i)) {
+    document.getElementById('sitep_' + secId + '_' + i).style.display = i === idx ? 'block' : 'none';
+    i++;
+  }
+  const count = document.getElementById('sitcount_' + secId);
+  if (count) count.textContent = (idx + 1) + ' de ' + i;
+  for (let j = 0; j < i; j++) {
+    const pip = document.getElementById('sitpip_' + secId + '_' + j);
+    if (pip) pip.style.background = j < idx ? '#B8892A' : j === idx ? '#D4AF6A' : 'rgba(237,227,206,0.1)';
+  }
+}
+function sitDesdePanel(secId, idx) {
+  if (idx > 0) {
+    try { if (!localStorage.getItem('sit_done_' + secId + '_' + (idx-1))) return; } catch(e){}
+  }
+  sitIrA(secId, idx);
+}
 function sitToggleEx(secId, idx) {
   const box = document.getElementById('sitexbox_' + secId + '_' + idx);
   const arrow = document.getElementById('sitexarrow_' + secId + '_' + idx);
@@ -9972,15 +9993,14 @@ function sitAvanzar(secId, idx, total) {
   const pip = document.getElementById('sitpip_' + secId + '_' + idx);
   if (pip) pip.style.background = '#B8892A';
   setTimeout(() => {
+    try { localStorage.setItem('sit_done_'+secId+'_'+idx,'1'); } catch(e){}
     document.getElementById('sitep_' + secId + '_' + idx).style.display = 'none';
     const next = idx + 1;
     if (next < total) {
-      document.getElementById('sitep_' + secId + '_' + next).style.display = 'block';
-      const nextPip = document.getElementById('sitpip_' + secId + '_' + next);
-      if (nextPip) nextPip.style.background = '#D4AF6A';
-      const count = document.getElementById('sitcount_' + secId);
-      if (count) count.textContent = (next + 1) + ' de ' + total;
-      document.getElementById('sitep_' + secId + '_' + next).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('sitnf_main_' + secId).style.display = 'none';
+      document.getElementById('sitnf_intro_' + secId).style.display = 'block';
+      const lockEl = document.getElementById('sitrowlock_' + secId + '_' + next);
+      if (lockEl) lockEl.textContent = '▶';
     } else {
       const stage = document.getElementById('sitstage_' + secId);
       stage.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;color:#EDE3CE;line-height:1.35">Las 3 situaciones<br>completadas</div><div style="font-size:15px;color:rgba(237,227,206,0.4);line-height:1.7">Ya tienes el mapa completo.<br>El siguiente paso es aplicarlo.</div></div>';
@@ -10301,7 +10321,7 @@ function _buildSlideContent(slide, sectionId) {
             <div class="nf-cover-badge">Leccion ${sec.num} · Tema ${tema.num}</div>
             <div class="nf-cover-title">${tema.titulo}</div>
             <div class="nf-cover-tags"><span class="nf-tag">Situaciones</span><span class="nf-tag">Entrenamiento</span><span class="nf-tag">Practica</span></div>
-            <button class="nf-reproducir-btn" onclick="document.getElementById('sitnf_intro_${sec.id}').style.display='none';document.getElementById('sitnf_main_${sec.id}').style.display='block'">
+            <button class="nf-reproducir-btn" onclick="sitIrA('${sec.id}',0)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="6,3 20,12 6,21"/></svg>
               Comenzar
             </button>
@@ -10315,7 +10335,7 @@ function _buildSlideContent(slide, sectionId) {
         </div>
         <div>
           ${sits.map((sit,idx) => `
-          <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid rgba(184,137,42,0.07);${idx===0?'background:rgba(184,137,42,0.08)':''}">
+          <div id="sitrow_${sec.id}_${idx}" onclick="sitDesdePanel('${sec.id}',${idx})" style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid rgba(184,137,42,0.07);cursor:pointer">
             <div style="width:80px;height:48px;border-radius:6px;background:${`url('${sit.cover||'/workbook/assets/covers/leccion8_tema_2.webp'}') center/cover no-repeat`};flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:rgba(15,10,11,0.4)"></div><div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%">
               <div style="width:24px;height:24px;border-radius:50%;border:1px solid ${idx===0?'transparent':'rgba(184,137,42,0.4)'};background:${idx===0?'#B8892A':'transparent'};display:flex;align-items:center;justify-content:center">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="${idx===0?'#0F0A0B':'#B8892A'}" style="margin-left:2px"><polygon points="5,3 19,12 5,21"/></svg>
@@ -10326,7 +10346,7 @@ function _buildSlideContent(slide, sectionId) {
               <div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#EDE3CE;line-height:1.25;margin-bottom:3px">${sit.titulo}</div>
               <div style="font-size:10px;color:rgba(237,227,206,0.3)">${sitTags[idx]||''}</div>
             </div>
-            <div style="font-size:13px;color:rgba(237,227,206,0.2)">${idx===0?'':'🔒'}</div>
+            <div id="sitrowlock_${sec.id}_${idx}" style="font-size:13px;color:rgba(237,227,206,0.2)">${idx===0?'▶':'🔒'}</div>
           </div>`).join('')}
         </div>
         <div style="padding:14px 16px;text-align:center">

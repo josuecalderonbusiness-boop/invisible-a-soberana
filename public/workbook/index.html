@@ -9832,7 +9832,7 @@ function openLesson(sectionId) {
     const panel = document.createElement('div');
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
-      if (isPodcast) { setTimeout(() => podInitParticles(slide.tema.num), 100); }
+      if (isPodcast) { setTimeout(() => { podInitParticles(slide.tema.num); podDrawWave(slide.tema.num, 0); }, 400); }
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
     const isNetflix = (slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin) || (slide.type === 'situaciones' && slide.tema && slide.tema.netflixCover);
     panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';

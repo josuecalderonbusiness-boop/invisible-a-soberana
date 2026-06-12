@@ -10290,7 +10290,49 @@ function _buildSlideContent(slide, sectionId) {
       }
     ];
     const stateKey = '_sits_done_' + sec.id;
+    const sitTags = ['Protocolo 1 · Limpiar el lente','Protocolo 2 · Emocion util','Protocolo 3 · El canal correcto'];
     let html = `
+      <div id="sitnf_intro_${sec.id}" style="background:#0F0A0B">
+        <div style="width:100%;aspect-ratio:16/9;background:linear-gradient(180deg,#0D2418 0%,#1A4A2E 40%,#0F0A0B 100%);position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:20px">
+          <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;align-items:flex-end">
+            <div style="width:18px;height:18px;clip-path:polygon(50% 0%,100% 35%,85% 100%,15% 100%,0% 35%);background:#B8892A;opacity:0.6"></div>
+            <div style="width:24px;height:24px;clip-path:polygon(50% 0%,100% 35%,85% 100%,15% 100%,0% 35%);background:#D4AF6A"></div>
+            <div style="width:18px;height:18px;clip-path:polygon(50% 0%,100% 35%,85% 100%,15% 100%,0% 35%);background:#B8892A;opacity:0.6"></div>
+          </div>
+          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(184,137,42,0.6);margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;line-height:1.15;margin-bottom:8px">${tema.titulo}</div>
+          <div style="font-size:12px;color:rgba(237,227,206,0.45);line-height:1.6;margin-bottom:14px">Observa cada situacion. Elige la respuesta correcta antes de continuar al siguiente caso.</div>
+          <button onclick="document.getElementById('sitnf_intro_${sec.id}').style.display='none';document.getElementById('sitnf_main_${sec.id}').style.display='block'" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;background:#B8892A;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#0F0A0B;cursor:pointer;border:none;width:fit-content">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#0F0A0B"><polygon points="5,3 19,12 5,21"/></svg>
+            Comenzar
+          </button>
+        </div>
+        <div style="height:1px;background:rgba(184,137,42,0.12)"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px">
+          <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(184,137,42,0.5)">Situaciones</div>
+          <div style="font-size:11px;color:rgba(237,227,206,0.25)">${sits.length} casos</div>
+        </div>
+        <div>
+          ${sits.map((sit,idx) => `
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-top:1px solid rgba(184,137,42,0.07);${idx===0?'background:rgba(184,137,42,0.08)':''}">
+            <div style="width:80px;height:48px;border-radius:6px;background:linear-gradient(135deg,#1A4A2E,#0D2418);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+              <div style="width:24px;height:24px;border-radius:50%;border:1px solid ${idx===0?'transparent':'rgba(184,137,42,0.4)'};background:${idx===0?'#B8892A':'transparent'};display:flex;align-items:center;justify-content:center">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="${idx===0?'#0F0A0B':'#B8892A'}" style="margin-left:2px"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:10px;letter-spacing:2px;color:rgba(184,137,42,0.5);text-transform:uppercase;margin-bottom:3px">Situacion ${idx+1}</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#EDE3CE;line-height:1.25;margin-bottom:3px">${sit.titulo}</div>
+              <div style="font-size:10px;color:rgba(237,227,206,0.3)">${sitTags[idx]||''}</div>
+            </div>
+            <div style="font-size:13px;color:rgba(237,227,206,0.2)">${idx===0?'':'🔒'}</div>
+          </div>`).join('')}
+        </div>
+        <div style="padding:14px 16px;text-align:center">
+          <div style="font-size:10px;color:rgba(237,227,206,0.2);letter-spacing:1px">Las situaciones se desbloquean al responder correctamente</div>
+        </div>
+      </div>
+      <div id="sitnf_main_${sec.id}" style="display:none">
       <div style="padding:6px 18px 8px;border-bottom:1px solid rgba(184,137,42,0.12)">
         <div style="font-size:11px;letter-spacing:2.5px;color:rgba(184,137,42,0.6);text-transform:uppercase;margin-bottom:6px">Leccion ${sec.num} · Tema ${tema.num}</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#F0E6EA;line-height:1.25">${tema.titulo}</div>
@@ -10338,7 +10380,7 @@ function _buildSlideContent(slide, sectionId) {
           </button>
         </div>`;
     });
-    html += `</div>`;
+    html += `</div></div>`;
     wrap.innerHTML = html;
 
   } else if (slide.type === 'intro') {

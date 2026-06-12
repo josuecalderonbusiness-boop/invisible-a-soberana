@@ -5840,7 +5840,7 @@ const SECTIONS = [
         { num:2, titulo:'Situacion 2 — La decision', bunnyVideoId:'4f9abe5b-c07a-4c09-836b-0fdeced6ac78', bunnyLibrary:'636956', cover:'/workbook/assets/covers/leccion8_sit_2.webp' },
         { num:3, titulo:'Situacion 3 — El dinero', bunnyVideoId:'20f71e2c-a101-40f1-955e-e6e21ce5f50d', bunnyLibrary:'636956', cover:'/workbook/assets/covers/leccion8_sit_3.webp' }
       ]},
-      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'76fb1615-42be-4b66-843c-8d63838a0e0f', bunnyLibrary:'636956' }
+      { num:3, titulo:'Workbook — El sistema en mi vida', bunnyVideoId:'76fb1615-42be-4b66-843c-8d63838a0e0f', bunnyLibrary:'636956', netflixSkin:true, netflixCover:'/workbook/assets/covers/PENDIENTE.png', netflixDesc:'No el caso genérico. El tuyo. Con los detalles reales, con lo que él diría y con lo que tú harías diferente.', netflixTags:['Sección 8','Tema 3','Workbook'], netflixDur:'--:--' }
     ],
     exercises: [
       {
@@ -9743,7 +9743,7 @@ function openLesson(sectionId) {
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
-    const isNetflix = slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin;
+    const isNetflix = (slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin) || (slide.type === 'situaciones' && slide.tema && slide.tema.netflixCover);
     panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));

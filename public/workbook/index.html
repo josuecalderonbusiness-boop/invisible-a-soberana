@@ -9997,10 +9997,22 @@ function sitAvanzar(secId, idx, total) {
     document.getElementById('sitep_' + secId + '_' + idx).style.display = 'none';
     const next = idx + 1;
     if (next < total) {
-      document.getElementById('sitnf_main_' + secId).style.display = 'none';
-      document.getElementById('sitnf_intro_' + secId).style.display = 'block';
       const lockEl = document.getElementById('sitrowlock_' + secId + '_' + next);
       if (lockEl) lockEl.textContent = '▶';
+      // Leer datos de la siguiente situacion desde el DOM
+      const nextRow = document.getElementById('sitrow_' + secId + '_' + next);
+      let nextTitulo = 'Situación ' + (next + 1);
+      let nextCover = '/workbook/assets/covers/leccion8_tema_2.webp';
+      let nextTag = '';
+      if (nextRow) {
+        const tEl = nextRow.querySelector('[style*="Cormorant"]');
+        const tagEl = nextRow.querySelectorAll('div > div')[2];
+        if (tEl) nextTitulo = tEl.textContent.trim();
+        if (tagEl) nextTag = tagEl.textContent.trim();
+        const bgEl = nextRow.querySelector('div[style*="url("]');
+        if (bgEl) { const m = bgEl.style.background.match(/url\(['"]?([^'"]+)['"]?\)/); if (m) nextCover = m[1]; }
+      }
+      sitShowTray(secId, next, nextTitulo, nextCover, nextTag);
     } else {
       const stage = document.getElementById('sitstage_' + secId);
       stage.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 16px;text-align:center"><div style="width:64px;height:64px;border-radius:50%;background:rgba(184,137,42,0.15);border:1px solid rgba(184,137,42,0.4);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;color:#EDE3CE;line-height:1.35">Las 3 situaciones<br>completadas</div><div style="font-size:15px;color:rgba(237,227,206,0.4);line-height:1.7">Ya tienes el mapa completo.<br>El siguiente paso es aplicarlo.</div></div>';
@@ -14183,6 +14195,51 @@ if (loadState() && state.user) {
   }
 
 })();
+
+// ── NETFLIX SITUACION TRAY ───────────────────────────────────────
+(function() {
+  const tray = document.createElement('div');
+  tray.id = 'sit-nf-tray';
+  tray.innerHTML = `
+    <div class="sit-nf-tray-label">A continuación</div>
+    <div class="sit-nf-tray-row" id="sit-nf-tray-row">
+      <div class="sit-nf-thumb">
+        <img id="sit-nf-img" src="" alt="">
+        <div class="sit-nf-thumb-play">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+        </div>
+      </div>
+      <div class="sit-nf-info">
+        <div class="sit-nf-num" id="sit-nf-num">Situación 2</div>
+        <div class="sit-nf-titulo" id="sit-nf-titulo"></div>
+        <div class="sit-nf-tag" id="sit-nf-tag"></div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.5)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <button class="sit-nf-dismiss" id="sit-nf-dismiss">✕</button>
+    </div>`;
+  document.body.appendChild(tray);
+  document.getElementById('sit-nf-dismiss').addEventListener('click', function(e) {
+    e.stopPropagation();
+    sitHideTray();
+  });
+})();
+function sitShowTray(secId, nextIdx, titulo, cover, tag) {
+  document.getElementById('sit-nf-img').src = cover;
+  document.getElementById('sit-nf-num').textContent = 'Situación ' + (nextIdx + 1);
+  document.getElementById('sit-nf-titulo').textContent = titulo;
+  document.getElementById('sit-nf-tag').textContent = tag;
+  document.getElementById('sit-nf-tray-row').onclick = function() {
+    sitHideTray();
+    document.getElementById('sitnf_main_' + secId).style.display = 'block';
+    document.getElementById('sitnf_intro_' + secId).style.display = 'none';
+    sitIrA(secId, nextIdx);
+  };
+  document.getElementById('sit-nf-tray').classList.add('open');
+}
+function sitHideTray() {
+  const t = document.getElementById('sit-nf-tray');
+  if (t) t.classList.remove('open');
+}
 
 // SISTEMA DE ESTRELLAS
 const STARS_CONFIG = {

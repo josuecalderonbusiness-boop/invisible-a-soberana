@@ -4315,14 +4315,14 @@
 .slide-panel-podcast .pod-skin-wrap{flex:1;width:100%;display:flex;flex-direction:column;min-height:0;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
 .pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
-.pod-skin-new{width:100%;height:100%;min-height:100dvh;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;padding-top:80px;font-family:'Inter',sans-serif;}
+.pod-skin-new{width:100%;height:100%;min-height:100dvh;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;padding-top:120px;font-family:'Inter',sans-serif;}
 .pod-glass-layer{display:none;}
 .pod-glow-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
 .pod-new-content{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;}
 .pod-new-back{align-self:flex-start;background:none;border:none;color:#c9a84c;font-size:22px;cursor:pointer;margin-bottom:18px;}
 .pod-new-title-area{text-align:center;height:60px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;flex-shrink:0;}
 .pod-new-top{display:none;}
-.pod-new-main{font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;}
+.pod-new-main{font-size:18px;font-weight:600;color:#ffffff;line-height:1.4;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;}
 .pod-new-main em{font-weight:300;font-style:normal;}
 .pod-new-bot{display:none;}
 .pod-new-album{width:120px;height:120px;border-radius:16px;margin:0 auto 14px;overflow:hidden;position:relative;box-shadow:0 8px 30px rgba(0,0,0,0.4);background:linear-gradient(135deg,#1a4a2e,#0d2e1a);}
@@ -6054,6 +6054,32 @@ async function nfFav(num) {
   cargarGuardados();
 }
 
+async function podLike(num) {
+  if (!state.user) return;
+  const uid = state.user.email;
+  const key = 's9_pod_' + num;
+  const likeRef = db.collection('workbook_likes').doc(key);
+  const userLikeRef = likeRef.collection('users').doc(uid);
+  const btn = document.getElementById('pod-like-' + num);
+  const countEl = document.getElementById('pod-like-count-' + num);
+  const snap = await userLikeRef.get();
+  const likes = JSON.parse(localStorage.getItem('nf_likes') || '{}');
+  if (snap.exists) {
+    await userLikeRef.delete();
+    await likeRef.set({ count: firebase.firestore.FieldValue.increment(-1) }, { merge: true });
+    if (btn) btn.querySelector('svg').setAttribute('fill', 'none');
+    delete likes[key];
+  } else {
+    await userLikeRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await likeRef.set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+    if (btn) btn.querySelector('svg').setAttribute('fill', '#c9a84c');
+    likes[key] = true;
+  }
+  localStorage.setItem('nf_likes', JSON.stringify(likes));
+  const updated = await likeRef.get();
+  const count = updated.exists ? (updated.data().count || 0) : 0;
+  if (countEl) countEl.textContent = count > 0 ? count : '';
+}
 async function nfLike(num) {
   if (!state.user) return;
   const uid = state.user.email;
@@ -10297,12 +10323,11 @@ function _buildSlideContent(slide, sectionId) {
               <div class="pod-new-track">SOBERANA</div>
               <div class="pod-new-sub">EPISODIO PRIVADO</div>
               <div class="pod-new-meta">
-                <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(201,168,76,0.5);">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#2a1a00"><polygon points="5,3 19,12 5,21"/></svg>
-                </div>
-                <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(201,168,76,0.5);cursor:pointer;" onclick="this.innerHTML=this.innerHTML.includes('filled')?'<svg width=16 height=16 viewBox=&quot;0 0 24 24&quot; fill=none stroke=&quot;#2a1a00&quot; stroke-width=2><path d=&quot;M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z&quot;/></svg>':'<svg width=16 height=16 viewBox=&quot;0 0 24 24&quot; fill=&quot;#2a1a00&quot; stroke=none><path d=&quot;M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z&quot;/></svg>'">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </div>
+                <div style="font-size:11px;color:rgba(201,168,76,0.7);letter-spacing:.1em;text-transform:uppercase;">Episodio 1</div>
+                <button id="pod-like-${tema.num}" onclick="podLike(${tema.num})" style="display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  <span id="pod-like-count-${tema.num}" style="font-size:10px;color:#c9a84c;"></span>
+                </button>
               </div>
               <div class="pod-new-wave-wrap" onclick="podSeek(event,${tema.num})">
                 <canvas id="pod-wave-canvas-${tema.num}" style="width:100%;height:52px;border-radius:4px;"></canvas>

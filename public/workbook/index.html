@@ -6482,7 +6482,7 @@ function podInitParticles(num) {
   const gc = document.getElementById('pod-canvas-' + num);
   const wrap = gc ? gc.parentElement : null;
   if (!gc || !wrap) return;
-  if (!gc.width || gc.width < 100) { gc.width = wrap.offsetWidth; gc.height = wrap.offsetHeight; }
+  gc.width = wrap.offsetWidth || window.innerWidth; gc.height = wrap.offsetHeight || window.innerHeight;
   const gctx = gc.getContext('2d');
   const pts = Array.from({length: 220}, () => ({
     x: Math.random()*gc.width, y: gc.height*(0.2+Math.random()*0.8),
@@ -6525,7 +6525,6 @@ function podToggle(temaNum) {
   if (!wrap._podReady || !audio0 || !audio0._listenersAdded) {
     wrap._podReady = true;
     if (audio0) audio0._listenersAdded = true;
-    wrap._playing = false;
     wrap._srtLines = [];
     const heights = [8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16,22,12,18,8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16];
     wave.innerHTML = '';

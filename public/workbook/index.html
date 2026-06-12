@@ -217,6 +217,14 @@
     position: relative;
   }
 
+  @keyframes sit-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(212,175,106,0.55); }
+    60%  { box-shadow: 0 0 0 10px rgba(212,175,106,0); }
+    100% { box-shadow: 0 0 0 0 rgba(212,175,106,0); }
+  }
+  .sit-row-active { background: rgba(212,175,106,0.08) !important; border-left: 2px solid rgba(212,175,106,0.7); animation: sit-pulse 1.8s ease-in-out infinite; }
+  .sit-row-done { opacity: 0.38; pointer-events: none; }
+
   .exercises-locked {
     opacity: 0;
     transform: translateY(24px);
@@ -9897,6 +9905,7 @@ if (sectionId === 's9') {
 }
 
 function sitIrA(secId, idx) {
+  sitActualizarRows(secId, idx);
   document.getElementById('sitnf_intro_' + secId).style.display = 'none';
   document.getElementById('sitnf_main_' + secId).style.display = 'block';
   let i = 0;
@@ -10333,7 +10342,7 @@ function _buildSlideContent(slide, sectionId) {
             <div class="nf-cover-badge">Leccion ${sec.num} · Tema ${tema.num}</div>
             <div class="nf-cover-title">${tema.titulo}</div>
             <div class="nf-cover-tags"><span class="nf-tag">Situaciones</span><span class="nf-tag">Entrenamiento</span><span class="nf-tag">Practica</span></div>
-            <button class="nf-reproducir-btn" onclick="sitIrA('${sec.id}',0)">
+            <button class="nf-reproducir-btn" onclick="sitActualizarRows('${sec.id}',0);sitIrA('${sec.id}',0)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="6,3 20,12 6,21"/></svg>
               Comenzar
             </button>
@@ -14235,6 +14244,16 @@ function sitShowTray(secId, nextIdx, titulo, cover, tag) {
     sitIrA(secId, nextIdx);
   };
   document.getElementById('sit-nf-tray').classList.add('open');
+}
+function sitActualizarRows(secId, activeIdx) {
+  let i = 0;
+  while (document.getElementById('sitrow_' + secId + '_' + i)) {
+    const row = document.getElementById('sitrow_' + secId + '_' + i);
+    row.classList.remove('sit-row-active', 'sit-row-done');
+    if (i < activeIdx) row.classList.add('sit-row-done');
+    else if (i === activeIdx) row.classList.add('sit-row-active');
+    i++;
+  }
 }
 function sitHideTray() {
   const t = document.getElementById('sit-nf-tray');

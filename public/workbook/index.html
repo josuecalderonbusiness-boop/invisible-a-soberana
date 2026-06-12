@@ -222,7 +222,7 @@
     60%  { box-shadow: 0 0 0 10px rgba(212,175,106,0); }
     100% { box-shadow: 0 0 0 0 rgba(212,175,106,0); }
   }
-  .sit-row-active { background: rgba(212,175,106,0.08) !important; border-left: 2px solid rgba(212,175,106,0.7); animation: sit-pulse 1.8s ease-in-out infinite; }
+  .sit-row-active { background: rgba(212,175,106,0.08) !important; border: 2px solid rgba(212,175,106,0.7); border-radius: 12px; animation: sit-pulse 1.8s ease-in-out infinite; margin: 4px 8px; }
   .sit-row-done { opacity: 0.38; pointer-events: none; }
 
   .exercises-locked {
@@ -4315,6 +4315,29 @@
 .slide-panel-podcast .pod-skin-wrap{flex:1;width:100%;display:flex;flex-direction:column;min-height:0;}
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
 .pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
+.pod-skin-new{width:100%;min-height:100%;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;font-family:'Inter',sans-serif;}
+.pod-glass-layer{position:absolute;inset:0;background:rgba(255,255,255,0.04);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,0.10);pointer-events:none;z-index:1;}
+.pod-glow-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.pod-new-content{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;}
+.pod-new-back{align-self:flex-start;background:none;border:none;color:#c9a84c;font-size:22px;cursor:pointer;margin-bottom:18px;}
+.pod-new-title-area{text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;gap:3px;}
+.pod-new-top{font-size:14px;font-weight:300;color:rgba(255,255,255,0.75);letter-spacing:.02em;line-height:1.6;}
+.pod-new-main{font-size:25px;font-weight:700;color:#ffffff;line-height:1.2;text-align:center;}
+.pod-new-main em{font-weight:300;font-style:normal;}
+.pod-new-bot{font-size:14px;font-weight:300;color:rgba(255,255,255,0.75);letter-spacing:.02em;line-height:1.6;}
+.pod-new-album{width:120px;height:120px;border-radius:16px;margin:0 auto 14px;overflow:hidden;position:relative;box-shadow:0 8px 30px rgba(0,0,0,0.4);background:linear-gradient(135deg,#1a4a2e,#0d2e1a);}
+.pod-new-album-glass{position:absolute;inset:0;z-index:2;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.04) 60%);border-top:1px solid rgba(255,255,255,0.4);border-left:1px solid rgba(255,255,255,0.2);pointer-events:none;}
+.pod-new-track{font-weight:700;font-size:15px;letter-spacing:.18em;color:#c9a84c;text-align:center;margin-bottom:2px;}
+.pod-new-sub{font-size:10px;letter-spacing:.1em;color:rgba(200,185,160,0.7);text-align:center;margin-bottom:12px;}
+.pod-new-meta{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:10px;}
+.pod-new-wave-wrap{width:100%;position:relative;cursor:pointer;margin-bottom:6px;}
+.pod-new-times{display:flex;justify-content:space-between;font-size:10px;color:rgba(200,185,155,0.6);width:100%;margin-bottom:18px;}
+.pod-new-ctrls{display:flex;justify-content:space-between;align-items:center;width:100%;padding:0 4px;}
+.pod-ctrl-round{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;color:#2a1a00;font-size:17px;box-shadow:0 0 0 5px rgba(201,168,76,0.10),0 0 18px rgba(201,168,76,0.45),inset 0 2px 0 rgba(255,255,255,0.35);transition:transform .2s;}
+.pod-ctrl-round:active{transform:scale(0.92);}
+.pod-play-round{width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;color:#2a1a00;font-size:26px;box-shadow:0 0 0 6px rgba(201,168,76,0.12),0 0 28px rgba(201,168,76,0.55),inset 0 2px 0 rgba(255,255,255,0.35);transition:transform .2s;}
+.pod-play-round:active{transform:scale(0.94);}
+
 .pod-skin-mic-ring{position:relative;width:140px;height:140px;margin-bottom:2rem;z-index:1;}
 .pod-pulse-ring{position:absolute;border-radius:50%;border:1px solid rgba(184,137,42,0.3);top:50%;left:50%;transform:translate(-50%,-50%);animation:podPulse 2s ease-out infinite;}
 .pod-pulse-ring:nth-child(2){animation-delay:0.6s;}
@@ -6424,6 +6447,71 @@ function _podInitCanvas(temaNum) {
   })();
 }
 
+function podSeek(e, num) {
+  const wc = document.getElementById('pod-wave-canvas-' + num);
+  if (!wc) return;
+  const r = wc.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  const audio = document.getElementById('pod-audio-' + num);
+  if (audio && audio.duration) audio.currentTime = pct * audio.duration;
+  podDrawWave(num, pct);
+}
+function podDrawWave(num, progress) {
+  const wc = document.getElementById('pod-wave-canvas-' + num);
+  if (!wc) return;
+  const ctx = wc.getContext('2d');
+  const DPR = window.devicePixelRatio || 1;
+  const W = wc.offsetWidth || 272, H = 52;
+  wc.width = W * DPR; wc.height = H * DPR; ctx.scale(DPR, DPR);
+  const BARS = 60, barW = 2.2, gap = (W - BARS * barW) / (BARS + 1);
+  if (!window._podWaveH) { window._podWaveH = []; for (let i = 0; i < BARS; i++) window._podWaveH.push(Math.max(6, 10 + Math.random() * 28 + Math.sin((i / BARS) * Math.PI) * 12)); }
+  const played = Math.floor(BARS * progress);
+  for (let i = 0; i < BARS; i++) {
+    const x = gap + i * (barW + gap), bh = window._podWaveH[i], y = (H - bh) / 2;
+    if (i <= played) { const g = ctx.createLinearGradient(0, y, 0, y + bh); g.addColorStop(0, '#f5e080'); g.addColorStop(0.5, '#d4a020'); g.addColorStop(1, '#c09018'); ctx.fillStyle = g; }
+    else ctx.fillStyle = 'rgba(180,160,100,0.28)';
+    ctx.beginPath(); ctx.roundRect(x, y, barW, bh, 1); ctx.fill();
+  }
+  const dotX = gap + played * (barW + gap) + barW / 2;
+  ctx.beginPath(); ctx.arc(dotX, H / 2, 6, 0, Math.PI * 2);
+  const dg = ctx.createRadialGradient(dotX-1, H/2-1, 1, dotX, H/2, 6);
+  dg.addColorStop(0, '#f5e57a'); dg.addColorStop(1, '#c9900a');
+  ctx.fillStyle = dg; ctx.shadowColor = 'rgba(212,175,60,0.9)'; ctx.shadowBlur = 10; ctx.fill(); ctx.shadowBlur = 0;
+}
+function podInitParticles(num) {
+  const gc = document.getElementById('pod-canvas-' + num);
+  const wrap = gc ? gc.parentElement : null;
+  if (!gc || !wrap) return;
+  gc.width = wrap.offsetWidth; gc.height = wrap.offsetHeight;
+  const gctx = gc.getContext('2d');
+  const pts = Array.from({length: 220}, () => ({
+    x: Math.random()*gc.width, y: gc.height*(0.2+Math.random()*0.8),
+    r: Math.random()*1.5+0.2, vx: (Math.random()-0.5)*0.22, vy: -(Math.random()*0.45+0.08),
+    a: Math.random()*0.8+0.1, da: (Math.random()*0.007+0.002)*(Math.random()<0.5?1:-1),
+    dia: Math.random()<0.08, ds: Math.random()*4+2,
+  }));
+  function drawDia(x,y,s,a){gctx.save();gctx.translate(x,y);gctx.rotate(Math.PI/4);gctx.fillStyle=`rgba(212,175,106,${a.toFixed(2)})`;gctx.fillRect(-s/2,-s/2,s,s);gctx.restore();}
+  function anim(){
+    gctx.clearRect(0,0,gc.width,gc.height);
+    const g1=gctx.createRadialGradient(gc.width/2,gc.height,0,gc.width/2,gc.height,gc.height*0.85);
+    g1.addColorStop(0,'rgba(201,168,76,0.40)');g1.addColorStop(0.4,'rgba(184,137,42,0.14)');g1.addColorStop(1,'rgba(184,137,42,0)');
+    gctx.fillStyle=g1;gctx.fillRect(0,0,gc.width,gc.height);
+    const g2=gctx.createRadialGradient(gc.width/2,gc.height*0.8,0,gc.width/2,gc.height*0.8,gc.width*0.5);
+    g2.addColorStop(0,'rgba(230,185,60,0.18)');g2.addColorStop(1,'rgba(230,185,60,0)');
+    gctx.fillStyle=g2;gctx.fillRect(0,0,gc.width,gc.height);
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;p.a+=p.da;
+      if(p.a>0.9||p.a<0.05)p.da*=-1;
+      if(p.x<0)p.x=gc.width;if(p.x>gc.width)p.x=0;
+      if(p.y<0){p.y=gc.height;p.x=Math.random()*gc.width;}
+      if(p.dia)drawDia(p.x,p.y,p.ds,p.a*0.65);
+      else{gctx.beginPath();gctx.arc(p.x,p.y,p.r,0,Math.PI*2);gctx.fillStyle=`rgba(212,175,106,${(p.a*0.55).toFixed(2)})`;gctx.fill();}
+    }
+    requestAnimationFrame(anim);
+  }
+  anim();
+  podDrawWave(num, 0);
+}
 function podToggle(temaNum) {
   const wrap = document.getElementById('pod-skin-' + temaNum);
   const playBtn = document.getElementById('pod-play-' + temaNum);
@@ -9750,6 +9838,7 @@ function openLesson(sectionId) {
     const panel = document.createElement('div');
     const isPausaWB = slide.type === 'exercise' && slide.ex && slide.ex.label && slide.ex.label.includes('Pausa Workbook');
     const isPodcast = slide.type === 'tema-video' && slide.tema && slide.tema.podcastSkin;
+      if (isPodcast) { setTimeout(() => podInitParticles(slide.tema.num), 100); }
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
     const isNetflix = (slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin) || (slide.type === 'situaciones' && slide.tema && slide.tema.netflixCover);
     panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
@@ -10196,25 +10285,46 @@ function _buildSlideContent(slide, sectionId) {
       if (tema.podcastSkin) {
         html += `
        <div class="pod-skin-wrap" id="pod-skin-${tema.num}">
-          <button onclick="closeLesson()" style="position:absolute;top:16px;left:16px;z-index:20;background:rgba(255,255,255,0.08);border:1px solid rgba(184,137,42,0.3);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#B8892A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="pod-stage" id="pod-stage-${tema.num}">
-            <canvas id="pod-canvas-${tema.num}"></canvas>
-            <div class="pod-lyrics-3">
-              <div class="pod-line-past" id="pod-past-${tema.num}"></div>
-              <div class="pod-line-active" id="pod-active-${tema.num}">Toca para escuchar</div>
-              <div class="pod-line-next" id="pod-next-${tema.num}"></div>
-            </div>
-          </div>
-          <div class="pod-controls-wrap">
-            <div class="pod-skin-label">Soberana · Episodio privado</div>
-            <div class="pod-skin-waveform" id="pod-wave-${tema.num}"></div>
-            <div class="pod-skin-time"><span id="pod-cur-${tema.num}">0:00</span><span id="pod-dur-${tema.num}">—:——</span></div>
-            <div class="pod-skin-progress-track"><div class="pod-skin-progress-fill" id="pod-prog-${tema.num}"></div></div>
-            <div class="pod-skin-controls">
-              <div class="pod-skin-btn-play" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+          <div class="pod-skin-new">
+            <canvas class="pod-glow-canvas" id="pod-canvas-${tema.num}"></canvas>
+            <div class="pod-glass-layer"></div>
+            <div class="pod-new-content">
+              <button class="pod-new-back" onclick="closeLesson()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="pod-new-title-area">
+                <div class="pod-new-top" id="pod-past-${tema.num}"></div>
+                <div class="pod-new-main" id="pod-active-${tema.num}">Toca play para comenzar</div>
+                <div class="pod-new-bot" id="pod-next-${tema.num}"></div>
+              </div>
+              <div class="pod-new-album">
+                <div class="pod-new-album-glass"></div>
+              </div>
+              <div class="pod-new-track">SOBERANA</div>
+              <div class="pod-new-sub">EPISODIO PRIVADO</div>
+              <div class="pod-new-meta">
+                <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(201,168,76,0.5);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#2a1a00"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+                <div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#f5e57a,#d4a020 45%,#7a5008);display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(201,168,76,0.5);cursor:pointer;" onclick="this.innerHTML=this.innerHTML.includes('filled')?'<svg width=16 height=16 viewBox=&quot;0 0 24 24&quot; fill=none stroke=&quot;#2a1a00&quot; stroke-width=2><path d=&quot;M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z&quot;/></svg>':'<svg width=16 height=16 viewBox=&quot;0 0 24 24&quot; fill=&quot;#2a1a00&quot; stroke=none><path d=&quot;M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z&quot;/></svg>'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+              </div>
+              <div class="pod-new-wave-wrap" onclick="podSeek(event,${tema.num})">
+                <canvas id="pod-wave-canvas-${tema.num}" style="width:100%;height:52px;border-radius:4px;"></canvas>
+              </div>
+              <div class="pod-new-times">
+                <span id="pod-cur-${tema.num}">0:00</span>
+                <span id="pod-dur-${tema.num}">—:——</span>
+              </div>
+              <div class="pod-new-ctrls">
+                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="21" y2="21"/></svg></button>
+                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg></button>
+                <button class="pod-play-round" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
+                  <svg id="pod-play-ico-${tema.num}" width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
+                </button>
+                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
               </div>
             </div>
           </div>

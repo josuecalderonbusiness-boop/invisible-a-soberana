@@ -4316,15 +4316,15 @@
 .pod-skin-bg-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,0.08) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
 .pod-skin-label{font-family:'Inter',sans-serif;font-size:10px;letter-spacing:0.2em;color:#B8892A;text-transform:uppercase;margin-bottom:2rem;opacity:0.8;z-index:1;}
 .pod-skin-new{width:100%;height:100%;min-height:100dvh;background:linear-gradient(160deg,#2d5a3d 0%,#1a3a28 35%,#0e2218 60%,#1c3d2a 100%);position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:28px 24px 32px;font-family:'Inter',sans-serif;}
-.pod-glass-layer{position:absolute;inset:0;background:rgba(255,255,255,0.04);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,0.10);pointer-events:none;z-index:1;}
-.pod-glow-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;}
+.pod-glass-layer{display:none;}
+.pod-glow-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
 .pod-new-content{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;}
 .pod-new-back{align-self:flex-start;background:none;border:none;color:#c9a84c;font-size:22px;cursor:pointer;margin-bottom:18px;}
-.pod-new-title-area{text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;gap:3px;}
-.pod-new-top{font-size:14px;font-weight:300;color:rgba(255,255,255,0.75);letter-spacing:.02em;line-height:1.6;}
-.pod-new-main{font-size:25px;font-weight:700;color:#ffffff;line-height:1.2;text-align:center;}
+.pod-new-title-area{text-align:center;height:60px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:12px;flex-shrink:0;}
+.pod-new-top{display:none;}
+.pod-new-main{font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;}
 .pod-new-main em{font-weight:300;font-style:normal;}
-.pod-new-bot{font-size:14px;font-weight:300;color:rgba(255,255,255,0.75);letter-spacing:.02em;line-height:1.6;}
+.pod-new-bot{display:none;}
 .pod-new-album{width:120px;height:120px;border-radius:16px;margin:0 auto 14px;overflow:hidden;position:relative;box-shadow:0 8px 30px rgba(0,0,0,0.4);background:linear-gradient(135deg,#1a4a2e,#0d2e1a);}
 .pod-new-album-glass{position:absolute;inset:0;z-index:2;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.04) 60%);border-top:1px solid rgba(255,255,255,0.4);border-left:1px solid rgba(255,255,255,0.2);pointer-events:none;}
 .pod-new-track{font-weight:700;font-size:15px;letter-spacing:.18em;color:#c9a84c;text-align:center;margin-bottom:2px;}
@@ -10311,14 +10311,10 @@ function _buildSlideContent(slide, sectionId) {
                 <span id="pod-cur-${tema.num}">0:00</span>
                 <span id="pod-dur-${tema.num}">—:——</span>
               </div>
-              <div class="pod-new-ctrls">
-                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="21" y2="21"/></svg></button>
-                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg></button>
+              <div class="pod-new-ctrls" style="justify-content:center;">
                 <button class="pod-play-round" id="pod-play-${tema.num}" onclick="podToggle(${tema.num})">
                   <svg id="pod-play-ico-${tema.num}" width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
                 </button>
-                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
-                <button class="pod-ctrl-round"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
               </div>
             </div>
           </div>

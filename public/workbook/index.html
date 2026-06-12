@@ -12527,6 +12527,7 @@ function closeLesson() {
   clearInterval(_masterclassCountdown);
   document.body.style.background = '';
   document.getElementById('lesson-view').classList.remove('open');
+  document.getElementById('lesson-view').style.background = '';
   const _ch = document.querySelector('.slide-header');
   if (_ch) { _ch.style.removeProperty('background'); _ch.removeAttribute('data-s10'); _ch.classList.remove('s10-mode'); }
   const _sf = document.querySelector('.slide-footer');

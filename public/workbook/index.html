@@ -2311,8 +2311,9 @@
     border-radius: 16px;
     padding: 12px 16px;
     gap: 0;
-    background: transparent !important;
-    border: 1px solid rgba(212,175,106,0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
   }
   .journey-banner-text {
     flex: 1;
@@ -8223,11 +8224,11 @@ function updateSectionPill(mode) {
   if (!pill) return;
 
   const configs = {
-    'workshop': { bg: '#8B1A2F',  label: 'WORKSHOP · CÓDIGO SOBERANA', title: 'Código Soberana' },
-    'semana1':  { bg: '#2A5C42',  label: 'SEMANA 1 · SOBERANA 7D',      title: 'Arquitecta de Realidad' },
-    'semana2':  { bg: '#6B1A2A',  label: 'SEMANA 2 · SOBERANA 7D',      title: 'Gravedad Propia' },
-    'semana3':  { bg: '#B8892A',  label: 'SEMANA 3 · SOBERANA 7D',      title: 'Biología del Poder' },
-    'semana4':  { bg: null, gradient: 'linear-gradient(135deg, #B8892A 0%, #1A3D2B 100%)',
+    'workshop': { bg: 'rgba(139,26,47,0.45)', label: 'WORKSHOP · CÓDIGO SOBERANA', title: 'Código Soberana' },
+    'semana1':  { bg: 'rgba(42,92,66,0.45)',  label: 'SEMANA 1 · SOBERANA 7D',      title: 'Arquitecta de Realidad' },
+    'semana2':  { bg: 'rgba(107,26,42,0.45)', label: 'SEMANA 2 · SOBERANA 7D',      title: 'Gravedad Propia' },
+    'semana3':  { bg: 'rgba(184,137,42,0.45)',label: 'SEMANA 3 · SOBERANA 7D',      title: 'Biología del Poder' },
+    'semana4':  { bg: null, gradient: 'linear-gradient(135deg, rgba(184,137,42,0.45) 0%, rgba(26,61,43,0.45) 100%)',
                   label: 'SEMANA 4 · SOBERANA 7D', title: 'El Código Final' },
   };
 

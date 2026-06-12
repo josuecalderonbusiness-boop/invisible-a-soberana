@@ -6552,6 +6552,7 @@ function podToggle(temaNum) {
   const audio0 = document.getElementById('pod-audio-' + temaNum);
   if (!wrap._podReady || !audio0 || !audio0._listenersAdded) {
     wrap._podReady = true;
+    const revealScreen = document.getElementById('pod-reveal-' + temaNum); if (revealScreen) revealScreen.classList.add('visible');
     if (audio0) audio0._listenersAdded = true;
     wrap._srtLines = [];
     const heights = [8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16,22,12,18,8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16];

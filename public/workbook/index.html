@@ -6366,12 +6366,14 @@ function _podGetPhraseIdx(phrases, wordIdx) {
 }
 
 function _podRenderWords(temaNum, words, curIdx) {
-  const stage = document.getElementById('pod-stage-' + temaNum);
-  if (!stage) return;
-  const lyricsEl = stage.querySelector('.pod-lyrics-3');
-  if (!lyricsEl) return;
-  if (!stage._phrases) stage._phrases = _podBuildPhrases(words);
-  const phrases = stage._phrases;
+  const pastEl = document.getElementById('pod-past-' + temaNum);
+  const activeEl = document.getElementById('pod-active-' + temaNum);
+  const nextEl = document.getElementById('pod-next-' + temaNum);
+  if (!activeEl) return;
+  const stageKey = '_podPhrases_' + temaNum;
+  if (!window[stageKey]) window[stageKey] = _podBuildPhrases(words);
+  const phrases = window[stageKey];
+  const stage = { _phrases: phrases };
   const phraseIdx = _podGetPhraseIdx(phrases, curIdx);
   const isGold = w => POD_GOLD.some(g => w.toLowerCase().replace(/[.,!?]/g,'') === g.toLowerCase());
 
@@ -6395,11 +6397,9 @@ function _podRenderWords(temaNum, words, curIdx) {
     return html2;
   };
 
-  lyricsEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:0 28px;width:100%">'
-    + renderPhrase(phraseIdx-1, 'prev')
-    + renderPhrase(phraseIdx, 'active')
-    + renderPhrase(phraseIdx+1, 'next')
-    + '</div>';
+  if (pastEl) pastEl.innerHTML = renderPhrase(phraseIdx-1, 'prev');
+  if (activeEl) activeEl.innerHTML = renderPhrase(phraseIdx, 'active');
+  if (nextEl) nextEl.innerHTML = renderPhrase(phraseIdx+1, 'next');
 }
 
 function _podGetIdx(lines, time) {

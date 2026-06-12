@@ -2672,7 +2672,7 @@
     position: absolute;
     bottom: 0; left: 0; right: 0;
     padding: 12px 20px 36px;
-    background: linear-gradient(to top, var(--burgundy-deep) 65%, transparent);
+    background: transparent;
     pointer-events: none;
   }
   .slide-continue-btn {
@@ -12525,6 +12525,7 @@ function saveLesson(secId) {
 
 function closeLesson() {
   clearInterval(_masterclassCountdown);
+  document.body.style.background = '';
   document.getElementById('lesson-view').classList.remove('open');
   const _ch = document.querySelector('.slide-header');
   if (_ch) { _ch.style.removeProperty('background'); _ch.removeAttribute('data-s10'); _ch.classList.remove('s10-mode'); }

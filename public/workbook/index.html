@@ -6516,17 +6516,15 @@ function podToggle(temaNum) {
   const wrap = document.getElementById('pod-skin-' + temaNum);
   const playBtn = document.getElementById('pod-play-' + temaNum);
   if (!wrap) return;
-  if (!document.getElementById('pod-canvas-' + temaNum)?._inited) {
-    const _gc = document.getElementById('pod-canvas-' + temaNum);
-    if (_gc) _gc._inited = true;
-    podInitParticles(temaNum);
-  }
+  setTimeout(() => { podInitParticles(temaNum); }, 80);
   const prog = null;
   const wave = { querySelectorAll: () => [] };
   const audio = document.getElementById('pod-audio-' + temaNum);
 
-  if (!wrap._podReady) {
+  const audio0 = document.getElementById('pod-audio-' + temaNum);
+  if (!wrap._podReady || !audio0 || !audio0._listenersAdded) {
     wrap._podReady = true;
+    if (audio0) audio0._listenersAdded = true;
     wrap._playing = false;
     wrap._srtLines = [];
     const heights = [8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16,22,12,18,8,14,22,18,30,24,36,28,40,32,36,26,32,20,28,16];

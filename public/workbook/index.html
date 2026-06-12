@@ -6482,7 +6482,7 @@ function podInitParticles(num) {
   const gc = document.getElementById('pod-canvas-' + num);
   const wrap = gc ? gc.parentElement : null;
   if (!gc || !wrap) return;
-  gc.width = wrap.offsetWidth || window.innerWidth; gc.height = wrap.offsetHeight || window.innerHeight;
+  gc.width = window.innerWidth; gc.height = window.innerHeight;
   const gctx = gc.getContext('2d');
   const pts = Array.from({length: 220}, () => ({
     x: Math.random()*gc.width, y: gc.height*(0.2+Math.random()*0.8),

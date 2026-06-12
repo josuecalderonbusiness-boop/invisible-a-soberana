@@ -6515,11 +6515,10 @@ function podInitParticles(num) {
 function podToggle(temaNum) {
   const wrap = document.getElementById('pod-skin-' + temaNum);
   const playBtn = document.getElementById('pod-play-' + temaNum);
-  const prog = document.getElementById('pod-prog-' + temaNum);
-  const wave = document.getElementById('pod-wave-' + temaNum);
   if (!wrap) return;
-
-  _podInitCanvas(temaNum);
+  podInitParticles(temaNum);
+  const prog = null;
+  const wave = { querySelectorAll: () => [] };
   const audio = document.getElementById('pod-audio-' + temaNum);
 
   if (!wrap._podReady) {
@@ -6552,13 +6551,7 @@ function podToggle(temaNum) {
         const durEl = document.getElementById('pod-dur-' + temaNum);
         if (curEl) curEl.textContent = _podFmtTime(audio.currentTime);
         if (durEl) durEl.textContent = _podFmtTime(audio.duration);
-        const allBars = wave.querySelectorAll('.pod-wave-bar');
-        const playedIdx = Math.floor(pct / 100 * allBars.length);
-        allBars.forEach((b, i) => {
-          if (i < playedIdx) { b.classList.add('pod-played'); b.classList.remove('pod-active'); b.style.animationPlayState = 'paused'; }
-          else if (i === playedIdx) { b.classList.remove('pod-played'); b.classList.add('pod-active'); b.style.animationPlayState = 'running'; }
-          else { b.classList.remove('pod-played', 'pod-active'); b.style.animationPlayState = 'running'; }
-        });
+        podDrawWave(temaNum, pct / 100);
         if (wrap._wordData && wrap._wordData.length > 0) {
           _podRenderWords(temaNum, wrap._wordData, _podGetWordIdx(wrap._wordData, audio.currentTime));
         } else if (wrap._srtLines && wrap._srtLines.length > 0) {
@@ -6586,8 +6579,6 @@ function podToggle(temaNum) {
   const pauseIcon = '<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>';
   const playIcon = '<svg width="26" height="26" viewBox="0 0 24 24" fill="#0F0A0B" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>';
   if (playBtn) playBtn.innerHTML = wrap._playing ? pauseIcon : playIcon;
-
-  wave.querySelectorAll('.pod-wave-bar').forEach(b => { b.style.animationPlayState = wrap._playing ? 'running' : 'paused'; });
 
   if (navigator.vibrate) navigator.vibrate(8);
 

@@ -4400,7 +4400,7 @@
 .slide-panel-mapa .mapa-ui{position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;}
 .mapa-skin-wrap{position:relative;width:100%;height:100vh;overflow:hidden;background:#0E0D0D;}
 .mapa-overlay-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
-.mapa-gps{position:absolute;pointer-events:all;transform:translate(-50%,-100%);transition:top 1.4s cubic-bezier(0.4,0,0.2,1),left 1.4s cubic-bezier(0.4,0,0.2,1);z-index:10;}
+.mapa-gps{position:absolute;pointer-events:all;transform:translate(-50%,-100%);z-index:10;}
 .mapa-gps-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;border-radius:50%;border:1.5px solid #B8892A;transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite;}
 .mapa-gps-ring2{position:absolute;top:50%;left:50%;width:30px;height:30px;border-radius:50%;border:1px solid rgba(184,137,42,0.4);transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite 0.6s;}
 .mapa-gps-center{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:#B8892A;transform:translate(-50%,-50%);box-shadow:0 0 14px rgba(184,137,42,0.9);}
@@ -6421,40 +6421,7 @@ function mapaAnimRoute(idx) {
   r.style.opacity = '1';
   r.style.transition = 'stroke-dashoffset 1800ms cubic-bezier(0.4,0,0.2,1)';
   r.setAttribute('stroke-dashoffset', MAPA_OFFSETS[idx] || 0);
-  const gps = document.getElementById('mapa-gps');
-  if (!gps) { setTimeout(() => mapaActivateGem(idx), 1900); return; }
-  const totalLen = 1740;
-  const startOffset = idx === 0 ? totalLen : MAPA_OFFSETS[idx - 1];
-  const endOffset = MAPA_OFFSETS[idx];
-  const startPct = (totalLen - startOffset) / totalLen;
-  const endPct = (totalLen - endOffset) / totalLen;
-  const duration = 1800;
-  const startTime = performance.now();
-  const wrap = gps.closest('.mapa-skin-wrap');
-  const wrapW = wrap ? wrap.offsetWidth : 380;
-  const wrapH = wrap ? wrap.offsetHeight : 680;
-  const vbW = 380, vbH = 680;
-  function animGps(now) {
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-    const pct = startPct + (endPct - startPct) * ease;
-    const len = pct * totalLen;
-    try {
-      const pt = r.getPointAtLength(len);
-      const xPct = (pt.x / vbW) * 100;
-      const yPct = (pt.y / vbH) * 100;
-      gps.style.transition = 'none';
-      gps.style.left = xPct + '%';
-      gps.style.top = yPct + '%';
-    } catch(e) {}
-    if (t < 1) {
-      requestAnimationFrame(animGps);
-    } else {
-      setTimeout(() => mapaActivateGem(idx), 100);
-    }
-  }
-  requestAnimationFrame(animGps);
+  setTimeout(() => mapaActivateGem(idx), 1900);
 }
 
 function mapaActivateGem(idx) {

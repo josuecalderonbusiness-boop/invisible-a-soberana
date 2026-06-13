@@ -6404,7 +6404,7 @@ const MAPA_GEMS = [
   {eye:'Reino III · Soberania Financiera',name:'Soberania Financiera',col:'#1D9E75',bunny:'PENDIENTE_GEMA3',top:'63%',left:'30%'},
   {eye:'Reino IV · Proposito Soberano',name:'Proposito Soberano',col:'#B8892A',bunny:'PENDIENTE_GEMA4',top:'76%',left:'65%'}
 ];
-const MAPA_OFFSETS = [2400,1820,1220,660];
+const MAPA_OFFSETS = [1123,914,691,517];
 let _mapaCur = -1, _mapaUnl = 0, _mapaStarted = false;
 
 function mapaStart() {
@@ -6423,7 +6423,7 @@ function mapaAnimRoute(idx) {
   r.setAttribute('stroke-dashoffset', MAPA_OFFSETS[idx] || 0);
   const gps = document.getElementById('mapa-gps');
   if (!gps) { setTimeout(() => mapaActivateGem(idx), 1900); return; }
-  const totalLen = 2400;
+  const totalLen = 1740;
   const startOffset = idx === 0 ? totalLen : MAPA_OFFSETS[idx - 1];
   const endOffset = MAPA_OFFSETS[idx];
   const startPct = (totalLen - startOffset) / totalLen;
@@ -10516,8 +10516,8 @@ function _buildSlideContent(slide, sectionId) {
 <stop offset="0%" stop-color="#2DB45A"/><stop offset="45%" stop-color="#B8892A"/><stop offset="100%" stop-color="#D4AF6A"/>
 </linearGradient>
 </defs>
-<path d="M192,95 Q175,130 165,168 Q152,210 168,248 Q185,288 175,325 Q162,362 148,392 Q132,425 154,456 Q178,488 184,522 Q190,558 174,588 Q158,618 168,648 Q178,670 192,685" stroke="rgba(184,137,42,0.12)" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path id="mapa-route-on" d="M192,95 Q175,130 165,168 Q152,210 168,248 Q185,288 175,325 Q162,362 148,392 Q132,425 154,456 Q178,488 184,522 Q190,558 174,588 Q158,618 168,648 Q178,670 192,685" stroke="url(#mapaRG)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#mapaGS)" opacity="0" stroke-dasharray="2400" stroke-dashoffset="2400"/>
+<path d="M192,668 Q234.0,633.9 230,580 Q175.0,570.0 150,520 Q196.2,493.2 200,440 Q146.2,416.5 130,360 Q179.0,341.3 190,290 Q133.5,280.3 106,230 Q119.4,268.5 160,265 Q230.5,280.4 274,338 Q227.0,359.0 220,410 Q194.8,448.0 150,440 Q122.9,423.7 114,454 Q161.4,463.6 175,510 Q199.6,550.7 247,547 Q207.3,506.3 215,450 Q221.5,383.0 180,330 Q135.8,261.4 140,180 Q188.6,135.7 192,70" stroke="rgba(184,137,42,0.12)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path id="mapa-route-on" d="M192,668 Q234.0,633.9 230,580 Q175.0,570.0 150,520 Q196.2,493.2 200,440 Q146.2,416.5 130,360 Q179.0,341.3 190,290 Q133.5,280.3 106,230 Q119.4,268.5 160,265 Q230.5,280.4 274,338 Q227.0,359.0 220,410 Q194.8,448.0 150,440 Q122.9,423.7 114,454 Q161.4,463.6 175,510 Q199.6,550.7 247,547 Q207.3,506.3 215,450 Q221.5,383.0 180,330 Q135.8,261.4 140,180 Q188.6,135.7 192,70" stroke="url(#mapaRG)" stroke-width="2.5" fill="none" stroke-linecap="round" filter="url(#mapaGS)" opacity="0" stroke-dasharray="1740" stroke-dashoffset="1740"/>
 <g>
 <circle cx="192" cy="62" r="36" fill="none" stroke="rgba(45,180,90,0.1)" stroke-width="1"><animate attributeName="r" values="36;50;36" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.05;0.4" dur="3s" repeatCount="indefinite"/></circle>
 <polygon points="192,36 210,50 210,70 192,82 174,70 174,50" fill="#0a1a0f" stroke="#2DB45A" stroke-width="1.5" filter="url(#mapaGS)" opacity="0.75"/>

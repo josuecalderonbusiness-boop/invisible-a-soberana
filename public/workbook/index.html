@@ -6419,17 +6419,42 @@ function mapaAnimRoute(idx) {
   const r = document.getElementById('mapa-route-on');
   if (!r) return;
   r.style.opacity = '1';
-  r.style.transition = 'stroke-dashoffset 1600ms cubic-bezier(0.4,0,0.2,1)';
+  r.style.transition = 'stroke-dashoffset 1800ms cubic-bezier(0.4,0,0.2,1)';
   r.setAttribute('stroke-dashoffset', MAPA_OFFSETS[idx] || 0);
   const gps = document.getElementById('mapa-gps');
-  if (gps) {
-    const g = MAPA_GEMS[idx];
-    setTimeout(() => {
-      gps.style.top = g.top;
-      gps.style.left = g.left;
-    }, 200);
+  if (!gps) { setTimeout(() => mapaActivateGem(idx), 1900); return; }
+  const totalLen = 2400;
+  const startOffset = idx === 0 ? totalLen : MAPA_OFFSETS[idx - 1];
+  const endOffset = MAPA_OFFSETS[idx];
+  const startPct = (totalLen - startOffset) / totalLen;
+  const endPct = (totalLen - endOffset) / totalLen;
+  const duration = 1800;
+  const startTime = performance.now();
+  const wrap = gps.closest('.mapa-skin-wrap');
+  const wrapW = wrap ? wrap.offsetWidth : 380;
+  const wrapH = wrap ? wrap.offsetHeight : 680;
+  const vbW = 380, vbH = 680;
+  function animGps(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    const pct = startPct + (endPct - startPct) * ease;
+    const len = pct * totalLen;
+    try {
+      const pt = r.getPointAtLength(len);
+      const xPct = (pt.x / vbW) * 100;
+      const yPct = (pt.y / vbH) * 100;
+      gps.style.transition = 'none';
+      gps.style.left = xPct + '%';
+      gps.style.top = yPct + '%';
+    } catch(e) {}
+    if (t < 1) {
+      requestAnimationFrame(animGps);
+    } else {
+      setTimeout(() => mapaActivateGem(idx), 100);
+    }
   }
-  setTimeout(() => mapaActivateGem(idx), 1700);
+  requestAnimationFrame(animGps);
 }
 
 function mapaActivateGem(idx) {

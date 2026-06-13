@@ -4398,6 +4398,40 @@
 .slide-panel-mapa{padding:0!important;background:#0E0D0D!important;position:relative;overflow:hidden;min-height:100vh;}
 .slide-panel-mapa .mapa-bg{width:100%;display:block;position:absolute;top:0;left:0;height:100%;object-fit:cover;}
 .slide-panel-mapa .mapa-ui{position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;}
+.mapa-skin-wrap{position:relative;width:100%;height:100vh;overflow:hidden;background:#0E0D0D;}
+.mapa-overlay-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+.mapa-gps{position:absolute;pointer-events:all;transform:translate(-50%,-50%);transition:top 1.4s cubic-bezier(0.4,0,0.2,1),left 1.4s cubic-bezier(0.4,0,0.2,1);z-index:10;}
+.mapa-gps-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;border-radius:50%;border:1.5px solid #2DB45A;transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite;}
+.mapa-gps-ring2{position:absolute;top:50%;left:50%;width:30px;height:30px;border-radius:50%;border:1px solid rgba(45,180,90,0.4);transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite 0.6s;}
+.mapa-gps-center{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:#2DB45A;transform:translate(-50%,-50%);box-shadow:0 0 14px rgba(45,180,90,0.9);}
+@keyframes mapaGpsPulse{0%,100%{opacity:0.8;transform:translate(-50%,-50%) scale(1);}50%{opacity:0.15;transform:translate(-50%,-50%) scale(1.6);}}
+@keyframes mapaOrb1{0%{transform:rotate(0deg) translateX(18px) rotate(0deg);}100%{transform:rotate(360deg) translateX(18px) rotate(-360deg);}}
+@keyframes mapaOrb2{0%{transform:rotate(120deg) translateX(18px) rotate(-120deg);}100%{transform:rotate(480deg) translateX(18px) rotate(-480deg);}}
+@keyframes mapaOrb3{0%{transform:rotate(240deg) translateX(18px) rotate(-240deg);}100%{transform:rotate(600deg) translateX(18px) rotate(-600deg);}}
+@keyframes mapaGemFloat{0%,100%{transform:translate(-50%,-50%) translateY(0px) scale(1);}50%{transform:translate(-50%,-50%) translateY(-5px) scale(1.06);}}
+@keyframes mapaGemRing{0%{transform:translate(-50%,-50%) scale(0.8);opacity:0.8;}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0;}}
+@keyframes mapaTapHint{0%,100%{opacity:0.5;transform:translateX(-50%) scale(1);}50%{opacity:1;transform:translateX(-50%) scale(1.04);}}
+.mapa-gema{position:absolute;transform:translate(-50%,-50%);cursor:pointer;pointer-events:all;}
+.mapa-gema img{width:52px;height:52px;object-fit:contain;filter:brightness(0.25) saturate(0.15);transition:all 0.6s;display:block;}
+.mapa-gema.active img{filter:brightness(1) saturate(1);animation:mapaGemFloat 2.2s ease-in-out infinite;}
+.mapa-gema-ring{position:absolute;top:50%;left:50%;width:68px;height:68px;border-radius:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;}
+.mapa-gema.active .mapa-gema-ring{animation:mapaGemRing 1.8s ease-out infinite;}
+.mapa-tap-hint{position:absolute;top:calc(100% + 5px);left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(14,13,13,0.88);border:1px solid rgba(184,137,42,0.4);border-radius:20px;padding:5px 14px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#D4AF6A;opacity:0;pointer-events:none;}
+.mapa-gema.active .mapa-tap-hint{animation:mapaTapHint 1.6s ease-in-out infinite;}
+.mapa-video-popup{position:absolute;inset:0;background:#000;z-index:50;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.35s;}
+.mapa-video-popup.show{opacity:1;pointer-events:all;}
+.mapa-popup-header{padding:0.9rem 1rem 0.7rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.6);position:absolute;top:0;left:0;right:0;z-index:2;}
+.mapa-popup-eye{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;font-family:'Inter',sans-serif;}
+.mapa-popup-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.6);font-size:20px;line-height:1;}
+.mapa-popup-video{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0a0a0a;}
+.mapa-popup-pending{text-align:center;padding:2rem;}
+.mapa-popup-pending-icon{width:64px;height:64px;border-radius:50%;border:1.5px solid rgba(184,137,42,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.mapa-popup-pending-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:#F5ECD7;margin-bottom:6px;}
+.mapa-popup-pending-sub{font-size:11px;color:rgba(245,236,215,0.4);line-height:1.6;}
+.mapa-popup-footer{padding:1rem;background:rgba(0,0,0,0.6);position:absolute;bottom:0;left:0;right:0;}
+.mapa-popup-cont{width:100%;padding:0.8rem;background:linear-gradient(135deg,#7a5810,#B8892A,#D4AF6A);color:#0E0D0D;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
+.mapa-start-wrap{position:absolute;bottom:1rem;left:1rem;right:1rem;z-index:10;}
+.mapa-start-btn{width:100%;padding:0.8rem;background:linear-gradient(135deg,#1a5a22,#2DB45A);color:#fff;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.05em;}
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
 .slide-panel-vertical .slide-vertical-wrap{position:relative;width:100%;height:100%;z-index:1;}
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
@@ -6358,6 +6392,79 @@ function nfSetDur(num, durStr) {
   const parts = durStr.split(':');
   _nfState[num].total = parseInt(parts[0])*60 + parseInt(parts[1]);
 }
+const MAPA_GEMS = [
+  {eye:'Reino I · Identidad Soberana',name:'Identidad Soberana',col:'#2DB45A',bunny:'PENDIENTE_GEMA1',top:'32%',left:'28%'},
+  {eye:'Reino II · Energia Vital',name:'Energia Vital',col:'#8B1A2F',bunny:'PENDIENTE_GEMA2',top:'47%',left:'66%'},
+  {eye:'Reino III · Soberania Financiera',name:'Soberania Financiera',col:'#1D9E75',bunny:'PENDIENTE_GEMA3',top:'63%',left:'30%'},
+  {eye:'Reino IV · Proposito Soberano',name:'Proposito Soberano',col:'#B8892A',bunny:'PENDIENTE_GEMA4',top:'76%',left:'65%'}
+];
+const MAPA_OFFSETS = [2400,1820,1220,660];
+let _mapaCur = -1, _mapaUnl = 0, _mapaStarted = false;
+
+function mapaStart() {
+  document.getElementById('mapa-start-wrap').style.display = 'none';
+  _mapaStarted = true;
+  mapaAnimRoute(0);
+}
+
+function mapaAnimRoute(idx) {
+  const r = document.getElementById('mapa-route-on');
+  if (!r) return;
+  r.style.opacity = '1';
+  r.style.transition = 'stroke-dashoffset 1600ms cubic-bezier(0.4,0,0.2,1)';
+  r.setAttribute('stroke-dashoffset', MAPA_OFFSETS[idx] || 0);
+  const gps = document.getElementById('mapa-gps');
+  if (gps) {
+    const g = MAPA_GEMS[idx];
+    setTimeout(() => {
+      gps.style.top = g.top;
+      gps.style.left = g.left;
+    }, 200);
+  }
+  setTimeout(() => mapaActivateGem(idx), 1700);
+}
+
+function mapaActivateGem(idx) {
+  _mapaCur = idx; _mapaUnl = idx;
+  const el = document.getElementById('mapa-gem-' + idx);
+  if (el) el.classList.add('active');
+}
+
+function mapaTabGem(idx) {
+  if (idx !== _mapaCur) return;
+  const d = MAPA_GEMS[idx];
+  const eyeEl = document.getElementById('mapa-popup-eye');
+  const nameEl = document.getElementById('mapa-popup-name');
+  if (eyeEl) { eyeEl.textContent = d.eye; eyeEl.style.color = d.col; }
+  if (nameEl) nameEl.textContent = d.name;
+  const videoDiv = document.getElementById('mapa-popup-video');
+  if (videoDiv && d.bunny && !d.bunny.startsWith('PENDIENTE')) {
+    videoDiv.innerHTML = '<iframe src="https://iframe.mediadelivery.net/embed/636956/' + d.bunny + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>';
+  }
+  const popup = document.getElementById('mapa-popup');
+  if (popup) popup.classList.add('show');
+}
+
+function mapaClosePopup() {
+  const popup = document.getElementById('mapa-popup');
+  if (popup) popup.classList.remove('show');
+  const videoDiv = document.getElementById('mapa-popup-video');
+  if (videoDiv && videoDiv.querySelector('iframe')) {
+    videoDiv.innerHTML = '<div class="mapa-popup-pending"><div class="mapa-popup-pending-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.6)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg></div><div class="mapa-popup-pending-title" id="mapa-popup-name"></div><div class="mapa-popup-pending-sub">Video proximamente</div></div>';
+  }
+  _mapaCur = -1;
+  const next = _mapaUnl + 1;
+  if (next < 4) {
+    setTimeout(() => mapaAnimRoute(next), 400);
+  } else {
+    const sw = document.getElementById('mapa-start-wrap');
+    if (sw) {
+      sw.style.display = 'block';
+      sw.innerHTML = '<button style="width:100%;padding:0.8rem;background:linear-gradient(135deg,#0F6E56,#1D9E75,#5DCAA5);color:#fff;border:none;border-radius:9px;font-family:Inter,sans-serif;font-size:14px;font-weight:500;cursor:pointer;letter-spacing:0.04em;" onclick="slideNext()">Conocer Soberana 7D →</button>';
+    }
+  }
+}
+
 function podIrAT2() {
   const idx = _slides.findIndex(s => s.type === 'tema-video' && s.tema && s.tema.num === 2);
   if (idx !== -1) {
@@ -10362,7 +10469,51 @@ function _buildSlideContent(slide, sectionId) {
         </div>`;
       } else {
        if (tema.mapaSkin) {
-          html += `<div class="mapa-skin-wrap" id="mapa-wrap-${tema.num}"><img class="mapa-bg" src="/workbook/assets/mapa-fondo.svg" alt="mapa"/><div class="mapa-ui"><svg width="100%" height="100%" viewBox="0 0 380 680" xmlns="http://www.w3.org/2000/svg"><text x="190" y="340" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="rgba(184,137,42,0.5)" letter-spacing="0.15em">Las 4 dimensiones que siguen</text></svg></div></div>`;
+          html += `<div class="mapa-skin-wrap" id="mapa-wrap-${tema.num}">
+<img class="mapa-bg" src="/workbook/assets/mapa-fondo.svg" alt="mapa"/>
+<svg class="mapa-overlay-svg" viewBox="0 0 380 680" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<filter id="mapaGM"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="mapaGS"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<linearGradient id="mapaRG" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#2DB45A"/><stop offset="45%" stop-color="#B8892A"/><stop offset="100%" stop-color="#D4AF6A"/>
+</linearGradient>
+</defs>
+<path d="M192,95 Q175,130 165,168 Q152,210 168,248 Q185,288 175,325 Q162,362 148,392 Q132,425 154,456 Q178,488 184,522 Q190,558 174,588 Q158,618 168,648 Q178,670 192,685" stroke="rgba(184,137,42,0.12)" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path id="mapa-route-on" d="M192,95 Q175,130 165,168 Q152,210 168,248 Q185,288 175,325 Q162,362 148,392 Q132,425 154,456 Q178,488 184,522 Q190,558 174,588 Q158,618 168,648 Q178,670 192,685" stroke="url(#mapaRG)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#mapaGS)" opacity="0" stroke-dasharray="2400" stroke-dashoffset="2400"/>
+<g>
+<circle cx="192" cy="62" r="36" fill="none" stroke="rgba(45,180,90,0.1)" stroke-width="1"><animate attributeName="r" values="36;50;36" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.05;0.4" dur="3s" repeatCount="indefinite"/></circle>
+<polygon points="192,36 210,50 210,70 192,82 174,70 174,50" fill="#0a1a0f" stroke="#2DB45A" stroke-width="1.5" filter="url(#mapaGS)" opacity="0.75"/>
+<polygon points="192,36 210,50 192,46" fill="rgba(45,180,90,0.38)"/>
+<polygon points="210,50 210,70 192,66 192,46" fill="rgba(45,180,90,0.14)"/>
+<polygon points="174,50 192,46 192,66 174,70" fill="rgba(45,180,90,0.17)"/>
+<line x1="174" y1="50" x2="210" y2="50" stroke="#2DB45A" stroke-width="0.5" opacity="0.35"/>
+<line x1="174" y1="70" x2="210" y2="70" stroke="#2DB45A" stroke-width="0.5" opacity="0.25"/>
+<text x="192" y="97" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="#2DB45A" letter-spacing="0.12em" filter="url(#mapaGM)">SOBERANA 7D</text>
+</g>
+</svg>
+<div class="mapa-gps" id="mapa-gps" style="top:13%;left:50.5%;">
+<div class="mapa-gps-ring"></div>
+<div class="mapa-gps-ring2"></div>
+<div class="mapa-gps-center"></div>
+<div style="position:absolute;top:50%;left:50%;width:0;height:0;">
+<div style="position:absolute;transform-origin:0 0;animation:mapaOrb1 6s linear infinite;width:8px;height:8px;background:#B8892A;border-radius:50%;margin-left:-4px;margin-top:-4px;box-shadow:0 0 6px rgba(184,137,42,0.8);"></div>
+<div style="position:absolute;transform-origin:0 0;animation:mapaOrb2 6s linear infinite;width:7px;height:7px;background:#D4AF6A;border-radius:50%;margin-left:-3.5px;margin-top:-3.5px;box-shadow:0 0 5px rgba(212,175,106,0.8);"></div>
+<div style="position:absolute;transform-origin:0 0;animation:mapaOrb3 6s linear infinite;width:7px;height:7px;background:#B8892A;border-radius:50%;margin-left:-3.5px;margin-top:-3.5px;"></div>
+</div>
+<div style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:8px;letter-spacing:0.14em;color:rgba(45,180,90,0.55);text-transform:uppercase;font-family:'Inter',sans-serif;">Tu estas aqui</div>
+</div>
+<div class="mapa-gema" id="mapa-gem-0" style="top:32%;left:28%;" onclick="mapaTabGem(0)"><div class="mapa-gema-ring" style="background:rgba(45,180,90,0.25);"></div><img src="/workbook/assets/gemas/gema-semana1.png" alt="Identidad Soberana"/><div class="mapa-tap-hint">Toca aqui</div></div>
+<div class="mapa-gema" id="mapa-gem-1" style="top:47%;left:66%;" onclick="mapaTabGem(1)"><div class="mapa-gema-ring" style="background:rgba(139,26,47,0.3);"></div><img src="/workbook/assets/gemas/gema-semana2.png" alt="Energia Vital"/><div class="mapa-tap-hint">Toca aqui</div></div>
+<div class="mapa-gema" id="mapa-gem-2" style="top:63%;left:30%;" onclick="mapaTabGem(2)"><div class="mapa-gema-ring" style="background:rgba(29,158,117,0.25);"></div><img src="/workbook/assets/gemas/gema-semana3.png" alt="Soberania Financiera"/><div class="mapa-tap-hint">Toca aqui</div></div>
+<div class="mapa-gema" id="mapa-gem-3" style="top:76%;left:65%;" onclick="mapaTabGem(3)"><div class="mapa-gema-ring" style="background:rgba(184,137,42,0.3);"></div><img src="/workbook/assets/gemas/gema-corona.png" alt="Proposito Soberano"/><div class="mapa-tap-hint">Toca aqui</div></div>
+<div class="mapa-video-popup" id="mapa-popup">
+<div class="mapa-popup-header"><div class="mapa-popup-eye" id="mapa-popup-eye"></div><div class="mapa-popup-close" onclick="mapaClosePopup()">×</div></div>
+<div class="mapa-popup-video" id="mapa-popup-video"><div class="mapa-popup-pending"><div class="mapa-popup-pending-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.6)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg></div><div class="mapa-popup-pending-title" id="mapa-popup-name"></div><div class="mapa-popup-pending-sub">Video proximamente —<br/>esta dimension sera desbloqueada pronto.</div></div></div>
+<div class="mapa-popup-footer"><button class="mapa-popup-cont" onclick="mapaClosePopup()">Continuar conquista →</button></div>
+</div>
+<div class="mapa-start-wrap" id="mapa-start-wrap"><button class="mapa-start-btn" onclick="mapaStart()">Iniciar conquista</button></div>
+</div>`;
         } else if (tema.verticalSkin) {
           html += `<div class="slide-vertical-wrap" id="vertical-wrap-${tema.num}"></div>`;
         } else if (tema.netflixSkin) {

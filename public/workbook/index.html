@@ -4395,6 +4395,9 @@
 .nf-ctrl-btn{background:none;border:none;cursor:pointer;padding:8px;color:rgba(255,255,255,0.5);}
 .nf-play-btn{width:56px;height:56px;border-radius:50%;background:rgba(184,137,42,0.15);border:2px solid rgba(184,137,42,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .slide-panel-vertical{padding:0!important;background:#000!important;}
+.slide-panel-mapa{padding:0!important;background:#0E0D0D!important;position:relative;overflow:hidden;min-height:100vh;}
+.slide-panel-mapa .mapa-bg{width:100%;display:block;position:absolute;top:0;left:0;height:100%;object-fit:cover;}
+.slide-panel-mapa .mapa-ui{position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;}
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
 .slide-panel-vertical .slide-vertical-wrap{position:relative;width:100%;height:100%;z-index:1;}
 .slide-vertical-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
@@ -5906,7 +5909,7 @@ const SECTIONS = [
     palanca: null,
     temas: [
       { num:1, titulo:'Lo que ya tienes — los 3 sistemas que cambiaron tu dinamica', bunnyVideoId:'PENDIENTE_S9T1', bunnyLibrary:'636956', podcastSkin:true },
-      { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'a24ce52e-4395-4b7c-8b6b-50a154ec746c', bunnyLibrary:'636956', verticalSkin:true }
+      { num:2, titulo:'Las 4 dimensiones que siguen', bunnyVideoId:'PENDIENTE_S9T2', bunnyLibrary:'636956', mapaSkin:true }
     ],
     exercises: [
       {
@@ -9866,7 +9869,8 @@ function openLesson(sectionId) {
       if (isPodcast) { setTimeout(() => { podInitParticles(slide.tema.num); podDrawWave(slide.tema.num, 0); }, 400); }
     const isVertical = slide.type === 'tema-video' && slide.tema && slide.tema.verticalSkin;
     const isNetflix = (slide.type === 'tema-video' && slide.tema && slide.tema.netflixSkin) || (slide.type === 'situaciones' && slide.tema && slide.tema.netflixCover);
-    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
+    const isMapa = slide.type === 'tema-video' && slide.tema && slide.tema.mapaSkin;
+    panel.className = isPausaWB ? 'slide-panel slide-panel-workbook' : isPodcast ? 'slide-panel slide-panel-podcast' : isMapa ? 'slide-panel slide-panel-mapa' : isVertical ? 'slide-panel slide-panel-vertical' : isNetflix ? 'slide-panel slide-panel-netflix' : 'slide-panel';
     panel.id = 'slide-panel-' + i;
     panel.appendChild(_buildSlideContent(slide, sectionId));
     track.appendChild(panel);
@@ -10360,7 +10364,9 @@ function _buildSlideContent(slide, sectionId) {
           </button>
         </div>`;
       } else {
-        if (tema.verticalSkin) {
+       if (tema.mapaSkin) {
+          html += `<div class="mapa-skin-wrap" id="mapa-wrap-${tema.num}"><img class="mapa-bg" src="/workbook/assets/mapa-fondo.svg" alt="mapa"/><div class="mapa-ui"><svg width="100%" height="100%" viewBox="0 0 380 680" xmlns="http://www.w3.org/2000/svg"><text x="190" y="340" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="18" fill="rgba(184,137,42,0.5)" letter-spacing="0.15em">Las 4 dimensiones que siguen</text></svg></div></div>`;
+        } else if (tema.verticalSkin) {
           html += `<div class="slide-vertical-wrap" id="vertical-wrap-${tema.num}"></div>`;
         } else if (tema.netflixSkin) {
           html += `

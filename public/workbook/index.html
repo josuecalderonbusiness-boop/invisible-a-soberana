@@ -4398,7 +4398,7 @@
 .slide-panel-mapa{padding:0!important;background:#0E0D0D!important;position:relative;overflow:hidden;min-height:100vh;}
 .slide-panel-mapa .mapa-bg{width:100%;display:block;position:absolute;top:0;left:0;height:100%;object-fit:cover;}
 .slide-panel-mapa .mapa-ui{position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;}
-.mapa-skin-wrap{position:relative;width:100%;height:100vh;overflow:hidden;background:#0E0D0D;}
+.mapa-skin-wrap{position:relative;width:100%;height:100vh;max-height:100vh;overflow:hidden;background:#0E0D0D;}
 .mapa-overlay-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
 .mapa-gps{position:absolute;pointer-events:all;transform:translate(-50%,-100%);z-index:10;}
 @keyframes mapaPinBounce{0%,100%{transform:translateY(0);}40%{transform:translateY(-10px);}60%{transform:translateY(-6px);}}
@@ -4437,7 +4437,7 @@
 .mapa-popup-pending-sub{font-size:11px;color:rgba(245,236,215,0.4);line-height:1.6;}
 .mapa-popup-footer{padding:1rem;background:rgba(0,0,0,0.6);position:absolute;bottom:0;left:0;right:0;}
 .mapa-popup-cont{width:100%;padding:0.8rem;background:linear-gradient(135deg,#7a5810,#B8892A,#D4AF6A);color:#0E0D0D;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
-.mapa-start-wrap{position:absolute;bottom:1rem;left:1rem;right:1rem;z-index:10;}
+.mapa-start-wrap{position:absolute;bottom:4rem;left:1rem;right:1rem;z-index:10;}
 .mapa-start-btn{width:100%;padding:0.8rem;background:linear-gradient(135deg,#1a5a22,#2DB45A);color:#fff;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.05em;}
 .slide-vertical-wrap{position:relative;width:100%;height:100vh;height:100dvh;background:#000;overflow:hidden;}
 .slide-panel-vertical .slide-vertical-wrap{position:relative;width:100%;height:100%;z-index:1;}
@@ -10505,7 +10505,7 @@ function _buildSlideContent(slide, sectionId) {
 <div class="mapa-video-popup" id="mapa-popup">
 <div class="mapa-popup-header"><div class="mapa-popup-eye" id="mapa-popup-eye"></div><div class="mapa-popup-close" onclick="mapaClosePopup()">×</div></div>
 <div class="mapa-popup-video" id="mapa-popup-video"><div class="mapa-popup-pending"><div class="mapa-popup-pending-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,0.6)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg></div><div class="mapa-popup-pending-title" id="mapa-popup-name"></div><div class="mapa-popup-pending-sub">Video proximamente —<br/>esta dimension sera desbloqueada pronto.</div></div></div>
-<div class="mapa-popup-footer"><button class="mapa-popup-cont" onclick="mapaClosePopup()">Continuar conquista →</button></div>
+<div class="mapa-popup-footer" style="display:none;"><button class="mapa-popup-cont" onclick="mapaClosePopup()">Continuar conquista →</button></div>
 </div>
 <div class="mapa-start-wrap" id="mapa-start-wrap"><button class="mapa-start-btn" onclick="mapaStart()">Iniciar conquista</button></div>
 </div>`;

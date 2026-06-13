@@ -6369,12 +6369,9 @@ function podIrAT2() {
     }
     _updateSlideUI();
     setTimeout(function() {
-      const wrap = document.getElementById('vertical-wrap-2');
-      if (wrap && !document.getElementById('vertical-iframe-2')) {
-        const tema = _slides[idx] && _slides[idx].tema;
-        const libId = (tema && tema.bunnyLibrary) || '636956';
-        const videoId = tema && tema.bunnyVideoId;
-        wrap.innerHTML = '<iframe id="vertical-iframe-2" src="https://iframe.mediadelivery.net/embed/' + libId + '/' + videoId + '?autoplay=true&loop=false&muted=false&preload=true&responsive=true" allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;screen-wake-lock" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>';
+      const wrap = document.getElementById('mapa-wrap-2');
+      if (wrap) {
+        // mapa skin — no necesita iframe, el fondo SVG ya esta cargado
       }
     }, 600);
   }

@@ -6413,6 +6413,8 @@ function mapaStart() {
   _mapaStarted = true;
   const orbs = document.getElementById('mapa-gps-orbs');
   if (orbs) orbs.classList.add('hidden');
+  const btn = document.getElementById('slide-continue-btn');
+  if (btn) btn.style.display = 'none';
   mapaAnimRoute(0);
 }
 
@@ -10508,6 +10510,7 @@ function _buildSlideContent(slide, sectionId) {
 <div class="mapa-popup-footer" style="display:none;"><button class="mapa-popup-cont" onclick="mapaClosePopup()">Continuar conquista →</button></div>
 </div>
 <div class="mapa-start-wrap" id="mapa-start-wrap"><button class="mapa-start-btn" onclick="mapaStart()">Iniciar conquista</button></div>
+<script>setTimeout(function(){var b=document.getElementById('slide-continue-btn');if(b)b.style.display='none';},100);</script>
 </div>`;
         } else if (tema.verticalSkin) {
           html += `<div class="slide-vertical-wrap" id="vertical-wrap-${tema.num}"></div>`;

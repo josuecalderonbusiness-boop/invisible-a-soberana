@@ -4401,9 +4401,15 @@
 .mapa-skin-wrap{position:relative;width:100%;height:100vh;overflow:hidden;background:#0E0D0D;}
 .mapa-overlay-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
 .mapa-gps{position:absolute;pointer-events:all;transform:translate(-50%,-50%);transition:top 1.4s cubic-bezier(0.4,0,0.2,1),left 1.4s cubic-bezier(0.4,0,0.2,1);z-index:10;}
-.mapa-gps-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;border-radius:50%;border:1.5px solid #2DB45A;transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite;}
-.mapa-gps-ring2{position:absolute;top:50%;left:50%;width:30px;height:30px;border-radius:50%;border:1px solid rgba(45,180,90,0.4);transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite 0.6s;}
-.mapa-gps-center{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:#2DB45A;transform:translate(-50%,-50%);box-shadow:0 0 14px rgba(45,180,90,0.9);}
+.mapa-gps-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;border-radius:50%;border:1.5px solid #B8892A;transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite;}
+.mapa-gps-ring2{position:absolute;top:50%;left:50%;width:30px;height:30px;border-radius:50%;border:1px solid rgba(184,137,42,0.4);transform:translate(-50%,-50%);animation:mapaGpsPulse 2s ease-in-out infinite 0.6s;}
+.mapa-gps-center{position:absolute;top:50%;left:50%;width:14px;height:14px;border-radius:50%;background:#B8892A;transform:translate(-50%,-50%);box-shadow:0 0 14px rgba(184,137,42,0.9);}
+.mapa-gps-orbs{position:absolute;top:50%;left:50%;width:0;height:0;transition:opacity 0.4s;}
+.mapa-gps-orbs.hidden{opacity:0;pointer-events:none;}
+.mapa-tap-popup{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(14,13,13,0.92);border:1px solid rgba(184,137,42,0.5);border-radius:24px;padding:10px 20px;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#D4AF6A;font-family:'Inter',sans-serif;opacity:0;pointer-events:none;transition:opacity 0.4s;z-index:20;}
+.mapa-tap-popup.show{opacity:1;}
+@keyframes mapaTapPop{0%,100%{transform:translateX(-50%) scale(1);}50%{transform:translateX(-50%) scale(1.04);}}
+.mapa-tap-popup.show{animation:mapaTapPop 1.8s ease-in-out infinite;}
 @keyframes mapaGpsPulse{0%,100%{opacity:0.8;transform:translate(-50%,-50%) scale(1);}50%{opacity:0.15;transform:translate(-50%,-50%) scale(1.6);}}
 @keyframes mapaOrb1{0%{transform:rotate(0deg) translateX(18px) rotate(0deg);}100%{transform:rotate(360deg) translateX(18px) rotate(-360deg);}}
 @keyframes mapaOrb2{0%{transform:rotate(120deg) translateX(18px) rotate(-120deg);}100%{transform:rotate(480deg) translateX(18px) rotate(-480deg);}}
@@ -6404,6 +6410,8 @@ let _mapaCur = -1, _mapaUnl = 0, _mapaStarted = false;
 function mapaStart() {
   document.getElementById('mapa-start-wrap').style.display = 'none';
   _mapaStarted = true;
+  const orbs = document.getElementById('mapa-gps-orbs');
+  if (orbs) orbs.classList.add('hidden');
   mapaAnimRoute(0);
 }
 
@@ -6428,10 +6436,14 @@ function mapaActivateGem(idx) {
   _mapaCur = idx; _mapaUnl = idx;
   const el = document.getElementById('mapa-gem-' + idx);
   if (el) el.classList.add('active');
+  const tapPop = document.getElementById('mapa-tap-popup');
+  if (tapPop) tapPop.classList.add('show');
 }
 
 function mapaTabGem(idx) {
   if (idx !== _mapaCur) return;
+  const tapPop = document.getElementById('mapa-tap-popup');
+  if (tapPop) tapPop.classList.remove('show');
   const d = MAPA_GEMS[idx];
   const eyeEl = document.getElementById('mapa-popup-eye');
   const nameEl = document.getElementById('mapa-popup-name');
@@ -10496,13 +10508,14 @@ function _buildSlideContent(slide, sectionId) {
 <div class="mapa-gps-ring"></div>
 <div class="mapa-gps-ring2"></div>
 <div class="mapa-gps-center"></div>
-<div style="position:absolute;top:50%;left:50%;width:0;height:0;">
+<div class="mapa-gps-orbs" id="mapa-gps-orbs">
 <div style="position:absolute;transform-origin:0 0;animation:mapaOrb1 6s linear infinite;width:8px;height:8px;background:#B8892A;border-radius:50%;margin-left:-4px;margin-top:-4px;box-shadow:0 0 6px rgba(184,137,42,0.8);"></div>
 <div style="position:absolute;transform-origin:0 0;animation:mapaOrb2 6s linear infinite;width:7px;height:7px;background:#D4AF6A;border-radius:50%;margin-left:-3.5px;margin-top:-3.5px;box-shadow:0 0 5px rgba(212,175,106,0.8);"></div>
 <div style="position:absolute;transform-origin:0 0;animation:mapaOrb3 6s linear infinite;width:7px;height:7px;background:#B8892A;border-radius:50%;margin-left:-3.5px;margin-top:-3.5px;"></div>
 </div>
-<div style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:8px;letter-spacing:0.14em;color:rgba(45,180,90,0.55);text-transform:uppercase;font-family:'Inter',sans-serif;">Tu estas aqui</div>
+<div style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:8px;letter-spacing:0.14em;color:rgba(184,137,42,0.55);text-transform:uppercase;font-family:'Inter',sans-serif;">Estas aqui</div>
 </div>
+<div class="mapa-tap-popup" id="mapa-tap-popup">Toca la gema</div>
 <div class="mapa-gema" id="mapa-gem-0" style="top:32%;left:28%;" onclick="mapaTabGem(0)"><div class="mapa-gema-ring" style="background:rgba(45,180,90,0.25);"></div><img src="/workbook/assets/gemas/gema-semana1.png" alt="Identidad Soberana"/><div class="mapa-tap-hint">Toca aqui</div></div>
 <div class="mapa-gema" id="mapa-gem-1" style="top:47%;left:66%;" onclick="mapaTabGem(1)"><div class="mapa-gema-ring" style="background:rgba(139,26,47,0.3);"></div><img src="/workbook/assets/gemas/gema-semana2.png" alt="Energia Vital"/><div class="mapa-tap-hint">Toca aqui</div></div>
 <div class="mapa-gema" id="mapa-gem-2" style="top:63%;left:30%;" onclick="mapaTabGem(2)"><div class="mapa-gema-ring" style="background:rgba(29,158,117,0.25);"></div><img src="/workbook/assets/gemas/gema-semana3.png" alt="Soberania Financiera"/><div class="mapa-tap-hint">Toca aqui</div></div>

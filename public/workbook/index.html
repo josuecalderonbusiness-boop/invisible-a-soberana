@@ -6404,7 +6404,7 @@ const MAPA_GEMS = [
   {eye:'Reino III · Soberania Financiera',name:'Soberania Financiera',col:'#1D9E75',bunny:'PENDIENTE_GEMA3',top:'63%',left:'30%'},
   {eye:'Reino IV · Proposito Soberano',name:'Proposito Soberano',col:'#B8892A',bunny:'PENDIENTE_GEMA4',top:'76%',left:'65%'}
 ];
-const MAPA_OFFSETS = [1123,914,691,517];
+const MAPA_OFFSETS = [1650,1230,810,390];
 let _mapaCur = -1, _mapaUnl = 0, _mapaStarted = false;
 
 function mapaStart() {
@@ -10516,18 +10516,9 @@ function _buildSlideContent(slide, sectionId) {
 <stop offset="0%" stop-color="#2DB45A"/><stop offset="45%" stop-color="#B8892A"/><stop offset="100%" stop-color="#D4AF6A"/>
 </linearGradient>
 </defs>
-<path d="M192,668 Q234.0,633.9 230,580 Q175.0,570.0 150,520 Q196.2,493.2 200,440 Q146.2,416.5 130,360 Q179.0,341.3 190,290 Q133.5,280.3 106,230 Q119.4,268.5 160,265 Q230.5,280.4 274,338 Q227.0,359.0 220,410 Q194.8,448.0 150,440 Q122.9,423.7 114,454 Q161.4,463.6 175,510 Q199.6,550.7 247,547 Q207.3,506.3 215,450 Q221.5,383.0 180,330 Q135.8,261.4 140,180 Q188.6,135.7 192,70" stroke="rgba(184,137,42,0.12)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-<path id="mapa-route-on" d="M192,668 Q234.0,633.9 230,580 Q175.0,570.0 150,520 Q196.2,493.2 200,440 Q146.2,416.5 130,360 Q179.0,341.3 190,290 Q133.5,280.3 106,230 Q119.4,268.5 160,265 Q230.5,280.4 274,338 Q227.0,359.0 220,410 Q194.8,448.0 150,440 Q122.9,423.7 114,454 Q161.4,463.6 175,510 Q199.6,550.7 247,547 Q207.3,506.3 215,450 Q221.5,383.0 180,330 Q135.8,261.4 140,180 Q188.6,135.7 192,70" stroke="url(#mapaRG)" stroke-width="2.5" fill="none" stroke-linecap="round" filter="url(#mapaGS)" opacity="0" stroke-dasharray="1740" stroke-dashoffset="1740"/>
-<g>
-<circle cx="192" cy="62" r="36" fill="none" stroke="rgba(45,180,90,0.1)" stroke-width="1"><animate attributeName="r" values="36;50;36" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.05;0.4" dur="3s" repeatCount="indefinite"/></circle>
-<polygon points="192,36 210,50 210,70 192,82 174,70 174,50" fill="#0a1a0f" stroke="#2DB45A" stroke-width="1.5" filter="url(#mapaGS)" opacity="0.75"/>
-<polygon points="192,36 210,50 192,46" fill="rgba(45,180,90,0.38)"/>
-<polygon points="210,50 210,70 192,66 192,46" fill="rgba(45,180,90,0.14)"/>
-<polygon points="174,50 192,46 192,66 174,70" fill="rgba(45,180,90,0.17)"/>
-<line x1="174" y1="50" x2="210" y2="50" stroke="#2DB45A" stroke-width="0.5" opacity="0.35"/>
-<line x1="174" y1="70" x2="210" y2="70" stroke="#2DB45A" stroke-width="0.5" opacity="0.25"/>
-<text x="192" y="97" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="#2DB45A" letter-spacing="0.12em" filter="url(#mapaGM)">SOBERANA 7D</text>
-</g>
+<path d="M192,668 C180,648 158,632 148,608 C136,580 152,558 148,532 C144,505 122,492 114,465 C106,437 124,418 132,392 C142,362 148,342 138,315 C128,288 104,278 102,250 C100,222 122,206 128,180 C136,150 140,128 128,100 C118,76 96,62 92,36" stroke="rgba(184,137,42,0.12)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="mapa-route-on" d="M192,668 C180,648 158,632 148,608 C136,580 152,558 148,532 C144,505 122,492 114,465 C106,437 124,418 132,392 C142,362 148,342 138,315 C128,288 104,278 102,250 C100,222 122,206 128,180 C136,150 140,128 128,100 C118,76 96,62 92,36" stroke="url(#mapaRG)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#mapaGS)" opacity="0" stroke-dasharray="2200" stroke-dashoffset="2200"/>
+
 </svg>
 <div class="mapa-gps" id="mapa-gps" style="top:13%;left:50.5%;">
 <div class="mapa-gps-orbs" id="mapa-gps-orbs">

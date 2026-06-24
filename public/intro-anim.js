@@ -107,7 +107,7 @@
       el.style.opacity='1';
 
       setTimeout(function(){
-        karaokePhrase(el,160,function(){
+        karaokePhrase(el,240,function(){
           setTimeout(function(){
             el.style.transition='opacity .7s ease';
             el.style.opacity='0';

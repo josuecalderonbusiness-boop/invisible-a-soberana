@@ -427,8 +427,9 @@
   /* ── KEYFRAMES ───────────────────────────── */
   @keyframes starPop { 0% { transform:translateY(-50%) scale(0); opacity:0; } 60% { transform:translateY(-50%) scale(1.4); opacity:1; } 100% { transform:translateY(-50%) scale(1); opacity:1; } }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
-  .js-reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
-  .js-reveal.vis { opacity: 1; transform: translateY(0); }
+  .js-reveal { opacity: 0; transform: translateY(24px); filter: blur(0); transition: opacity .7s ease, transform .7s ease, filter .7s ease; }
+  .js-reveal.vis { opacity: 1; transform: translateY(0); filter: blur(0); }
+  .js-reveal.past { opacity: .3; transform: translateY(-8px); filter: blur(3px); }
   @keyframes qIn   { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes qOut  { to   { opacity: 0; transform: translateX(-32px); } }
   @keyframes glow  { 0%,100% { box-shadow: 0 0 16px rgba(184,137,42,.1); } 50% { box-shadow: 0 0 34px rgba(184,137,42,.26); } }
@@ -1630,7 +1631,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
       <!-- Fase 2: Card insight + play -->
       <div id="vo-card" style="opacity:0;transition:opacity .7s ease;">
         <div style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(184,137,42,.25);border-radius:14px;padding:24px 20px;margin-bottom:32px;text-align:left;">
-          <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:12px;">Me di cuenta de que</p>
+          <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:12px;">Me di cuenta de que...</p>
           <p id="video-insight-txt" style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:600;color:rgba(240,230,234,.88);line-height:1.6;margin:0;"></p>
         </div>
         <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
@@ -1689,8 +1690,8 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
     <!-- HERO: No te vendo información -->
     <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;">
       <p id="ws-l1" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;color:#F0E6EA;line-height:1.1;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">No te vendo informaci&#xF3;n.</p>
-      <p id="ws-l2" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.1;margin-top:4px;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">Te entrego el sistema.</p>
-      <p id="ws-l3" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;margin-top:20px;opacity:0;transition:opacity .6s ease;">Los cursos se olvidan. Este sistema vive contigo.</p>
+      <p id="ws-l2" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.1;margin-top:4px;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">Te entrego un sistema.</p>
+      <p id="ws-l3" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:500;font-style:italic;color:rgba(240,230,234,.5);margin-top:20px;opacity:0;transition:opacity .6s ease;line-height:1.5;">Porque los cursos se olvidan.<br>Este sistema vive contigo.</p>
       <button id="ws-arrow" onclick="wsReveal()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .5s ease;animation:s2pulse 2s ease infinite;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -1698,7 +1699,8 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
     <!-- MODULOS: aparecen después de la flecha -->
     <div id="ws-modules" style="display:none;padding:90px 28px 40px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;">
-      <p id="ws-label" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:28px;">En 90 minutos vas a:</p>
+      <p id="ws-label" style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:#F0E6EA;text-align:center;margin-bottom:8px;line-height:1.3;">En 90 minutos vas a:</p>
+      <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,#B8892A,transparent);margin:0 auto 28px;"></div>
 
       <div id="wsm1" style="background:rgba(139,26,47,.12);border:1px solid rgba(139,26,47,.3);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
         <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -1742,8 +1744,8 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 function wsAnimHero(){
   setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},600);
   setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},1800);
-  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},3200);
-  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},4000);
+  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},3500);
+  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},5000);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';
@@ -2641,9 +2643,9 @@ function showVideoScreen() {
       var insightBox=document.querySelector('#vo-card > div:first-child');
       var playArea=document.querySelector('#vo-card > div:nth-child(2)');
       var repLabel=document.querySelector('#vo-card > p');
-      if(insightBox){insightBox.style.opacity='0';insightBox.style.transform='translateY(12px)';insightBox.style.transition='opacity .5s ease,transform .5s ease';setTimeout(function(){insightBox.style.opacity='1';insightBox.style.transform='translateY(0)';var _wi=0;var _wiv=setInterval(function(){if(_wi>=_insightWords.length){clearInterval(_wiv);return;}insightEl.innerHTML+=(_wi>0?' ':'')+_insightWords[_wi];_wi++;},160);},200);}
-      if(playArea){playArea.style.opacity='0';playArea.style.transform='scale(0.85)';playArea.style.transition='opacity .5s ease,transform .5s ease';setTimeout(function(){playArea.style.opacity='1';playArea.style.transform='scale(1)';},500);}
-      if(repLabel){repLabel.style.opacity='0';repLabel.style.transition='opacity .4s ease';setTimeout(function(){repLabel.style.opacity='1';},800);}
+      if(insightBox){insightBox.style.opacity='0';insightBox.style.transform='translateY(12px)';insightBox.style.transition='opacity .5s ease,transform .5s ease';setTimeout(function(){insightBox.style.opacity='1';insightBox.style.transform='translateY(0)';var _wi=0;var _totalTime=_insightWords.length*240;var _wiv=setInterval(function(){if(_wi>=_insightWords.length){clearInterval(_wiv);setTimeout(function(){if(playArea){playArea.style.opacity='1';playArea.style.transform='scale(1)';}},400);setTimeout(function(){if(repLabel){repLabel.style.opacity='1';}},800);return;}insightEl.innerHTML+=(_wi>0?' ':'')+_insightWords[_wi];_wi++;},240);},200);}
+      if(playArea){playArea.style.opacity='0';playArea.style.transform='scale(0.85)';playArea.style.transition='opacity .5s ease,transform .5s ease';}
+      if(repLabel){repLabel.style.opacity='0';repLabel.style.transition='opacity .4s ease';}
     },100);
   },3000);
   const ctaTxt = document.getElementById('video-cta-txt');
@@ -3292,8 +3294,14 @@ function initGateWa(){
 (function(){
   var obs = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
-      if(e.isIntersecting){e.target.classList.add('vis');}
-      else{e.target.classList.remove('vis');}
+      if(e.isIntersecting){
+        e.target.classList.add('vis');
+        e.target.classList.remove('past');
+      } else {
+        e.target.classList.remove('vis');
+        if(e.boundingClientRect.top < 0) e.target.classList.add('past');
+        else e.target.classList.remove('past');
+      }
     });
   },{threshold:0.15});
   function observeAll(){document.querySelectorAll('.js-reveal').forEach(function(el){obs.observe(el);});}

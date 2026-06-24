@@ -1246,7 +1246,9 @@ const SoberanaAudio = {
 
 #s-intro .si-hand{position:absolute;top:0;left:0;right:0;text-align:center;opacity:0;}
 
-#s-intro .si-hand-txt{font-family:'Caveat',cursive;font-size:clamp(28px,7vw,38px);font-weight:600;color:#E8C870;white-space:nowrap;overflow:hidden;display:inline-block;border-right:2px solid #E8C870;width:0;line-height:1.3;}
+#s-intro .si-hand-txt{font-family:'Caveat',cursive;font-size:clamp(28px,7vw,38px);font-weight:600;color:#E8C870;display:inline;line-height:1.3;}
+
+#s-intro .si-hand-cursor{display:inline-block;width:2px;height:.9em;background:#E8C870;vertical-align:middle;margin-left:2px;animation:siBlink .6s step-end infinite;}
 
 #s-intro .si-hand-sub{display:block;font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-style:italic;color:rgba(240,230,234,.45);margin-top:10px;opacity:0;transition:opacity .6s ease;}
 
@@ -1274,7 +1276,7 @@ const SoberanaAudio = {
     <div class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</div>
     <div class="si-phrase"><strong style="color:#E8C870;font-style:normal;font-weight:600;">No eres t&#xFA; la que est&#xE1; fallando.</strong></div>
     <div class="si-phrase">Es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</div>
-    <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-sub" id="siHandSub">solo dame 2 minutos</span></div>
+    <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-cursor" id="siHandCur"></span><br><span class="si-hand-sub" id="siHandSub">solo dame 2 minutos</span></div>
   </div>
 </div>
 

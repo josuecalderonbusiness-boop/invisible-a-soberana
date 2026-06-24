@@ -41,16 +41,14 @@
 
   function typewrite(el,text,speed,cb){
     var i=0;
-    el.style.width='auto';
-    var fullW=el.scrollWidth;
-    el.style.width='0';
     function tick(){
       if(i<=text.length){
         el.textContent=text.substring(0,i);
         i++;
         setTimeout(tick,speed);
       } else {
-        el.style.borderRight='none';
+        var cur=document.getElementById('siHandCur');
+        if(cur) cur.style.display='none';
         if(cb) cb();
       }
     }
@@ -72,14 +70,13 @@
           hand.style.transition='opacity .5s ease';
           hand.style.opacity='1';
           var txt=document.getElementById('siHandTxt');
-          txt.style.width='auto';
           typewrite(txt,'Vamos a despejar esto rápido.',55,function(){
             setTimeout(function(){
               document.getElementById('siHandSub').style.opacity='1';
             },400);
             setTimeout(function(){
               fadeOut(mid,cb);
-            },2800);
+            },4000);
           });
         },300);
         return;

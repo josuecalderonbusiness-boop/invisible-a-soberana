@@ -1208,9 +1208,15 @@ const SoberanaAudio = {
 
 #s-intro .si-gold{font-family:var(--font-display);font-style:italic;font-weight:700;font-size:clamp(38px,10vw,72px);color:#e8c97e;letter-spacing:-.01em;line-height:1.08;opacity:0;filter:brightness(4);margin-top:4px;}
 
-#s-intro .si-txt{font-style:italic;font-weight:400;font-size:clamp(19px,5vw,25px);color:#1a1a1a;line-height:1.65;max-width:420px;opacity:0;transform:translateY(14px);}
+#s-intro .si-txt{font-style:italic;font-weight:400;font-size:clamp(19px,5vw,25px);color:#1a1a1a;line-height:1.65;max-width:420px;opacity:1;transform:none;}
 
-#s-intro .si-dot{display:inline-block;opacity:0;}
+#s-intro .si-word{display:inline-block;opacity:0;transform:translateY(18px);filter:blur(8px);transition:opacity .55s cubic-bezier(.23,1,.32,1),transform .55s cubic-bezier(.23,1,.32,1),filter .55s cubic-bezier(.23,1,.32,1);}
+
+#s-intro .si-word.in{opacity:1;transform:translateY(0);filter:blur(0);}
+
+#s-intro .si-dot{display:inline-block;opacity:0;transform:translateY(10px);filter:blur(6px);transition:opacity .4s ease,transform .4s ease,filter .4s ease;}
+
+#s-intro .si-dot.in{opacity:1;transform:translateY(0);filter:blur(0);}
 
 #s-intro .si-cur{display:inline-block;width:2px;height:1em;background:#1a1a1a;vertical-align:middle;margin-left:1px;opacity:0;}
 
@@ -1252,7 +1258,7 @@ const SoberanaAudio = {
 
   <div style="max-width:420px;">
 
-    <div class="si-txt" id="siTxt">Este esc&#xE1;ner analiza tu frecuencia relacional y te dice exactamente qu&#xE9; est&#xE1; bloqueando la conexi&#xF3;n<span class="si-dot" id="siD1">.</span><span class="si-dot" id="siD2">.</span><span class="si-dot" id="siD3">.</span><span class="si-cur" id="siCur"></span>&nbsp;<span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt">con tu pareja.</span></span></div>
+    <div class="si-txt" id="siTxt"><span class="si-word">Este</span> <span class="si-word">esc&#xE1;ner</span> <span class="si-word">analiza</span> <span class="si-word">tu</span> <span class="si-word">frecuencia</span> <span class="si-word">relacional</span> <span class="si-word">y</span> <span class="si-word">te</span> <span class="si-word">dice</span> <span class="si-word">exactamente</span> <span class="si-word">qu&#xE9;</span> <span class="si-word">est&#xE1;</span> <span class="si-word">bloqueando</span> <span class="si-word">la</span> <span class="si-word">conexi&#xF3;n</span><span class="si-dot" id="siD1">.</span><span class="si-dot" id="siD2">.</span><span class="si-dot" id="siD3">.</span><span class="si-cur" id="siCur"></span>&nbsp;<span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt"><span class="si-word">con</span> <span class="si-word">tu</span> <span class="si-word">pareja.</span></span></span></div>
 
     <div class="si-meta" id="siMeta">5 PREGUNTAS &middot; 3 MINUTOS</div>
 

@@ -1,4 +1,4 @@
-﻿(function(){
+(function(){
   var GAP=225;
 
   function animS1(cb){
@@ -40,56 +40,69 @@
   }
 
   function animS2(){
-    var mt=document.getElementById('siTxt');
-    mt.style.transition='opacity .7s ease,transform .7s ease';
-    mt.style.opacity='1';
-    mt.style.transform='none';
+    var words=document.querySelectorAll('#siTxt .si-word');
+    var STAGGER=85;
+    words.forEach(function(w,i){
+      setTimeout(function(){
+        w.classList.add('in');
+      },i*STAGGER);
+    });
+
+    var lastWordTime=words.length*STAGGER;
+
+    setTimeout(function(){
+      var d=document.getElementById('siD1');
+      d.classList.add('in');
+    },lastWordTime+200);
+    setTimeout(function(){
+      var d=document.getElementById('siD2');
+      d.classList.add('in');
+    },lastWordTime+500);
+    setTimeout(function(){
+      var d=document.getElementById('siD3');
+      d.classList.add('in');
+    },lastWordTime+800);
+
     setTimeout(function(){
       var c=document.getElementById('siCur');
       c.style.opacity='1';
       c.style.animation='siBlink .7s step-end infinite';
-    },900);
-    setTimeout(function(){
-      var d=document.getElementById('siD1');
-      d.style.transition='opacity .15s ease';
-      d.style.opacity='1';
-    },1400);
-    setTimeout(function(){
-      var d=document.getElementById('siD2');
-      d.style.transition='opacity .15s ease';
-      d.style.opacity='1';
-    },1800);
-    setTimeout(function(){
-      var d=document.getElementById('siD3');
-      d.style.transition='opacity .15s ease';
-      d.style.opacity='1';
-    },2200);
+    },lastWordTime+1000);
+
     setTimeout(function(){
       var c=document.getElementById('siCur');
       c.style.animation='none';
       c.style.opacity='0';
-    },2600);
+    },lastWordTime+1800);
+
     setTimeout(function(){
       var h=document.getElementById('siHlt');
       h.style.transition='opacity .3s ease';
       h.style.opacity='1';
-    },2800);
+      var hlWords=h.querySelectorAll('.si-word');
+      hlWords.forEach(function(w,i){
+        setTimeout(function(){ w.classList.add('in'); },i*STAGGER);
+      });
+    },lastWordTime+2000);
+
     setTimeout(function(){
       var hbg=document.getElementById('siHbg');
       hbg.style.transition='transform .6s cubic-bezier(.4,0,.2,1)';
       hbg.style.transform='scaleX(1)';
-    },3200);
+    },lastWordTime+2400);
+
     setTimeout(function(){
       var m=document.getElementById('siMeta');
       m.style.transition='opacity .6s ease';
       m.style.opacity='1';
-    },4000);
+    },lastWordTime+3000);
+
     setTimeout(function(){
       var b=document.getElementById('siBtnW');
       b.style.transition='opacity .6s ease,transform .6s ease';
       b.style.opacity='1';
       b.style.transform='none';
-    },4400);
+    },lastWordTime+3400);
   }
 
   function run(){

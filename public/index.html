@@ -18,7 +18,7 @@
 .gcbot{margin-top:16px;padding-top:12px;border-top:1px solid rgba(94,18,36,.15);font-family:Jost,sans-serif;font-size:9px;letter-spacing:2.5px;color:#8B6520;text-transform:uppercase}
 
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --wine-deep: #3D0C11;
@@ -1244,6 +1244,12 @@ const SoberanaAudio = {
 
 #s-intro .si-conv strong{font-weight:600;color:#E8C870;font-style:normal;}
 
+#s-intro .si-hand{position:absolute;top:0;left:0;right:0;text-align:center;opacity:0;}
+
+#s-intro .si-hand-txt{font-family:'Caveat',cursive;font-size:clamp(28px,7vw,38px);font-weight:600;color:#E8C870;white-space:nowrap;overflow:hidden;display:inline-block;border-right:2px solid #E8C870;width:0;line-height:1.3;}
+
+#s-intro .si-hand-sub{display:block;font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-style:italic;color:rgba(240,230,234,.45);margin-top:10px;opacity:0;transition:opacity .6s ease;}
+
 </style>
 
 <div class="si-s1" id="siS1">
@@ -1266,7 +1272,9 @@ const SoberanaAudio = {
   <div class="si-conv" id="siConv">
     <div class="si-phrase">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</div>
     <div class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</div>
-    <div class="si-phrase"><strong style="color:#E8C870;font-style:normal;font-weight:600;">No eres t&#xFA; la que est&#xE1; fallando;</strong><br>es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</div>
+    <div class="si-phrase"><strong style="color:#E8C870;font-style:normal;font-weight:600;">No eres t&#xFA; la que est&#xE1; fallando.</strong></div>
+    <div class="si-phrase">Es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</div>
+    <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-sub" id="siHandSub">solo dame 2 minutos</span></div>
   </div>
 </div>
 

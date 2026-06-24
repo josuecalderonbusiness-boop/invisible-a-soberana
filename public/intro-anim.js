@@ -39,27 +39,59 @@
     el.style.pointerEvents='all';
   }
 
+  function typewrite(el,text,speed,cb){
+    var i=0;
+    el.style.width='auto';
+    var fullW=el.scrollWidth;
+    el.style.width='0';
+    function tick(){
+      if(i<=text.length){
+        el.textContent=text.substring(0,i);
+        i++;
+        setTimeout(tick,speed);
+      } else {
+        el.style.borderRight='none';
+        if(cb) cb();
+      }
+    }
+    tick();
+  }
+
   function animMid(cb){
     var mid=document.getElementById('siMid');
     fadeIn(mid);
 
-    var phrases=document.querySelectorAll('#siConv .si-phrase');
+    var phrases=document.querySelectorAll('#siConv > .si-phrase');
+    var hand=document.getElementById('siHand');
     var delay=600;
 
     function showPhrase(i){
       if(i>=phrases.length){
-        setTimeout(function(){ fadeOut(mid,cb); },800);
+        // Show handwritten text
+        setTimeout(function(){
+          hand.style.transition='opacity .5s ease';
+          hand.style.opacity='1';
+          var txt=document.getElementById('siHandTxt');
+          txt.style.width='auto';
+          typewrite(txt,'Vamos a despejar esto rápido.',55,function(){
+            setTimeout(function(){
+              document.getElementById('siHandSub').style.opacity='1';
+            },400);
+            setTimeout(function(){
+              fadeOut(mid,cb);
+            },2800);
+          });
+        },300);
         return;
       }
-      // fade in
+
       setTimeout(function(){
         phrases[i].style.transition='opacity .7s ease,filter .7s ease';
         phrases[i].style.opacity='1';
         phrases[i].style.filter='blur(0)';
       },delay);
 
-      // hold for reading then fade out
-      var readTime = phrases[i].textContent.length * 80 + 1200;
+      var readTime=phrases[i].textContent.length*80+1400;
       setTimeout(function(){
         phrases[i].style.transition='opacity .6s ease';
         phrases[i].style.opacity='0';

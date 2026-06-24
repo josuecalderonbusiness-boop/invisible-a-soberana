@@ -1236,13 +1236,11 @@ const SoberanaAudio = {
 
 #s-intro .si-note{margin-top:10px;font-size:11px;color:rgba(26,26,26,.35);}
 
-#s-intro .si-mid{position:absolute;inset:0;background:var(--charcoal-deep);display:flex;flex-direction:column;justify-content:center;padding:52px 28px;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:1;}
+#s-intro .si-mid{position:absolute;inset:0;background:var(--charcoal-deep);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:52px 28px;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:1;}
 
-#s-intro .si-mid .si-phrase{display:inline;opacity:0;filter:blur(6px);transition:opacity .9s cubic-bezier(.23,1,.32,1),filter .9s cubic-bezier(.23,1,.32,1);}
+#s-intro .si-mid .si-phrase{position:absolute;top:0;left:0;right:0;opacity:0;filter:blur(6px);font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;text-align:center;}
 
-#s-intro .si-mid .si-phrase.in{opacity:1;filter:blur(0);}
-
-#s-intro .si-conv{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;max-width:420px;}
+#s-intro .si-conv{position:relative;width:100%;max-width:420px;min-height:200px;}
 
 #s-intro .si-conv strong{font-weight:600;color:#E8C870;font-style:normal;}
 
@@ -1266,9 +1264,9 @@ const SoberanaAudio = {
 
 <div class="si-mid" id="siMid">
   <div class="si-conv" id="siConv">
-    <span class="si-phrase">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</span><br><br>
-    <span class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola,</span> <span class="si-phrase">mientras &#xE9;l parece estar en otro mundo.</span><br><br>
-    <span class="si-phrase"><strong>No eres t&#xFA; la que est&#xE1; fallando;</strong></span> <span class="si-phrase">es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</span>
+    <div class="si-phrase">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</div>
+    <div class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</div>
+    <div class="si-phrase"><strong style="color:#E8C870;font-style:normal;font-weight:600;">No eres t&#xFA; la que est&#xE1; fallando;</strong><br>es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</div>
   </div>
 </div>
 

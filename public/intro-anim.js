@@ -39,23 +39,35 @@
     el.style.pointerEvents='all';
   }
 
-  function animPhrases(container,stagger,cb){
-    var phrases=container.querySelectorAll('.si-phrase');
-    phrases.forEach(function(p,i){
-      setTimeout(function(){ p.classList.add('in'); },i*stagger);
-    });
-    var total=phrases.length*stagger+900;
-    setTimeout(cb,total);
-  }
-
   function animMid(cb){
     var mid=document.getElementById('siMid');
     fadeIn(mid);
-    setTimeout(function(){
-      animPhrases(document.getElementById('siConv'),1400,function(){
-        setTimeout(cb,2000);
-      });
-    },600);
+
+    var phrases=document.querySelectorAll('#siConv .si-phrase');
+    var delay=600;
+
+    function showPhrase(i){
+      if(i>=phrases.length){
+        setTimeout(function(){ fadeOut(mid,cb); },800);
+        return;
+      }
+      // fade in
+      setTimeout(function(){
+        phrases[i].style.transition='opacity .7s ease,filter .7s ease';
+        phrases[i].style.opacity='1';
+        phrases[i].style.filter='blur(0)';
+      },delay);
+
+      // hold for reading then fade out
+      var readTime = phrases[i].textContent.length * 80 + 1200;
+      setTimeout(function(){
+        phrases[i].style.transition='opacity .6s ease';
+        phrases[i].style.opacity='0';
+        setTimeout(function(){ showPhrase(i+1); },700);
+      },delay+readTime);
+    }
+
+    showPhrase(0);
   }
 
   function animS2(){
@@ -79,11 +91,9 @@
     animS1(function(){
       fadeOut(document.getElementById('siS1'),function(){
         animMid(function(){
-          fadeOut(document.getElementById('siMid'),function(){
-            var s2=document.getElementById('siS2');
-            fadeIn(s2);
-            setTimeout(animS2,600);
-          });
+          var s2=document.getElementById('siS2');
+          fadeIn(s2);
+          setTimeout(animS2,600);
         });
       });
     });

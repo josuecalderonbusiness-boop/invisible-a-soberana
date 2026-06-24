@@ -1,5 +1,4 @@
 (function(){
-  var GAP=225;
 
   function animS1(cb){
     var words=document.querySelectorAll('#siS1 .si-w');
@@ -27,87 +26,65 @@
     },675+200+750);
   }
 
-  function transicion(cb){
-    var s1=document.getElementById('siS1');
-    s1.style.transition='opacity .9s ease';
-    s1.style.opacity='0';
-    setTimeout(function(){s1.style.pointerEvents='none';},900);
-    var s2=document.getElementById('siS2');
-    s2.style.transition='opacity .9s ease';
-    s2.style.opacity='1';
-    s2.style.pointerEvents='all';
+  function fadeOut(el,cb){
+    el.style.transition='opacity .9s ease';
+    el.style.opacity='0';
+    setTimeout(function(){el.style.pointerEvents='none';},900);
     setTimeout(cb,900);
   }
 
-  function animS2(){
-    var phrases=document.querySelectorAll('#siTxt > .si-phrase');
-    var STAGGER=1200;
+  function fadeIn(el){
+    el.style.transition='opacity .9s ease';
+    el.style.opacity='1';
+    el.style.pointerEvents='all';
+  }
 
+  function animPhrases(container,stagger,cb){
+    var phrases=container.querySelectorAll('.si-phrase');
     phrases.forEach(function(p,i){
-      setTimeout(function(){
-        p.classList.add('in');
-      },i*STAGGER);
+      setTimeout(function(){ p.classList.add('in'); },i*stagger);
+    });
+    var total=phrases.length*stagger+900;
+    setTimeout(cb,total);
+  }
+
+  function animMid(cb){
+    var mid=document.getElementById('siMid');
+    fadeIn(mid);
+    setTimeout(function(){
+      animPhrases(document.getElementById('siConv'),1400,function(){
+        setTimeout(cb,2000);
+      });
+    },600);
+  }
+
+  function animS2(){
+    var phrases=document.querySelectorAll('#siTxt .si-phrase');
+    var STAGGER=1200;
+    phrases.forEach(function(p,i){
+      setTimeout(function(){ p.classList.add('in'); },i*STAGGER);
     });
 
     var afterPhrases=phrases.length*STAGGER;
-
-    setTimeout(function(){
-      var d=document.getElementById('siD1');
-      d.classList.add('in');
-    },afterPhrases+400);
-    setTimeout(function(){
-      var d=document.getElementById('siD2');
-      d.classList.add('in');
-    },afterPhrases+900);
-    setTimeout(function(){
-      var d=document.getElementById('siD3');
-      d.classList.add('in');
-    },afterPhrases+1400);
-
-    setTimeout(function(){
-      var c=document.getElementById('siCur');
-      c.style.opacity='1';
-      c.style.animation='siBlink .7s step-end infinite';
-    },afterPhrases+1800);
-
-    setTimeout(function(){
-      var c=document.getElementById('siCur');
-      c.style.animation='none';
-      c.style.opacity='0';
-    },afterPhrases+3000);
-
-    setTimeout(function(){
-      var h=document.getElementById('siHlt');
-      h.style.transition='opacity .3s ease';
-      h.style.opacity='1';
-      var hlPhrase=h.querySelector('.si-phrase');
-      if(hlPhrase) hlPhrase.classList.add('in');
-    },afterPhrases+3200);
-
-    setTimeout(function(){
-      var hbg=document.getElementById('siHbg');
-      hbg.style.transition='transform .6s cubic-bezier(.4,0,.2,1)';
-      hbg.style.transform='scaleX(1)';
-    },afterPhrases+3800);
-
-    setTimeout(function(){
-      var m=document.getElementById('siMeta');
-      m.style.transition='opacity .6s ease';
-      m.style.opacity='1';
-    },afterPhrases+4600);
 
     setTimeout(function(){
       var b=document.getElementById('siBtnW');
       b.style.transition='opacity .6s ease,transform .6s ease';
       b.style.opacity='1';
       b.style.transform='none';
-    },afterPhrases+5200);
+    },afterPhrases+400);
   }
 
   function run(){
     animS1(function(){
-      transicion(function(){
-        animS2();
+      fadeOut(document.getElementById('siS1'),function(){
+        animMid(function(){
+          fadeOut(document.getElementById('siMid'),function(){
+            var s2=document.getElementById('siS2');
+            fadeIn(s2);
+            setTimeout(animS2,600);
+          });
+        });
       });
     });
   }

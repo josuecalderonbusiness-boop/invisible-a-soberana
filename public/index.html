@@ -1236,6 +1236,16 @@ const SoberanaAudio = {
 
 #s-intro .si-note{margin-top:10px;font-size:11px;color:rgba(26,26,26,.35);}
 
+#s-intro .si-mid{position:absolute;inset:0;background:var(--charcoal-deep);display:flex;flex-direction:column;justify-content:center;padding:52px 28px;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:1;}
+
+#s-intro .si-mid .si-phrase{display:inline;opacity:0;filter:blur(6px);transition:opacity .9s cubic-bezier(.23,1,.32,1),filter .9s cubic-bezier(.23,1,.32,1);}
+
+#s-intro .si-mid .si-phrase.in{opacity:1;filter:blur(0);}
+
+#s-intro .si-conv{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;max-width:420px;}
+
+#s-intro .si-conv strong{font-weight:600;color:#E8C870;font-style:normal;}
+
 </style>
 
 <div class="si-s1" id="siS1">
@@ -1254,15 +1264,21 @@ const SoberanaAudio = {
 
 </div>
 
+<div class="si-mid" id="siMid">
+  <div class="si-conv" id="siConv">
+    <span class="si-phrase">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</span><br><br>
+    <span class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola,</span> <span class="si-phrase">mientras &#xE9;l parece estar en otro mundo.</span><br><br>
+    <span class="si-phrase"><strong>No eres t&#xFA; la que est&#xE1; fallando;</strong></span> <span class="si-phrase">es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</span>
+  </div>
+</div>
+
 <div class="si-s2" id="siS2">
 
   <div style="max-width:420px;">
 
-    <div class="si-txt" id="siTxt"><span class="si-phrase">Este esc&#xE1;ner analiza tu frecuencia relacional</span> <span class="si-phrase">y te dice exactamente</span> <span class="si-phrase">qu&#xE9; est&#xE1; bloqueando la conexi&#xF3;n</span><span class="si-cur" id="siCur"></span><br><span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt"><span class="si-phrase">con tu pareja.</span></span></span></div>
+    <div class="si-txt" id="siTxt"><span class="si-phrase">Vamos a despejar esto r&#xE1;pido.</span><br><br><span class="si-phrase">En 5 preguntas, te dir&#xE9; cu&#xE1;l es el nudo que impide que conecten</span> <span class="si-phrase">y te dejar&#xE9; 3 llaves simples que puedes usar <strong style="color:#1a1a1a;font-weight:700;">esta misma semana.</strong></span><br><br><span class="si-phrase">No es teor&#xED;a, es lo que necesitas para recuperar tu tranquilidad y tu lugar.</span><br><br><span class="si-phrase" style="font-style:normal;font-weight:500;color:#1a1a1a;">Vamos a quitarle presi&#xF3;n a esto, &#xBF;empezamos?</span></div>
 
-    <div class="si-meta" id="siMeta">5 PREGUNTAS &middot; 3 MINUTOS</div>
-
-    <div class="si-btnw" id="siBtnW"><button class="si-btn" onclick="abrirPopup()">Iniciar mi esc&#xE1;ner &rarr;</button><p class="si-note">Es una herramienta de diagn&#xF3;stico. No un anuncio.</p></div>
+    <div class="si-btnw" id="siBtnW"><button class="si-btn" onclick="abrirPopup()">Empezar, vamos &rarr;</button></div>
 
   </div>
 

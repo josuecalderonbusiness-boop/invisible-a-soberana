@@ -1766,193 +1766,58 @@ function wsNextCard(n){
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">
 <style>
-#s-demo{background:radial-gradient(ellipse at 50% 30%,#2A1C21,#1E1218 70%);align-items:center;justify-content:center;padding:0 24px;height:100vh;overflow:hidden;}
-.demo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;max-width:400px;margin:0 auto;padding-top:80px;}
-.demo-screen-label{font-family:Inter,sans-serif;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#D4A843;margin-bottom:12px;text-align:center;min-height:16px;}
-.demo-phone{width:280px;height:560px;border-radius:40px;border:3px solid #2A2A2A;background:#0F0A0B;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(184,137,42,.3),0 0 80px rgba(184,137,42,.15),inset 0 0 0 1px rgba(255,255,255,.05);}
-.demo-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:100px;height:24px;background:#000;border-radius:0 0 16px 16px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
-.demo-notch::after{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
-.dp-screen{position:absolute;inset:0;padding:44px 20px 20px;opacity:0;pointer-events:none;transition:opacity .4s ease;display:flex;flex-direction:column;}
-.dp-screen.dp-active{opacity:1;pointer-events:auto;}
-.dp-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#EDE3CE;text-align:center;margin-bottom:16px;margin-top:8px;}
-.dp-tooltip{background:rgba(15,10,11,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(184,137,42,.3);border-radius:12px;padding:12px 14px;margin-top:auto;opacity:0;transform:translateY(8px);transition:opacity .5s ease .8s,transform .5s ease .8s;}
-.dp-screen.dp-active .dp-tooltip{opacity:1;transform:translateY(0);}
-.dp-tooltip p{font-family:'Playfair Display',serif;font-size:13px;color:#EDE3CE;line-height:1.5;margin:0;}
-/* Screen 1 nodes */
-.demo-path{display:flex;flex-direction:column;align-items:center;gap:0;flex:1;justify-content:center;}
-.demo-node-row{display:flex;align-items:center;gap:10px;}
-.demo-node{width:16px;height:16px;border-radius:50%;border:2px solid rgba(184,137,42,.3);background:transparent;transition:background .3s,border-color .3s,box-shadow .3s;}
-.demo-node.lit{background:#D4A843;border-color:#E8C870;box-shadow:0 0 10px rgba(212,168,67,.5);}
-.demo-node-gem{font-size:11px;opacity:0;transition:opacity .3s;}
-.demo-node.lit+.demo-node-gem,.demo-node-row:has(.lit) .demo-node-gem{opacity:1;}
-.demo-line{width:2px;height:28px;background:rgba(184,137,42,.15);margin:0 auto;}
-/* Screen 2 feed */
-.demo-feed{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center;}
-.demo-fcard{background:rgba(255,255,255,.04);border:1px solid rgba(184,137,42,.15);border-radius:10px;padding:12px;display:flex;align-items:center;justify-content:space-between;opacity:0;transform:translateY(16px);transition:opacity .35s ease,transform .35s ease;}
-.demo-fcard.fin{opacity:1;transform:translateY(0);}
-.demo-fcard-txt{font-family:Inter,sans-serif;font-size:12px;color:#EDE3CE;line-height:1.4;}
-.demo-fcard-heart{display:flex;align-items:center;gap:4px;font-size:11px;color:#C97080;transition:transform .2s;}
-.demo-fcard-heart.pop{animation:heartPop .4s ease;}
-@keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
-/* Screen 3 tools */
-.demo-tools{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center;}
-.demo-tcard{background:rgba(255,255,255,.04);border:1px solid rgba(184,137,42,.2);border-radius:12px;padding:16px;animation:toolPulse 2.5s ease-in-out infinite;}
-@keyframes toolPulse{0%,100%{border-color:rgba(184,137,42,.2)}50%{border-color:rgba(184,137,42,.45)}}
-.demo-tcard-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#EDE3CE;margin-bottom:10px;}
-.demo-eres-row{display:flex;gap:8px;}
-.demo-eres-letter{width:28px;height:28px;border-radius:50%;background:rgba(184,137,42,.15);border:1px solid rgba(184,137,42,.3);display:flex;align-items:center;justify-content:center;font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#D4A843;}
-.demo-q-icon{width:36px;height:36px;border-radius:50%;background:rgba(184,137,42,.12);border:1px solid rgba(184,137,42,.25);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:#D4A843;}
-/* Screen 4 progress */
-.demo-progress-wrap{display:flex;flex-direction:column;align-items:center;flex:1;justify-content:center;gap:14px;}
-.demo-ring-wrap{position:relative;width:120px;height:120px;}
-.demo-ring-svg{width:120px;height:120px;transform:rotate(-90deg);}
-.demo-ring-bg{fill:none;stroke:rgba(184,137,42,.12);stroke-width:8;}
-.demo-ring-fill{fill:none;stroke:#D4A843;stroke-width:8;stroke-linecap:round;stroke-dasharray:314;stroke-dashoffset:314;transition:stroke-dashoffset 1.5s ease;}
-.demo-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#E8C870;}
-.demo-stats{font-family:Inter,sans-serif;font-size:11px;color:rgba(237,227,206,.6);text-align:center;letter-spacing:.5px;}
-.demo-gems{display:flex;gap:10px;margin-top:4px;}
-.demo-gem{font-size:16px;filter:drop-shadow(0 0 6px rgba(212,168,67,.4));}
-/* Nav */
-.demo-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px;}
-.demo-arrow{background:none;border:1px solid rgba(184,137,42,.3);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#D4A843;font-size:16px;transition:background .2s,border-color .2s;}
-.demo-arrow:hover{background:rgba(184,137,42,.1);border-color:#D4A843;}
-.demo-dots{display:flex;gap:8px;}
-.demo-dot{width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.2);transition:background .3s,transform .3s;cursor:pointer;}
-.demo-dot.on{background:#D4A843;transform:scale(1.3);}
-.demo-cta-wrap{margin-top:20px;text-align:center;}
-@keyframes ctaPulseDemo{0%,100%{box-shadow:0 6px 24px rgba(107,26,42,.45)}50%{box-shadow:0 6px 24px rgba(107,26,42,.45),0 0 28px rgba(184,137,42,.25)}}
+#s-demo{background:radial-gradient(ellipse at 50% 30%,#2A1C21,#1E1218 70%);align-items:center;justify-content:center;padding:0 24px;min-height:100vh;overflow:hidden;}
+.demo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;width:100%;max-width:400px;margin:0 auto;padding:90px 0 40px;}
+.demo-intro{text-align:center;margin-bottom:20px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
+.demo-intro.in{opacity:1;transform:translateY(0);}
+.demo-phone{width:260px;height:520px;border-radius:36px;border:3px solid #2A2A2A;background:#000;position:relative;overflow:hidden;box-shadow:0 0 50px rgba(184,137,42,.35),0 0 100px rgba(184,137,42,.15),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05);animation:phoneGlow 4s ease-in-out infinite;}
+@keyframes phoneGlow{0%,100%{box-shadow:0 0 50px rgba(184,137,42,.3),0 0 100px rgba(184,137,42,.12),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05)}50%{box-shadow:0 0 60px rgba(184,137,42,.45),0 0 120px rgba(184,137,42,.2),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}}
+.demo-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
+.demo-notch::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
+.demo-phone iframe{position:absolute;top:0;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;}
+.demo-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 18px;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,transparent 100%);z-index:10;border-radius:0 0 33px 33px;}
+.demo-overlay p{font-family:'Playfair Display',serif;font-size:clamp(13px,3.5vw,15px);font-weight:600;color:#EDE3CE;line-height:1.45;text-align:center;margin:0;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+.demo-caption{margin-top:20px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
+.demo-caption.in{opacity:1;transform:translateY(0);}
+.demo-caption p{font-family:'Playfair Display',serif;font-size:clamp(15px,4vw,19px);font-weight:600;color:rgba(237,227,206,.8);line-height:1.55;margin:0;}
+.demo-caption p strong{color:#E8C870;font-weight:700;}
+.demo-cta-wrap{margin-top:28px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
+.demo-cta-wrap.in{opacity:1;transform:translateY(0);}
 </style>
 
 <div class="demo-wrap">
-  <div class="demo-screen-label" id="demo-label">Tu mapa de transformacion</div>
+
+  <div class="demo-intro" id="demo-intro">
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">Mira el sistema</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.2;margin-bottom:8px;">por dentro</p>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;">No es un curso. Es tu centro de mando.</p>
+  </div>
 
   <div class="demo-phone">
     <div class="demo-notch"></div>
-
-    <!-- Screen 1: Mapa -->
-    <div class="dp-screen dp-active" id="dp-0">
-      <div class="dp-title">Tu mapa de transformacion</div>
-      <div class="demo-path">
-        <div class="demo-node-row"><div class="demo-node" data-n="0"></div><span class="demo-node-gem">&#x1F48E;</span></div>
-        <div class="demo-line"></div>
-        <div class="demo-node-row"><div class="demo-node" data-n="1"></div><span class="demo-node-gem">&#x1F48E;</span></div>
-        <div class="demo-line"></div>
-        <div class="demo-node-row"><div class="demo-node" data-n="2"></div><span class="demo-node-gem">&#x1F48E;</span></div>
-        <div class="demo-line"></div>
-        <div class="demo-node-row"><div class="demo-node" data-n="3"></div><span class="demo-node-gem">&#x1F48E;</span></div>
-        <div class="demo-line"></div>
-        <div class="demo-node-row"><div class="demo-node" data-n="4"></div><span class="demo-node-gem">&#x1F48E;</span></div>
-      </div>
-      <div class="dp-tooltip"><p>8 hitos con videos de 2 min + ejercicios. Cada uno desbloquea un protocolo.</p></div>
-    </div>
-
-    <!-- Screen 2: Comunidad -->
-    <div class="dp-screen" id="dp-1">
-      <div class="dp-title">Tu comunidad de Soberanas</div>
-      <div class="demo-feed">
-        <div class="demo-fcard" data-fc="0"><span class="demo-fcard-txt">Maria activo el Protocolo 2 &#x2726;</span><span class="demo-fcard-heart">&#x2764; 3</span></div>
-        <div class="demo-fcard" data-fc="1"><span class="demo-fcard-txt">Lucia completo el Hito 5 &#x1F3C6;</span><span class="demo-fcard-heart">&#x2764; 7</span></div>
-        <div class="demo-fcard" data-fc="2"><span class="demo-fcard-txt">Andrea escribio en su bitacora &#x1F4DD;</span><span class="demo-fcard-heart">&#x2764; 2</span></div>
-      </div>
-      <div class="dp-tooltip"><p>Mujeres como tu compartiendo su proceso. Anonimo si quieres.</p></div>
-    </div>
-
-    <!-- Screen 3: Herramientas -->
-    <div class="dp-screen" id="dp-2">
-      <div class="dp-title">Tus herramientas</div>
-      <div class="demo-tools">
-        <div class="demo-tcard">
-          <div class="demo-tcard-title">Sistema ERES</div>
-          <div class="demo-eres-row">
-            <div class="demo-eres-letter">E</div>
-            <div class="demo-eres-letter">R</div>
-            <div class="demo-eres-letter">E</div>
-            <div class="demo-eres-letter">S</div>
-          </div>
-        </div>
-        <div class="demo-tcard">
-          <div class="demo-tcard-title">Las 3 Preguntas</div>
-          <div class="demo-q-icon">?</div>
-        </div>
-      </div>
-      <div class="dp-tooltip"><p>Herramientas que usas en el momento real del conflicto, no despues.</p></div>
-    </div>
-
-    <!-- Screen 4: Progreso -->
-    <div class="dp-screen" id="dp-3">
-      <div class="dp-title">Tu progreso vivo</div>
-      <div class="demo-progress-wrap">
-        <div class="demo-ring-wrap">
-          <svg class="demo-ring-svg" viewBox="0 0 120 120"><circle class="demo-ring-bg" cx="60" cy="60" r="50"/><circle class="demo-ring-fill" id="demo-ring" cx="60" cy="60" r="50"/></svg>
-          <div class="demo-ring-pct" id="demo-pct">0%</div>
-        </div>
-        <div class="demo-stats">5 Secciones &bull; 12 Respuestas &bull; 2/3 &#x2605;</div>
-        <div class="demo-gems"><span class="demo-gem">&#x1F48E;</span><span class="demo-gem">&#x1F48E;</span><span class="demo-gem">&#x1F48E;</span></div>
-      </div>
-      <div class="dp-tooltip"><p>Cada paso queda registrado. Nada se pierde.</p></div>
+    <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
+    <div class="demo-overlay">
+      <p>Hitos, ejercicios, protocolos, comunidad y herramientas. Todo en un solo lugar.</p>
     </div>
   </div>
 
-  <!-- Nav -->
-  <div class="demo-nav">
-    <button class="demo-arrow" onclick="demoGo(demoIdx-1)" aria-label="Anterior">&#x2039;</button>
-    <div class="demo-dots">
-      <div class="demo-dot on" onclick="demoGo(0)"></div>
-      <div class="demo-dot" onclick="demoGo(1)"></div>
-      <div class="demo-dot" onclick="demoGo(2)"></div>
-      <div class="demo-dot" onclick="demoGo(3)"></div>
-    </div>
-    <button class="demo-arrow" onclick="demoGo(demoIdx+1)" aria-label="Siguiente">&#x203A;</button>
+  <div class="demo-caption" id="demo-caption">
+    <p>No es un PDF. No es un Zoom.<br><strong>Es un m&#xE9;todo funcional que vive en tu tel&#xE9;fono.</strong></p>
   </div>
 
-  <!-- CTA -->
-  <div class="demo-cta-wrap">
-    <button class="btn-cta" style="border-radius:12px;animation:ctaPulseDemo 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema &#x2192;</button>
+  <div class="demo-cta-wrap" id="demo-cta">
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
   </div>
+
 </div>
 
 <script>
-var demoIdx=0,demoAutoPlay=null;
-var demoTitles=['Tu mapa de transformacion','Tu comunidad de Soberanas','Tus herramientas','Tu progreso vivo'];
-function demoClick(){try{var a=new(window.AudioContext||window.webkitAudioContext)();var o=a.createOscillator();var g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=800;g.gain.value=0.05;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+0.08);o.stop(a.currentTime+0.08);}catch(e){}}
-function demoGo(n){
-  if(n<0)n=3;if(n>3)n=0;
-  demoClick();
-  document.querySelectorAll('.dp-screen').forEach(function(s){s.classList.remove('dp-active');});
-  document.getElementById('dp-'+n).classList.add('dp-active');
-  document.querySelectorAll('.demo-dot').forEach(function(d,i){d.classList.toggle('on',i===n);});
-  document.getElementById('demo-label').textContent=demoTitles[n];
-  demoIdx=n;
-  if(n===0)animNodes();
-  if(n===1)animFeed();
-  if(n===3)animProgress();
-  if(demoAutoPlay){clearInterval(demoAutoPlay);demoAutoPlay=setInterval(function(){demoGo(demoIdx+1);},5000);}
-}
-function animNodes(){
-  var nodes=document.querySelectorAll('.demo-node');
-  nodes.forEach(function(nd){nd.classList.remove('lit');});
-  nodes.forEach(function(nd,i){setTimeout(function(){nd.classList.add('lit');},300*i);});
-}
-function animFeed(){
-  var cards=document.querySelectorAll('.demo-fcard');
-  cards.forEach(function(c){c.classList.remove('fin');});
-  cards.forEach(function(c,i){setTimeout(function(){c.classList.add('fin');},200*i);});
-  setTimeout(function(){document.querySelectorAll('.demo-fcard-heart').forEach(function(h){h.classList.add('pop');setTimeout(function(){h.classList.remove('pop');},500);});},800);
-}
-function animProgress(){
-  var ring=document.getElementById('demo-ring');
-  var pct=document.getElementById('demo-pct');
-  ring.style.strokeDashoffset='314';
-  pct.textContent='0%';
-  setTimeout(function(){
-    ring.style.strokeDashoffset=''+(314-314*0.67);
-    var c=0;var iv=setInterval(function(){c++;pct.textContent=c+'%';if(c>=67)clearInterval(iv);},22);
-  },200);
-}
 function initDemo(){
-  demoIdx=0;
-  demoGo(0);
-  demoAutoPlay=setInterval(function(){demoGo(demoIdx+1);},5000);
+  var ifr=document.getElementById('demo-iframe');
+  if(ifr&&!ifr.src) ifr.src=ifr.dataset.src;
+  setTimeout(function(){document.getElementById('demo-intro').classList.add('in');},300);
+  setTimeout(function(){document.getElementById('demo-caption').classList.add('in');},1200);
+  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},2000);
 }
 </script>
 </div>

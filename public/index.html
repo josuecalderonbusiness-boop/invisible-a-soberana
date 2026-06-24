@@ -1338,6 +1338,7 @@ const SoberanaAudio = {
 @keyframes s2pulse{0%,100%{transform:translateY(0);opacity:.7}50%{transform:translateY(5px);opacity:1}}
 @keyframes s2btnPulse{0%,100%{box-shadow:0 6px 24px rgba(107,26,42,.4)}50%{box-shadow:0 6px 32px rgba(107,26,42,.65),0 0 0 6px rgba(107,26,42,.1)}}
 @keyframes waPulse{0%,100%{box-shadow:0 6px 24px rgba(37,211,102,.3)}50%{box-shadow:0 6px 32px rgba(37,211,102,.5),0 0 0 8px rgba(37,211,102,.1)}}
+@keyframes wsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 </style>
 
 <script>
@@ -1685,22 +1686,34 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
     </div>
 
     <!-- MODULOS: aparecen después de la flecha -->
-    <div id="ws-modules" style="display:none;padding:100px 28px 40px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;">
-      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:20px;">Lo que activas en 90 minutos</p>
+    <div id="ws-modules" style="display:none;padding:90px 28px 40px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;">
+      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:28px;">En 90 minutos vas a:</p>
 
-      <div id="wsm1" style="background:rgba(139,26,47,.15);border:1px solid rgba(139,26,47,.35);border-radius:14px;padding:20px;margin-bottom:14px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
-        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">01 — Mental</p>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Dejas de reaccionar desde el miedo. Empiezas a responder desde la claridad.</p>
+      <div id="wsm1" style="background:rgba(139,26,47,.12);border:1px solid rgba(139,26,47,.3);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
+        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="/assets/cerebro.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;">
+        </div>
+        <div>
+          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Dejar de reaccionar desde el miedo. <span style="color:#E8C870;">Y empezar a responder desde la claridad.</span></p>
+        </div>
       </div>
 
-      <div id="wsm2" style="background:rgba(184,137,42,.08);border:1px solid rgba(184,137,42,.25);border-radius:14px;padding:20px;margin-bottom:14px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
-        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">02 — Emocional</p>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Nombras lo que sientes antes de que te explote. Y sabes qu&#xE9; hacer con eso.</p>
+      <div id="wsm2" style="background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.2);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
+        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="/assets/corazon.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite .5s;">
+        </div>
+        <div>
+          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Nombrar lo que sientes antes de que explote. <span style="color:#E8C870;">Y saber qu&#xE9; hacer con eso.</span></p>
+        </div>
       </div>
 
-      <div id="wsm3" style="background:rgba(92,16,32,.15);border:1px solid rgba(92,16,32,.4);border-radius:14px;padding:20px;margin-bottom:24px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
-        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">03 — Comunicaci&#xF3;n</p>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Dices lo que necesitas. Una vez. Con calma. Y produce resultados.</p>
+      <div id="wsm3" style="background:rgba(92,16,32,.12);border:1px solid rgba(92,16,32,.35);border-radius:16px;padding:24px 20px;margin-bottom:28px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
+        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="/assets/pareja.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite 1s;">
+        </div>
+        <div>
+          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Decir lo que necesitas. Una vez. Con calma. <span style="color:#E8C870;">Y que eso produzca resultados.</span></p>
+        </div>
       </div>
 
       <div id="ws-footer" style="text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;">
@@ -1715,10 +1728,10 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
 <script>
 function wsAnimHero(){
-  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},300);
-  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},900);
-  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},1600);
-  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},2200);
+  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},600);
+  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},1800);
+  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},3200);
+  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},4000);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

@@ -1337,6 +1337,7 @@ const SoberanaAudio = {
 <style>
 @keyframes s2pulse{0%,100%{transform:translateY(0);opacity:.7}50%{transform:translateY(5px);opacity:1}}
 @keyframes s2btnPulse{0%,100%{box-shadow:0 6px 24px rgba(107,26,42,.4)}50%{box-shadow:0 6px 32px rgba(107,26,42,.65),0 0 0 6px rgba(107,26,42,.1)}}
+@keyframes waPulse{0%,100%{box-shadow:0 6px 24px rgba(37,211,102,.3)}50%{box-shadow:0 6px 32px rgba(37,211,102,.5),0 0 0 8px rgba(37,211,102,.1)}}
 </style>
 
 <script>
@@ -1549,13 +1550,12 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 <div id="s-gate-wa" class="screen">
   <div class="gate-box">
     <div class="gate-icon">✦</div>
-    <h2 class="gate-title">Tu diagnóstico<br>está <em>listo</em></h2>
-    <p class="gate-sub">Generamos tu reporte con tu perfil relacional y los 3 movimientos para tu caso. ¿Dónde lo prefieres recibir?</p>
+    <h2 class="gate-title">Ya tengo tus resultados, <em id="wa-name-display"></em></h2>
+    <p class="gate-sub">Analicé tus respuestas y diseñé una ruta de 3 pasos exclusiva para ti. ¿A dónde te los envío para que puedas verlos con calma?</p>
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;margin:0 auto;">
-      <button class="btn-unlock" style="background:linear-gradient(135deg,#1a7a3a,#0f5a2a);display:flex;align-items:center;justify-content:center;gap:10px;" onclick="showWaInput()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 12 19.79 19.79 0 0 1 1.08 3.4 2 2 0 0 1 3.05 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 16z"/></svg>
-        Recibir por WhatsApp
-        <span style="font-size:10px;opacity:.7;margin-left:4px;">Más rápido</span>
+      <button class="btn-unlock" style="background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;gap:10px;animation:waPulse 2.5s ease infinite;" onclick="showWaInput()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Recibir por mensaje directo
       </button>
       <div id="wa-input-wrap" style="display:none;flex-direction:column;gap:8px;">
         <!-- Selector de país -->
@@ -1578,8 +1578,8 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
           </div>
           <input type="tel" class="g-input" id="g-wa" placeholder="300 000 0000" autocomplete="tel" style="margin:0;flex:1;">
         </div>
-        <button class="btn-unlock" onclick="submitWa()" style="margin:0;">Enviar mi diagnóstico →</button>
-        <p class="gate-privacy" style="margin:0;">Solo para tu diagnóstico. Sin mensajes sin tu permiso.</p>
+        <button class="btn-unlock" onclick="submitWa()" style="margin:0;">Enviar mi resultado →</button>
+        <p class="gate-privacy" style="margin:0;">Privacidad total: solo te enviaré tu reporte y nada más.</p>
       </div>
       <button onclick="skipWa()" style="background:none;border:1px solid rgba(184,137,42,.2);color:rgba(237,227,206,.5);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;padding:11px;border-radius:10px;letter-spacing:.5px;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="margin-right:6px;vertical-align:middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -2150,6 +2150,8 @@ function nextQ() {
     setTimeout(()=>{ curQ++; window._curQ=curQ; renderQ(curQ); updateNavBtns(); }, 260);
   } else {
     show('s-gate-wa');
+    var nd=document.getElementById('wa-name-display');
+    if(nd) nd.textContent=uName||'';
   }
 }
 
@@ -2469,10 +2471,10 @@ function skipWa() { const top = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
 function startLoading() {
   show('s-loading');
   const msgs = [
-    'Vinculando tus respuestas con el protocolo Soberana...',
-    'Identificando tu frecuencia relacional dominante...',
-    'Generando tu reporte personalizado...',
-    'Registrando tu punto de partida...'
+    'Validando tu proceso personal...',
+    'Dando forma a tus revelaciones...',
+    'Creando algo que realmente te ayude...',
+    'Casi listo. Gracias por tu confianza.'
   ];
   let pct = 0;
   const pctEl = document.getElementById('load-pct');
@@ -2924,7 +2926,7 @@ showPrecio = function() {
 
     <!-- FASE 1: Es para ti si... -->
     <div id="pp-fase1">
-      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,30px);font-weight:700;color:#F0E6EA;text-align:center;margin-bottom:24px;line-height:1.25;">Este esc&#xE1;ner es para ti <em style="color:#E8C870;font-style:italic;">si...</em></p>
+      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,30px);font-weight:700;color:#F0E6EA;text-align:center;margin-bottom:24px;line-height:1.25;">Esto es para ti <em style="color:#E8C870;font-style:italic;">si...</em></p>
 
       <div id="pp-carousel" style="position:relative;overflow:hidden;border:1.5px solid rgba(184,137,42,.45);border-radius:16px;background:linear-gradient(145deg,rgba(45,31,35,.9),rgba(30,18,24,.95));min-height:160px;">
         <div id="pp-track" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);">

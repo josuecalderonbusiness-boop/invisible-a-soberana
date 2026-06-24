@@ -125,13 +125,13 @@
       stay.style.opacity='1';
 
       var text=stay.querySelector('p').textContent;
-      var readTime=Math.max(text.length*75,2000)+1000;
+      var readTime=Math.max(text.length*55,1500)+600;
 
       setTimeout(function(){
         var hand=document.getElementById('siHand');
         hand.style.opacity='1';
         var txt=document.getElementById('siHandTxt');
-        typewrite(txt,'Vamos a despejar esto rápido.',60,function(){
+        typewrite(txt,'Vamos a despejar esto rápido.',35,function(){
           setTimeout(function(){
             document.getElementById('siHandSub').classList.add('in');
           },600);

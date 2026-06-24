@@ -60,28 +60,29 @@
     fadeIn(mid);
 
     var phrases=document.querySelectorAll('#siConv > .si-phrase');
-    var hand=document.getElementById('siHand');
+    var lastIdx=phrases.length-1;
     var delay=600;
 
     function showPhrase(i){
-      if(i>=phrases.length){
-        // Show handwritten text
+      if(i>lastIdx){
+        // All phrases done, show handwritten
         setTimeout(function(){
-          hand.style.transition='opacity .5s ease';
+          var hand=document.getElementById('siHand');
           hand.style.opacity='1';
-          var txt=document.getElementById('siHandTxt');
-          typewrite(txt,'Vamos a despejar esto rápido.',55,function(){
+          typewrite(document.getElementById('siHandTxt'),'Vamos a despejar esto rápido.',55,function(){
             setTimeout(function(){
-              document.getElementById('siHandSub').style.opacity='1';
-            },400);
+              document.getElementById('siHandSub').classList.add('in');
+            },500);
             setTimeout(function(){
               fadeOut(mid,cb);
             },4000);
           });
-        },300);
+        },800);
         return;
       }
 
+      // Show phrase
+      phrases[i].classList.add('showing');
       setTimeout(function(){
         phrases[i].style.transition='opacity .7s ease,filter .7s ease';
         phrases[i].style.opacity='1';
@@ -89,11 +90,21 @@
       },delay);
 
       var readTime=phrases[i].textContent.length*80+1400;
-      setTimeout(function(){
-        phrases[i].style.transition='opacity .6s ease';
-        phrases[i].style.opacity='0';
-        setTimeout(function(){ showPhrase(i+1); },700);
-      },delay+readTime);
+
+      if(i===lastIdx){
+        // Last phrase stays visible, proceed to handwritten
+        setTimeout(function(){ showPhrase(i+1); },delay+readTime);
+      } else {
+        // Erase and show next
+        setTimeout(function(){
+          phrases[i].style.transition='opacity .6s ease';
+          phrases[i].style.opacity='0';
+          setTimeout(function(){
+            phrases[i].classList.remove('showing');
+            showPhrase(i+1);
+          },700);
+        },delay+readTime);
+      }
     }
 
     showPhrase(0);

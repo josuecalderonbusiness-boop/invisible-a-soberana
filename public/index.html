@@ -1258,7 +1258,7 @@ const SoberanaAudio = {
 
   <div style="max-width:420px;">
 
-    <div class="si-txt" id="siTxt"><span class="si-phrase">Este esc&#xE1;ner analiza tu frecuencia relacional</span> <span class="si-phrase">y te dice exactamente</span> <span class="si-phrase">qu&#xE9; est&#xE1; bloqueando la conexi&#xF3;n</span><span class="si-dot" id="siD1">.</span><span class="si-dot" id="siD2">.</span><span class="si-dot" id="siD3">.</span><span class="si-cur" id="siCur"></span><br><span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt"><span class="si-phrase">con tu pareja.</span></span></span></div>
+    <div class="si-txt" id="siTxt"><span class="si-phrase">Este esc&#xE1;ner analiza tu frecuencia relacional</span> <span class="si-phrase">y te dice exactamente</span> <span class="si-phrase">qu&#xE9; est&#xE1; bloqueando la conexi&#xF3;n</span><span class="si-cur" id="siCur"></span><br><span class="si-hlwrap"><span class="si-hlbg" id="siHbg"></span><span class="si-hltxt" id="siHlt"><span class="si-phrase">con tu pareja.</span></span></span></div>
 
     <div class="si-meta" id="siMeta">5 PREGUNTAS &middot; 3 MINUTOS</div>
 
@@ -2804,24 +2804,106 @@ showPrecio = function() {
   setTimeout(initPrecioEffects, 100);
 };
 </script>
-<div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:9000;align-items:center;justify-content:center;padding:24px;">
-  <div id="popup-box" style="background:#2A1C21;border:1px solid rgba(184,137,42,.4);border-radius:20px;padding:32px 28px;max-width:420px;width:100%;animation:fadeUp .4s ease both;position:relative;max-height:90vh;overflow-y:auto;">
-    <button onclick="cerrarPopup()" style="position:absolute;top:14px;right:18px;background:none;border:none;color:rgba(240,230,234,.4);font-size:22px;cursor:pointer;">&#x2715;</button>
-    <span style="font-size:10px;font-weight:600;letter-spacing:3px;color:#C97080;text-transform:uppercase;display:block;margin-bottom:18px;">ANTES DE EMPEZAR</span>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;line-height:1.2;margin-bottom:22px;color:#F0E6EA;">Este escaner es para ti <em style="color:#E8C870">si...</em></h2>
-    <div style="margin-bottom:22px;">
-      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>Eres fuerte en todo — menos en esto.</div>
-      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>Todavia crees que se puede hacer algo, pero no sabes como cambiar lo que vives.</div>
-      <div style="display:flex;align-items:flex-start;gap:10px;font-family:'Jost',sans-serif;font-size:15px;color:rgba(240,230,234,.82);margin-bottom:12px;line-height:1.5;"><span style="color:#B8892A;flex-shrink:0;">&#10003;</span>No quieres abandonarlo todo — quieres recuperar tu lugar.</div>
+<div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+
+  <div id="popup-box" style="width:100%;max-width:400px;animation:fadeUp .4s ease both;position:relative;">
+
+    <button onclick="cerrarPopup()" style="position:absolute;top:-36px;right:0;background:none;border:none;color:rgba(240,230,234,.3);font-size:20px;cursor:pointer;z-index:10;">&#x2715;</button>
+
+    <!-- FASE 1: Es para ti si... -->
+    <div id="pp-fase1">
+      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,30px);font-weight:700;color:#F0E6EA;text-align:center;margin-bottom:24px;line-height:1.25;">Este esc&#xE1;ner es para ti <em style="color:#E8C870;font-style:italic;">si...</em></p>
+
+      <div id="pp-carousel" style="position:relative;overflow:hidden;border:1.5px solid rgba(184,137,42,.45);border-radius:16px;background:linear-gradient(145deg,rgba(45,31,35,.9),rgba(30,18,24,.95));min-height:160px;">
+        <div id="pp-track" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);">
+          <div class="pp-slide" style="min-width:100%;padding:36px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;">
+            <span style="font-size:28px;color:#B8892A;">&#10003;</span>
+            <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,23px);font-weight:600;color:#F0E6EA;line-height:1.45;">Eres fuerte en todo<br><em style="color:#E8C870;font-style:italic;">menos en esto.</em></p>
+          </div>
+          <div class="pp-slide" style="min-width:100%;padding:36px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;">
+            <span style="font-size:28px;color:#B8892A;">&#10003;</span>
+            <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,23px);font-weight:600;color:#F0E6EA;line-height:1.45;">Crees que se puede arreglar<br><em style="color:#E8C870;font-style:italic;">pero no sabes c&#xF3;mo.</em></p>
+          </div>
+          <div class="pp-slide" style="min-width:100%;padding:36px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px;">
+            <span style="font-size:28px;color:#B8892A;">&#10003;</span>
+            <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,23px);font-weight:600;color:#F0E6EA;line-height:1.45;">No quieres irte<br><em style="color:#E8C870;font-style:italic;">quieres recuperar tu lugar.</em></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dots + flecha -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;">
+        <div id="pp-dots" style="display:flex;gap:8px;">
+          <span class="pp-dot on" style="width:8px;height:8px;border-radius:50%;background:#B8892A;transition:background .3s,transform .3s;cursor:pointer;"></span>
+          <span class="pp-dot" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.25);transition:background .3s,transform .3s;cursor:pointer;"></span>
+          <span class="pp-dot" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.25);transition:background .3s,transform .3s;cursor:pointer;"></span>
+        </div>
+        <button id="pp-next" onclick="ppNext()" style="background:none;border:1px solid rgba(184,137,42,.4);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s,border-color .2s;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
     </div>
-    <div style="background:rgba(61,12,17,.4);border:1px solid rgba(168,68,85,.2);border-radius:12px;padding:14px 16px;margin-bottom:24px;">
-      <span style="font-size:9px;font-weight:600;letter-spacing:2.5px;color:#C97080;text-transform:uppercase;display:block;margin-bottom:10px;">No es para ti si</span>
-      <div style="display:flex;align-items:center;gap:10px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(240,230,234,.55);margin-bottom:7px;"><span style="color:#C97080;">&#10007;</span>Ya decidiste que quieres separarte</div>
-      <div style="display:flex;align-items:center;gap:10px;font-family:'Jost',sans-serif;font-size:13px;color:rgba(240,230,234,.55);"><span style="color:#C97080;">&#10007;</span>Buscas que alguien te diga que el tiene toda la culpa</div>
+
+    <!-- FASE 2: No es para ti si... -->
+    <div id="pp-fase2" style="display:none;">
+      <div style="background:linear-gradient(145deg,rgba(61,12,17,.85),rgba(45,20,25,.95));border:1.5px solid rgba(168,68,85,.35);border-radius:16px;padding:36px 28px;text-align:center;">
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,28px);font-weight:700;color:rgba(240,230,234,.7);line-height:1.25;margin-bottom:24px;">No es para ti <em style="color:#C97080;font-style:italic;">si...</em></p>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+            <span style="color:#C97080;font-size:18px;flex-shrink:0;">&#10007;</span>
+            <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,20px);font-weight:500;color:rgba(240,230,234,.55);line-height:1.4;text-align:left;">Ya decidiste separarte</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;justify-content:center;">
+            <span style="color:#C97080;font-size:18px;flex-shrink:0;">&#10007;</span>
+            <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,20px);font-weight:500;color:rgba(240,230,234,.55);line-height:1.4;text-align:left;">Buscas que te digan que &#xE9;l tiene toda la culpa</p>
+          </div>
+        </div>
+      </div>
+      <button onclick="cerrarPopup();show('s-qualify');initWrapped()" style="width:100%;padding:18px;margin-top:22px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:14px;font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,20px);font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.45);transition:transform .2s,box-shadow .2s;">Es para m&#xED; &#8594;</button>
     </div>
-    <button onclick="cerrarPopup();show('s-qualify');initWrapped()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:'Jost',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">Es para mi &#8594;</button>
+
   </div>
 </div>
+
+<script>
+var ppIdx=0;
+function ppNext(){
+  ppIdx++;
+  if(ppIdx>=3){
+    document.getElementById('pp-fase1').style.transition='opacity .4s ease';
+    document.getElementById('pp-fase1').style.opacity='0';
+    setTimeout(function(){
+      document.getElementById('pp-fase1').style.display='none';
+      var f2=document.getElementById('pp-fase2');
+      f2.style.display='block';
+      f2.style.opacity='0';
+      f2.style.transition='opacity .5s ease';
+      setTimeout(function(){f2.style.opacity='1';},30);
+    },400);
+    return;
+  }
+  document.getElementById('pp-track').style.transform='translateX(-'+ppIdx*100+'%)';
+  var dots=document.querySelectorAll('.pp-dot');
+  dots.forEach(function(d,i){
+    d.style.background=i===ppIdx?'#B8892A':'rgba(184,137,42,.25)';
+    d.style.transform=i===ppIdx?'scale(1.3)':'scale(1)';
+  });
+}
+var _origCerrarPopup=cerrarPopup;
+function cerrarPopup(){
+  document.getElementById('popup-overlay').style.display='none';
+  ppIdx=0;
+  document.getElementById('pp-track').style.transform='translateX(0)';
+  var dots=document.querySelectorAll('.pp-dot');
+  dots.forEach(function(d,i){
+    d.style.background=i===0?'#B8892A':'rgba(184,137,42,.25)';
+    d.style.transform=i===0?'scale(1.3)':'scale(1)';
+  });
+  document.getElementById('pp-fase1').style.display='block';
+  document.getElementById('pp-fase1').style.opacity='1';
+  document.getElementById('pp-fase2').style.display='none';
+}
+</script>
 <script>
 document.addEventListener('touchstart', function iniciarAudio() {
   SoberanaAudio.init();

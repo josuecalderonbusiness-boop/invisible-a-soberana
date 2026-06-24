@@ -1697,44 +1697,39 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
       </button>
     </div>
 
-    <!-- MODULOS: aparecen después de la flecha -->
-    <div id="ws-modules" style="display:none;padding:90px 28px 40px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;">
-      <p id="ws-label" style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:#F0E6EA;text-align:center;margin-bottom:8px;line-height:1.3;">En 90 minutos vas a:</p>
-      <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,#B8892A,transparent);margin:0 auto 28px;"></div>
+    <!-- MODULOS: pantalla completa, una card a la vez -->
+    <div id="ws-modules" style="display:none;position:absolute;inset:0;z-index:2;">
 
-      <div id="wsm1" style="background:rgba(139,26,47,.12);border:1px solid rgba(139,26,47,.3);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
-        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <img src="assets/cerebro.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;">
-        </div>
-        <div>
-          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Dejar de reaccionar desde el miedo. <span style="color:#E8C870;">Y empezar a responder desde la claridad.</span></p>
-        </div>
+      <!-- Card 1 -->
+      <div id="wsc1" class="ws-card-full" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;">
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:#F0E6EA;margin-bottom:24px;">En 90 minutos vas a:</p>
+        <div style="width:60px;height:60px;margin:0 auto 20px;"><img src="assets/cerebro.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;"></div>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;color:#EDE3CE;line-height:1.45;max-width:380px;">Dejar de reaccionar desde el miedo. <span style="color:#E8C870;">Y empezar a responder desde la claridad.</span></p>
+        <button onclick="wsNextCard(2)" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
 
-      <div id="wsm2" style="background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.2);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
-        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <img src="assets/corazon.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite .5s;">
-        </div>
-        <div>
-          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Nombrar lo que sientes antes de que explote. <span style="color:#E8C870;">Y saber qu&#xE9; hacer con eso.</span></p>
-        </div>
+      <!-- Card 2 -->
+      <div id="wsc2" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;">
+        <div style="width:60px;height:60px;margin:0 auto 20px;"><img src="assets/corazon.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;"></div>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;color:#EDE3CE;line-height:1.45;max-width:380px;">Nombrar lo que sientes antes de que explote. <span style="color:#E8C870;">Y saber qu&#xE9; hacer con eso.</span></p>
+        <button onclick="wsNextCard(3)" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
 
-      <div id="wsm3" style="background:rgba(92,16,32,.12);border:1px solid rgba(92,16,32,.35);border-radius:16px;padding:24px 20px;margin-bottom:28px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
-        <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <img src="assets/pareja.png" alt="" style="width:44px;height:44px;filter:invert(1) brightness(1.5) drop-shadow(0 0 8px rgba(232,201,126,.6)) drop-shadow(0 0 16px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite 1s;">
-        </div>
-        <div>
-          <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4.2vw,20px);font-weight:700;color:#EDE3CE;line-height:1.45;">Decir lo que necesitas. Una vez. Con calma. <span style="color:#E8C870;">Y que eso produzca resultados.</span></p>
-        </div>
+      <!-- Card 3 -->
+      <div id="wsc3" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;">
+        <div style="width:60px;height:60px;margin:0 auto 20px;"><img src="assets/pareja.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;"></div>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;color:#EDE3CE;line-height:1.45;max-width:380px;">Decir lo que necesitas. Una vez. Con calma. <span style="color:#E8C870;">Y que eso produzca resultados.</span></p>
+        <button onclick="wsNextCard(4)" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
 
-      <div id="ws-footer" style="text-align:center;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;padding-top:20vh;">
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,38px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">C&#xF3;digo Soberana</p>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,38px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.2;margin-bottom:8px;">no es un curso.</p>
-        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:32px;">Es un sistema que vive en tu tel&#xE9;fono</p>
-        <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
+      <!-- Footer final -->
+      <div id="wsc4" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;">
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-bottom:4px;">C&#xF3;digo Soberana</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.15;margin-bottom:12px;">no es un curso.</p>
+        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:36px;">Es un sistema que vive en tu tel&#xE9;fono</p>
+        <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
       </div>
+
     </div>
 
   </div>
@@ -1754,48 +1749,17 @@ function wsReveal(){
     document.getElementById('ws-hero').style.display='none';
     var m=document.getElementById('ws-modules');
     m.style.display='block';
-    setTimeout(function(){document.getElementById('ws-label').style.opacity='1';},100);
-
-    function wsShowCard(id,delay){
-      setTimeout(function(){
-        var e=document.getElementById(id);
-        e.style.opacity='1';e.style.transform='translateX(0)';
-        // After reading, show check
-        setTimeout(function(){
-          var icon=e.querySelector('.ws-icon img');
-          if(icon){
-            icon.style.transition='opacity .3s ease';
-            icon.style.opacity='0';
-            setTimeout(function(){
-              icon.outerHTML='<span style="font-size:28px;color:#25D366;filter:drop-shadow(0 0 8px rgba(37,211,102,.5));animation:wsFloat 3s ease-in-out infinite;">✓</span>';
-            },300);
-          }
-        },2000);
-      },delay);
-    }
-
-    wsShowCard('wsm1',600);
-    wsShowCard('wsm2',3600);
-    wsShowCard('wsm3',6600);
-
-    // After all 3 done, fade out and show footer centered
-    setTimeout(function(){
-      ['wsm1','wsm2','wsm3'].forEach(function(id){
-        var e=document.getElementById(id);
-        e.style.transition='opacity .6s ease';
-        e.style.opacity='0';
-      });
-      document.getElementById('ws-label').style.opacity='0';
-      setTimeout(function(){
-        document.getElementById('wsm1').style.display='none';
-        document.getElementById('wsm2').style.display='none';
-        document.getElementById('wsm3').style.display='none';
-        document.getElementById('ws-label').style.display='none';
-        var f=document.getElementById('ws-footer');
-        f.style.opacity='1';f.style.transform='translateY(0)';
-      },700);
-    },9600);
+    setTimeout(function(){document.getElementById('wsc1').style.opacity='1';},200);
   },500);
+}
+function wsNextCard(n){
+  var prev=document.getElementById('wsc'+(n-1));
+  var next=document.getElementById('wsc'+n);
+  if(prev){prev.style.opacity='0';}
+  setTimeout(function(){
+    if(prev) prev.style.display='none';
+    if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';},50);}
+  },600);
 }
 </script>
 

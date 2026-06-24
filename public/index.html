@@ -1656,67 +1656,84 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
     </div>
     <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Por qué puedes confiar en este sistema</p>
     <h2 style="font-family:'Jost',sans-serif;font-size:30px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:20px;">¿Y quién está<br>detrás de esto?</h2>
-    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(237,227,206,.8);text-align:center;line-height:1.75;margin-bottom:24px;">Durante 10 años acompañé parejas en crisis como pastor cristiano. Luego lo viví yo mismo como esposo. Lo que encontré no estaba en ningún libro de psicología &mdash; y es exactamente lo que estás a punto de aprender.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:600;color:rgba(237,227,206,.85);text-align:center;line-height:1.65;margin-bottom:24px;">Durante 10 años acompañé parejas en crisis como pastor cristiano. Luego lo viví yo mismo como esposo. Lo que encontré no estaba en ningún libro de psicología &mdash; y es exactamente lo que estás a punto de aprender.</p>
     <p style="font-family:'Jost',sans-serif;font-size:13px;color:#B8892A;text-align:center;margin-bottom:6px;letter-spacing:.5px;">Déjame contarte</p>
     <p style="text-align:center;font-size:20px;color:#B8892A;margin-bottom:24px;animation:bounce-down 1.5s ease-in-out infinite;">↓</p>
     <div style="margin:0 auto 28px;width:85%;overflow:hidden;border-radius:16px;">
       <img src="PERFIL_JOSUE.png" alt="Josue Calderon" style="width:100%;display:block;object-fit:cover;">
     </div>
     <div style="margin-bottom:32px;">
-      <p style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(237,227,206,.85);line-height:1.85;text-align:center;">Soy Josué Calderón. 15 años casado, dos hijos, y más crisis de pareja de las que quisiera contar.<br><br>Podrías buscar a otra mujer que te enseñe. Alguien que haya pasado por lo mismo que tú. Y tiene sentido &mdash; pero hay un problema: ella tampoco sabe cómo piensa él.<br><br>Yo si.<br><br>No llegue a esto desde un libro ni desde una consulta. Lo vivi desde adentro &mdash; como hombre, como esposo, como alguien que conoce exactamente qué activa la conexión en un hombre y qué la destruye sin que él lo diga en voz alta.<br><br>Durante 10 años fui pastor cristiano y acompañé parejas al borde del colapso. Primero como soltero, observando. Luego como casado, viviendolo.<br><br>Mi matrimonio no sigue en pie por costumbre. Sigue en pie porque encontré el método exacto. Y eso es lo que estás a punto de recibir.</p>
+      <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:500;color:rgba(237,227,206,.82);line-height:1.8;text-align:center;">Soy Josué Calderón. 15 años casado, dos hijos, y más crisis de pareja de las que quisiera contar.<br><br>Podrías buscar a otra mujer que te enseñe. Alguien que haya pasado por lo mismo que tú. Y tiene sentido &mdash; pero hay un problema: ella tampoco sabe cómo piensa él.<br><br><strong style="color:#E8C870;">Yo sí.</strong><br><br>No llegué a esto desde un libro ni desde una consulta. Lo viví desde adentro &mdash; como hombre, como esposo, como alguien que conoce exactamente qué activa la conexión en un hombre y qué la destruye sin que él lo diga en voz alta.<br><br>Durante 10 años fui pastor cristiano y acompañé parejas al borde del colapso. Primero como soltero, observando. Luego como casado, viviéndolo.<br><br><strong style="color:#E8C870;">Mi matrimonio no sigue en pie por costumbre. Sigue en pie porque encontré el método exacto.</strong> Y eso es lo que estás a punto de recibir.</p>
     </div>
-    <button class="btn-cta" style="width:100%;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-workshop')">Continuar →</button>
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-workshop');wsAnimHero();">Continuar →</button>
   </div>
 </div>
 </div>
 
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
-<!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <div id="s-workshop" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:#EDE3CE;line-height:1.4;margin-top:16px;margin-bottom:8px;">No te vendo informacion.<br>Te entrego el sistema.</p>
-      <p style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.45);line-height:1.6;">Los cursos se olvidan. Este sistema vive contigo.</p>
+  <div style="min-height:100vh;display:flex;flex-direction:column;">
+
+    <!-- HERO: No te vendo información -->
+    <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;">
+      <p id="ws-l1" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;color:#F0E6EA;line-height:1.1;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">No te vendo informaci&#xF3;n.</p>
+      <p id="ws-l2" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.1;margin-top:4px;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">Te entrego el sistema.</p>
+      <p id="ws-l3" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;margin-top:20px;opacity:0;transition:opacity .6s ease;">Los cursos se olvidan. Este sistema vive contigo.</p>
+      <button id="ws-arrow" onclick="wsReveal()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .5s ease;animation:s2pulse 2s ease infinite;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
     </div>
-    <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;text-align:center;margin-bottom:14px;">Lo que activas en 90 minutos</p>
-    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
-      <div style="background:rgba(139,26,47,.15);border:1px solid rgba(139,26,47,.35);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;">
-        <div style="width:40px;height:40px;border-radius:10px;background:rgba(139,26,47,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.4" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3z"/></svg>
-        </div>
-        <div>
-          <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">Modulo 1 - Mental</p>
-          <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#EDE3CE;line-height:1.55;">Dejas de reaccionar desde el miedo. Empiezas a responder desde la claridad.</p>
-        </div>
+
+    <!-- MODULOS: aparecen después de la flecha -->
+    <div id="ws-modules" style="display:none;padding:0 28px 40px;max-width:500px;margin:0 auto;width:100%;">
+      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:20px;">Lo que activas en 90 minutos</p>
+
+      <div id="wsm1" style="background:rgba(139,26,47,.15);border:1px solid rgba(139,26,47,.35);border-radius:14px;padding:20px;margin-bottom:14px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
+        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">01 — Mental</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Dejas de reaccionar desde el miedo. Empiezas a responder desde la claridad.</p>
       </div>
-      <div style="background:rgba(184,137,42,.08);border:1px solid rgba(184,137,42,.25);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;">
-        <div style="width:40px;height:40px;border-radius:10px;background:rgba(184,137,42,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.4" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </div>
-        <div>
-          <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">Modulo 2 - Emocional</p>
-          <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#EDE3CE;line-height:1.55;">Nombras lo que sientes antes de que te explote. Y sabes que hacer con eso.</p>
-        </div>
+
+      <div id="wsm2" style="background:rgba(184,137,42,.08);border:1px solid rgba(184,137,42,.25);border-radius:14px;padding:20px;margin-bottom:14px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
+        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">02 — Emocional</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Nombras lo que sientes antes de que te explote. Y sabes qu&#xE9; hacer con eso.</p>
       </div>
-      <div style="background:rgba(92,16,32,.15);border:1px solid rgba(92,16,32,.4);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start;">
-        <div style="width:40px;height:40px;border-radius:10px;background:rgba(92,16,32,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.4" stroke-linecap="round"><path d="M17 11.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-5 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-5 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/><path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .98 4.28L2 22l5.72-.98A9.96 9.96 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
-        </div>
-        <div>
-          <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">Modulo 3 - Comunicacion</p>
-          <p style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#EDE3CE;line-height:1.55;">Dices lo que necesitas. Una vez. Con calma. Y produce resultados.</p>
-        </div>
+
+      <div id="wsm3" style="background:rgba(92,16,32,.15);border:1px solid rgba(92,16,32,.4);border-radius:14px;padding:20px;margin-bottom:24px;opacity:0;transform:translateX(-30px);transition:opacity .5s ease,transform .5s ease;">
+        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">03 — Comunicaci&#xF3;n</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:#EDE3CE;line-height:1.5;">Dices lo que necesitas. Una vez. Con calma. Y produce resultados.</p>
+      </div>
+
+      <div id="ws-footer" style="text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;">
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:#E8C870;line-height:1.35;margin-bottom:6px;">C&#xF3;digo Soberana no es un curso.</p>
+        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;margin-bottom:24px;">Es un sistema que vive en tu tel&#xE9;fono</p>
+        <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
       </div>
     </div>
-    <div style="background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.2);border-radius:16px;padding:20px;margin-bottom:28px;text-align:center;">
-      <p style="font-family:'Jost',sans-serif;font-size:9px;color:#B8892A;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;">Y todo vive aqui</p>
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:#EDE3CE;line-height:1.4;margin-bottom:12px;">Código Soberana no es un curso.<br>Es un sistema de transformación<br>por pasos guiados.</p>
-      <p style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.5);line-height:1.65;"></p>
-    </div>
-    <button class="btn-cta" style="width:100%;" onclick="show('s-demo')">Ver el sistema →</button>
+
   </div>
 </div>
+
+<script>
+function wsAnimHero(){
+  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},300);
+  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},900);
+  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},1600);
+  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},2200);
+}
+function wsReveal(){
+  document.getElementById('ws-hero').style.transition='opacity .5s ease';
+  document.getElementById('ws-hero').style.opacity='0';
+  setTimeout(function(){
+    document.getElementById('ws-hero').style.display='none';
+    var m=document.getElementById('ws-modules');
+    m.style.display='block';
+    setTimeout(function(){var e=document.getElementById('wsm1');e.style.opacity='1';e.style.transform='translateX(0)';},100);
+    setTimeout(function(){var e=document.getElementById('wsm2');e.style.opacity='1';e.style.transform='translateX(0)';},450);
+    setTimeout(function(){var e=document.getElementById('wsm3');e.style.opacity='1';e.style.transform='translateX(0)';},800);
+    setTimeout(function(){var f=document.getElementById('ws-footer');f.style.opacity='1';f.style.transform='translateY(0)';},1300);
+  },500);
+}
+</script>
 
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">

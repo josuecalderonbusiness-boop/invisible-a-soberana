@@ -1236,13 +1236,17 @@ const SoberanaAudio = {
 
 #s-intro .si-note{margin-top:10px;font-size:11px;color:rgba(26,26,26,.35);}
 
-#s-intro .si-mid{position:absolute;inset:0;background:var(--charcoal-deep);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:52px 28px;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:1;}
+#s-intro .si-mid{position:absolute;inset:0;background:var(--charcoal-deep);opacity:0;pointer-events:none;z-index:1;}
 
-#s-intro .si-mid .si-phrase{opacity:0;filter:blur(6px);font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;text-align:center;display:none;}
+#s-intro .si-mid .si-fade{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:52px 28px;opacity:0;transition:opacity .7s ease;pointer-events:none;}
 
-#s-intro .si-mid .si-phrase.showing{display:block;}
+#s-intro .si-mid .si-fade p{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;text-align:center;max-width:420px;}
 
-#s-intro .si-conv{width:100%;max-width:420px;text-align:center;}
+#s-intro .si-mid .si-fade p strong{font-weight:600;color:#E8C870;font-style:normal;}
+
+#s-intro .si-stay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;opacity:0;transition:opacity .7s ease;}
+
+#s-intro .si-stay p{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;text-align:center;max-width:420px;}
 
 #s-intro .si-conv strong{font-weight:600;color:#E8C870;font-style:normal;}
 
@@ -1275,11 +1279,11 @@ const SoberanaAudio = {
 </div>
 
 <div class="si-mid" id="siMid">
-  <div class="si-conv" id="siConv">
-    <div class="si-phrase">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</div>
-    <div class="si-phrase">Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</div>
-    <div class="si-phrase"><strong style="color:#E8C870;font-style:normal;font-weight:600;">No eres t&#xFA; la que est&#xE1; fallando.</strong></div>
-    <div class="si-phrase si-last">Es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</div>
+  <div class="si-fade" id="mf0"><p>Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</p></div>
+  <div class="si-fade" id="mf1"><p>Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</p></div>
+  <div class="si-fade" id="mf2"><p><strong>No eres t&#xFA; la que est&#xE1; fallando.</strong></p></div>
+  <div class="si-stay" id="mfLast">
+    <p>Es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</p>
     <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-cursor" id="siHandCur"></span><br><span class="si-hand-sub" id="siHandSub">solo dame 2 minutos</span></div>
   </div>
 </div>

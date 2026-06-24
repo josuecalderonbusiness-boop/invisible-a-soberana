@@ -40,69 +40,68 @@
   }
 
   function animS2(){
-    var words=document.querySelectorAll('#siTxt .si-word');
-    var STAGGER=85;
-    words.forEach(function(w,i){
+    var phrases=document.querySelectorAll('#siTxt > .si-phrase');
+    var STAGGER=1200;
+
+    phrases.forEach(function(p,i){
       setTimeout(function(){
-        w.classList.add('in');
+        p.classList.add('in');
       },i*STAGGER);
     });
 
-    var lastWordTime=words.length*STAGGER;
+    var afterPhrases=phrases.length*STAGGER;
 
     setTimeout(function(){
       var d=document.getElementById('siD1');
       d.classList.add('in');
-    },lastWordTime+200);
+    },afterPhrases+400);
     setTimeout(function(){
       var d=document.getElementById('siD2');
       d.classList.add('in');
-    },lastWordTime+500);
+    },afterPhrases+900);
     setTimeout(function(){
       var d=document.getElementById('siD3');
       d.classList.add('in');
-    },lastWordTime+800);
+    },afterPhrases+1400);
 
     setTimeout(function(){
       var c=document.getElementById('siCur');
       c.style.opacity='1';
       c.style.animation='siBlink .7s step-end infinite';
-    },lastWordTime+1000);
+    },afterPhrases+1800);
 
     setTimeout(function(){
       var c=document.getElementById('siCur');
       c.style.animation='none';
       c.style.opacity='0';
-    },lastWordTime+1800);
+    },afterPhrases+3000);
 
     setTimeout(function(){
       var h=document.getElementById('siHlt');
       h.style.transition='opacity .3s ease';
       h.style.opacity='1';
-      var hlWords=h.querySelectorAll('.si-word');
-      hlWords.forEach(function(w,i){
-        setTimeout(function(){ w.classList.add('in'); },i*STAGGER);
-      });
-    },lastWordTime+2000);
+      var hlPhrase=h.querySelector('.si-phrase');
+      if(hlPhrase) hlPhrase.classList.add('in');
+    },afterPhrases+3200);
 
     setTimeout(function(){
       var hbg=document.getElementById('siHbg');
       hbg.style.transition='transform .6s cubic-bezier(.4,0,.2,1)';
       hbg.style.transform='scaleX(1)';
-    },lastWordTime+2400);
+    },afterPhrases+3800);
 
     setTimeout(function(){
       var m=document.getElementById('siMeta');
       m.style.transition='opacity .6s ease';
       m.style.opacity='1';
-    },lastWordTime+3000);
+    },afterPhrases+4600);
 
     setTimeout(function(){
       var b=document.getElementById('siBtnW');
       b.style.transition='opacity .6s ease,transform .6s ease';
       b.style.opacity='1';
       b.style.transform='none';
-    },lastWordTime+3400);
+    },afterPhrases+5200);
   }
 
   function run(){

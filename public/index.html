@@ -1716,9 +1716,10 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
         </div>
       </div>
 
-      <div id="ws-footer" style="text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;">
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:#E8C870;line-height:1.35;margin-bottom:6px;">C&#xF3;digo Soberana no es un curso.</p>
-        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;margin-bottom:24px;">Es un sistema que vive en tu tel&#xE9;fono</p>
+      <div id="ws-footer" style="text-align:center;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;padding-top:20vh;">
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,38px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">C&#xF3;digo Soberana</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,38px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.2;margin-bottom:8px;">no es un curso.</p>
+        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:32px;">Es un sistema que vive en tu tel&#xE9;fono</p>
         <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
       </div>
     </div>
@@ -1741,10 +1742,46 @@ function wsReveal(){
     var m=document.getElementById('ws-modules');
     m.style.display='block';
     setTimeout(function(){document.getElementById('ws-label').style.opacity='1';},100);
-    setTimeout(function(){var e=document.getElementById('wsm1');e.style.opacity='1';e.style.transform='translateX(0)';},600);
-    setTimeout(function(){var e=document.getElementById('wsm2');e.style.opacity='1';e.style.transform='translateX(0)';},1000);
-    setTimeout(function(){var e=document.getElementById('wsm3');e.style.opacity='1';e.style.transform='translateX(0)';},1400);
-    setTimeout(function(){var f=document.getElementById('ws-footer');f.style.opacity='1';f.style.transform='translateY(0)';},1900);
+
+    function wsShowCard(id,delay){
+      setTimeout(function(){
+        var e=document.getElementById(id);
+        e.style.opacity='1';e.style.transform='translateX(0)';
+        // After reading, show check
+        setTimeout(function(){
+          var icon=e.querySelector('.ws-icon img');
+          if(icon){
+            icon.style.transition='opacity .3s ease';
+            icon.style.opacity='0';
+            setTimeout(function(){
+              icon.outerHTML='<span style="font-size:28px;color:#25D366;filter:drop-shadow(0 0 8px rgba(37,211,102,.5));animation:wsFloat 3s ease-in-out infinite;">✓</span>';
+            },300);
+          }
+        },2000);
+      },delay);
+    }
+
+    wsShowCard('wsm1',600);
+    wsShowCard('wsm2',3600);
+    wsShowCard('wsm3',6600);
+
+    // After all 3 done, fade out and show footer centered
+    setTimeout(function(){
+      ['wsm1','wsm2','wsm3'].forEach(function(id){
+        var e=document.getElementById(id);
+        e.style.transition='opacity .6s ease';
+        e.style.opacity='0';
+      });
+      document.getElementById('ws-label').style.opacity='0';
+      setTimeout(function(){
+        document.getElementById('wsm1').style.display='none';
+        document.getElementById('wsm2').style.display='none';
+        document.getElementById('wsm3').style.display='none';
+        document.getElementById('ws-label').style.display='none';
+        var f=document.getElementById('ws-footer');
+        f.style.opacity='1';f.style.transform='translateY(0)';
+      },700);
+    },9600);
   },500);
 }
 </script>

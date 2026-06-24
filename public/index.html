@@ -1687,7 +1687,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
     <!-- MODULOS: aparecen después de la flecha -->
     <div id="ws-modules" style="display:none;padding:90px 28px 40px;max-width:500px;margin:0 auto;width:100%;overflow-y:auto;">
-      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:28px;">En 90 minutos vas a:</p>
+      <p id="ws-label" style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.22em;color:#B8892A;text-transform:uppercase;text-align:center;margin-bottom:28px;opacity:0;transition:opacity .6s ease;">En 90 minutos vas a:</p>
 
       <div id="wsm1" style="background:rgba(139,26,47,.12);border:1px solid rgba(139,26,47,.3);border-radius:16px;padding:24px 20px;margin-bottom:16px;opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;display:flex;gap:18px;align-items:center;">
         <div class="ws-icon" style="width:52px;height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
@@ -1740,10 +1740,11 @@ function wsReveal(){
     document.getElementById('ws-hero').style.display='none';
     var m=document.getElementById('ws-modules');
     m.style.display='block';
-    setTimeout(function(){var e=document.getElementById('wsm1');e.style.opacity='1';e.style.transform='translateX(0)';},100);
-    setTimeout(function(){var e=document.getElementById('wsm2');e.style.opacity='1';e.style.transform='translateX(0)';},450);
-    setTimeout(function(){var e=document.getElementById('wsm3');e.style.opacity='1';e.style.transform='translateX(0)';},800);
-    setTimeout(function(){var f=document.getElementById('ws-footer');f.style.opacity='1';f.style.transform='translateY(0)';},1300);
+    setTimeout(function(){document.getElementById('ws-label').style.opacity='1';},100);
+    setTimeout(function(){var e=document.getElementById('wsm1');e.style.opacity='1';e.style.transform='translateX(0)';},600);
+    setTimeout(function(){var e=document.getElementById('wsm2');e.style.opacity='1';e.style.transform='translateX(0)';},1000);
+    setTimeout(function(){var e=document.getElementById('wsm3');e.style.opacity='1';e.style.transform='translateX(0)';},1400);
+    setTimeout(function(){var f=document.getElementById('ws-footer');f.style.opacity='1';f.style.transform='translateY(0)';},1900);
   },500);
 }
 </script>

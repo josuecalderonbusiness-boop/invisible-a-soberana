@@ -1300,15 +1300,62 @@ const SoberanaAudio = {
 
 <div class="si-s2" id="siS2">
 
-  <div style="max-width:420px;">
+  <div style="max-width:420px;width:100%;">
 
-    <div class="si-txt" id="siTxt"><span class="si-phrase">En 5 preguntas, sabr&#xE1;s por qu&#xE9; la relaci&#xF3;n no est&#xE1; funcionando y por qu&#xE9; est&#xE1;s cargando un peso que no te corresponde</span><br><br><span class="si-phrase">y tendr&#xE1;s 3 acciones simples para que desde ya empieces a recuperar el lugar que es tuyo como mujer,</span> <span class="si-phrase">y la tranquilidad de tener a tu lado a un compa&#xF1;ero real, <strong style="color:#1a1a1a;font-weight:700;">no a alguien que solo ocupa espacio.</strong></span></div>
+    <!-- PASO 1: primer párrafo centrado + flecha -->
+    <div id="s2step1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;opacity:0;">
+      <p class="si-txt" style="opacity:1;transform:none;font-style:italic;font-weight:400;font-size:clamp(19px,5vw,25px);color:#1a1a1a;line-height:1.65;max-width:400px;">En 5 preguntas, sabr&#xE1;s por qu&#xE9; la relaci&#xF3;n no est&#xE1; funcionando y por qu&#xE9; est&#xE1;s cargando un peso que no te corresponde.</p>
+      <button id="s2arrow" onclick="s2Next()" style="margin-top:28px;background:none;border:1.5px solid rgba(139,45,63,.25);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B2D3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
 
-    <div class="si-btnw" id="siBtnW"><p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,26,26,.3);text-transform:uppercase;margin-bottom:14px;">Vamos a quitarle presi&#xF3;n a esto, &#xBF;empezamos?</p><button class="si-btn" onclick="abrirPopup()">Empezar, vamos &rarr;</button></div>
+    <!-- PASO 2: segundo párrafo + frase blur + CTA -->
+    <div id="s2step2" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;">
+      <p id="s2p2" style="font-style:italic;font-weight:400;font-size:clamp(19px,5vw,25px);color:#1a1a1a;line-height:1.65;max-width:400px;opacity:0;transition:opacity .7s ease;">Y tendr&#xE1;s 3 acciones simples para que desde ya empieces a recuperar el lugar que es tuyo como mujer, y la tranquilidad de tener a tu lado a un compa&#xF1;ero real,</p>
+      <p id="s2punch" style="font-family:var(--font-display);font-size:clamp(20px,5.5vw,28px);font-weight:900;color:#1a1a1a;line-height:1.3;margin-top:18px;opacity:0;transform:translateY(16px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">no a alguien que solo ocupa espacio.</p>
+      <div id="s2cta" style="margin-top:36px;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;text-align:center;">
+        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,26,26,.3);text-transform:uppercase;margin-bottom:14px;">Vamos a quitarle presi&#xF3;n a esto, &#xBF;empezamos?</p>
+        <button class="si-btn" onclick="abrirPopup()" style="animation:s2btnPulse 2.5s ease infinite;">Empezar, vamos &rarr;</button>
+      </div>
+    </div>
 
   </div>
 
 </div>
+
+<style>
+@keyframes s2pulse{0%,100%{transform:translateY(0);opacity:.7}50%{transform:translateY(5px);opacity:1}}
+@keyframes s2btnPulse{0%,100%{box-shadow:0 6px 24px rgba(107,26,42,.4)}50%{box-shadow:0 6px 32px rgba(107,26,42,.65),0 0 0 6px rgba(107,26,42,.1)}}
+</style>
+
+<script>
+function s2Next(){
+  document.getElementById('s2step1').style.transition='opacity .5s ease';
+  document.getElementById('s2step1').style.opacity='0';
+  setTimeout(function(){
+    document.getElementById('s2step1').style.display='none';
+    var s2=document.getElementById('s2step2');
+    s2.style.display='flex';
+    setTimeout(function(){
+      document.getElementById('s2p2').style.opacity='1';
+    },100);
+    // After reading, punch line emerges
+    setTimeout(function(){
+      var punch=document.getElementById('s2punch');
+      punch.style.opacity='1';
+      punch.style.transform='translateY(0)';
+      punch.style.filter='blur(0)';
+    },2800);
+    // CTA appears
+    setTimeout(function(){
+      var cta=document.getElementById('s2cta');
+      cta.style.opacity='1';
+      cta.style.transform='translateY(0)';
+    },4200);
+  },500);
+}
+</script>
 
 <script src="/intro-anim.js"></script>
 

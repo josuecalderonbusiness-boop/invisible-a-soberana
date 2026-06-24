@@ -166,17 +166,9 @@
   }
 
   function animS2(){
-    var phrases=document.querySelectorAll('#siTxt .si-phrase');
-    var STAGGER=1200;
-    phrases.forEach(function(p,i){
-      setTimeout(function(){ p.classList.add('in'); },i*STAGGER);
-    });
-    setTimeout(function(){
-      var b=document.getElementById('siBtnW');
-      b.style.transition='opacity .6s ease,transform .6s ease';
-      b.style.opacity='1';
-      b.style.transform='none';
-    },phrases.length*STAGGER+400);
+    var step1=document.getElementById('s2step1');
+    step1.style.transition='opacity .7s ease';
+    step1.style.opacity='1';
   }
 
   function run(){

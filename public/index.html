@@ -1613,23 +1613,31 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
     </video> -->
   </div>
 
-  <!-- OVERLAY POPUP REDISEÑADO -->
-<div id="video-overlay" style="position:absolute;inset:0;z-index:50;display:flex;align-items:flex-start;justify-content:flex-start;padding-top:0;background:linear-gradient(to top,rgba(10,4,8,.97) 0%,rgba(10,4,8,.75) 45%,rgba(10,4,8,.1) 100%);">
-    <div style="text-align:center;padding:160px 28px 24px;width:100%;animation:fadeUp .5s ease both;">
-      
-      
-      
-      <div style="width:100%;background:#fff;border:1px solid rgba(139,101,32,.2);border-radius:14px;padding:20px;margin-bottom:32px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08);">
-        <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#8B6520;display:block;margin-bottom:12px;">Lo que encontré en ti</span>
-        <p id="video-insight-txt" style="font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:#1a0810;line-height:1.8;margin:0;"></p>
+  <!-- OVERLAY: PANTALLA NEGRA + POPUP -->
+<div id="video-overlay" style="position:absolute;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#000;">
+    <div style="text-align:center;padding:40px 28px;width:100%;max-width:420px;">
+
+      <!-- Fase 1: Texto introductorio -->
+      <div id="vo-intro" style="animation:fadeUp .6s ease both;">
+        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.6);text-transform:uppercase;margin-bottom:20px;">Antes de enviarte tu resultado</p>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,34px);font-weight:700;color:#F0E6EA;line-height:1.25;margin-bottom:12px;">necesito decirte algo...</p>
+        <p id="vo-nombre-titulo" style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,28px);font-weight:700;color:#E8C870;font-style:italic;line-height:1.3;margin-bottom:28px;"></p>
       </div>
-      <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
-        <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
-          <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#0f0408"><polygon points="7,3 21,12 7,21"/></svg>
-        </button>
+
+      <!-- Fase 2: Card insight + play -->
+      <div id="vo-card" style="opacity:0;transition:opacity .7s ease;">
+        <div style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(184,137,42,.25);border-radius:14px;padding:24px 20px;margin-bottom:32px;text-align:center;">
+          <p id="video-insight-txt" style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:600;color:rgba(240,230,234,.85);line-height:1.65;margin:0;"></p>
+        </div>
+        <div style="position:relative;width:120px;height:120px;margin:0 auto 14px;">
+          <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
+            <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="#0f0408"><polygon points="7,3 21,12 7,21"/></svg>
+          </button>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:10px;color:rgba(184,137,42,.5);letter-spacing:1.5px;margin:0;text-transform:uppercase;">Reproducir · 7 min</p>
       </div>
-      <p style="font-family:'Jost',sans-serif;font-size:10px;color:#8B6520;letter-spacing:1.5px;margin:0;text-transform:uppercase;">Reproducir · 7 min</p>
+
     </div>
   </div>
 
@@ -2481,18 +2489,18 @@ function startLoading() {
   const txtEl = document.getElementById('load-txt');
   txtEl.textContent = msgs[0];
   const iv = setInterval(() => {
-    pct += 2;
+    pct += 1;
     pctEl.textContent = pct + '%';
-    if (pct === 25) txtEl.textContent = msgs[1];
-    if (pct === 55) txtEl.textContent = msgs[2];
-    if (pct === 80) txtEl.textContent = msgs[3];
+    if (pct === 30) txtEl.textContent = msgs[1];
+    if (pct === 60) txtEl.textContent = msgs[2];
+    if (pct === 90) txtEl.textContent = msgs[3];
     if (pct >= 100) {
       clearInterval(iv);
       SoberanaAudio.diagnosticoListo();
       topProfile = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
       showVideoScreen();
     }
-  }, 50);
+  }, 80);
 }
 
 // ── VIDEO ─────────────────────────────────────────────────
@@ -2529,15 +2537,19 @@ function showVideoScreen() {
   const nombreTitulo = document.getElementById('video-nombre-titulo');
   if (nombreTitulo) nombreTitulo.textContent = uName ? uName + ',' : '';
   const INSIGHT_TEXTS = {
-    S: 'identifiqué algo específico en tus respuestas.<br>Hay un patrón silencioso que está creando distancia sin que tú lo notes.<br>Este video te muestra exactamente qué es.',
-    P: 'vi algo en tus respuestas que pocas mujeres reconocen.<br>La forma en que buscas conexión está activando exactamente lo contrario.<br>Antes de ver tu resultado, necesitas saber por qué.',
-    D: 'lo que encontré en tu diagnóstico es poco común.<br>Creciste tanto que el vínculo no pudo seguirte el ritmo.<br>Este video te explica qué hacer con eso.'
+    S: 'Hay un patrón silencioso que está creando distancia sin que lo notes. Este video te muestra exactamente qué es y cómo cambiarlo.',
+    P: 'La forma en que buscas conexión está activando exactamente lo contrario. Este video te muestra por qué y qué hacer diferente.',
+    D: 'Creciste tanto que el vínculo no pudo seguirte el ritmo. Este video te muestra qué hacer con eso.'
   };
+  const voNombre = document.getElementById('vo-nombre-titulo');
+  if (voNombre) voNombre.textContent = (uName || '') + ' y su resultado';
   const insightEl = document.getElementById('video-insight-txt');
-  if (insightEl) {
-    const nombre = uName ? uName + ', ' : '';
-    insightEl.innerHTML = nombre + (INSIGHT_TEXTS[topProfile] || '');
-  }
+  if (insightEl) insightEl.innerHTML = INSIGHT_TEXTS[topProfile] || '';
+  // Fase 2: mostrar card con delay
+  setTimeout(function(){
+    var card = document.getElementById('vo-card');
+    if(card) card.style.opacity='1';
+  },3000);
   const ctaTxt = document.getElementById('video-cta-txt');
   if (ctaTxt) ctaTxt.textContent = (uName ? uName + ', esto' : 'Esto') + ' que viste es lo que el Workshop Código Soberana trabaja contigo.';
   // Video real: cargar URL por perfil
@@ -2560,8 +2572,8 @@ function showVideoScreen() {
 }
 function dismissVideoOverlay() {
   const overlay = document.getElementById('video-overlay');
-  if (overlay) { overlay.style.opacity = '0'; }
-  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 400);
+  if (overlay) { overlay.style.transition='opacity .8s ease'; overlay.style.opacity = '0'; }
+  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 800);
 
   // Reiniciar iframe desde 0 con audio activado
   const wrap = document.getElementById('video-wrap');

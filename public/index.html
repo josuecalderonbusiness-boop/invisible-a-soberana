@@ -1785,25 +1785,34 @@ function wsRenderCards(){
   });
   // Quote card
   var qcard = document.createElement('div');
-  qcard.id = 'wsc'+(data.items.length+1);
+  qcard.id = 'wsc-quote';
   qcard.className = 'ws-card-full';
   qcard.style.cssText = 'position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;';
   qcard.innerHTML = '<p style="font-family:\'Inter\',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:20px;">Porque lo que realmente te pesa es esto:</p>'
     + '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;font-style:italic;color:#E8C870;line-height:1.45;max-width:380px;margin-bottom:32px;">'+data.quote+'</p>'
-    + '<button onclick="wsNextCard('+(data.items.length+2)+')" style="margin-top:12px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    + '<button onclick="wsShowFooter()" style="margin-top:12px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
   container.appendChild(qcard);
 }
 
 function wsNextCard(n){
   var prev=document.getElementById('wsc'+(n-1));
   var next=document.getElementById('wsc'+n);
-  if(!next) next=document.getElementById('wsc4');
+  if(!next) next=document.getElementById('wsc-quote');
   if(prev){prev.style.opacity='0';}
   setTimeout(function(){
     if(prev) prev.style.display='none';
     if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';},50);}
+  },600);
+}
+function wsShowFooter(){
+  var quote=document.getElementById('wsc-quote');
+  var footer=document.getElementById('wsc4');
+  if(quote){quote.style.opacity='0';}
+  setTimeout(function(){
+    if(quote) quote.style.display='none';
+    if(footer){footer.style.display='flex';setTimeout(function(){footer.style.opacity='1';},50);}
     var ic=document.getElementById('ws-app-icon');
-    if(ic && next && next.id==='wsc4'){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
+    if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
   },600);
 }
 </script>

@@ -1765,18 +1765,17 @@ function wsReveal(){
 function wsOpenApp(){
   var icon=document.getElementById('ws-app-icon');
   icon.style.animation='none';
-  icon.style.transform='scale(1.15)';
-  icon.style.boxShadow='0 0 40px rgba(184,137,42,.5),0 0 80px rgba(184,137,42,.25)';
+  icon.style.transform='scale(1.08)';
   if(typeof demoClick==='function') demoClick();
+  var wsc4=document.getElementById('wsc4');
   setTimeout(function(){
-    icon.style.transition='transform .5s cubic-bezier(.4,0,.2,1),opacity .4s ease';
-    icon.style.transform='scale(30)';
-    icon.style.opacity='0';
-  },200);
+    wsc4.style.transition='opacity .6s ease';
+    wsc4.style.opacity='0';
+  },300);
   setTimeout(function(){
     show('s-demo');
     setTimeout(initDemo,300);
-  },600);
+  },900);
 }
 function wsNextCard(n){
   var prev=document.getElementById('wsc'+(n-1));

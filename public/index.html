@@ -2885,34 +2885,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── LOADING 2 (FINAL) ─────────────────────────────────────
 
-function lanzarParticulas() {
-  const canvas = document.getElementById('particulas-canvas');
-  if (!canvas) return;
-  canvas.style.display = 'block';
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const particulas = Array.from({length: 80}, () => ({
-    x: canvas.width/2, y: canvas.height/2,
-    vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12,
-    r: Math.random()*4+2, alpha: 1,
-    color: ['#B8892A','#D4AF6A','#F0D080','#8B6520'][Math.floor(Math.random()*4)]
-  }));
-  let frame = 0;
-  function animar() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    particulas.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.alpha -= 0.018;
-      ctx.globalAlpha = Math.max(0, p.alpha);
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = p.color; ctx.fill();
-    });
-    frame++;
-    if (frame < 80) requestAnimationFrame(animar);
-    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }
-  }
-  animar();
-}
+function lanzarParticulas() {}
 function startFinalLoad() {
   show('s-loading2');
   setGlobalProgress(90);
@@ -2923,9 +2896,7 @@ function startFinalLoad() {
   const overlay = document.getElementById('load2-overlay');
   const fraseWrap = document.getElementById('load2-frase-wrap');
   const flash = document.getElementById('load2-bar-flash');
-  const cv = document.getElementById('particulas-canvas');
   const stage = document.getElementById('s-loading2');
-  cv.width = stage.offsetWidth; cv.height = stage.offsetHeight;
   barFill.style.width = '0%';
   txtEl.innerHTML = '';
   fraseWrap.style.opacity = '0';
@@ -2944,8 +2915,7 @@ function startFinalLoad() {
     setTimeout(() => { flash.style.transition = 'opacity 0.3s ease'; flash.style.opacity = '0'; }, 80);
   }, 2800);
   setTimeout(() => {
-    explotar2(cv, barWrap, stage);
-    barWrap.style.transition = 'opacity 0.15s ease'; barWrap.style.opacity = '0';
+    barWrap.style.transition = 'opacity 0.3s ease'; barWrap.style.opacity = '0';
     SoberanaAudio.diagnosticoListo();
   }, 2880);
   setTimeout(() => {
@@ -2963,42 +2933,7 @@ const FRASES_PERFIL = {
   D: { main: 'El problema no es que crezcas y alcances tu mejor versión. Es que creces sin un mapa que te dice cómo llevar a alguien contigo. Ese mapa existe y te lo mostraré en los próximos ', end: '90 minutos.' }
 };
 
-function explotar2(cv, barWrap, stage) {
-  const ctx = cv.getContext('2d');
-  const bRect = barWrap.getBoundingClientRect();
-  const sRect = stage.getBoundingClientRect();
-  const barTop = bRect.top - sRect.top;
-  const barLeft = bRect.left - sRect.left;
-  const barRight = bRect.right - sRect.left;
-  const barCY = barTop + bRect.height / 2;
-  const particles = Array.from({length:90}, () => {
-    const ox = barLeft + Math.random() * (barRight - barLeft);
-    const oy = barCY + (Math.random() - 0.5) * 6;
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 3.5 + 0.8;
-    return {
-      x:ox, y:oy,
-      vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed - Math.random()*2,
-      r:Math.random()*3.5+1, alpha:0.95,
-      decay:0.003+Math.random()*0.004,
-      blur:Math.random()*6+1,
-      color:['#B8892A','#D4AF6A','#F0D080','#8B6520','#C8A050','#E8D090','#FFF0A0'][Math.floor(Math.random()*7)]
-    };
-  });
-  function loop() {
-    ctx.clearRect(0,0,cv.width,cv.height);
-    let vivo = false;
-    particles.forEach(p => {
-      if(p.alpha<=0) return; vivo=true;
-      p.x+=p.vx*0.65; p.y+=p.vy*0.65; p.vy+=0.03; p.vx*=0.997; p.alpha-=p.decay;
-      ctx.save(); ctx.globalAlpha=Math.max(0,p.alpha); ctx.filter=`blur(${p.blur}px)`;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=p.color; ctx.fill(); ctx.restore();
-    });
-    if(vivo) requestAnimationFrame(loop);
-  }
-  loop();
-}
+function explotar2(){}
 
 function escribirFrase2(el, perfil) {
   const f = FRASES_PERFIL[perfil] || FRASES_PERFIL['S'];

@@ -60,8 +60,10 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
     pointer-events: none; z-index: 1000; opacity: 0.3;
   }
-  .screen { display: none; min-height: 100vh; } #s-demo { height: 100vh; overflow: hidden; } #s-covers { height: 100vh; overflow: hidden; } #s-testimonios.active { min-height:100vh; overflow-y:auto; display:flex; align-items:flex-start; }
-  .screen.active { display: flex; flex-direction: column; }
+  .screen { display: none; min-height: 100vh; overflow: hidden; }
+  .screen.active { display: flex; flex-direction: column; overflow: hidden; }
+  #s-josue.active, #s-testimonios.active { overflow-y: auto; }
+  #s-testimonios.active { align-items:flex-start; }
 
   /* ── INTRO ───────────────────────────────── */
   #s-intro {
@@ -1766,7 +1768,7 @@ function wsNextCard(n){
 <!-- ──────────── NETFLIX COVERS ──────────── -->
 <div id="s-covers" class="screen" style="background:#0F0A0B;padding:0;overflow:hidden;">
 <style>
-#s-covers{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;}
+#s-covers.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;}
 .cov-title-wrap{text-align:center;padding:90px 24px 24px;z-index:2;}
 .cov-track-wrap{width:100%;overflow:hidden;position:relative;padding:8px 0;}
 .cov-track{display:flex;gap:14px;animation:covScroll 30s linear infinite;width:max-content;}

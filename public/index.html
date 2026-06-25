@@ -1641,10 +1641,10 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
     </div>
   </div>
 
-  <!-- CTA post-video -->
- <div id="video-cta" style="display:none;position:absolute;bottom:0;left:0;right:0;z-index:5;padding:24px 28px 100px;background:linear-gradient(to top,rgba(10,4,8,.95) 0%,rgba(10,4,8,.85) 40%,rgba(10,4,8,.5) 70%,transparent 100%);">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5.5vw,28px);font-weight:700;color:#F0E6EA;text-align:center;line-height:1.35;margin-bottom:8px;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease;" id="video-cta-txt"></p>
-    <button id="video-cta-btn" class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;" onclick="show('s-josue')">Continuar →</button>
+  <!-- CTA post-video: pantalla negra introspectiva -->
+  <div id="video-cta" style="display:none;position:absolute;inset:0;z-index:50;background:#000;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;">
+    <div id="video-cta-lines" style="max-width:380px;text-align:left;"></div>
+    <button id="video-cta-btn" class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;margin-top:32px;animation:ctaPulse 2s ease-in-out infinite;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;" onclick="show('s-josue')">Continuar →</button>
   </div>
 </div>
 
@@ -2855,8 +2855,6 @@ function showVideoScreen() {
     }, 1800 + i * 2200);
   });
   setTimeout(function(){ if(voPlay) voPlay.style.opacity = '1'; }, 1800 + pLines.length * 2200 + 800);
-  const ctaTxt = document.getElementById('video-cta-txt');
-  if (ctaTxt) ctaTxt.textContent = (uName ? uName + ', esto' : 'Esto') + ' que viste es lo que el Workshop Código Soberana trabaja contigo.';
   // Video real: cargar URL por perfil
   const src = document.getElementById('vsl-src');
   if (src && VIDEO_URLS[topProfile]) {
@@ -2870,12 +2868,46 @@ function showVideoScreen() {
   }
 }
 function showVideoCta(){
+  var POST_VIDEO = {
+    S: [
+      '{name},',
+      'Ahora sabes que el problema no es que te falte conocimiento.',
+      'Es que nadie te enseñó cómo acceder a ese conocimiento cuando más lo necesitas.',
+      'Déjame mostrarte por qué entiendo tan bien ese patrón... y cómo aprendí a ayudar a mujeres a cambiarlo.'
+    ],
+    P: [
+      '{name},',
+      'Ahora sabes algo importante:',
+      'Tu dolor no viene de amar demasiado.',
+      'Viene de estar atrapada en una dinámica que te empuja a hacer más de lo que realmente funciona.',
+      'Déjame mostrarte cómo aprendí esto... desde dentro de la misma dinámica que hoy te tiene agotada.'
+    ],
+    D: [
+      '{name},',
+      'Ahora sabes que el problema no es tu crecimiento.',
+      'El problema es la distancia que se creó mientras intentabas construir una vida mejor.',
+      'Déjame mostrarte por qué he dedicado años a ayudar a parejas que llegaron exactamente a ese punto.'
+    ]
+  };
   var cta=document.getElementById('video-cta');
-  if(cta) cta.style.display='block';
-  var txt=document.getElementById('video-cta-txt');
+  if(cta) cta.style.display='flex';
+  var linesWrap=document.getElementById('video-cta-lines');
   var btn=document.getElementById('video-cta-btn');
-  setTimeout(function(){if(txt){txt.style.opacity='1';txt.style.transform='translateY(0)';}},200);
-  setTimeout(function(){if(btn){btn.style.opacity='1';btn.style.transform='translateY(0)';}},1200);
+  if(linesWrap) linesWrap.innerHTML='';
+  if(btn){btn.style.opacity='0';btn.style.transform='translateY(10px)';}
+  var lines=(POST_VIDEO[topProfile]||POST_VIDEO['S']).map(function(l){return l.replace('{name}',uName||'');});
+  lines.forEach(function(line,i){
+    setTimeout(function(){
+      var p=document.createElement('p');
+      p.style.cssText="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:600;color:rgba(240,230,234,.78);line-height:1.6;margin-bottom:16px;opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease;";
+      if(i===0) p.style.cssText+="color:#E8C870;font-size:clamp(22px,6vw,28px);font-weight:900;margin-bottom:20px;";
+      if(i===lines.length-1) p.style.cssText+="color:#E8C870;font-style:italic;";
+      p.textContent=line;
+      linesWrap.appendChild(p);
+      requestAnimationFrame(function(){p.style.opacity='1';p.style.transform='translateY(0)';});
+    },800+i*2000);
+  });
+  setTimeout(function(){if(btn){btn.style.opacity='1';btn.style.transform='translateY(0)';}},800+lines.length*2000+600);
 }
 function dismissVideoOverlay() {
   const overlay = document.getElementById('video-overlay');

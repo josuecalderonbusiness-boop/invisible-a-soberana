@@ -2416,42 +2416,46 @@ function pick(i) {
   document.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));
   document.querySelectorAll('.opt')[i].classList.add('on');
   ans[curQ] = i;
-  // Recalculate scores
   sc = {S:0,P:0,D:0};
   ans.forEach((a, qi) => {
     if (a !== undefined && QS[qi]) {
       Object.entries(QS[qi].opts[a].v).forEach(([k,v]) => sc[k] += v);
     }
   });
-  // Show bridge insight before next question
-  setTimeout(() => showBridge(curQ, i), 480);
+  // Insights only on Q1(0), Q2(1), Q4(3)
+  var hasInsight = [0,1,3];
+  if (hasInsight.indexOf(curQ) >= 0) {
+    setTimeout(function(){ showInsightPopup(curQ, i); }, 480);
+  } else {
+    setTimeout(function(){ advanceFromQ(); }, 600);
+  }
 }
 
-function nextQ() {
-  if (ans[curQ] === undefined) return;
-  const sel = QS[curQ].opts[ans[curQ]];
-  // Recalculate scores from scratch to avoid double-counting on back/forward
-  sc = {S:0,P:0,D:0};
-  ans.forEach((a, qi) => {
-    if (a !== undefined && QS[qi]) {
-      Object.entries(QS[qi].opts[a].v).forEach(([k,v]) => sc[k] += v);
-    }
-  });
-
-  if (curQ === 1 && !gateShown) {
-    showGatePopup();
-    return;
-  }
-  if (curQ < QS.length-1) {
-    const w = document.getElementById('q-wrap');
-    w.classList.remove('qin'); w.classList.add('qout');
-    setTimeout(()=>{ curQ++; window._curQ=curQ; renderQ(curQ); updateNavBtns(); }, 260);
-  } else {
+function advanceFromQ() {
+  // After Q3(index 2): capture email
+  if (curQ === 2 && !gateShown) { showGatePopup(); return; }
+  // After Q5(index 4): WhatsApp + result
+  if (curQ >= QS.length-1) {
     show('s-gate-wa');
     var nd=document.getElementById('wa-name-display');
     if(nd) nd.textContent=uName||'';
     setTimeout(initGateWa, 200);
+    return;
   }
+  var w = document.getElementById('q-wrap');
+  w.classList.remove('qin'); w.classList.add('qout');
+  setTimeout(function(){ curQ++; window._curQ=curQ; renderQ(curQ); updateNavBtns(); }, 260);
+}
+
+function nextQ() {
+  if (ans[curQ] === undefined) return;
+  sc = {S:0,P:0,D:0};
+  ans.forEach((a, qi) => {
+    if (a !== undefined && QS[qi]) {
+      Object.entries(QS[qi].opts[a].v).forEach(([k,v]) => sc[k] += v);
+    }
+  });
+  advanceFromQ();
 }
 
 function prevQ() {
@@ -2653,62 +2657,56 @@ let topProfile = '';
 let timerInterval = null;
 
 // ── SHOW BRIDGE ───────────────────────────────────────────
-function showBridge(qIdx, optIdx) {
-  const bridges = [
-    [
-      { eye: 'NO ES FALTA DE VALOR', txt: '<strong>Tu cerebro interpreta su silencio como peligro.</strong><br>Por eso te paralizas. No es cobardía — es tu sistema nervioso protegiéndote.' },
-      { eye: 'ESA IRRITACIÓN ES INTELIGENTE', txt: '<strong>Tu cuerpo te avisa que algo no está siendo recibido.</strong><br>Cuando lo guardas, se acumula y explota donde no debía. Es un patrón, no tu carácter.' },
-      { eye: 'BUSCAR NO ES EL PROBLEMA', txt: '<strong>Cada vez que buscas más, él retrocede más.</strong><br>No huye de ti. Huye de la presión. Esa diferencia lo cambia todo.' }
-    ],
-    [
-      { eye: 'ACHICARTE NO ES AMOR', txt: '<strong>Bajas tu volumen para no amenazarlo.</strong><br>Pero mientras más te achicas, menos te respeta. Él necesita a la mujer entera, no a la que desaparece.' },
-      { eye: 'EL MODO EJECUTIVA NO FUNCIONA AQUÍ', txt: '<strong>Lo que te salva afuera te cuesta adentro.</strong><br>Él no es un colaborador, es tu pareja. Y con quien amas, el control produce lo opuesto a conexión.' },
-      { eye: 'ESA NO ERES TÚ', txt: '<strong>Bajo presión emocional aparece alguien que no reconoces.</strong><br>No es quien eres. Es quien aprendiste a ser cuando sientes que puedes perder algo importante.' }
-    ],
-    [
-      { eye: 'TU URGENCIA TIENE SENTIDO', txt: '<strong>Tu sistema nervioso aprendió que el silencio es peligro.</strong><br>Pero él necesita justo lo contrario: espacio. Esa diferencia genera el choque.' },
-      { eye: 'EL SILENCIO ACUMULA', txt: '<strong>Callarte parece maduro, pero lo que guardas no desaparece.</strong><br>Se acumula hasta que sale con más fuerza de la que la situación merecía.' },
-      { eye: 'QUEJA VS PETICIÓN', txt: '<strong>"Nunca me escuchas" y "Necesito que me escuches" vienen del mismo dolor.</strong><br>La primera cierra. La segunda abre. No es manipulación, es comunicar desde tu centro.' }
-    ],
-    [
-      { eye: 'SABER NO ES PODER HACERLO', txt: '<strong>Bajo presión, tu cerebro no accede a lo que sabes.</strong><br>No necesitas más información. Necesitas entrenamiento en el momento real del conflicto.' },
-      { eye: 'TU CRECIMIENTO NO ES EL ENEMIGO', txt: '<strong>Crecer no debería alejarte de quien amas.</strong><br>La solución no es frenarte. Es aprender a traerlo contigo sin hacerlo sentir pequeño.' },
-      { eye: 'ESPERAR TE CUESTA CARO', txt: '<strong>Esperar que él cambie primero es darle el control de tu vida.</strong><br>La salida no es dar más. Es cambiar el tipo de movimiento.' }
-    ],
-    [
-      { eye: 'EL MIEDO DISFRAZADO DE FUERZA', txt: '<strong>Tu fuerza se convierte en control cuando hay miedo a perder.</strong><br>El control crea distancia. La distancia crea ese "no entiendo por qué".' },
-      { eye: 'NO TIENES QUE ELEGIR', txt: '<strong>Puedes seguir siendo quien eres y estar con él.</strong><br>No requiere que él cambie primero. Solo que tú cambies el punto de partida.' },
-      { eye: 'EL AGOTAMIENTO ES REAL', txt: '<strong>Diste de verdad y no fue suficiente.</strong><br>La salida no es dar más. Es un movimiento distinto que no depende de que él reaccione.' }
-    ]
-  ];
-  const b = bridges[qIdx][optIdx];
-  const w = document.getElementById('q-wrap');
-  w.classList.remove('qin'); w.classList.add('qout');
-  setTimeout(() => {
-    const themes=[
-      {bg:'#050001',eye:'#E8C97E',txt:'rgba(255,255,255,.82)',btn:'#E8C97E',btnTxt:'#050001',acc:'rgba(184,137,42,.3)'},
-      {bg:'#3D0C11',eye:'#E8C97E',txt:'rgba(240,230,220,.88)',btn:'#E8C97E',btnTxt:'#3D0C11',acc:'rgba(232,201,126,.2)'},
-      {bg:'#EDE4C8',eye:'#3D0C11',txt:'#1e0409',btn:'#1e0409',btnTxt:'#E8C97E',acc:'rgba(61,12,17,.15)'},
-      {bg:'#0F0A0B',eye:'#B8892A',txt:'rgba(237,227,206,.82)',btn:'#B8892A',btnTxt:'#050001',acc:'rgba(184,137,42,.2)'},
-      {bg:'#B8892A',eye:'#050001',txt:'#050001',btn:'#050001',btnTxt:'#E8C97E',acc:'rgba(5,0,1,.15)'}
-    ];
-    const t=themes[qIdx]||themes[0];
-    const sq=document.getElementById('s-quiz');
-    sq.style.transition='background .7s ease';
-    sq.style.background=t.bg;
-    w.innerHTML = `
-      <div style="display:flex;flex-direction:column;min-height:55vh;justify-content:space-between;">
-        <div>
-          <div style="font-family:'Inter',sans-serif;font-weight:900;font-size:10px;letter-spacing:.22em;color:${t.eye};margin-bottom:24px;text-transform:uppercase;">${b.eye}</div>
-          <div style="font-family:'Playfair Display',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:700;line-height:1.55;color:${t.txt};border-left:3px solid ${t.eye};padding-left:20px;">${b.txt}</div>
-        </div>
-        <button style="margin-top:40px;width:100%;padding:18px;background:${t.btn};color:${t.btnTxt};border:none;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;letter-spacing:.04em;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.25);" onclick="nextQ();document.getElementById('s-quiz').style.background='';">Continuar →</button>
-      </div>
-    `;
-    w.className = 'q-wrap';
-    requestAnimationFrame(() => w.classList.add('qin'));
-  }, 260);
+// Insights empáticos — solo para Q1(0), Q2(1), Q4(3)
+var INSIGHTS = {
+  0: [
+    'Sé lo que se siente. Llegas agotada y lo único que necesitas es una señal de que él está ahí. Y esa señal no llega.',
+    'Conozco ese silencio que guardas. Ese que dice "no vale la pena" pero por dentro está gritando.',
+    'Eso que sientes cuando buscas y él se aleja... no es rechazo. Es un desencuentro que tiene solución.'
+  ],
+  1: [
+    'Hacerte pequeña para no incomodarlo no es amor. Y en el fondo, tú lo sabes.',
+    'Ser fuerte afuera y sentirte perdida adentro es más común de lo que crees. No estás sola en esto.',
+    'Esa persona que aparece cuando discuten y que no reconoces... no eres tú. Es la versión que el miedo construyó.'
+  ],
+  3: [
+    'Sabes qué hacer, pero en el momento real todo desaparece. Eso no es debilidad, es falta de un sistema que funcione bajo presión.',
+    'Creciste tanto que él se quedó atrás. Eso duele de una forma que nadie más entiende.',
+    'Estás cansada de ser la única que intenta. Lo sé. Y lo que vas a descubrir te va a cambiar eso.'
+  ]
+};
+
+function showInsightPopup(qIdx, optIdx) {
+  var txt = INSIGHTS[qIdx] ? INSIGHTS[qIdx][optIdx] : '';
+  if (!txt) { advanceFromQ(); return; }
+
+  // Remove existing popup if any
+  var old = document.getElementById('insight-popup');
+  if (old) old.remove();
+
+  var popup = document.createElement('div');
+  popup.id = 'insight-popup';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;';
+  popup.innerHTML = '<div style="width:100%;max-width:420px;background:rgba(30,18,24,.95);border:1px solid rgba(184,137,42,.3);border-radius:20px;padding:28px 24px;transform:translateY(20px);transition:transform .4s cubic-bezier(.23,1,.32,1);text-align:center;">'
+    + '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(17px,4.5vw,21px);font-weight:700;color:#F0E6EA;line-height:1.55;margin-bottom:22px;">' + txt + '</p>'
+    + '<button onclick="closeInsight()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:\'Inter\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.4);">Entendido</button>'
+    + '</div>';
+  document.body.appendChild(popup);
+  requestAnimationFrame(function(){
+    popup.style.opacity = '1';
+    popup.querySelector('div').style.transform = 'translateY(0)';
+  });
 }
+
+function closeInsight() {
+  var popup = document.getElementById('insight-popup');
+  if (popup) {
+    popup.style.opacity = '0';
+    setTimeout(function(){ popup.remove(); advanceFromQ(); }, 350);
+  }
+}
+
+function showBridge(qIdx, optIdx) { showInsightPopup(qIdx, optIdx); }
 
 // ── GATE CORREO (MITAD) ───────────────────────────────────
 function unlockMid() {

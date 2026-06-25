@@ -1497,7 +1497,7 @@ var wBgF=[5,0,1],wBgT=[5,0,1],wTgt=[5,0,1],wTgt2=[5,0,1],wBgP=0;
 function wLerp(a,b,t){return a.map(function(v,i){return Math.round(v+(b[i]-v)*t);});}
 function wDrawBg(){wBgP=Math.min(1,wBgP+.035);wBgF=wLerp(wBgF,wTgt,wBgP);wBgT=wLerp(wBgT,wTgt2,wBgP);var g=wCX.createLinearGradient(0,0,0,wH);g.addColorStop(0,'rgb('+wBgF+')');g.addColorStop(1,'rgb('+wBgT+')');wCX.fillStyle=g;wCX.fillRect(0,0,wW,wH);}
 function wSetBg(i){var p=WPAL[i]||WPAL[0];wTgt=p[0].slice();wTgt2=p[1].slice();wBgP=0;}
-(function wLoop(){wDrawBg();requestAnimationFrame(wLoop);})();
+(function wLoop(){var sq=document.getElementById('s-qualify');if(sq&&sq.classList.contains('active')){wDrawBg();}requestAnimationFrame(wLoop);})();
 var WDURS=[5,5,99,99,99];
 var wPillBar=document.getElementById('wpills');
 WDURS.forEach(function(_,i){var d=document.createElement('div');d.style.cssText='flex:1;height:2px;border-radius:9px;background:rgba(255,255,255,.2);overflow:hidden;';var f=document.createElement('div');f.id='wpf'+i;f.style.cssText='height:100%;width:0%;background:rgba(255,255,255,.9);transition:none;';d.appendChild(f);wPillBar.appendChild(d);});

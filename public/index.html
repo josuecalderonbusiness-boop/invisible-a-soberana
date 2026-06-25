@@ -1727,7 +1727,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
         <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-bottom:4px;">C&#xF3;digo Soberana</p>
         <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.15;margin-bottom:12px;">no es un curso.</p>
         <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:36px;">Es un sistema que vive en tu tel&#xE9;fono</p>
-        <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
+        <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Ver el sistema por dentro →</button>
       </div>
 
     </div>
@@ -1762,6 +1762,83 @@ function wsNextCard(n){
   },600);
 }
 </script>
+
+<!-- ──────────── NETFLIX COVERS ──────────── -->
+<div id="s-covers" class="screen" style="background:#0F0A0B;padding:0;overflow:hidden;">
+<style>
+#s-covers{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;}
+.cov-title-wrap{text-align:center;padding:90px 24px 24px;z-index:2;}
+.cov-track-wrap{width:100%;overflow:hidden;position:relative;padding:8px 0;}
+.cov-track{display:flex;gap:14px;animation:covScroll 30s linear infinite;width:max-content;}
+.cov-track:hover{animation-play-state:paused;}
+.cov-card{width:150px;flex-shrink:0;border-radius:10px;overflow:hidden;position:relative;box-shadow:0 8px 28px rgba(0,0,0,.5);transition:transform .3s ease,box-shadow .3s ease;}
+.cov-card:hover{transform:scale(1.06);box-shadow:0 12px 36px rgba(184,137,42,.3);}
+.cov-card img{width:100%;height:210px;object-fit:cover;display:block;}
+.cov-card-info{position:absolute;bottom:0;left:0;right:0;padding:10px 10px 12px;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.4) 70%,transparent 100%);}
+.cov-card-info p{font-family:'Playfair Display',serif;font-size:11px;font-weight:700;color:#EDE3CE;line-height:1.3;margin:0;}
+.cov-card-info span{font-family:'Inter',sans-serif;font-size:8px;font-weight:600;letter-spacing:.1em;color:#B8892A;text-transform:uppercase;display:block;margin-top:3px;}
+.cov-row2{margin-top:14px;}
+.cov-row2 .cov-track{animation-direction:reverse;}
+.cov-cta{padding:28px 24px 40px;text-align:center;z-index:2;}
+@keyframes covScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+</style>
+
+<div class="cov-title-wrap">
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">Tu contenido exclusivo</p>
+  <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;">8 secciones &middot; 35+ lecciones &middot; ejercicios pr&#xE1;cticos</p>
+</div>
+
+<!-- Row 1: scroll left -->
+<div class="cov-track-wrap">
+  <div class="cov-track" id="cov-row1">
+    <div class="cov-card"><img src="workbook/assets/covers/leccion1_tema_1b.webp" alt=""><div class="cov-card-info"><p>&#xBF;Qu&#xE9; es el C&#xF3;digo Soberana?</p><span>Secci&#xF3;n 1</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion2_tema_1.webp" alt=""><div class="cov-card-info"><p>La Trampa de la Entrega</p><span>Secci&#xF3;n 2</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion3_tema_2.webp" alt=""><div class="cov-card-info"><p>La Soberana es la meta correcta</p><span>Secci&#xF3;n 3</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion4_tema_3.webp" alt=""><div class="cov-card-info"><p>El Punto de Influencia</p><span>Secci&#xF3;n 4</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion5_tema_4.webp" alt=""><div class="cov-card-info"><p>El sistema de 3 preguntas</p><span>Secci&#xF3;n 5</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion6_tema_4.webp" alt=""><div class="cov-card-info"><p>El sistema ERES</p><span>Secci&#xF3;n 6</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion7_tema_3.webp" alt=""><div class="cov-card-info"><p>3 modos de comunicaci&#xF3;n soberana</p><span>Secci&#xF3;n 7</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion8_tema_1.webp" alt=""><div class="cov-card-info"><p>El engranaje completo</p><span>Secci&#xF3;n 8</span></div></div>
+    <!-- Duplicate for infinite loop -->
+    <div class="cov-card"><img src="workbook/assets/covers/leccion1_tema_1b.webp" alt=""><div class="cov-card-info"><p>&#xBF;Qu&#xE9; es el C&#xF3;digo Soberana?</p><span>Secci&#xF3;n 1</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion2_tema_1.webp" alt=""><div class="cov-card-info"><p>La Trampa de la Entrega</p><span>Secci&#xF3;n 2</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion3_tema_2.webp" alt=""><div class="cov-card-info"><p>La Soberana es la meta correcta</p><span>Secci&#xF3;n 3</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion4_tema_3.webp" alt=""><div class="cov-card-info"><p>El Punto de Influencia</p><span>Secci&#xF3;n 4</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion5_tema_4.webp" alt=""><div class="cov-card-info"><p>El sistema de 3 preguntas</p><span>Secci&#xF3;n 5</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion6_tema_4.webp" alt=""><div class="cov-card-info"><p>El sistema ERES</p><span>Secci&#xF3;n 6</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion7_tema_3.webp" alt=""><div class="cov-card-info"><p>3 modos de comunicaci&#xF3;n soberana</p><span>Secci&#xF3;n 7</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion8_tema_1.webp" alt=""><div class="cov-card-info"><p>El engranaje completo</p><span>Secci&#xF3;n 8</span></div></div>
+  </div>
+</div>
+
+<!-- Row 2: scroll right (reverse) -->
+<div class="cov-track-wrap cov-row2">
+  <div class="cov-track">
+    <div class="cov-card"><img src="workbook/assets/covers/leccion1_tema_3b.webp" alt=""><div class="cov-card-info"><p>El problema que nadie nombra</p><span>Secci&#xF3;n 1</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion2_tema_4.webp" alt=""><div class="cov-card-info"><p>Trampa vs. C&#xF3;digo</p><span>Secci&#xF3;n 2</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion3_tema_4.webp" alt=""><div class="cov-card-info"><p>La independencia emocional</p><span>Secci&#xF3;n 3</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion4_tema_1.webp" alt=""><div class="cov-card-info"><p>Donde tu fuerza produce resultados</p><span>Secci&#xF3;n 4</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion5_tema_3.webp" alt=""><div class="cov-card-info"><p>Las 3 distorsiones que da&#xF1;an</p><span>Secci&#xF3;n 5</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion6_tema_2.webp" alt=""><div class="cov-card-info"><p>Tu radar emocional</p><span>Secci&#xF3;n 6</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion7_tema_1.webp" alt=""><div class="cov-card-info"><p>La dimensi&#xF3;n relacional</p><span>Secci&#xF3;n 7</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion8_tema_3.webp" alt=""><div class="cov-card-info"><p>El sistema en mi vida</p><span>Secci&#xF3;n 8</span></div></div>
+    <!-- Duplicate -->
+    <div class="cov-card"><img src="workbook/assets/covers/leccion1_tema_3b.webp" alt=""><div class="cov-card-info"><p>El problema que nadie nombra</p><span>Secci&#xF3;n 1</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion2_tema_4.webp" alt=""><div class="cov-card-info"><p>Trampa vs. C&#xF3;digo</p><span>Secci&#xF3;n 2</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion3_tema_4.webp" alt=""><div class="cov-card-info"><p>La independencia emocional</p><span>Secci&#xF3;n 3</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion4_tema_1.webp" alt=""><div class="cov-card-info"><p>Donde tu fuerza produce resultados</p><span>Secci&#xF3;n 4</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion5_tema_3.webp" alt=""><div class="cov-card-info"><p>Las 3 distorsiones que da&#xF1;an</p><span>Secci&#xF3;n 5</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion6_tema_2.webp" alt=""><div class="cov-card-info"><p>Tu radar emocional</p><span>Secci&#xF3;n 6</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion7_tema_1.webp" alt=""><div class="cov-card-info"><p>La dimensi&#xF3;n relacional</p><span>Secci&#xF3;n 7</span></div></div>
+    <div class="cov-card"><img src="workbook/assets/covers/leccion8_tema_3.webp" alt=""><div class="cov-card-info"><p>El sistema en mi vida</p><span>Secci&#xF3;n 8</span></div></div>
+  </div>
+</div>
+
+<div class="cov-cta">
+  <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
+</div>
+
+</div>
 
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">

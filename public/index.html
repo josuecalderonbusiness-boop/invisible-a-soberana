@@ -2065,15 +2065,12 @@ function initDemo(){
 
 <!-- ──────────── CARGANDO ACCESO ──────────── -->
 <div id="s-loading2" class="screen" style="justify-content:center;align-items:center;position:relative;overflow:hidden;background:#0F0A0B;">
-  <div id="load2-overlay" style="position:absolute;inset:0;background:#000;opacity:0;transition:opacity 0.7s ease;z-index:1;pointer-events:none;"></div>
-  <div id="load2-bar-wrap" style="position:absolute;top:38px;left:6%;right:6%;height:4px;background:rgba(255,255,255,.04);border-radius:20px;transition:top 1s cubic-bezier(.4,0,.2,1),left 1s,right 1s;z-index:3;">
-    <div id="load2-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#6B4A10,#B8892A,#D4AF6A);border-radius:20px;transition:width 1.4s cubic-bezier(.4,0,.2,1);position:relative;">
-      <div id="load2-bar-flash" style="position:absolute;inset:0;background:white;border-radius:20px;opacity:0;"></div>
+  <div id="load2-content" style="position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 28px;text-align:center;opacity:0;transition:opacity .8s ease;">
+    <div id="load2-check" style="width:64px;height:64px;border-radius:50%;border:3px solid #B8892A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;opacity:0;transform:scale(0);transition:opacity .5s ease,transform .5s cubic-bezier(.23,1.5,.32,1);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-  </div>
-  <div id="load2-frase-wrap" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;opacity:0;transition:opacity 1.6s ease;z-index:4;">
-    <div id="load2-txt" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(22px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.7);text-align:center;line-height:1.75;max-width:360px;min-height:130px;"></div>
-    <div style="margin-top:36px;font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.25);text-transform:uppercase;">Preparando tu acceso</div>
+    <div id="load2-txt" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;text-align:center;line-height:1.35;max-width:380px;min-height:80px;margin-bottom:20px;"></div>
+    <p id="load2-sub" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.35);text-transform:uppercase;opacity:0;transition:opacity .6s ease;">Cargando tu acceso</p>
   </div>
 </div>
 
@@ -2920,43 +2917,55 @@ document.addEventListener('DOMContentLoaded', () => {
 function lanzarParticulas() {}
 function startFinalLoad() {
   show('s-loading2');
-  setGlobalProgress(90);
+  setGlobalProgress(100);
   SoberanaAudio.campanita();
-  const txtEl = document.getElementById('load2-txt');
-  const barFill = document.getElementById('load2-bar-fill');
-  const barWrap = document.getElementById('load2-bar-wrap');
-  const overlay = document.getElementById('load2-overlay');
-  const fraseWrap = document.getElementById('load2-frase-wrap');
-  const flash = document.getElementById('load2-bar-flash');
-  const stage = document.getElementById('s-loading2');
-  barFill.style.width = '0%';
+  var content = document.getElementById('load2-content');
+  var check = document.getElementById('load2-check');
+  var txtEl = document.getElementById('load2-txt');
+  var sub = document.getElementById('load2-sub');
+  content.style.opacity = '0';
+  check.style.opacity = '0'; check.style.transform = 'scale(0)';
   txtEl.innerHTML = '';
-  fraseWrap.style.opacity = '0';
-  overlay.style.opacity = '0';
-  barWrap.style.top = '38px'; barWrap.style.left = '6%'; barWrap.style.right = '6%';
+  sub.style.opacity = '0';
 
-  setTimeout(() => { overlay.style.opacity = '0.92'; }, 100);
-  setTimeout(() => {
-    barWrap.style.top = '50%'; barWrap.style.left = '20%'; barWrap.style.right = '20%';
-    barWrap.style.transform = 'translateY(-50%)';
-  }, 700);
-  setTimeout(() => { barFill.style.width = '100%'; }, 1400);
-  setTimeout(() => {
-    flash.style.transition = 'opacity 0.08s ease';
-    flash.style.opacity = '1';
-    setTimeout(() => { flash.style.transition = 'opacity 0.3s ease'; flash.style.opacity = '0'; }, 80);
-  }, 2800);
-  setTimeout(() => {
-    barWrap.style.transition = 'opacity 0.3s ease'; barWrap.style.opacity = '0';
+  // Progress bar completes + celebration
+  setTimeout(function(){
     SoberanaAudio.diagnosticoListo();
-  }, 2880);
-  setTimeout(() => {
-    fraseWrap.style.opacity = '1';
-    escribirFrase2(txtEl, topProfile);
-    let d = 0; const dots = ['▪','▪ ▪','▪ ▪ ▪'];
-    setInterval(() => { d=(d+1)%3; const el=document.getElementById('load2-dots'); if(el) el.textContent=dots[d]; }, 600);
-  }, 3600);
-  setTimeout(() => { showPrecio(); }, 12000);
+    check.style.opacity = '1'; check.style.transform = 'scale(1)';
+    content.style.opacity = '1';
+  }, 800);
+
+  // Write text word by word
+  setTimeout(function(){
+    var f = FRASES_PERFIL[topProfile] || FRASES_PERFIL['S'];
+    txtEl.innerHTML = '';
+    var words = f.main.split(' ');
+    var i = 0;
+    function tick(){
+      if(i >= words.length){
+        var endSpan = document.createElement('span');
+        endSpan.style.cssText = 'color:#E8C870;font-style:italic;';
+        var ew = f.end.split(' ');
+        var j = 0;
+        function tickEnd(){
+          if(j >= ew.length){
+            setTimeout(function(){ sub.style.opacity = '1'; }, 400);
+            setTimeout(function(){ showPrecio(); }, 4000);
+            return;
+          }
+          endSpan.textContent += (j > 0 ? ' ' : '') + ew[j]; j++;
+          setTimeout(tickEnd, 180);
+        }
+        txtEl.appendChild(document.createTextNode(' '));
+        txtEl.appendChild(endSpan);
+        tickEnd();
+        return;
+      }
+      txtEl.appendChild(document.createTextNode((i > 0 ? ' ' : '') + words[i])); i++;
+      setTimeout(tick, 120);
+    }
+    tick();
+  }, 1800);
 }
 
 const FRASES_PERFIL = {

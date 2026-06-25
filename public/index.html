@@ -1877,7 +1877,7 @@ function wsNextCard(n){
 @keyframes phoneGlow{0%,100%{box-shadow:0 0 50px rgba(184,137,42,.3),0 0 100px rgba(184,137,42,.12),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05)}50%{box-shadow:0 0 60px rgba(184,137,42,.45),0 0 120px rgba(184,137,42,.2),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}}
 .demo-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
 .demo-notch::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
-.demo-phone iframe{position:absolute;top:0;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;}
+.demo-phone iframe{position:absolute;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;}
 .demo-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 18px;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,transparent 100%);z-index:10;border-radius:0 0 33px 33px;}
 .demo-overlay p{font-family:'Playfair Display',serif;font-size:clamp(13px,3.5vw,15px);font-weight:600;color:#EDE3CE;line-height:1.45;text-align:center;margin:0;text-shadow:0 1px 4px rgba(0,0,0,.5);}
 .demo-caption{margin-top:20px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
@@ -1891,25 +1891,23 @@ function wsNextCard(n){
 <div class="demo-wrap">
 
   <div class="demo-intro" id="demo-intro">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#1a0810;line-height:1.2;margin-bottom:4px;">Mira el sistema</p>
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;font-style:italic;color:#8B6520;line-height:1.2;margin-bottom:8px;">por dentro</p>
-    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;">No es un curso. Es tu centro de mando.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,36px);font-weight:900;color:#1a0810;line-height:1.15;margin-bottom:4px;">Tu centro de mando</p>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;margin-top:6px;">No es un PDF ni un Zoom</p>
   </div>
 
   <div class="demo-phone">
     <div class="demo-notch"></div>
-    <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
+    <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen style="top:50%;transform:translateY(-50%);"></iframe>
     <div class="demo-overlay">
-      <p>Hitos, ejercicios, protocolos, comunidad y herramientas. Todo en un solo lugar.</p>
+      <p>Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s. Cada gema es un paso adelante.</p>
     </div>
   </div>
 
   <div class="demo-caption" id="demo-caption">
-    <p style="color:#2a1a0f;">No es un PDF. No es un Zoom.<br><strong style="color:#8B6520;">Es un m&#xE9;todo funcional que vive en tu tel&#xE9;fono.</strong></p>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
-    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Quiero acceder al sistema →</button>
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Quiero saber m&#xE1;s →</button>
   </div>
 
 </div>

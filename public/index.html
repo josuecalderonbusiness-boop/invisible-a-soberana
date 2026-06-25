@@ -1683,16 +1683,15 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
       <!-- Footer final -->
       <div id="wsc4" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;">
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-bottom:4px;">C&#xF3;digo Soberana</p>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.15;margin-bottom:12px;">no es un curso.</p>
-        <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:40px;">Es un sistema que vive en tu tel&#xE9;fono</p>
-
-        <div onclick="wsOpenApp()" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;">
-          <div id="ws-app-icon" style="width:72px;height:72px;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:appPulse 2s ease-in-out infinite;transition:transform .3s ease,box-shadow .3s ease;">
-            <img src="workbook/assets/favicon/favicon-app.jpg" alt="Código Soberana" style="width:100%;height:100%;display:block;border-radius:18px;">
-            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.1) 100%);border-radius:18px;pointer-events:none;"></div>
+        <div id="wsc4-content"></div>
+        <div id="wsc4-app" style="margin-top:36px;opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;">
+          <div onclick="wsOpenApp()" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div id="ws-app-icon" style="width:72px;height:72px;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:appPulse 2s ease-in-out infinite;transition:transform .3s ease,box-shadow .3s ease;">
+              <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:100%;height:100%;display:block;border-radius:18px;">
+              <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.1) 100%);border-radius:18px;pointer-events:none;"></div>
+            </div>
+            <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;color:#E8C870;text-transform:uppercase;">Abrir</p>
           </div>
-          <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:18px;">Toca para abrir el sistema</p>
         </div>
       </div>
 
@@ -1808,13 +1807,60 @@ function wsNextCard(n){
     if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';},50);}
   },600);
 }
+var WS_FOOTER = {
+  S: [
+    {type:'small', text:'entonces'},
+    {type:'main', text:'La próxima vez que ese momento aparezca... no vas a estar sola.'},
+    {type:'main', text:'Cuando la emoción tome el control, no tendrás que empezar desde cero.'},
+    {type:'gold', text:'Solo abre Código Soberana y vuelve al lugar donde sabes responder como la mujer que realmente eres.'}
+  ],
+  P: [
+    {type:'small', text:'entonces'},
+    {type:'main', text:'La próxima vez que sientas que estás haciendo todo sola... no vas a quedarte ahí.'},
+    {type:'main', text:'Vas a saber exactamente qué movimiento hacer para que él quiera acercarse.'},
+    {type:'gold', text:'Solo abre Código Soberana y accede al sistema que convierte tu esfuerzo en conexión real.'}
+  ],
+  D: [
+    {type:'small', text:'entonces'},
+    {type:'main', text:'La próxima vez que sientas que tu crecimiento te aleja de él... no vas a frenarte.'},
+    {type:'main', text:'Vas a saber cómo incluirlo sin hacerte pequeña.'},
+    {type:'gold', text:'Solo abre Código Soberana y encuentra el camino donde crecer juntos deja de ser una fantasía.'}
+  ]
+};
+
+function wsRenderFooter(){
+  var data = WS_FOOTER[topProfile] || WS_FOOTER['S'];
+  var cont = document.getElementById('wsc4-content');
+  cont.innerHTML = '';
+  data.forEach(function(line, i){
+    var p = document.createElement('p');
+    if(line.type==='small'){
+      p.style.cssText = "font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(240,230,234,.35);letter-spacing:.1em;margin-bottom:16px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+    } else if(line.type==='gold'){
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:700;color:#E8C870;font-style:italic;line-height:1.45;margin-bottom:8px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+    } else {
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;color:#F0E6EA;line-height:1.35;margin-bottom:16px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+    }
+    p.textContent = line.text;
+    cont.appendChild(p);
+    setTimeout(function(){
+      p.style.opacity='1';p.style.transform='translateY(0)';p.style.filter='blur(0)';
+    }, 400 + i * 1500);
+  });
+  // Show app icon after all lines
+  setTimeout(function(){
+    var app = document.getElementById('wsc4-app');
+    if(app){app.style.opacity='1';app.style.transform='translateY(0)';}
+  }, 400 + data.length * 1500 + 600);
+}
+
 function wsShowFooter(){
   var quote=document.getElementById('wsc-quote');
   var footer=document.getElementById('wsc4');
   if(quote){quote.style.opacity='0';}
   setTimeout(function(){
     if(quote) quote.style.display='none';
-    if(footer){footer.style.display='flex';setTimeout(function(){footer.style.opacity='1';},50);}
+    if(footer){footer.style.display='flex';setTimeout(function(){footer.style.opacity='1';wsRenderFooter();},50);}
     var ic=document.getElementById('ws-app-icon');
     if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
   },600);

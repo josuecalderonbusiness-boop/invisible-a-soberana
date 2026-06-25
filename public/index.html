@@ -1790,6 +1790,71 @@ function wsNextCard(n){
 }
 </script>
 
+<!-- ──────────── GEMA INTERACTIVA ──────────── -->
+<div id="s-gema" class="screen" style="background:#0F0A0B;overflow:hidden;">
+<style>
+#s-gema.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+.gema-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;width:100%;max-width:420px;}
+.gema-img-wrap{width:100px;height:100px;margin:0 auto 28px;cursor:pointer;position:relative;}
+.gema-img-wrap img{width:100%;height:100%;object-fit:contain;animation:gemaSpin 6s linear infinite;filter:drop-shadow(0 0 12px rgba(184,137,42,.4)) drop-shadow(0 0 24px rgba(184,137,42,.2));}
+.gema-img-wrap::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1.5px solid rgba(184,137,42,.2);animation:gemaRing 2.5s ease-in-out infinite;}
+@keyframes gemaSpin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
+@keyframes gemaRing{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.12);opacity:.7}}
+.gema-video-wrap{width:100%;max-width:380px;aspect-ratio:9/16;border-radius:16px;overflow:hidden;margin:0 auto;display:none;border:2px solid rgba(184,137,42,.3);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.gema-video-wrap iframe{width:100%;height:100%;border:none;}
+.gema-video-wrap.open{display:block;animation:fadeUp .5s ease both;}
+</style>
+
+<div class="gema-wrap">
+  <div id="gema-pre" style="display:flex;flex-direction:column;align-items:center;">
+    <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:24px;opacity:0;transition:opacity .6s ease;" id="gema-eyebrow">Toca la gema para ver lo que hay dentro</p>
+    <div class="gema-img-wrap" onclick="openGemaVideo()">
+      <img src="workbook/assets/gemas/gema-workshop.png" alt="Gema" id="gema-icon" style="opacity:0;transition:opacity .5s ease;">
+    </div>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:#EDE3CE;line-height:1.45;margin-top:20px;max-width:340px;opacity:0;transition:opacity .6s ease;" id="gema-txt">Cada gema en tu camino te gu&#xED;a con <em style="color:#E8C870;font-style:italic;">lecciones en video y ejercicios pr&#xE1;cticos.</em></p>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:10px;opacity:0;transition:opacity .6s ease;" id="gema-sub">Estrategia y ejecuci&#xF3;n en cada paso</p>
+  </div>
+
+  <div id="gema-video" class="gema-video-wrap">
+    <iframe id="gema-iframe" allow="autoplay;fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <div id="gema-cta" style="margin-top:28px;opacity:0;transition:opacity .6s ease,transform .6s ease;transform:translateY(10px);">
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Continuar →</button>
+  </div>
+</div>
+</div>
+
+<script>
+function initGema(){
+  document.getElementById('gema-video').classList.remove('open');
+  document.getElementById('gema-video').style.display='none';
+  document.getElementById('gema-pre').style.display='flex';
+  document.getElementById('gema-cta').style.opacity='0';
+  document.getElementById('gema-cta').style.transform='translateY(10px)';
+  setTimeout(function(){document.getElementById('gema-eyebrow').style.opacity='1';},300);
+  setTimeout(function(){document.getElementById('gema-icon').style.opacity='1';},600);
+  setTimeout(function(){document.getElementById('gema-txt').style.opacity='1';},1200);
+  setTimeout(function(){document.getElementById('gema-sub').style.opacity='1';},1800);
+}
+function openGemaVideo(){
+  if(typeof demoClick==='function') demoClick();
+  document.getElementById('gema-pre').style.transition='opacity .4s ease';
+  document.getElementById('gema-pre').style.opacity='0';
+  setTimeout(function(){
+    document.getElementById('gema-pre').style.display='none';
+    var vw=document.getElementById('gema-video');
+    vw.classList.add('open');
+    vw.style.display='block';
+    document.getElementById('gema-iframe').src='https://iframe.mediadelivery.net/embed/649326/0e5349b2-3f74-4cf1-8e36-158f97046031?autoplay=true&muted=true&loop=true&preload=true&controls=false';
+    setTimeout(function(){
+      document.getElementById('gema-cta').style.opacity='1';
+      document.getElementById('gema-cta').style.transform='translateY(0)';
+    },1500);
+  },400);
+}
+</script>
+
 <!-- ──────────── NETFLIX COVERS ──────────── -->
 <div id="s-covers" class="screen" style="background:#0F0A0B;padding:0;overflow:hidden;">
 <style>
@@ -1874,11 +1939,11 @@ function wsNextCard(n){
 .demo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;width:100%;max-width:400px;margin:0 auto;padding:90px 0 40px;}
 .demo-intro{text-align:center;margin-bottom:20px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
 .demo-intro.in{opacity:1;transform:translateY(0);}
-.demo-phone{width:260px;height:520px;border-radius:36px;border:3px solid #2A2A2A;background:#000;position:relative;overflow:hidden;box-shadow:0 0 50px rgba(184,137,42,.35),0 0 100px rgba(184,137,42,.15),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05);animation:phoneGlow 4s ease-in-out infinite;}
+.demo-phone{width:240px;height:480px;border-radius:36px;border:4px solid #333;background:#000;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08);}
 @keyframes phoneGlow{0%,100%{box-shadow:0 0 50px rgba(184,137,42,.3),0 0 100px rgba(184,137,42,.12),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05)}50%{box-shadow:0 0 60px rgba(184,137,42,.45),0 0 120px rgba(184,137,42,.2),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}}
 .demo-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
 .demo-notch::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
-.demo-phone iframe{position:absolute;top:0;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;clip-path:inset(0 0 0 0 round 33px);}
+.demo-phone iframe{position:absolute;top:4px;left:-24%;width:148%;height:calc(100% - 8px);border:none;border-radius:32px;pointer-events:none;}
 .demo-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 18px;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,transparent 100%);z-index:10;border-radius:0 0 33px 33px;}
 .demo-overlay p{font-family:'Playfair Display',serif;font-size:clamp(13px,3.5vw,15px);font-weight:600;color:#EDE3CE;line-height:1.45;text-align:center;margin:0;text-shadow:0 1px 4px rgba(0,0,0,.5);}
 .demo-caption{margin-top:20px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
@@ -1902,11 +1967,12 @@ function wsNextCard(n){
   </div>
 
   <div class="demo-caption" id="demo-caption">
-    <p style="color:#2a1a0f;font-family:'Playfair Display',serif;font-size:clamp(15px,4vw,18px);font-weight:600;line-height:1.55;margin-top:20px;">Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s. <strong style="color:#8B6520;">Cada gema es un paso adelante.</strong></p>
+    <p class="demo-line" style="color:#2a1a0f;font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;line-height:1.45;margin-top:24px;text-align:center;opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease;">Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s.</p>
+    <p class="demo-line" style="color:#8B6520;font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;font-style:italic;line-height:1.45;margin-top:8px;text-align:center;opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease;">Cada gema es un paso adelante.</p>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
-    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Quiero saber m&#xE1;s →</button>
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-gema');initGema();">Quiero saber m&#xE1;s →</button>
   </div>
 
 </div>
@@ -1917,7 +1983,9 @@ function initDemo(){
   if(ifr&&!ifr.src) ifr.src=ifr.dataset.src;
   setTimeout(function(){document.getElementById('demo-intro').classList.add('in');},300);
   setTimeout(function(){document.getElementById('demo-caption').classList.add('in');},1200);
-  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},2000);
+  var lines=document.querySelectorAll('.demo-line');
+  lines.forEach(function(l,i){setTimeout(function(){l.style.opacity='1';l.style.transform='translateY(0)';},1400+i*600);});
+  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},1400+lines.length*600+400);
 }
 </script>
 </div>

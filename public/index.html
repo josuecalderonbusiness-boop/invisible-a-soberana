@@ -1769,7 +1769,7 @@ function wsNextCard(n){
 <div id="s-covers" class="screen" style="background:#0F0A0B;padding:0;overflow:hidden;">
 <style>
 #s-covers.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;}
-.cov-title-wrap{text-align:center;padding:90px 24px 24px;z-index:2;}
+.cov-title-wrap{text-align:center;padding:20px 24px 18px;z-index:2;}
 .cov-track-wrap{width:100%;overflow:hidden;position:relative;padding:8px 0;}
 .cov-track{display:flex;gap:14px;animation:covScroll 30s linear infinite;width:max-content;}
 .cov-track:hover{animation-play-state:paused;}
@@ -1787,7 +1787,7 @@ function wsNextCard(n){
 
 <div class="cov-title-wrap">
   <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">Tu contenido exclusivo</p>
-  <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;">8 secciones &middot; 35+ lecciones &middot; ejercicios pr&#xE1;cticos</p>
+  <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;">8 secciones &middot; ejercicios pr&#xE1;cticos</p>
 </div>
 
 <!-- Row 1: scroll left -->
@@ -1845,7 +1845,7 @@ function wsNextCard(n){
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">
 <style>
-#s-demo{background:radial-gradient(ellipse at 50% 30%,#2A1C21,#1E1218 70%);align-items:center;justify-content:center;padding:0 24px;min-height:100vh;overflow:hidden;}
+#s-demo{background:#F5EDE0;align-items:center;justify-content:center;padding:0 24px;min-height:100vh;overflow:hidden;}
 .demo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;width:100%;max-width:400px;margin:0 auto;padding:90px 0 40px;}
 .demo-intro{text-align:center;margin-bottom:20px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
 .demo-intro.in{opacity:1;transform:translateY(0);}
@@ -1867,9 +1867,9 @@ function wsNextCard(n){
 <div class="demo-wrap">
 
   <div class="demo-intro" id="demo-intro">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">Mira el sistema</p>
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.2;margin-bottom:8px;">por dentro</p>
-    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.3);text-transform:uppercase;">No es un curso. Es tu centro de mando.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#1a0810;line-height:1.2;margin-bottom:4px;">Mira el sistema</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;font-style:italic;color:#8B6520;line-height:1.2;margin-bottom:8px;">por dentro</p>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;">No es un curso. Es tu centro de mando.</p>
   </div>
 
   <div class="demo-phone">
@@ -1881,7 +1881,7 @@ function wsNextCard(n){
   </div>
 
   <div class="demo-caption" id="demo-caption">
-    <p>No es un PDF. No es un Zoom.<br><strong>Es un m&#xE9;todo funcional que vive en tu tel&#xE9;fono.</strong></p>
+    <p style="color:#2a1a0f;">No es un PDF. No es un Zoom.<br><strong style="color:#8B6520;">Es un m&#xE9;todo funcional que vive en tu tel&#xE9;fono.</strong></p>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
@@ -2233,11 +2233,11 @@ let curQ = 0, ans = [], sc = {S:0,P:0,D:0}; window._curQ = 0; var uName = '', uE
 
 // ── HELPERS ───────────────────────────────────────────────
 function show(id) {
-  var headerScreens = ['s-josue','s-workshop','s-covers','s-demo','s-testimonios','s-loading2'];
+  var headerScreens = ['s-josue','s-workshop','s-demo','s-testimonios','s-loading2'];
   var h = document.getElementById('global-header');
   if (h) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';
-    var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#1E1218','s-testimonios':'#1E1218','s-loading2':'#080306'};
+    var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306'};
     h.style.background = headerBg[id] || '#0F0A0B';
     var sp = document.getElementById('header-spacer');
     if(sp){ sp.style.background = headerBg[id] || '#1E1218'; sp.style.display = headerScreens.indexOf(id) >= 0 ? 'block' : 'none'; }

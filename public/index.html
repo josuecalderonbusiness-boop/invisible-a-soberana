@@ -1729,7 +1729,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
         <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-bottom:4px;">C&#xF3;digo Soberana</p>
         <p style="font-family:'Playfair Display',serif;font-size:clamp(28px,7.5vw,40px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.15;margin-bottom:12px;">no es un curso.</p>
         <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:36px;">Es un sistema que vive en tu tel&#xE9;fono</p>
-        <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Ver el sistema por dentro →</button>
+        <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo');setTimeout(initDemo,300);">Ver el sistema por dentro →</button>
       </div>
 
     </div>
@@ -1837,7 +1837,7 @@ function wsNextCard(n){
 </div>
 
 <div class="cov-cta">
-  <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-demo')">Ver el sistema por dentro →</button>
+  <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
 </div>
 
 </div>
@@ -1885,7 +1885,7 @@ function wsNextCard(n){
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
-    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Quiero acceder al sistema →</button>
   </div>
 
 </div>
@@ -2233,7 +2233,7 @@ let curQ = 0, ans = [], sc = {S:0,P:0,D:0}; window._curQ = 0; var uName = '', uE
 
 // ── HELPERS ───────────────────────────────────────────────
 function show(id) {
-  var headerScreens = ['s-josue','s-workshop','s-demo','s-testimonios','s-loading2'];
+  var headerScreens = ['s-josue','s-workshop','s-testimonios','s-loading2'];
   var h = document.getElementById('global-header');
   if (h) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';

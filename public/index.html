@@ -1791,7 +1791,7 @@ function wsNextCard(n){
 </script>
 
 <!-- ──────────── GEMA INTERACTIVA ──────────── -->
-<div id="s-gema" class="screen" style="background:#0F0A0B;overflow:hidden;">
+<div id="s-gema" class="screen" style="background:radial-gradient(ellipse at 50% 40%,#3D0C11,#1E1218 70%);overflow:hidden;">
 <style>
 #s-gema.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
 .gema-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;width:100%;max-width:420px;}
@@ -1800,9 +1800,12 @@ function wsNextCard(n){
 .gema-img-wrap::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1.5px solid rgba(184,137,42,.2);animation:gemaRing 2.5s ease-in-out infinite;}
 @keyframes gemaSpin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
 @keyframes gemaRing{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.12);opacity:.7}}
-.gema-video-wrap{width:100%;max-width:380px;aspect-ratio:9/16;border-radius:16px;overflow:hidden;margin:0 auto;display:none;border:2px solid rgba(184,137,42,.3);box-shadow:0 12px 40px rgba(0,0,0,.5);}
-.gema-video-wrap iframe{width:100%;height:100%;border:none;}
-.gema-video-wrap.open{display:block;animation:fadeUp .5s ease both;}
+.gema-video-screen{display:none;position:fixed;inset:0;background:#F5EDE0;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;animation:fadeUp .4s ease both;}
+.gema-video-screen.open{display:flex;}
+.gema-phone{width:240px;height:480px;border-radius:36px;border:4px solid #333;background:#000;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.gema-phone-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
+.gema-phone-notch::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
+.gema-phone iframe{position:absolute;top:4px;left:-24%;width:148%;height:calc(100% - 8px);border:none;border-radius:32px;pointer-events:none;}
 </style>
 
 <div class="gema-wrap">
@@ -1815,8 +1818,13 @@ function wsNextCard(n){
     <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:10px;opacity:0;transition:opacity .6s ease;" id="gema-sub">Estrategia y ejecuci&#xF3;n en cada paso</p>
   </div>
 
-  <div id="gema-video" class="gema-video-wrap">
-    <iframe id="gema-iframe" allow="autoplay;fullscreen" allowfullscreen></iframe>
+  <div id="gema-video" class="gema-video-screen">
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:900;color:#1a0810;margin-bottom:4px;">Dentro de cada gema</p>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;margin-bottom:20px;">Esto es lo que encuentras</p>
+    <div class="gema-phone">
+      <div class="gema-phone-notch"></div>
+      <iframe id="gema-iframe" allow="autoplay;fullscreen" allowfullscreen></iframe>
+    </div>
   </div>
 
   <div id="gema-cta" style="margin-top:28px;opacity:0;transition:opacity .6s ease,transform .6s ease;transform:translateY(10px);">
@@ -1827,8 +1835,8 @@ function wsNextCard(n){
 
 <script>
 function initGema(){
-  document.getElementById('gema-video').classList.remove('open');
-  document.getElementById('gema-video').style.display='none';
+  var gv=document.getElementById('gema-video');
+  gv.classList.remove('open');gv.style.display='none';
   document.getElementById('gema-pre').style.display='flex';
   document.getElementById('gema-cta').style.opacity='0';
   document.getElementById('gema-cta').style.transform='translateY(10px)';
@@ -1845,7 +1853,7 @@ function openGemaVideo(){
     document.getElementById('gema-pre').style.display='none';
     var vw=document.getElementById('gema-video');
     vw.classList.add('open');
-    vw.style.display='block';
+    vw.style.display='flex';
     document.getElementById('gema-iframe').src='https://iframe.mediadelivery.net/embed/649326/0e5349b2-3f74-4cf1-8e36-158f97046031?autoplay=true&muted=true&loop=true&preload=true&controls=false';
     setTimeout(function(){
       document.getElementById('gema-cta').style.opacity='1';

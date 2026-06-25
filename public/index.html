@@ -2855,17 +2855,7 @@ function showVideoScreen() {
     }, 1800 + i * 2200);
   });
   setTimeout(function(){ if(voPlay) voPlay.style.opacity = '1'; }, 1800 + pLines.length * 2200 + 800);
-  // Video real: cargar URL por perfil
-  const src = document.getElementById('vsl-src');
-  if (src && VIDEO_URLS[topProfile]) {
-    src.src = VIDEO_URLS[topProfile];
-    const vid = document.getElementById('vsl-video');
-    if (vid) { vid.load(); vid.play().catch(()=>{}); }
-    // Al terminar el video mostrar CTA
-    vid && vid.addEventListener('ended', () => { showVideoCta(); });
-  } else {
-    setTimeout(() => { showVideoCta(); }, 12000);
-  }
+  // Video se carga pero NO se reproduce hasta que ella toque play
 }
 function showVideoCta(){
   var POST_VIDEO = {
@@ -2910,22 +2900,21 @@ function showVideoCta(){
   setTimeout(function(){if(btn){btn.style.opacity='1';btn.style.transform='translateY(0)';}},800+lines.length*2000+600);
 }
 function dismissVideoOverlay() {
-  const overlay = document.getElementById('video-overlay');
+  var overlay = document.getElementById('video-overlay');
   if (overlay) { overlay.style.transition='opacity .8s ease'; overlay.style.opacity = '0'; }
-  setTimeout(() => { if (overlay) overlay.style.display = 'none'; }, 800);
+  setTimeout(function(){ if (overlay) overlay.style.display = 'none'; }, 800);
 
-  // Reiniciar iframe desde 0 con audio activado
-  const wrap = document.getElementById('video-wrap');
-  const existingIframe = wrap ? wrap.querySelector('iframe') : null;
+  // Iniciar video con audio
+  var wrap = document.getElementById('video-wrap');
+  var existingIframe = wrap ? wrap.querySelector('iframe') : null;
   if (existingIframe) {
-    const src = existingIframe.src;
-  existingIframe.src = src.replace('muted=true', 'muted=false&t=0');
+    var src = existingIframe.src;
+    existingIframe.src = src.replace('muted=true', 'muted=false&t=0');
   }
 
-  // CTA después de 39 segundos
-  setTimeout(() => {
-    const cta = document.getElementById('video-cta');
-    if (cta) { cta.style.display = 'block'; }
+  // Después del video: pantalla negra + texto introspectivo
+  setTimeout(function(){
+    showVideoCta();
   }, 39000);
 }
 

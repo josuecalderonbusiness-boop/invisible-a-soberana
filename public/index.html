@@ -1621,32 +1621,13 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
   </div>
 
   <!-- OVERLAY: PANTALLA INTROSPECTIVA PRE-VIDEO -->
-<div id="video-overlay" style="position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 40%,#1a0a10,#050002 70%);overflow-y:auto;-webkit-overflow-scrolling:touch;">
-    <div style="padding:100px 32px 60px;width:100%;max-width:400px;margin:0 auto;">
-
-      <p id="vo-name" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,30px);font-weight:900;color:#E8C870;text-align:center;margin-bottom:36px;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;"></p>
-
-      <div id="vo-lines" style="text-align:left;"></div>
-
-      <div id="vo-play" style="text-align:center;margin-top:44px;opacity:0;filter:blur(4px);transform:translateY(12px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;">
-        <div style="position:relative;width:80px;height:80px;margin:0 auto 12px;">
-          <button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;">
-            <div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#0f0408"><polygon points="8,4 20,12 8,20"/></svg>
-          </button>
-        </div>
-        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:rgba(184,137,42,.4);letter-spacing:1.5px;text-transform:uppercase;">Reproducir</p>
-      </div>
-
-    </div>
+  <div id="video-overlay" style="position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 75% 0%,rgba(140,40,60,.45),#1E1218 62%);">
+    <div id="vo-container" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:52px 28px;"></div>
   </div>
 
-  <!-- CTA post-video: pantalla cinematográfica -->
-  <div id="video-cta" style="display:none;position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 50% 40%,#1a0a10,#050002 70%);overflow-y:auto;-webkit-overflow-scrolling:touch;">
-    <div style="padding:100px 32px 60px;width:100%;max-width:400px;margin:0 auto;">
-      <div id="video-cta-lines" style="text-align:left;"></div>
-      <button id="video-cta-btn" class="btn-cta" style="width:100%;border-radius:12px;margin-top:36px;animation:ctaPulse 2s ease-in-out infinite;opacity:0;filter:blur(4px);transform:translateY(12px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;" onclick="show('s-josue')">Continuar →</button>
-    </div>
+  <!-- CTA post-video -->
+  <div id="video-cta" style="display:none;position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse at 75% 0%,rgba(140,40,60,.45),#1E1218 62%);">
+    <div id="vc-container" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:52px 28px;"></div>
   </div>
 </div>
 
@@ -2848,24 +2829,73 @@ function showVideoScreen() {
   var voName = document.getElementById('vo-name');
   var voLines = document.getElementById('vo-lines');
   var voPlay = document.getElementById('vo-play');
-  if (voName) { voName.textContent = uName || ''; voName.style.opacity='0'; voName.style.filter='blur(6px)'; voName.style.transform='translateY(16px)'; }
-  if (voLines) voLines.innerHTML = '';
-  if (voPlay) { voPlay.style.opacity='0'; voPlay.style.filter='blur(4px)'; voPlay.style.transform='translateY(12px)'; }
-  var pLines = PROFILE_LINES[topProfile] || PROFILE_LINES['S'];
-  setTimeout(function(){ if(voName){ voName.style.opacity='1'; voName.style.filter='blur(0)'; voName.style.transform='translateY(0)'; } }, 600);
-  pLines.forEach(function(line, i){
-    setTimeout(function(){
-      var p = document.createElement('p');
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:600;color:rgba(240,230,234,.78);line-height:1.6;margin-bottom:20px;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
-      if (i === pLines.length - 1) { p.style.color = '#E8C870'; p.style.fontStyle = 'italic'; }
-      p.textContent = line;
-      voLines.appendChild(p);
-      requestAnimationFrame(function(){ p.style.opacity='1'; p.style.filter='blur(0)'; p.style.transform='translateY(0)'; });
-    }, 1800 + i * 2200);
-  });
-  setTimeout(function(){ if(voPlay){ voPlay.style.opacity='1'; voPlay.style.filter='blur(0)'; voPlay.style.transform='translateY(0)'; } }, 1800 + pLines.length * 2200 + 800);
-  // Video se carga pero NO se reproduce hasta que ella toque play
+  // Build pre-video slides: each line is a centered slide with arrow
+  var allLines = [uName || ''].concat(PROFILE_LINES[topProfile] || PROFILE_LINES['S']);
+  var voC = document.getElementById('vo-container');
+  voC.innerHTML = '';
+  window._voIdx = 0;
+  window._voSlides = allLines;
+  window._voIsPlay = true;
+  voShowSlide(0);
 }
+function voShowSlide(idx) {
+  var voC = document.getElementById(_voIsPlay ? 'vo-container' : 'vc-container');
+  var slides = window._voSlides;
+  var isLast = idx >= slides.length - 1;
+  var isName = idx === 0;
+  var isLastLine = idx === slides.length - 1;
+
+  voC.innerHTML = '';
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'text-align:center;max-width:420px;width:100%;';
+
+  var p = document.createElement('p');
+  if (isName && _voIsPlay) {
+    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(38px,10vw,56px);font-weight:900;color:#E8C870;line-height:1.1;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
+  } else if (isLastLine) {
+    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(20px,5.5vw,28px);font-weight:700;color:#E8C870;font-style:italic;line-height:1.5;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
+  } else if (isName) {
+    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,38px);font-weight:900;color:#E8C870;line-height:1.1;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
+  } else {
+    p.style.cssText = "font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(21px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.82);line-height:1.65;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
+  }
+  p.textContent = slides[idx];
+  wrap.appendChild(p);
+
+  // Arrow or play button
+  var btnWrap = document.createElement('div');
+  btnWrap.style.cssText = 'margin-top:32px;opacity:0;transition:opacity .5s ease;';
+
+  if (isLast && _voIsPlay) {
+    // Play button
+    btnWrap.innerHTML = '<div style="position:relative;width:80px;height:80px;margin:0 auto 12px;"><button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div><svg width="24" height="24" viewBox="0 0 24 24" fill="#0f0408"><polygon points="8,4 20,12 8,20"/></svg></button></div><p style="font-family:\'Inter\',sans-serif;font-size:10px;font-weight:600;color:rgba(184,137,42,.4);letter-spacing:1.5px;text-transform:uppercase;">Reproducir</p>';
+  } else if (isLast && !_voIsPlay) {
+    // Continuar button
+    btnWrap.innerHTML = '<button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show(\'s-josue\')">Continuar →</button>';
+  } else {
+    // Arrow
+    btnWrap.innerHTML = '<button onclick="voNext()" style="background:none;border:1.5px solid rgba(184,137,42,.25);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;margin:0 auto;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>';
+  }
+  wrap.appendChild(btnWrap);
+  voC.appendChild(wrap);
+
+  // Animate in
+  setTimeout(function(){ p.style.opacity='1'; p.style.filter='blur(0)'; p.style.transform='translateY(0)'; }, 200);
+  setTimeout(function(){ btnWrap.style.opacity = '1'; }, 1200);
+}
+
+function voNext() {
+  window._voIdx++;
+  if (window._voIdx >= window._voSlides.length) return;
+  var container = document.getElementById(_voIsPlay ? 'vo-container' : 'vc-container');
+  container.style.transition = 'opacity .4s ease';
+  container.style.opacity = '0';
+  setTimeout(function(){
+    container.style.opacity = '1';
+    voShowSlide(window._voIdx);
+  }, 400);
+}
+
 function showVideoCta(){
   var POST_VIDEO = {
     S: [
@@ -2889,24 +2919,12 @@ function showVideoCta(){
     ]
   };
   var cta=document.getElementById('video-cta');
-  if(cta) cta.style.display='flex';
-  var linesWrap=document.getElementById('video-cta-lines');
-  var btn=document.getElementById('video-cta-btn');
-  if(linesWrap) linesWrap.innerHTML='';
-  if(btn){btn.style.opacity='0';btn.style.filter='blur(4px)';btn.style.transform='translateY(12px)';}
+  if(cta) cta.style.display='block';
   var lines=(POST_VIDEO[topProfile]||POST_VIDEO['S']).map(function(l){return l.replace('{name}',uName||'');});
-  lines.forEach(function(line,i){
-    setTimeout(function(){
-      var p=document.createElement('p');
-      p.style.cssText="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:600;color:rgba(240,230,234,.78);line-height:1.6;margin-bottom:20px;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
-      if(i===0) p.style.cssText+="color:#E8C870;font-size:clamp(22px,6vw,28px);font-weight:900;margin-bottom:24px;";
-      if(i===lines.length-1) p.style.cssText+="color:#E8C870;font-style:italic;";
-      p.textContent=line;
-      linesWrap.appendChild(p);
-      requestAnimationFrame(function(){p.style.opacity='1';p.style.filter='blur(0)';p.style.transform='translateY(0)';});
-    },800+i*2000);
-  });
-  setTimeout(function(){if(btn){btn.style.opacity='1';btn.style.filter='blur(0)';btn.style.transform='translateY(0)';}},800+lines.length*2000+600);
+  window._voIdx = 0;
+  window._voSlides = lines;
+  window._voIsPlay = false;
+  voShowSlide(0);
 }
 function dismissVideoOverlay() {
   var overlay = document.getElementById('video-overlay');

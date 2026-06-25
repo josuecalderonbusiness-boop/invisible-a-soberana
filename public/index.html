@@ -2064,18 +2064,16 @@ function initDemo(){
 </div>
 
 <!-- ──────────── CARGANDO ACCESO ──────────── -->
-<div id="s-loading2" class="screen" style="justify-content:center;align-items:center;position:relative;overflow:hidden;background:#080306;">
-  <canvas id="particulas-canvas" style="position:absolute;inset:0;pointer-events:none;z-index:2;"></canvas>
+<div id="s-loading2" class="screen" style="justify-content:center;align-items:center;position:relative;overflow:hidden;background:#0F0A0B;">
   <div id="load2-overlay" style="position:absolute;inset:0;background:#000;opacity:0;transition:opacity 0.7s ease;z-index:1;pointer-events:none;"></div>
-  <div id="load2-bar-wrap" style="position:absolute;top:38px;left:6%;right:6%;height:8px;background:rgba(255,255,255,.06);border-radius:20px;transition:top 1s cubic-bezier(.4,0,.2,1),left 1s,right 1s;z-index:3;">
-    <div id="load2-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#6B4A10,#B8892A,#D4AF6A,#F0D080);border-radius:20px;transition:width 1.4s cubic-bezier(.4,0,.2,1);position:relative;">
+  <div id="load2-bar-wrap" style="position:absolute;top:38px;left:6%;right:6%;height:4px;background:rgba(255,255,255,.04);border-radius:20px;transition:top 1s cubic-bezier(.4,0,.2,1),left 1s,right 1s;z-index:3;">
+    <div id="load2-bar-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#6B4A10,#B8892A,#D4AF6A);border-radius:20px;transition:width 1.4s cubic-bezier(.4,0,.2,1);position:relative;">
       <div id="load2-bar-flash" style="position:absolute;inset:0;background:white;border-radius:20px;opacity:0;"></div>
     </div>
   </div>
   <div id="load2-frase-wrap" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;opacity:0;transition:opacity 1.6s ease;z-index:4;">
-    <div style="font-family:'Playfair Display',serif;font-size:52px;color:rgba(184,137,42,.2);line-height:0.4;margin-bottom:16px;align-self:flex-start;margin-left:8%;">"</div>
-    <div id="load2-txt" style="font-family:'Playfair Display',serif;font-style:italic;font-size:19px;color:#B8892A;text-align:center;line-height:1.9;max-width:360px;min-height:130px;"></div>
-    <div style="margin-top:36px;font-family:'Jost',sans-serif;font-size:10px;letter-spacing:3.5px;color:rgba(184,137,42,.3);text-transform:uppercase;">Cargando tu acceso &nbsp;<span id="load2-dots">▪ ▪ ▪</span></div>
+    <div id="load2-txt" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(22px,5.5vw,28px);font-weight:400;font-style:italic;color:rgba(240,230,234,.7);text-align:center;line-height:1.75;max-width:360px;min-height:130px;"></div>
+    <div style="margin-top:36px;font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.25);text-transform:uppercase;">Preparando tu acceso</div>
   </div>
 </div>
 

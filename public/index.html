@@ -1344,7 +1344,7 @@ const SoberanaAudio = {
 @keyframes s2btnPulse{0%,100%{box-shadow:0 6px 24px rgba(107,26,42,.4)}50%{box-shadow:0 6px 32px rgba(107,26,42,.65),0 0 0 6px rgba(107,26,42,.1)}}
 @keyframes waPulse{0%,100%{box-shadow:0 6px 24px rgba(37,211,102,.3)}50%{box-shadow:0 6px 32px rgba(37,211,102,.5),0 0 0 8px rgba(37,211,102,.1)}}
 @keyframes wsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes appPulse{0%,100%{transform:scale(1);box-shadow:0 4px 20px rgba(0,0,0,.4)}50%{transform:scale(1.06);box-shadow:0 8px 30px rgba(184,137,42,.35),0 0 0 6px rgba(184,137,42,.1)}}
+@keyframes appPulse{0%,100%{transform:scale(1);box-shadow:0 4px 20px rgba(0,0,0,.4)}50%{transform:scale(1.06);box-shadow:0 8px 28px rgba(0,0,0,.5)}}
 </style>
 
 <script>
@@ -1736,7 +1736,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
             <img src="workbook/assets/favicon/favicon-app.jpg" alt="Código Soberana" style="width:100%;height:100%;display:block;border-radius:18px;">
             <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.1) 100%);border-radius:18px;pointer-events:none;"></div>
           </div>
-          <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;color:rgba(184,137,42,.6);text-transform:uppercase;">Toca para abrir el sistema</p>
+          <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:18px;">Toca para abrir el sistema</p>
         </div>
       </div>
 
@@ -1877,7 +1877,7 @@ function wsNextCard(n){
 @keyframes phoneGlow{0%,100%{box-shadow:0 0 50px rgba(184,137,42,.3),0 0 100px rgba(184,137,42,.12),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05)}50%{box-shadow:0 0 60px rgba(184,137,42,.45),0 0 120px rgba(184,137,42,.2),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}}
 .demo-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
 .demo-notch::after{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#1a1a1a;border:1px solid #222;}
-.demo-phone iframe{position:absolute;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;}
+.demo-phone iframe{position:absolute;top:0;left:-24%;width:148%;height:100%;border:none;border-radius:33px;pointer-events:none;clip-path:inset(0 0 0 0 round 33px);}
 .demo-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 18px;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.6) 60%,transparent 100%);z-index:10;border-radius:0 0 33px 33px;}
 .demo-overlay p{font-family:'Playfair Display',serif;font-size:clamp(13px,3.5vw,15px);font-weight:600;color:#EDE3CE;line-height:1.45;text-align:center;margin:0;text-shadow:0 1px 4px rgba(0,0,0,.5);}
 .demo-caption{margin-top:20px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
@@ -1897,13 +1897,11 @@ function wsNextCard(n){
 
   <div class="demo-phone">
     <div class="demo-notch"></div>
-    <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen style="top:50%;transform:translateY(-50%);"></iframe>
-    <div class="demo-overlay">
-      <p>Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s. Cada gema es un paso adelante.</p>
-    </div>
+    <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
   </div>
 
   <div class="demo-caption" id="demo-caption">
+    <p style="color:#2a1a0f;font-family:'Playfair Display',serif;font-size:clamp(15px,4vw,18px);font-weight:600;line-height:1.55;margin-top:20px;">Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s. <strong style="color:#8B6520;">Cada gema es un paso adelante.</strong></p>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">

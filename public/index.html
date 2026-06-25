@@ -1785,6 +1785,7 @@ function wsNextCard(n){
   setTimeout(function(){
     if(prev) prev.style.display='none';
     if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';},50);}
+    if(n===4){var ic=document.getElementById('ws-app-icon');if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}}
   },600);
 }
 </script>

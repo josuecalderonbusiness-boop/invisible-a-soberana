@@ -1715,8 +1715,11 @@ function wsReveal(){
     document.getElementById('ws-hero').style.display='none';
     var m=document.getElementById('ws-modules');
     m.style.display='block';
+    // Reset footer
+    var ft=document.getElementById('wsc4');
+    if(ft){ft.style.display='none';ft.style.opacity='0';}
     wsRenderCards();
-    setTimeout(function(){var c1=document.getElementById('wsc1');if(c1)c1.style.opacity='1';},200);
+    setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';}},200);
   },500);
 }
 function wsOpenApp(){

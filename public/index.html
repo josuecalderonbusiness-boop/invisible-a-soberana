@@ -2119,16 +2119,53 @@ function initDemo(){
     </button>
     <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,.35);margin-bottom:28px;">Acceso inmediato · Garantía 7 días sin preguntas</p>
 
-    <!-- Lo que incluye -->
-    <div style="text-align:left;margin-bottom:28px;">
-      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;color:#B8892A;letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px;">Lo que recibes hoy</p>
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div class="js-reveal" style="display:flex;gap:14px;align-items:center;background:rgba(139,26,47,.1);border:1px solid rgba(139,26,47,.25);border-radius:14px;padding:16px;"><span style="color:#B8892A;font-size:20px;flex-shrink:0;">✦</span><div><p style="font-family:'Playfair Display',serif;font-size:16px;color:#EDE3CE;font-weight:700;margin-bottom:2px;">Workshop C&#xF3;digo Soberana completo</p><p style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(237,227,206,.45);font-weight:500;">3 protocolos · 90 minutos</p></div></div>
-        <div class="js-reveal" style="display:flex;gap:14px;align-items:center;background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.2);border-radius:14px;padding:16px;"><span style="color:#B8892A;font-size:20px;flex-shrink:0;">✦</span><div><p style="font-family:'Playfair Display',serif;font-size:16px;color:#EDE3CE;font-weight:700;margin-bottom:2px;">Workbook PWA instalable</p><p style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(237,227,206,.45);font-weight:500;">Sistema instalable en tu tel&#xE9;fono</p></div></div>
-        <div class="js-reveal" style="display:flex;gap:14px;align-items:center;background:rgba(139,26,47,.1);border:1px solid rgba(139,26,47,.25);border-radius:14px;padding:16px;"><span style="color:#B8892A;font-size:20px;flex-shrink:0;">✦</span><div><p style="font-family:'Playfair Display',serif;font-size:16px;color:#EDE3CE;font-weight:700;margin-bottom:2px;">Acceso de por vida</p><p style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(237,227,206,.45);font-weight:500;">Repasas tu camino cuando quieras</p></div></div>
-        <div class="js-reveal" style="display:flex;gap:14px;align-items:center;background:rgba(184,137,42,.06);border:1px solid rgba(184,137,42,.2);border-radius:14px;padding:16px;"><span style="color:#B8892A;font-size:20px;flex-shrink:0;">✦</span><div><p style="font-family:'Playfair Display',serif;font-size:16px;color:#EDE3CE;font-weight:700;margin-bottom:2px;">Red de Soberanas</p><p style="font-family:'Inter',sans-serif;font-size:11px;color:rgba(237,227,206,.45);font-weight:500;">Comunidad dentro de la app</p></div></div>
+    <!-- Lo que incluye — fullscreen cards -->
+    <div id="precio-items" style="text-align:center;margin-bottom:28px;">
+      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:900;color:#F0E6EA;margin-bottom:4px;">Lo que recibes hoy</p>
+      <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,#B8892A,transparent);margin:0 auto 24px;"></div>
+
+      <div id="pi-0" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
+        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Workshop C&#xF3;digo Soberana</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">3 protocolos · 90 minutos</p>
+      </div>
+
+      <div id="pi-1" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
+        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Sistema instalable en tu tel&#xE9;fono</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Workbook PWA · Todo en un solo lugar</p>
+      </div>
+
+      <div id="pi-2" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
+        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Acceso de por vida</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Repasas tu camino cuando quieras</p>
+      </div>
+
+      <div id="pi-3" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
+        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Red de Soberanas</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Comunidad dentro de la app</p>
       </div>
     </div>
+
+    <script>
+    (function(){
+      var precioObs=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){
+            var cards=document.querySelectorAll('.precio-card');
+            cards.forEach(function(c,i){
+              setTimeout(function(){c.style.opacity='1';c.style.transform='translateY(0) scale(1)';},i*300);
+            });
+            precioObs.disconnect();
+          }
+        });
+      },{threshold:0.1});
+      var target=document.getElementById('precio-items');
+      if(target) precioObs.observe(target);
+    })();
+    </script>
 
     <!-- GARANTÍA -->
     <div class="js-reveal" style="background:linear-gradient(135deg,rgba(184,137,42,.1) 0%,rgba(184,137,42,.04) 100%);border:1.5px solid rgba(184,137,42,.3);border-radius:20px;padding:28px 24px;margin-bottom:28px;text-align:center;">

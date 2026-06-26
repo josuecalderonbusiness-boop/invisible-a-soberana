@@ -1712,9 +1712,21 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: texto cíclico arriba + favicon abajo -->
+    <!-- HERO: título fijo + texto cíclico + favicon -->
     <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:radial-gradient(ellipse at 50% 40%,#3D0C11,#1E1218 70%);">
-      <div id="ws-hero-stage" style="text-align:center;max-width:340px;display:flex;flex-direction:column;align-items:center;"></div>
+      <div id="ws-hero-stage" style="text-align:center;max-width:340px;display:flex;flex-direction:column;align-items:center;">
+        <p id="ws-hero-title" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:20px;opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;">Aqu&#xED; empieza <em style="color:#E8C870;font-style:italic;">tu recorrido.</em></p>
+        <div id="ws-hero-cycle" style="min-height:30px;margin-bottom:36px;">
+          <p id="ws-hero-cycle-text" style="font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
+        </div>
+        <div id="ws-hero-fav" style="display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.85);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);">
+          <div onclick="wsOpenApp()" style="cursor:pointer;width:64px;height:64px;border-radius:16px;position:relative;margin-bottom:8px;">
+            <div style="position:absolute;inset:-3px;border-radius:19px;border:1.5px solid rgba(232,200,112,.4);box-shadow:0 0 16px rgba(232,200,112,.2);animation:appPulse 2.5s ease-in-out infinite;"></div>
+            <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:64px;height:64px;display:block;border-radius:16px;position:relative;z-index:1;">
+          </div>
+          <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>
+        </div>
+      </div>
     </div>
 
     <!-- MODULOS: pantalla completa, una card a la vez -->
@@ -1784,34 +1796,38 @@ function wsShowHero(){
   },600);
 }
 function wsRenderHero(){
-  var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
-  var stage = document.getElementById('ws-hero-stage');
-  stage.innerHTML = '';
-  var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
-  // Title
-  var title = document.createElement('p');
-  title.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;" + base;
-  title.innerHTML = data[0].html || data[0].text;
-  stage.appendChild(title);
-  // Sub text
-  var sub = document.createElement('p');
-  sub.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;margin-top:20px;margin-bottom:36px;" + base;
-  sub.textContent = data[1].text;
-  stage.appendChild(sub);
-  // Favicon
-  var favWrap = document.createElement('div');
-  favWrap.id = 'ws-fav-wrap2';
-  favWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.85);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);";
-  favWrap.innerHTML = '<div onclick="wsOpenApp()" style="cursor:pointer;width:64px;height:64px;border-radius:16px;position:relative;margin-bottom:8px;">'
-    +'<div style="position:absolute;inset:-3px;border-radius:19px;border:1.5px solid rgba(232,200,112,.4);box-shadow:0 0 16px rgba(232,200,112,.2);animation:appPulse 2.5s ease-in-out infinite;"></div>'
-    +'<img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:64px;height:64px;display:block;border-radius:16px;position:relative;z-index:1;">'
-    +'</div>'
-    +'<p style="font-family:\'Inter\',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>';
-  stage.appendChild(favWrap);
-  // Animate sequence
-  setTimeout(function(){title.style.opacity='1';title.style.filter='blur(0)';title.style.transform='translateY(0)';},400);
-  setTimeout(function(){sub.style.opacity='1';sub.style.filter='blur(0)';sub.style.transform='translateY(0)';},2000);
-  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},3500);
+  var titleEl = document.getElementById('ws-hero-title');
+  var cycleEl = document.getElementById('ws-hero-cycle-text');
+  var favEl = document.getElementById('ws-hero-fav');
+  // Reset
+  if(titleEl){titleEl.style.opacity='0';titleEl.style.filter='blur(8px)';titleEl.style.transform='translateY(18px)';}
+  if(cycleEl){cycleEl.style.opacity='0';}
+  if(favEl){favEl.style.opacity='0';favEl.style.transform='scale(.85)';}
+  var phrases=['Cada gema representa un paso.','No necesitas hacerlo perfecto.','Solo avanzar una a la vez.'];
+  // Show title (stays)
+  setTimeout(function(){
+    if(titleEl){titleEl.style.opacity='1';titleEl.style.filter='blur(0)';titleEl.style.transform='translateY(0)';}
+  },400);
+  // Show favicon
+  setTimeout(function(){
+    if(favEl){favEl.style.opacity='1';favEl.style.transform='scale(1)';}
+  },2000);
+  // Start cycling phrases
+  function showPhrase(i){
+    var isLast = (i % phrases.length) === phrases.length - 1;
+    cycleEl.style.opacity='0';cycleEl.style.filter='blur(4px)';cycleEl.style.transform='translateY(8px)';
+    setTimeout(function(){
+      cycleEl.textContent = phrases[i % phrases.length];
+      cycleEl.style.color = isLast ? 'rgba(232,200,112,.5)' : 'rgba(240,230,234,.45)';
+      cycleEl.style.fontStyle = isLast ? 'italic' : 'normal';
+      cycleEl.style.opacity='1';cycleEl.style.filter='blur(0)';cycleEl.style.transform='translateY(0)';
+    },500);
+    setTimeout(function(){
+      cycleEl.style.opacity='0';cycleEl.style.filter='blur(4px)';cycleEl.style.transform='translateY(-6px)';
+      setTimeout(function(){showPhrase(i+1);},700);
+    },3200);
+  }
+  setTimeout(function(){showPhrase(0);},1200);
 }
 function wsAnimHero(){
   wsRenderHero();

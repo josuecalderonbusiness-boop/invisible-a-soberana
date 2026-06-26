@@ -1719,24 +1719,28 @@ function initJosue(){
       <!-- Thin gold line -->
       <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
       <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
-      <!-- Curved path with nodes -->
-      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:32px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:200px;height:220px;">
-        <svg viewBox="0 0 200 220" width="200" height="220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Path curve -->
-          <path id="ws-road" d="M100 10 C 40 50, 160 90, 100 130 C 60 155, 140 185, 100 210" stroke="rgba(184,137,42,.12)" stroke-width="2" stroke-dasharray="6 4" fill="none" style="transition:stroke .8s ease;"/>
-          <!-- Nodes along the path -->
-          <circle class="ws-node" cx="100" cy="10" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
-          <circle class="ws-node" cx="68" cy="55" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
-          <circle class="ws-node" cx="130" cy="95" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
-          <circle class="ws-node" cx="100" cy="130" r="6" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
-          <circle class="ws-node" cx="80" cy="165" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
-          <!-- Gem at end -->
-          <g id="ws-gem-g" style="transition:filter .6s ease,opacity .6s ease;" opacity="0.3">
-            <circle cx="100" cy="210" r="12" fill="rgba(184,137,42,.08)" stroke="rgba(184,137,42,.2)" stroke-width="1.5"/>
-            <polygon points="100,201 107,207 104,216 96,216 93,207" fill="none" stroke="rgba(184,137,42,.3)" stroke-width="1" stroke-linejoin="round"/>
+      <!-- Winding footpath -->
+      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:24px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:240px;height:280px;">
+        <svg viewBox="0 0 240 280" width="240" height="280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Winding path like footsteps -->
+          <path id="ws-road" d="M120 8 C 60 8, 30 50, 50 80 C 70 110, 200 100, 190 140 C 180 175, 40 165, 55 200 C 70 235, 180 230, 170 260 L 150 275" stroke="rgba(184,137,42,.12)" stroke-width="2.5" stroke-linecap="round" fill="none" style="transition:stroke .8s ease;"/>
+          <!-- Footstep dots along the curve -->
+          <ellipse class="ws-node" cx="120" cy="10" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-10 120 10)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="62" cy="48" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(15 62 48)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="55" cy="82" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-20 55 82)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="140" cy="105" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(10 140 105)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="188" cy="135" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-15 188 135)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="120" cy="168" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(20 120 168)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="58" cy="195" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-10 58 195)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="100" cy="228" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(15 100 228)" style="transition:fill .5s ease;"/>
+          <ellipse class="ws-node" cx="165" cy="250" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-5 165 250)" style="transition:fill .5s ease;"/>
+          <!-- Gem/flag at end -->
+          <g id="ws-gem-g" style="transition:filter .8s ease,opacity .8s ease;" opacity="0.25">
+            <circle cx="148" cy="272" r="10" fill="rgba(184,137,42,.06)" stroke="rgba(184,137,42,.2)" stroke-width="1.5"/>
+            <polygon points="148,264 154,269 151,277 145,277 142,269" fill="none" stroke="rgba(184,137,42,.25)" stroke-width="1" stroke-linejoin="round"/>
           </g>
         </svg>
-        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;text-align:center;margin-top:6px;">Toca para avanzar</p>
+        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;text-align:center;margin-top:4px;">Toca para avanzar</p>
       </div>
     </div>
 

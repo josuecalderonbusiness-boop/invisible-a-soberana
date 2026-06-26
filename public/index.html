@@ -1712,60 +1712,9 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: cinta elegante con brújula y favicon -->
-    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;">
-      <!-- Texto perfil -->
-      <div id="ws-hero-content" style="text-align:left;padding:70px 28px 0;position:relative;z-index:2;max-width:300px;"></div>
-      <!-- Composición: cinta + brújula + favicon -->
-      <div style="flex:1;position:relative;width:100%;z-index:1;">
-        <svg id="ws-ribbon-svg" viewBox="0 0 375 420" width="100%" height="100%" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="ribbonGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgba(245,237,224,.18)"/>
-              <stop offset="50%" stop-color="rgba(245,237,224,.12)"/>
-              <stop offset="100%" stop-color="rgba(245,237,224,.06)"/>
-            </linearGradient>
-            <linearGradient id="ribbonEdge" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgba(232,200,112,.15)"/>
-              <stop offset="100%" stop-color="rgba(232,200,112,.05)"/>
-            </linearGradient>
-            <!-- Light that travels along the ribbon -->
-            <radialGradient id="ribbonLight" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="rgba(232,200,112,.35)"/>
-              <stop offset="100%" stop-color="transparent"/>
-            </radialGradient>
-          </defs>
-          <!-- Ribbon body - thick elegant band -->
-          <path id="ws-ribbon" d="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40" stroke="url(#ribbonGrad)" stroke-width="42" stroke-linecap="round" fill="none"/>
-          <!-- Ribbon edge highlight -->
-          <path d="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40" stroke="url(#ribbonEdge)" stroke-width="44" stroke-linecap="round" fill="none" opacity=".3"/>
-          <!-- Traveling light -->
-          <circle id="ws-light" cx="60" cy="390" r="28" fill="url(#ribbonLight)" opacity="0">
-            <animateMotion id="ws-light-motion" dur="4s" fill="freeze" begin="indefinite" path="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40"/>
-          </circle>
-          <!-- Brújula al inicio de la cinta -->
-          <g id="ws-brujula-g" transform="translate(60,390)" opacity="0" style="transition:opacity 1s ease;">
-            <circle r="20" fill="none" stroke="rgba(232,200,112,.3)" stroke-width="1.5"/>
-            <circle r="14" fill="none" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
-            <line x1="0" y1="-10" x2="0" y2="-16" stroke="rgba(232,200,112,.4)" stroke-width="1.5"/>
-            <line x1="0" y1="10" x2="0" y2="16" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
-            <line x1="-10" y1="0" x2="-16" y2="0" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
-            <line x1="10" y1="0" x2="16" y2="0" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
-            <polygon points="0,-11 3,2 -3,2" fill="rgba(232,200,112,.6)"/>
-            <polygon points="0,11 3,-2 -3,-2" fill="rgba(232,200,112,.2)"/>
-          </g>
-          <!-- Favicon al final de la cinta -->
-          <foreignObject id="ws-fav-fo" x="254" y="4" width="72" height="90" opacity="0" style="transition:opacity 1s ease;">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;">
-              <div onclick="wsOpenApp()" id="ws-fav-btn" style="cursor:pointer;width:52px;height:52px;border-radius:14px;position:relative;margin:0 auto;">
-                <div id="ws-fav-glow" style="position:absolute;inset:-3px;border-radius:17px;border:1.5px solid rgba(232,200,112,.3);box-shadow:0 0 0 rgba(232,200,112,0);transition:box-shadow 1s ease,border-color 1s ease;"></div>
-                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:52px;height:52px;display:block;border-radius:14px;position:relative;z-index:1;">
-              </div>
-              <p style="font-family:'Inter',sans-serif;font-size:7px;font-weight:500;letter-spacing:.1em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:5px;">Abrir</p>
-            </div>
-          </foreignObject>
-        </svg>
-      </div>
+    <!-- HERO: texto → huellas → texto 2 → favicon -->
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:linear-gradient(170deg,#2A1420 0%,#1E1218 40%,#F5EDE0 100%);">
+      <div id="ws-hero-stage" style="text-align:center;max-width:340px;"></div>
     </div>
 
     <!-- MODULOS: pantalla completa, una card a la vez -->
@@ -1836,68 +1785,46 @@ function wsShowHero(){
 }
 function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
-  var cont = document.getElementById('ws-hero-content');
-  cont.innerHTML = '';
+  var stage = document.getElementById('ws-hero-stage');
+  stage.innerHTML = '';
   var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
-  var allEls = [];
-  data.forEach(function(item){
-    var p = document.createElement('p');
-    if(item.type==='sub'){
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,17px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;margin-top:16px;" + base;
-    } else {
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,30px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-top:4px;" + base;
-    }
-    p.textContent = item.text;
-    cont.appendChild(p);
-    allEls.push(p);
-  });
-  // Reset ribbon elements
-  var brujula=document.getElementById('ws-brujula-g');
-  var favFo=document.getElementById('ws-fav-fo');
-  var favGlow=document.getElementById('ws-fav-glow');
-  var light=document.getElementById('ws-light');
-  if(brujula) brujula.setAttribute('opacity','0');
-  if(favFo) favFo.setAttribute('opacity','0');
-  if(favGlow){favGlow.style.boxShadow='0 0 0 rgba(232,200,112,0)';favGlow.style.borderColor='rgba(232,200,112,.3)';}
-  if(light) light.setAttribute('opacity','0');
-  // Animate text
-  allEls.forEach(function(el, i){
-    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 600 + i * 1400);
-  });
-  // Show brújula
-  setTimeout(function(){if(brujula) brujula.setAttribute('opacity','1');}, 600 + allEls.length * 1400);
-  // Start light animation
-  setTimeout(function(){wsWalkPath();}, 600 + allEls.length * 1400 + 1200);
+  // Title (main line)
+  var title = document.createElement('p');
+  title.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;" + base;
+  title.textContent = data[0].text;
+  stage.appendChild(title);
+  // Footsteps SVG
+  var steps = document.createElement('div');
+  steps.id = 'ws-steps';
+  steps.style.cssText = "margin:32px auto;opacity:0;transition:opacity 1s ease;";
+  steps.innerHTML = '<svg width="40" height="80" viewBox="0 0 40 80" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="14" cy="12" rx="6" ry="8" fill="rgba(232,200,112,.3)" transform="rotate(-15 14 12)"/><ellipse cx="26" cy="36" rx="6" ry="8" fill="rgba(232,200,112,.2)" transform="rotate(10 26 36)"/><ellipse cx="14" cy="60" rx="6" ry="8" fill="rgba(232,200,112,.15)" transform="rotate(-10 14 60)"/></svg>';
+  stage.appendChild(steps);
+  // Sub text
+  var sub = document.createElement('p');
+  sub.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;margin-bottom:36px;" + base;
+  sub.textContent = data[1].text;
+  stage.appendChild(sub);
+  // Favicon
+  var favWrap = document.createElement('div');
+  favWrap.id = 'ws-fav-wrap2';
+  favWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.85);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);";
+  favWrap.innerHTML = '<div onclick="wsOpenApp()" style="cursor:pointer;width:64px;height:64px;border-radius:16px;position:relative;margin-bottom:8px;">'
+    +'<div style="position:absolute;inset:-3px;border-radius:19px;border:1.5px solid rgba(232,200,112,.4);box-shadow:0 0 16px rgba(232,200,112,.2);animation:appPulse 2.5s ease-in-out infinite;"></div>'
+    +'<img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:64px;height:64px;display:block;border-radius:16px;position:relative;z-index:1;">'
+    +'</div>'
+    +'<p style="font-family:\'Inter\',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>';
+  stage.appendChild(favWrap);
+  // Animate sequence
+  setTimeout(function(){title.style.opacity='1';title.style.filter='blur(0)';title.style.transform='translateY(0)';},400);
+  setTimeout(function(){steps.style.opacity='1';},2000);
+  setTimeout(function(){sub.style.opacity='1';sub.style.filter='blur(0)';sub.style.transform='translateY(0)';},3200);
+  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},4800);
 }
 function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  // Start light traveling along the ribbon
-  var light=document.getElementById('ws-light');
-  if(light){
-    light.setAttribute('opacity','1');
-    var motion=document.getElementById('ws-light-motion');
-    if(motion) motion.beginElement();
-  }
-  // After light arrives at favicon (4s), reveal it
-  setTimeout(function(){
-    var favFo=document.getElementById('ws-fav-fo');
-    if(favFo) favFo.setAttribute('opacity','1');
-    // Glow effect on favicon
-    setTimeout(function(){
-      var glow=document.getElementById('ws-fav-glow');
-      if(glow){
-        glow.style.boxShadow='0 0 16px rgba(232,200,112,.35),0 0 32px rgba(232,200,112,.12)';
-        glow.style.borderColor='rgba(232,200,112,.5)';
-      }
-      // Subtle breathe
-      var btn=document.getElementById('ws-fav-btn');
-      if(btn) btn.style.animation='appPulse 2.5s ease-in-out infinite';
-    },400);
-    // Fade out traveling light
-    if(light) light.setAttribute('opacity','0');
-  },4200);
+  // Not needed anymore - animation is in wsRenderHero
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

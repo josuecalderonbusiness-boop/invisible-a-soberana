@@ -1712,42 +1712,28 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: camino con favicon integrado -->
-    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:70px 24px 0;">
-      <!-- Texto perfil -->
-      <div id="ws-hero-content" style="text-align:left;width:100%;max-width:320px;position:relative;z-index:2;"></div>
-      <!-- Subtítulo (aparece después) -->
-      <div id="ws-hero-sub" style="text-align:center;max-width:300px;margin-top:16px;position:relative;z-index:2;opacity:0;transition:opacity 1.2s ease;"></div>
-      <!-- SVG camino + favicon integrado -->
-      <div style="flex:1;width:100%;max-width:360px;position:relative;z-index:1;margin-top:8px;">
-        <svg viewBox="0 0 360 420" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Camino serpenteante -->
-          <path id="ws-road" d="M40 400 C 40 360, 100 340, 140 330 C 200 315, 320 350, 320 300 C 320 250, 180 240, 140 210 C 100 180, 140 140, 200 130 C 260 120, 340 150, 330 100 C 320 60, 240 30, 200 20" stroke="rgba(240,230,234,.1)" stroke-width="3" stroke-linecap="round" fill="none" style="transition:stroke 1.5s ease;"/>
-          <!-- Huellas/nodos a lo largo del camino -->
-          <ellipse class="ws-node" cx="50" cy="390" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-10 50 390)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="130" cy="335" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(12 130 335)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="280" cy="330" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-8 280 330)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="300" cy="270" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(15 300 270)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="180" cy="220" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-12 180 220)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="170" cy="155" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(8 170 155)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="290" cy="130" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-5 290 130)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <ellipse class="ws-node" cx="310" cy="70" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(10 310 70)" style="transition:fill .6s ease,filter .6s ease;"/>
-          <!-- Favicon al final del camino -->
-          <foreignObject x="160" y="-5" width="80" height="100" id="ws-fav-fo" style="opacity:0;transition:opacity 1s ease;">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;">
-              <p style="font-family:'Playfair Display',serif;font-size:10px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:4px;white-space:nowrap;">Abrir</p>
-              <div onclick="wsOpenApp()" style="cursor:pointer;width:50px;height:50px;border-radius:13px;position:relative;overflow:visible;">
-                <div style="position:absolute;inset:-2px;border-radius:15px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 12px rgba(232,200,112,.3),0 0 24px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
-                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:50px;height:50px;display:block;border-radius:13px;position:relative;z-index:1;">
+    <!-- HERO: camino real + favicon en endpoint -->
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;">
+      <!-- Texto perfil arriba -->
+      <div id="ws-hero-content" style="text-align:left;padding:70px 24px 0;position:relative;z-index:2;max-width:320px;"></div>
+      <!-- SVG camino real con favicon integrado -->
+      <div style="flex:1;position:relative;width:100%;overflow:hidden;">
+        <svg id="ws-camino-svg" viewBox="0 0 150000 100000" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
+          <path id="ws-road" d="M22081.14 72717.07c0,0 8000.62,-290.94 11346.37,-3927.6 3345.75,-3636.66 4509.46,-7782.48 8873.45,-8146.13 4364,-363.65 10328.13,436.35 12437.39,-1454.66 5369.09,-4813.66 -3934.52,-8660.06 3367.09,-16710.41 4264.76,-4702.13 11566.2,-5870.83 19194.7,-3752.59 8308.36,2307 14297.9,2371.74 21602.19,13354.33 5523.95,8305.72 16075.6,11610.17 23319.54,9129.37 7243.95,-2480.8 8137.01,-4862.38 7740.1,-8236.28 -396.92,-3373.9 -2580.03,-6251.62 -595.38,-8831.65 1984.66,-2580.03 5537.23,-3715.09 6928.03,-5627.44 1390.81,-1912.36 1332.84,-2723.68 1332.84,-2723.68 0,0 927.21,1680.53 173.86,3534.96 -753.35,1854.42 -3187.29,4636 -3245.23,6316.56 -57.93,1680.57 4176.89,8552.09 3020.32,12110.8 -1156.57,3558.7 -3974.36,8229.56 -14509.28,10913.84 -10534.91,2684.27 -21069.48,-1771.73 -25288.99,-6541.55 -7385.76,-8349.13 -9325.18,-13257.78 -20442.57,-15904.72 -3852.56,-917.25 -12883.35,-3856.8 -15268.28,454.34 -2328.55,4209.31 9400,19241.93 -10823.89,18695.47 -6926.1,-187.14 -8477.35,-2634.98 -13344.37,3448.77 -4867.02,6083.76 -12319.99,6041.88 -14708.34,6041.88 -2388.35,0 -6971.33,-2001.05 -7810.49,-3679.34 -839.17,-1678.3 6700.94,1535.73 6700.94,1535.73z" fill="none" stroke="rgba(232,200,112,.12)" stroke-width="600" stroke-linecap="round" style="transition:stroke .8s ease;"/>
+          <!-- Favicon: se posiciona con JS en el endpoint del path -->
+          <foreignObject id="ws-fav-fo" x="0" y="0" width="8000" height="10000" style="opacity:0;transition:opacity 1s ease;overflow:visible;">
+            <div xmlns="http://www.w3.org/1999/xhtml" id="ws-fav-inner" style="display:flex;flex-direction:column;align-items:center;position:absolute;">
+              <p style="font-family:'Playfair Display',serif;font-size:1200px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:400px;white-space:nowrap;">Abrir</p>
+              <div onclick="wsOpenApp()" style="cursor:pointer;width:5000px;height:5000px;border-radius:1300px;position:relative;overflow:visible;">
+                <div style="position:absolute;inset:-200px;border-radius:1500px;border:180px solid rgba(232,200,112,.5);box-shadow:0 0 1500px rgba(232,200,112,.3),0 0 3000px rgba(232,200,112,.1);"></div>
+                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:5000px;height:5000px;display:block;border-radius:1300px;position:relative;z-index:1;">
               </div>
             </div>
           </foreignObject>
-          <!-- Glow behind favicon -->
-          <circle cx="200" cy="25" r="35" fill="rgba(232,200,112,.06)" id="ws-fav-glow" style="opacity:0;transition:opacity 1s ease;"/>
         </svg>
       </div>
       <!-- Toca para continuar -->
-      <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;padding-bottom:20px;text-align:center;opacity:0;transition:opacity 1s ease;position:relative;z-index:2;">
+      <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;padding:16px 0 24px;text-align:center;opacity:0;transition:opacity 1s ease;position:relative;z-index:2;">
         <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;">Toca para continuar</p>
       </div>
     </div>
@@ -1856,29 +1842,25 @@ function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var nodes=document.querySelectorAll('.ws-node');
   var road=document.getElementById('ws-road');
-  // Light up road
-  if(road) road.style.stroke='rgba(232,200,112,.2)';
-  // Light up nodes one by one
-  nodes.forEach(function(n,i){
-    setTimeout(function(){
-      n.setAttribute('fill','rgba(232,200,112,.6)');
-      n.style.filter='drop-shadow(0 0 4px rgba(232,200,112,.5))';
-    },i*350);
-  });
-  // Show favicon at end of path
+  if(road) road.style.stroke='rgba(232,200,112,.18)';
+  // Position favicon at path start (the path visually starts at bottom-left)
+  var favFo=document.getElementById('ws-fav-fo');
+  if(road && favFo){
+    var len=road.getTotalLength();
+    var pt=road.getPointAtLength(0);
+    favFo.setAttribute('x', pt.x - 4000);
+    favFo.setAttribute('y', pt.y - 9000);
+  }
+  // Show favicon
   setTimeout(function(){
-    var favFo=document.getElementById('ws-fav-fo');
-    var favGlow=document.getElementById('ws-fav-glow');
     if(favFo) favFo.style.opacity='1';
-    if(favGlow) favGlow.style.opacity='1';
-  },nodes.length*350 + 400);
+  },800);
   // Show toca
   setTimeout(function(){
     var toca=document.getElementById('ws-toca');
     if(toca) toca.style.opacity='1';
-  },nodes.length*350 + 1200);
+  },1600);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

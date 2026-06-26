@@ -1712,23 +1712,35 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: texto perfil dinámico -->
-    <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;position:relative;overflow:hidden;">
-      <!-- Warm radial glow -->
-      <div id="ws-hero-glow" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,.12) 0%,rgba(184,137,42,.04) 40%,transparent 70%);opacity:0;transition:opacity 2s ease;pointer-events:none;"></div>
-      <!-- Thin gold line -->
-      <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
-      <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
-      <!-- Hitos path -->
-      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:24px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:260px;height:260px;">
-        <img src="assets/hitos.svg" alt="" style="width:100%;height:100%;object-fit:contain;filter:invert(1) brightness(0.4) sepia(1) hue-rotate(5deg) saturate(3);opacity:.25;transition:opacity 1.5s ease,filter 1.5s ease;" id="ws-hitos-img">
-        <!-- Glow spots over each hito cluster -->
-        <div class="ws-hito-glow" style="position:absolute;top:2%;right:18%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
-        <div class="ws-hito-glow" style="position:absolute;top:32%;left:18%;width:45px;height:45px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
-        <div class="ws-hito-glow" style="position:absolute;top:55%;right:8%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
-        <div class="ws-hito-glow" style="position:absolute;top:72%;left:5%;width:45px;height:45px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
-        <div class="ws-hito-glow" style="position:absolute;bottom:5%;right:20%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.5) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
-        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;text-align:center;margin-top:4px;">Toca para avanzar</p>
+    <!-- HERO: camino horizontal (2 pantallas) -->
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;">
+      <div id="ws-hero-slider" style="display:flex;width:200%;height:100%;transition:transform 2s cubic-bezier(.25,.46,.45,.94);">
+        <!-- Pantalla 1: texto + brújula -->
+        <div style="width:50%;min-height:100vh;position:relative;display:flex;flex-direction:column;justify-content:flex-start;padding:80px 28px 0;">
+          <div id="ws-hero-content" style="text-align:left;position:relative;z-index:2;max-width:280px;"></div>
+          <!-- Camino SVG fondo -->
+          <div style="position:absolute;bottom:0;left:0;right:-100%;height:70%;z-index:0;opacity:.15;">
+            <img src="assets/camino.svg" alt="" style="width:200%;height:100%;object-fit:contain;object-position:left bottom;filter:invert(1) brightness(2) sepia(1) hue-rotate(5deg) saturate(2);opacity:.5;">
+          </div>
+          <!-- Brújula -->
+          <div id="ws-brujula" style="position:absolute;bottom:15%;left:15%;width:90px;height:90px;z-index:2;opacity:0;transition:opacity 1s ease;">
+            <img src="assets/brujula.svg" alt="" style="width:100%;height:100%;filter:invert(1) brightness(1.2) sepia(1) hue-rotate(5deg) saturate(3);drop-shadow(0 0 12px rgba(232,200,112,.4));">
+            <div style="position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.25) 0%,transparent 70%);"></div>
+          </div>
+          <p id="ws-norte" style="position:absolute;bottom:8%;left:15%;font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:rgba(232,200,112,.5);font-style:italic;z-index:2;opacity:0;transition:opacity 1s ease;">Encuentra tu norte.</p>
+        </div>
+        <!-- Pantalla 2: favicon + texto -->
+        <div style="width:50%;min-height:100vh;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;">
+          <div id="ws-hero-sub" style="text-align:center;max-width:320px;margin-bottom:24px;opacity:0;transition:opacity 1.2s ease;"></div>
+          <p id="ws-abrir-label" style="font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:12px;opacity:0;transition:opacity 1s ease;">Abrir C&#xF3;digo Soberana</p>
+          <div id="ws-hero-favicon" onclick="wsOpenApp()" style="cursor:pointer;width:80px;height:80px;border-radius:20px;overflow:hidden;box-shadow:0 0 30px rgba(184,137,42,.3);opacity:0;transform:scale(.8);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);">
+            <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:100%;height:100%;display:block;border-radius:20px;">
+          </div>
+          <!-- Toca para continuar -->
+          <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;position:absolute;bottom:40px;left:0;right:0;text-align:center;opacity:0;transition:opacity 1s ease;">
+            <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.25);text-transform:uppercase;">Toca para continuar</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1739,7 +1751,7 @@ function initJosue(){
       <div id="ws-cards-container"></div>
 
       <!-- Footer final -->
-      <div id="ws-ft" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;">
+      <div id="ws-ft" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;overflow:hidden;">
         <div id="ws-ft-content"></div>
         <div id="ws-ft-app" style="margin-top:36px;opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;">
           <div onclick="wsOpenApp()" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;">
@@ -1801,72 +1813,78 @@ function wsShowHero(){
 function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
   var cont = document.getElementById('ws-hero-content');
-  var glow = document.getElementById('ws-hero-glow');
-  var line = document.getElementById('ws-hero-line');
+  var slider = document.getElementById('ws-hero-slider');
   cont.innerHTML = '';
+  if(slider) slider.style.transform='translateX(0)';
   var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
   var allEls = [];
+  // Title
   data.forEach(function(item){
     var p = document.createElement('p');
     if(item.type==='sub'){
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;margin-top:24px;max-width:340px;" + base;
+      // Sub goes to panel 2
     } else {
       p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(26px,6.5vw,36px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-top:4px;" + base;
+      p.textContent = item.text;
+      cont.appendChild(p);
+      allEls.push(p);
     }
-    p.textContent = item.text;
-    cont.appendChild(p);
-    allEls.push(p);
   });
-  var path = document.getElementById('ws-path');
-  if(path){path.style.opacity='0';path.style.filter='blur(6px)';path.style.transform='translateY(12px)';}
-  // Reset hitos
-  var hitosImg=document.getElementById('ws-hitos-img');
-  if(hitosImg){hitosImg.style.opacity='.25';hitosImg.style.filter='invert(1) brightness(0.4) sepia(1) hue-rotate(5deg) saturate(3)';}
-  document.querySelectorAll('.ws-hito-glow').forEach(function(g){g.style.opacity='0';});
-  if(glow) glow.style.opacity='0';
-  if(line){line.style.opacity='0';line.style.width='40px';}
-  // Animate glow + line first
-  setTimeout(function(){if(glow) glow.style.opacity='1';},200);
-  setTimeout(function(){if(line){line.style.opacity='1';line.style.width='80px';}},400);
-  // Then text
+  // Sub text for panel 2
+  var subEl = document.getElementById('ws-hero-sub');
+  if(subEl){
+    subEl.innerHTML = '';
+    subEl.style.opacity='0';
+    data.forEach(function(item){
+      if(item.type==='sub'){
+        var p = document.createElement('p');
+        p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:600;color:rgba(240,230,234,.55);line-height:1.55;";
+        p.textContent = item.text;
+        subEl.appendChild(p);
+      }
+    });
+  }
+  // Reset panel 2 elements
+  ['ws-abrir-label','ws-toca'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.opacity='0';});
+  var fav=document.getElementById('ws-hero-favicon');
+  if(fav){fav.style.opacity='0';fav.style.transform='scale(.8)';}
+  var brujula=document.getElementById('ws-brujula');
+  var norte=document.getElementById('ws-norte');
+  if(brujula) brujula.style.opacity='0';
+  if(norte) norte.style.opacity='0';
+  // Animate panel 1
   allEls.forEach(function(el, i){
-    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 800 + i * 1600);
+    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 600 + i * 1400);
   });
-  setTimeout(function(){if(path){path.style.opacity='1';path.style.filter='blur(0)';path.style.transform='translateY(0)';}}, 800 + allEls.length * 1600 + 1000);
+  setTimeout(function(){if(brujula) brujula.style.opacity='1';},600 + allEls.length*1400);
+  setTimeout(function(){if(norte) norte.style.opacity='1';},600 + allEls.length*1400 + 600);
+  // Auto-scroll to panel 2 after delay
+  setTimeout(function(){wsWalkPath();}, 600 + allEls.length*1400 + 3000);
 }
 function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var glows=document.querySelectorAll('.ws-hito-glow');
-  var img=document.getElementById('ws-hitos-img');
-  // Brighten the path image
-  if(img){img.style.opacity='.5';img.style.filter='invert(1) brightness(0.6) sepia(1) hue-rotate(5deg) saturate(3)';}
-  // Light up glow spots one by one
-  glows.forEach(function(g,i){
-    setTimeout(function(){
-      g.style.opacity='1';
-    },i*600);
-  });
-  // Transition to footer with pan effect
+  var slider=document.getElementById('ws-hero-slider');
+  // Slide to panel 2
+  if(slider) slider.style.transform='translateX(-50%)';
+  // Show panel 2 elements after slide
   setTimeout(function(){
-    var hero=document.getElementById('ws-hero');
-    hero.style.transition='transform 1.2s ease,opacity 1.2s ease';
-    hero.style.transform='translateY(-100vh)';
-    hero.style.opacity='0';
-    setTimeout(function(){
-      hero.style.display='none';
-      hero.style.transform='none';
-      var mods=document.getElementById('ws-modules');
-      if(mods) mods.style.display='block';
-      var ft=document.getElementById('ws-ft');
-      if(ft){ft.style.display='flex';ft.style.opacity='0';ft.style.transform='translateY(60px)';ft.style.transition='opacity 1s ease,transform 1s ease';
-        setTimeout(function(){ft.style.opacity='1';ft.style.transform='translateY(0)';wsRenderFooter();},100);
-      }
-      var ic=document.getElementById('ws-app-icon');
-      if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
-    },1200);
-  },glows.length*600+800);
+    var sub=document.getElementById('ws-hero-sub');
+    if(sub) sub.style.opacity='1';
+  },1500);
+  setTimeout(function(){
+    var label=document.getElementById('ws-abrir-label');
+    if(label) label.style.opacity='1';
+  },2200);
+  setTimeout(function(){
+    var fav=document.getElementById('ws-hero-favicon');
+    if(fav){fav.style.opacity='1';fav.style.transform='scale(1)';}
+  },2800);
+  setTimeout(function(){
+    var toca=document.getElementById('ws-toca');
+    if(toca) toca.style.opacity='1';
+  },3500);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

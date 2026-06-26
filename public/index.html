@@ -1712,41 +1712,43 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: camino horizontal (2 pantallas) -->
-    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;">
-      <div id="ws-hero-slider" style="display:flex;width:200vw;height:100%;transition:transform 2s cubic-bezier(.25,.46,.45,.94);">
-        <!-- Pantalla 1: texto + brújula -->
-        <div style="width:100vw;min-height:100vh;flex-shrink:0;position:relative;display:flex;flex-direction:column;justify-content:flex-start;padding:80px 28px 0;">
-          <div id="ws-hero-content" style="text-align:left;position:relative;z-index:2;max-width:280px;"></div>
-          <!-- Camino SVG fondo -->
-          <div style="position:absolute;bottom:0;left:0;right:-100%;height:70%;z-index:0;opacity:.15;">
-            <img src="assets/camino.svg" alt="" style="width:200%;height:100%;object-fit:contain;object-position:left bottom;filter:invert(1) brightness(2) sepia(1) hue-rotate(5deg) saturate(2);opacity:.5;">
-          </div>
-          <!-- Brújula -->
-          <div id="ws-brujula" style="position:absolute;bottom:15%;left:15%;width:90px;height:90px;z-index:2;opacity:0;transition:opacity 1s ease;">
-            <img src="assets/brujula.svg" alt="" style="width:100%;height:100%;filter:invert(1) brightness(1.2) sepia(1) hue-rotate(5deg) saturate(3);drop-shadow(0 0 12px rgba(232,200,112,.4));">
-            <div style="position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.25) 0%,transparent 70%);"></div>
-          </div>
-          <p id="ws-norte" style="position:absolute;bottom:8%;left:15%;font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:rgba(232,200,112,.5);font-style:italic;z-index:2;opacity:0;transition:opacity 1s ease;">Encuentra tu norte.</p>
-        </div>
-        <!-- Pantalla 2: texto arriba + favicon pegado al final del camino -->
-        <div style="width:100vw;min-height:100vh;flex-shrink:0;position:relative;display:flex;flex-direction:column;padding:40px 28px;overflow:hidden;">
-          <div id="ws-hero-sub" style="text-align:right;max-width:320px;margin-left:auto;padding-top:60px;opacity:0;transition:opacity 1.2s ease;"></div>
-          <!-- Toca para continuar -->
-          <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;position:absolute;bottom:30px;left:0;right:0;text-align:center;opacity:0;transition:opacity 1s ease;">
-            <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.25);text-transform:uppercase;">Toca para continuar</p>
-          </div>
-        </div>
+    <!-- HERO: camino con favicon integrado -->
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:70px 24px 0;">
+      <!-- Texto perfil -->
+      <div id="ws-hero-content" style="text-align:left;width:100%;max-width:320px;position:relative;z-index:2;"></div>
+      <!-- Subtítulo (aparece después) -->
+      <div id="ws-hero-sub" style="text-align:center;max-width:300px;margin-top:16px;position:relative;z-index:2;opacity:0;transition:opacity 1.2s ease;"></div>
+      <!-- SVG camino + favicon integrado -->
+      <div style="flex:1;width:100%;max-width:360px;position:relative;z-index:1;margin-top:8px;">
+        <svg viewBox="0 0 360 420" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Camino serpenteante -->
+          <path id="ws-road" d="M40 400 C 40 360, 100 340, 140 330 C 200 315, 320 350, 320 300 C 320 250, 180 240, 140 210 C 100 180, 140 140, 200 130 C 260 120, 340 150, 330 100 C 320 60, 240 30, 200 20" stroke="rgba(240,230,234,.1)" stroke-width="3" stroke-linecap="round" fill="none" style="transition:stroke 1.5s ease;"/>
+          <!-- Huellas/nodos a lo largo del camino -->
+          <ellipse class="ws-node" cx="50" cy="390" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-10 50 390)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="130" cy="335" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(12 130 335)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="280" cy="330" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-8 280 330)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="300" cy="270" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(15 300 270)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="180" cy="220" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-12 180 220)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="170" cy="155" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(8 170 155)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="290" cy="130" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(-5 290 130)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <ellipse class="ws-node" cx="310" cy="70" rx="8" ry="5" fill="rgba(232,200,112,.1)" transform="rotate(10 310 70)" style="transition:fill .6s ease,filter .6s ease;"/>
+          <!-- Favicon al final del camino -->
+          <foreignObject x="160" y="-5" width="80" height="100" id="ws-fav-fo" style="opacity:0;transition:opacity 1s ease;">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;">
+              <p style="font-family:'Playfair Display',serif;font-size:10px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:4px;white-space:nowrap;">Abrir</p>
+              <div onclick="wsOpenApp()" style="cursor:pointer;width:50px;height:50px;border-radius:13px;position:relative;overflow:visible;">
+                <div style="position:absolute;inset:-2px;border-radius:15px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 12px rgba(232,200,112,.3),0 0 24px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
+                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:50px;height:50px;display:block;border-radius:13px;position:relative;z-index:1;">
+              </div>
+            </div>
+          </foreignObject>
+          <!-- Glow behind favicon -->
+          <circle cx="200" cy="25" r="35" fill="rgba(232,200,112,.06)" id="ws-fav-glow" style="opacity:0;transition:opacity 1s ease;"/>
+        </svg>
       </div>
-      <!-- Favicon floating at path end (absolute within hero) -->
-      <div id="ws-favicon-wrap" style="position:absolute;left:50%;bottom:22%;transform-origin:center;z-index:10;margin-left:-36px;display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.7);transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.34,1.56,.64,1);">
-        <p id="ws-abrir-label" style="font-family:'Playfair Display',serif;font-size:12px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:8px;">Abrir C&#xF3;digo Soberana</p>
-        <div id="ws-hero-favicon" onclick="wsOpenApp()" style="cursor:pointer;width:72px;height:72px;border-radius:18px;position:relative;">
-          <div style="position:absolute;inset:-3px;border-radius:21px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 16px rgba(232,200,112,.3),0 0 32px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
-          <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:72px;height:72px;display:block;border-radius:18px;position:relative;z-index:1;">
-          <div style="position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.25) 0%,transparent 70%);z-index:0;"></div>
-        </div>
-      </div>
+      <!-- Toca para continuar -->
+      <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;padding-bottom:20px;text-align:center;opacity:0;transition:opacity 1s ease;position:relative;z-index:2;">
+        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;">Toca para continuar</p>
       </div>
     </div>
 
@@ -1819,74 +1821,64 @@ function wsShowHero(){
 function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
   var cont = document.getElementById('ws-hero-content');
-  var slider = document.getElementById('ws-hero-slider');
   cont.innerHTML = '';
-  if(slider) slider.style.transform='translateX(0)';
   var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
   var allEls = [];
-  // Title
   data.forEach(function(item){
     var p = document.createElement('p');
     if(item.type==='sub'){
-      // Sub goes to panel 2
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,17px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;margin-top:16px;" + base;
     } else {
       p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,30px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-top:4px;" + base;
-      p.textContent = item.text;
-      cont.appendChild(p);
-      allEls.push(p);
     }
+    p.textContent = item.text;
+    cont.appendChild(p);
+    allEls.push(p);
   });
-  // Sub text for panel 2
-  var subEl = document.getElementById('ws-hero-sub');
-  if(subEl){
-    subEl.innerHTML = '';
-    subEl.style.opacity='0';
-    data.forEach(function(item){
-      if(item.type==='sub'){
-        var p = document.createElement('p');
-        p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,18px);font-weight:600;color:rgba(240,230,234,.55);line-height:1.55;";
-        p.textContent = item.text;
-        subEl.appendChild(p);
-      }
-    });
-  }
-  // Reset panel 2 elements
-  ['ws-toca'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.opacity='0';});
-  var favWrap=document.getElementById('ws-favicon-wrap');
-  if(favWrap){favWrap.style.opacity='0';favWrap.style.transform='scale(.7)';}
-  var brujula=document.getElementById('ws-brujula');
-  var norte=document.getElementById('ws-norte');
-  if(brujula) brujula.style.opacity='0';
-  if(norte) norte.style.opacity='0';
-  // Animate panel 1
+  // Reset nodes
+  document.querySelectorAll('.ws-node').forEach(function(n){n.setAttribute('fill','rgba(232,200,112,.1)');n.style.filter='none';});
+  var road=document.getElementById('ws-road');
+  if(road) road.style.stroke='rgba(240,230,234,.1)';
+  var favFo=document.getElementById('ws-fav-fo');
+  var favGlow=document.getElementById('ws-fav-glow');
+  if(favFo) favFo.style.opacity='0';
+  if(favGlow) favGlow.style.opacity='0';
+  var toca=document.getElementById('ws-toca');
+  if(toca) toca.style.opacity='0';
+  // Animate text
   allEls.forEach(function(el, i){
     setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 600 + i * 1400);
   });
-  setTimeout(function(){if(brujula) brujula.style.opacity='1';},600 + allEls.length*1400);
-  setTimeout(function(){if(norte) norte.style.opacity='1';},600 + allEls.length*1400 + 600);
-  // Auto-scroll to panel 2 after delay
-  setTimeout(function(){wsWalkPath();}, 600 + allEls.length*1400 + 3000);
+  // Then walk path
+  setTimeout(function(){wsWalkPath();}, 600 + allEls.length * 1400 + 1500);
 }
 function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var slider=document.getElementById('ws-hero-slider');
-  // Slide to panel 2
-  if(slider) slider.style.transform='translateX(-130vw)';
-  // Show panel 2 elements after slide
+  var nodes=document.querySelectorAll('.ws-node');
+  var road=document.getElementById('ws-road');
+  // Light up road
+  if(road) road.style.stroke='rgba(232,200,112,.2)';
+  // Light up nodes one by one
+  nodes.forEach(function(n,i){
+    setTimeout(function(){
+      n.setAttribute('fill','rgba(232,200,112,.6)');
+      n.style.filter='drop-shadow(0 0 4px rgba(232,200,112,.5))';
+    },i*350);
+  });
+  // Show favicon at end of path
   setTimeout(function(){
-    var sub=document.getElementById('ws-hero-sub');
-    if(sub) sub.style.opacity='1';
-  },1500);
-  setTimeout(function(){
-    var favWrap=document.getElementById('ws-favicon-wrap');
-    if(favWrap){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';}
-  },2200);
+    var favFo=document.getElementById('ws-fav-fo');
+    var favGlow=document.getElementById('ws-fav-glow');
+    if(favFo) favFo.style.opacity='1';
+    if(favGlow) favGlow.style.opacity='1';
+  },nodes.length*350 + 400);
+  // Show toca
   setTimeout(function(){
     var toca=document.getElementById('ws-toca');
     if(toca) toca.style.opacity='1';
-  },3500);
+  },nodes.length*350 + 1200);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

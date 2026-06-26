@@ -2202,11 +2202,10 @@ function initCovers(){
     <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
   </div>
 
-  <div class="demo-caption" id="demo-caption">
-    <p class="demo-line" style="color:#1a0810;font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,21px);font-weight:600;line-height:1.6;margin-top:28px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">Cada gema representa un paso.</p>
-    <p class="demo-line" style="color:#1a0810;font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,21px);font-weight:600;line-height:1.6;margin-top:4px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">No necesitas hacerlo perfecto.</p>
-    <p class="demo-line" style="color:rgba(139,101,32,.8);font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,21px);font-weight:700;font-style:italic;line-height:1.6;margin-top:4px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">Solo avanzar una a la vez.</p>
+  <div class="demo-caption" id="demo-caption" style="position:relative;min-height:0;margin-top:0;">
   </div>
+  <!-- Floating popups next to mockup -->
+  <div id="demo-bubbles" style="position:absolute;inset:0;pointer-events:none;z-index:20;"></div>
 
   <div class="demo-cta-wrap" id="demo-cta">
     <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-gema');initGema();">Continuar →</button>
@@ -2219,10 +2218,25 @@ function initDemo(){
   var ifr=document.getElementById('demo-iframe');
   if(ifr&&!ifr.src) ifr.src=ifr.dataset.src;
   setTimeout(function(){document.getElementById('demo-intro').classList.add('in');},300);
-  setTimeout(function(){document.getElementById('demo-caption').classList.add('in');},1200);
-  var lines=document.querySelectorAll('.demo-line');
-  lines.forEach(function(l,i){setTimeout(function(){l.style.opacity='1';l.style.transform='translateY(0)';l.style.filter='blur(0)';},1800+i*900);});
-  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},1800+lines.length*900+600);
+  // Floating bubbles
+  var bubbles=['Cada gema representa un paso.','No necesitas hacerlo perfecto.','Solo avanzar una a la vez.'];
+  var container=document.getElementById('demo-bubbles');
+  container.innerHTML='';
+  var positions=[{top:'30%',left:'2%'},{top:'50%',right:'2%',left:'auto'},{top:'70%',left:'2%'}];
+  function showBubble(i){
+    if(i>=bubbles.length){setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},400);return;}
+    var b=document.createElement('div');
+    var isLast=i===bubbles.length-1;
+    var pos=positions[i];
+    b.style.cssText='position:absolute;top:'+pos.top+';'+(pos.right?'right:'+pos.right+';':'left:'+(pos.left||'2%')+';')+'max-width:160px;padding:12px 16px;background:rgba(30,18,24,.9);border:1px solid rgba(184,137,42,.25);border-radius:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;filter:blur(6px);transform:translateY(10px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;';
+    b.innerHTML='<p style="font-family:\'Playfair Display\',serif;font-size:13px;font-weight:600;color:'+(isLast?'#E8C870':'rgba(240,230,234,.8)')+';line-height:1.45;'+(isLast?'font-style:italic;':'')+'">'+bubbles[i]+'</p>';
+    container.appendChild(b);
+    setTimeout(function(){b.style.opacity='1';b.style.filter='blur(0)';b.style.transform='translateY(0)';},50);
+    setTimeout(function(){b.style.opacity='0';b.style.filter='blur(4px)';
+      setTimeout(function(){b.remove();showBubble(i+1);},600);
+    },2500);
+  }
+  setTimeout(function(){showBubble(0);},1800);
 }
 </script>
 </div>

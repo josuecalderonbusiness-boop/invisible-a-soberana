@@ -2202,10 +2202,10 @@ function initCovers(){
     <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
   </div>
 
-  <div class="demo-caption" id="demo-caption" style="position:relative;min-height:0;margin-top:0;">
+  <!-- Cycling phrase overlay -->
+  <div id="demo-phrase" style="position:absolute;bottom:80px;left:0;right:0;text-align:center;padding:0 32px;pointer-events:none;z-index:20;">
+    <p id="demo-phrase-text" style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:rgba(26,8,16,.7);line-height:1.5;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
   </div>
-  <!-- Floating popups next to mockup -->
-  <div id="demo-bubbles" style="position:absolute;inset:0;pointer-events:none;z-index:20;"></div>
 
   <div class="demo-cta-wrap" id="demo-cta">
     <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-gema');initGema();">Continuar →</button>
@@ -2218,25 +2218,26 @@ function initDemo(){
   var ifr=document.getElementById('demo-iframe');
   if(ifr&&!ifr.src) ifr.src=ifr.dataset.src;
   setTimeout(function(){document.getElementById('demo-intro').classList.add('in');},300);
-  // Floating bubbles
-  var bubbles=['Cada gema representa un paso.','No necesitas hacerlo perfecto.','Solo avanzar una a la vez.'];
-  var container=document.getElementById('demo-bubbles');
-  container.innerHTML='';
-  var positions=[{top:'30%',left:'2%'},{top:'50%',right:'2%',left:'auto'},{top:'70%',left:'2%'}];
-  function showBubble(i){
-    if(i>=bubbles.length){setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},400);return;}
-    var b=document.createElement('div');
-    var isLast=i===bubbles.length-1;
-    var pos=positions[i];
-    b.style.cssText='position:absolute;top:'+pos.top+';'+(pos.right?'right:'+pos.right+';':'left:'+(pos.left||'2%')+';')+'max-width:160px;padding:12px 16px;background:rgba(30,18,24,.9);border:1px solid rgba(184,137,42,.25);border-radius:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;filter:blur(6px);transform:translateY(10px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;';
-    b.innerHTML='<p style="font-family:\'Playfair Display\',serif;font-size:13px;font-weight:600;color:'+(isLast?'#E8C870':'rgba(240,230,234,.8)')+';line-height:1.45;'+(isLast?'font-style:italic;':'')+'">'+bubbles[i]+'</p>';
-    container.appendChild(b);
-    setTimeout(function(){b.style.opacity='1';b.style.filter='blur(0)';b.style.transform='translateY(0)';},50);
-    setTimeout(function(){b.style.opacity='0';b.style.filter='blur(4px)';
-      setTimeout(function(){b.remove();showBubble(i+1);},600);
-    },2500);
+  var phrases=[
+    {text:'Cada gema representa un paso.',gold:false},
+    {text:'No necesitas hacerlo perfecto.',gold:false},
+    {text:'Solo avanzar una a la vez.',gold:true}
+  ];
+  var phraseEl=document.getElementById('demo-phrase-text');
+  function showPhrase(i){
+    if(i>=phrases.length){setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},400);return;}
+    var p=phrases[i];
+    phraseEl.textContent=p.text;
+    phraseEl.style.color=p.gold?'#8B6520':'rgba(26,8,16,.65)';
+    phraseEl.style.fontStyle=p.gold?'italic':'normal';
+    phraseEl.style.opacity='0';phraseEl.style.filter='blur(6px)';phraseEl.style.transform='translateY(12px)';
+    setTimeout(function(){phraseEl.style.opacity='1';phraseEl.style.filter='blur(0)';phraseEl.style.transform='translateY(0)';},50);
+    setTimeout(function(){
+      phraseEl.style.opacity='0';phraseEl.style.filter='blur(4px)';phraseEl.style.transform='translateY(-8px)';
+      setTimeout(function(){showPhrase(i+1);},700);
+    },2800);
   }
-  setTimeout(function(){showBubble(0);},1800);
+  setTimeout(function(){showPhrase(0);},1800);
 }
 </script>
 </div>

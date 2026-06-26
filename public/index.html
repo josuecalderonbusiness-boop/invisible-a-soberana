@@ -1782,8 +1782,8 @@ function wsAnimHero(){
   setTimeout(function(){l0.style.opacity='1';l0.style.filter='blur(0)';l0.style.transform='translateY(0)';},400);
   setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},1800);
   setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},3200);
-  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},5000);
-  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},6500);
+  setTimeout(function(){var l3=document.getElementById('ws-l3');l3.style.opacity='1';l3.style.filter='blur(0)';l3.style.transform='translateY(0)';},5000);
+  setTimeout(function(){var ar=document.getElementById('ws-arrow');ar.style.opacity='1';ar.style.filter='blur(0)';ar.style.transform='translateY(0)';},6500);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

@@ -1729,23 +1729,24 @@ function initJosue(){
           </div>
           <p id="ws-norte" style="position:absolute;bottom:8%;left:15%;font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:rgba(232,200,112,.5);font-style:italic;z-index:2;opacity:0;transition:opacity 1s ease;">Encuentra tu norte.</p>
         </div>
-        <!-- Pantalla 2: texto + favicon al final del camino -->
+        <!-- Pantalla 2: texto arriba + favicon pegado al final del camino -->
         <div style="width:50%;min-height:100vh;position:relative;display:flex;flex-direction:column;padding:40px 28px;overflow:hidden;">
-          <div id="ws-hero-sub" style="text-align:center;max-width:320px;margin:0 auto;padding-top:60px;opacity:0;transition:opacity 1.2s ease;"></div>
-          <!-- Favicon at end of path -->
-          <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding-right:20px;">
-            <p id="ws-abrir-label" style="font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:10px;opacity:0;transition:opacity 1s ease;">Abrir C&#xF3;digo Soberana</p>
-            <div id="ws-hero-favicon" onclick="wsOpenApp()" style="cursor:pointer;width:72px;height:72px;border-radius:18px;overflow:visible;position:relative;opacity:0;transform:scale(.8);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);">
-              <div style="position:absolute;inset:-3px;border-radius:21px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 16px rgba(232,200,112,.3),0 0 32px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
-              <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:72px;height:72px;display:block;border-radius:18px;position:relative;z-index:1;">
-              <div style="position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.2) 0%,transparent 70%);z-index:0;"></div>
-            </div>
-          </div>
+          <div id="ws-hero-sub" style="text-align:right;max-width:320px;margin-left:auto;padding-top:60px;opacity:0;transition:opacity 1.2s ease;"></div>
           <!-- Toca para continuar -->
-          <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;padding-bottom:30px;text-align:center;opacity:0;transition:opacity 1s ease;">
+          <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;position:absolute;bottom:30px;left:0;right:0;text-align:center;opacity:0;transition:opacity 1s ease;">
             <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.25);text-transform:uppercase;">Toca para continuar</p>
           </div>
         </div>
+      </div>
+      <!-- Favicon floating at path end (absolute within hero) -->
+      <div id="ws-favicon-wrap" style="position:absolute;right:12%;top:48%;z-index:10;display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.7);transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.34,1.56,.64,1);">
+        <p id="ws-abrir-label" style="font-family:'Playfair Display',serif;font-size:12px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:8px;">Abrir C&#xF3;digo Soberana</p>
+        <div id="ws-hero-favicon" onclick="wsOpenApp()" style="cursor:pointer;width:72px;height:72px;border-radius:18px;position:relative;">
+          <div style="position:absolute;inset:-3px;border-radius:21px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 16px rgba(232,200,112,.3),0 0 32px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
+          <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:72px;height:72px;display:block;border-radius:18px;position:relative;z-index:1;">
+          <div style="position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.25) 0%,transparent 70%);z-index:0;"></div>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -1850,9 +1851,9 @@ function wsRenderHero(){
     });
   }
   // Reset panel 2 elements
-  ['ws-abrir-label','ws-toca'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.opacity='0';});
-  var fav=document.getElementById('ws-hero-favicon');
-  if(fav){fav.style.opacity='0';fav.style.transform='scale(.8)';}
+  ['ws-toca'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.opacity='0';});
+  var favWrap=document.getElementById('ws-favicon-wrap');
+  if(favWrap){favWrap.style.opacity='0';favWrap.style.transform='scale(.7)';}
   var brujula=document.getElementById('ws-brujula');
   var norte=document.getElementById('ws-norte');
   if(brujula) brujula.style.opacity='0';
@@ -1879,13 +1880,9 @@ function wsWalkPath(){
     if(sub) sub.style.opacity='1';
   },1500);
   setTimeout(function(){
-    var label=document.getElementById('ws-abrir-label');
-    if(label) label.style.opacity='1';
+    var favWrap=document.getElementById('ws-favicon-wrap');
+    if(favWrap){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';}
   },2200);
-  setTimeout(function(){
-    var fav=document.getElementById('ws-hero-favicon');
-    if(fav){fav.style.opacity='1';fav.style.transform='scale(1)';}
-  },2800);
   setTimeout(function(){
     var toca=document.getElementById('ws-toca');
     if(toca) toca.style.opacity='1';

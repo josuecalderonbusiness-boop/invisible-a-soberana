@@ -62,7 +62,7 @@
   }
   .screen { display: none; min-height: 100vh; overflow: hidden; }
   .screen.active { display: flex; flex-direction: column; overflow: hidden; }
-  #s-josue.active, #s-testimonios.active { overflow-y: auto; }
+  #s-testimonios.active { overflow-y: auto; }
   #s-testimonios.active { align-items:flex-start; }
 
   /* ── INTRO ───────────────────────────────── */
@@ -1607,6 +1607,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 </div>
 
 <!-- ──────────── VIDEO POR PERFIL ──────────── -->
+<style>#s-video em,#s-precio em{color:#E8C870;font-style:italic;font-weight:inherit;}</style>
 <div id="s-video" class="screen" style="background:#000;padding:0;position:relative;overflow:hidden;">
 
   <!-- VIDEO FULLSCREEN (corre de fondo desde el inicio) -->
@@ -1626,40 +1627,86 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
   </div>
 
   <!-- CTA post-video -->
-  <div id="video-cta" style="display:none;position:absolute;inset:0;z-index:50;background:#0a0408;">
+  <div id="video-cta" style="display:none;position:absolute;inset:0;z-index:50;background:rgba(61,12,17,0);transition:background 2.5s ease;">
     <div id="vc-container" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:52px 28px;"></div>
   </div>
 </div>
 
 <!-- ──────────── QUIÉN ES JOSUÉ ──────────── -->
-<div id="s-josue" class="screen">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;">
-    <div style="text-align:center;margin-bottom:18px;">
-      
-    </div>
-    <p style="font-family:'Jost',sans-serif;font-size:10px;color:#B8892A;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Por qué puedes confiar en este sistema</p>
-    <h2 style="font-family:'Jost',sans-serif;font-size:30px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:20px;">¿Y quién está<br>detrás de esto?</h2>
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:600;color:rgba(237,227,206,.85);text-align:center;line-height:1.65;margin-bottom:24px;">Durante 10 años acompañé parejas en crisis como pastor cristiano. Luego lo viví yo mismo como esposo. Lo que encontré no estaba en ningún libro de psicología &mdash; y es exactamente lo que estás a punto de aprender.</p>
-    <p style="font-family:'Jost',sans-serif;font-size:13px;color:#B8892A;text-align:center;margin-bottom:6px;letter-spacing:.5px;">Déjame contarte</p>
-    <p style="text-align:center;font-size:20px;color:#B8892A;margin-bottom:24px;animation:bounce-down 1.5s ease-in-out infinite;">↓</p>
-    <div class="js-reveal" style="margin:0 auto 28px;width:85%;overflow:hidden;border-radius:16px;">
-      <img src="PERFIL_JOSUE.png" alt="Josue Calderon" style="width:100%;display:block;object-fit:cover;">
-    </div>
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:500;color:rgba(237,227,206,.82);line-height:1.8;text-align:center;margin-bottom:20px;">Soy Josué Calderón. 15 años casado, dos hijos, y más crisis de pareja de las que quisiera contar.</p>
+<div id="s-josue" class="screen" style="background:#000;position:relative;overflow:hidden;">
+  <style>
+  #s-josue.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:0;}
+  @keyframes josueBlink{0%,100%{opacity:1}50%{opacity:0}}
+  </style>
 
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:500;color:rgba(237,227,206,.82);line-height:1.8;text-align:center;margin-bottom:20px;">Podrías buscar a otra mujer que te enseñe. Alguien que haya pasado por lo mismo que tú. Y tiene sentido &mdash; pero hay un problema: ella tampoco sabe cómo piensa él.</p>
+  <!-- Video fullscreen (oversized to hide controls) -->
+  <div id="josue-video-wrap" style="position:absolute;top:-15%;left:-5%;width:110%;height:130%;overflow:hidden;">
+    <iframe id="josue-iframe" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;border:none;pointer-events:none;"></iframe>
+  </div>
 
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:#E8C870;text-align:center;margin-bottom:20px;">Yo sí.</p>
+  <!-- Dark overlay that fades to reveal video -->
+  <div id="josue-dark" style="position:absolute;inset:0;z-index:6;background:#080306;transition:opacity 3s ease;"></div>
 
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:500;color:rgba(237,227,206,.82);line-height:1.8;text-align:center;margin-bottom:20px;">No llegué a esto desde un libro ni desde una consulta. Lo viví desde adentro &mdash; como hombre, como esposo, como alguien que conoce exactamente qué activa la conexión en un hombre y qué la destruye sin que él lo diga en voz alta.</p>
+  <!-- Typing text overlay -->
+  <div id="josue-overlay" style="position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:40px 28px;">
+    <p id="josue-type" style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:600;color:rgba(240,230,234,.5);text-align:center;line-height:1.5;"></p>
+  </div>
 
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:500;color:rgba(237,227,206,.82);line-height:1.8;text-align:center;margin-bottom:20px;">Durante 10 años fui pastor cristiano y acompañé parejas al borde del colapso. Primero como soltero, observando. Luego como casado, viviéndolo.</p>
-
-    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:700;color:#E8C870;text-align:center;line-height:1.7;margin-bottom:32px;">Mi matrimonio no sigue en pie por costumbre. Sigue en pie porque encontré el método exacto. <span style="color:rgba(237,227,206,.82);font-weight:500;">Y eso es lo que estás a punto de recibir.</span></p>
-    <button class="btn-cta js-reveal" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-workshop');wsAnimHero();">Continuar →</button>
+  <!-- Bio + CTA -->
+  <div id="josue-bio" style="position:absolute;bottom:0;left:0;right:0;z-index:12;padding:0 28px 40px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 70%,transparent 100%);opacity:0;transform:translateY(16px);transition:opacity 1.2s ease,transform 1.2s ease;">
+    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.35);text-transform:uppercase;margin-bottom:12px;">Josu&#xE9; Calder&#xF3;n</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,16px);font-weight:600;color:rgba(240,230,234,.55);line-height:1.7;">20 a&#xF1;os construyendo una familia.<br>10 a&#xF1;os acompa&#xF1;ando parejas.<br>Esposo. Padre. Ex pastor.</p>
+    <button class="btn-cta" style="width:100%;max-width:320px;border-radius:12px;margin-top:24px;animation:ctaPulse 2s ease-in-out infinite;opacity:0;transform:translateY(10px);transition:opacity .8s ease,transform .8s ease;" id="josue-cta-btn" onclick="show('s-workshop');wsSkipToCards();">Continuar →</button>
   </div>
 </div>
-</div>
+
+<script>
+function initJosue(){
+  var ifr=document.getElementById('josue-iframe');
+  ifr.src='https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=true&muted=true&preload=true&controls=false&showSpeed=false&showTimeline=false';
+  var dark=document.getElementById('josue-dark');
+  var ov=document.getElementById('josue-overlay');
+  var bio=document.getElementById('josue-bio');
+  var btn=document.getElementById('josue-cta-btn');
+  var typeEl=document.getElementById('josue-type');
+  if(dark){dark.style.opacity='1';dark.style.transition='none';}
+  if(ov) ov.style.opacity='1';
+  if(bio){bio.style.opacity='0';bio.style.transform='translateY(16px)';}
+  if(btn){btn.style.opacity='0';btn.style.transform='translateY(10px)';}
+  typeEl.innerHTML='';
+  // Typewriter effect
+  var text='Antes de continuar...';
+  var idx=0;
+  var cursor=document.createElement('span');
+  cursor.style.cssText='animation:josueBlink 1s step-end infinite;margin-left:2px;';
+  cursor.textContent='|';
+  function typeNext(){
+    if(idx<text.length){
+      typeEl.textContent=text.substring(0,idx+1);
+      typeEl.appendChild(cursor);
+      idx++;
+      setTimeout(typeNext,80+Math.random()*60);
+    } else {
+      // Done typing — fade out text, reveal video
+      setTimeout(function(){
+        cursor.remove();
+        ov.style.transition='opacity 2s ease';
+        ov.style.opacity='0';
+        dark.style.transition='opacity 3s ease';
+        dark.style.opacity='0';
+      },1200);
+    }
+  }
+  setTimeout(typeNext,800);
+  // Show bio at ~50%
+  setTimeout(function(){
+    if(bio){bio.style.opacity='1';bio.style.transform='translateY(0)';}
+    setTimeout(function(){
+      if(btn){btn.style.opacity='1';btn.style.transform='translateY(0)';}
+    },1500);
+  },30000);
+}
+</script>
 
 <!-- ──────────── QUÉ PASA EN EL WORKSHOP ──────────── -->
 <div id="s-workshop" class="screen">
@@ -1667,10 +1714,11 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 
     <!-- HERO: No te vendo información -->
     <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;">
+      <p id="ws-l0" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.25);text-transform:lowercase;margin-bottom:24px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;">entonces...</p>
       <p id="ws-l1" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;color:#F0E6EA;line-height:1.1;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">No te vendo informaci&#xF3;n.</p>
       <p id="ws-l2" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.1;margin-top:4px;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">Te entrego un sistema.</p>
-      <p id="ws-l3" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:500;font-style:italic;color:rgba(240,230,234,.5);margin-top:20px;opacity:0;transition:opacity .6s ease;line-height:1.5;">Porque los cursos se olvidan.<br>Este sistema vive contigo.</p>
-      <button id="ws-arrow" onclick="wsReveal()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .5s ease;animation:s2pulse 2s ease infinite;">
+      <p id="ws-l3" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:500;color:rgba(240,230,234,.5);margin-top:20px;opacity:0;transition:opacity .6s ease;line-height:1.5;">Porque los cursos se olvidan.<br>Este sistema vive contigo.</p>
+      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .5s ease;animation:s2pulse 2s ease infinite;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
@@ -1690,7 +1738,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
               <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:100%;height:100%;display:block;border-radius:18px;">
               <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.1) 100%);border-radius:18px;pointer-events:none;"></div>
             </div>
-            <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;color:#E8C870;text-transform:uppercase;">Abrir</p>
+            <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.15em;color:rgba(240,230,234,.3);text-transform:uppercase;">Abrir</p>
           </div>
         </div>
       </div>
@@ -1701,11 +1749,41 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 </div>
 
 <script>
+function wsSkipToCards(){
+  var hero=document.getElementById('ws-hero');
+  if(hero) hero.style.display='none';
+  var m=document.getElementById('ws-modules');
+  m.style.display='block';
+  var ft=document.getElementById('wsc4');
+  if(ft){ft.style.display='none';ft.style.opacity='0';}
+  wsRenderCards();
+  setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';wsAnimCard(c1);}},200);
+}
+function wsShowHero(){
+  var quote=document.getElementById('wsc-quote');
+  if(quote){quote.style.opacity='0';}
+  setTimeout(function(){
+    if(quote) quote.style.display='none';
+    var mods=document.getElementById('ws-modules');
+    if(mods) mods.style.display='none';
+    var hero=document.getElementById('ws-hero');
+    if(hero){
+      hero.style.display='flex';
+      ['ws-l0','ws-l1','ws-l2','ws-l3','ws-arrow'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el){el.style.opacity='0';el.style.filter='blur(6px)';el.style.transform='translateY(20px)';}
+      });
+      wsAnimHero();
+    }
+  },600);
+}
 function wsAnimHero(){
-  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},600);
-  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},1800);
-  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},3500);
-  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},5000);
+  var l0=document.getElementById('ws-l0');
+  setTimeout(function(){l0.style.opacity='1';l0.style.filter='blur(0)';l0.style.transform='translateY(0)';},400);
+  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},1800);
+  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},3200);
+  setTimeout(function(){document.getElementById('ws-l3').style.opacity='1';},5000);
+  setTimeout(function(){document.getElementById('ws-arrow').style.opacity='1';},6500);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';
@@ -1718,7 +1796,7 @@ function wsReveal(){
     var ft=document.getElementById('wsc4');
     if(ft){ft.style.display='none';ft.style.opacity='0';}
     wsRenderCards();
-    setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';}},200);
+    setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';wsAnimCard(c1);}},200);
   },500);
 }
 function wsOpenApp(){
@@ -1738,29 +1816,32 @@ function wsOpenApp(){
 }
 var WS_CARDS = {
   S: {
-    title: 'En 90 minutos vas a:',
+    profileName: 'La Soberana en Silencio',
+    title: 'En solo 90 minutos vas a aprender a volver a ti cuando más lo necesitas.',
     items: [
-      {icon:'assets/cerebro.png',txt:'Reconocer el momento en que el miedo toma el control de la conversación',gold:'y volver a elegir cómo responder.'},
-      {icon:'assets/corazon.png',txt:'Entender lo que realmente estás sintiendo',gold:'antes de que la emoción hable por ti.'},
-      {icon:'assets/pareja.png',txt:'Decir lo que necesitas con calma,',gold:'para que puedas ser escuchada sin terminar en la misma discusión de siempre.'}
+      {icon:'assets/cerebro.png',txt:'Reconocerás el instante en que el miedo toma el control',gold:'y volverás a elegir cómo responder antes de reaccionar.'},
+      {icon:'assets/corazon.png',txt:'Volverás a conectar contigo misma',gold:'para entender lo que realmente estás sintiendo antes de que la emoción hable por ti.'},
+      {icon:'assets/pareja.png',txt:'Comunicarás lo que necesitas desde la calma',gold:'para que la conversación deje de convertirse en otra pelea.'}
     ],
-    quote:'"Sé exactamente qué debería hacer... pero cuando llega ese momento, no puedo hacerlo."'
+    quote:'"Sé exactamente qué debería hacer... pero cuando llega ese momento, dejo de ser esa mujer."'
   },
   P: {
-    title: 'En 90 minutos vas a:',
+    profileName: 'La que Busca Conexión',
+    title: 'En solo 90 minutos vas a dejar de sentir que la relación controla cómo te sientes.',
     items: [
-      {icon:'assets/cerebro.png',txt:'Romper el ciclo donde cuanto más buscas acercarte,',gold:'más lejos parece estar él.'},
-      {icon:'assets/corazon.png',txt:'Construir una estabilidad',gold:'que ya no dependa de cómo él responda ese día.'},
-      {icon:'assets/pareja.png',txt:'Crear conversaciones que acerquen,',gold:'en lugar de alimentar la distancia entre los dos.'}
+      {icon:'assets/cerebro.png',txt:'Dejarás de reaccionar desde la angustia',gold:'cuando él se aleje.'},
+      {icon:'assets/corazon.png',txt:'Construirás una estabilidad que no dependa de cómo él responda',gold:'para que tu paz deje de estar en sus manos.'},
+      {icon:'assets/pareja.png',txt:'Crearás conversaciones que vuelvan a abrir la conexión',gold:'sin sentir que tienes que perseguirla.'}
     ],
     quote:'"Siento que estoy haciendo todo por la relación... y cada vez estamos más lejos."'
   },
   D: {
-    title: 'En 90 minutos vas a:',
+    profileName: 'La que Creció y se Quedó Sola',
+    title: 'En solo 90 minutos vas a dejar de sentir que tienes que cargar esta relación sola.',
     items: [
-      {icon:'assets/cerebro.png',txt:'Entender qué está pasando realmente entre ustedes,',gold:'sin asumir que crecer significa separarse.'},
-      {icon:'assets/corazon.png',txt:'Compartir quién eres y lo que construyes',gold:'sin sentir que debes hacerte más pequeña.'},
-      {icon:'assets/pareja.png',txt:'Recuperar la sensación de estar construyendo la vida junto a alguien,',gold:'en lugar de cargarla sola.'}
+      {icon:'assets/cerebro.png',txt:'Entenderás qué está pasando realmente entre ustedes',gold:'sin asumir que crecer significa separarse.'},
+      {icon:'assets/corazon.png',txt:'Compartirás quién eres sin disminuirte',gold:'para que tu crecimiento deje de sentirse como una amenaza.'},
+      {icon:'assets/pareja.png',txt:'Volverás a construir compañerismo',gold:'sin seguir cargando sola con el futuro de los dos.'}
     ],
     quote:'"No me duele haber crecido. Me duele sentir que estoy creciendo sola."'
   }
@@ -1779,10 +1860,11 @@ function wsRenderCards(){
     card.style.cssText = 'position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;';
     if(i===0){card.style.display='flex';}
     var h = '';
-    if(i===0) h += '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:#F0E6EA;margin-bottom:24px;">'+data.title+'</p>';
-    h += '<div style="width:60px;height:60px;margin:0 auto 20px;"><img src="'+item.icon+'" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;"></div>';
-    h += '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;color:#EDE3CE;line-height:1.45;max-width:380px;">'+item.txt+' <span style="color:#E8C870;">'+item.gold+'</span></p>';
-    h += '<button onclick="wsNextCard('+(i+2)+')" style="margin-top:28px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+    var blurBase = 'opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;';
+    if(i===0) h += '<p class="wsc-anim" style="font-family:\'Playfair Display\',serif;font-size:clamp(20px,5vw,26px);font-weight:700;color:#F0E6EA;margin-bottom:24px;line-height:1.4;'+blurBase+'">'+data.title+'</p>';
+    h += '<div class="wsc-anim" style="width:60px;height:60px;margin:0 auto 20px;'+blurBase+'"><img src="'+item.icon+'" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3s ease-in-out infinite;"></div>';
+    h += '<p class="wsc-anim" style="font-family:\'Playfair Display\',serif;font-size:clamp(18px,4.5vw,24px);font-weight:700;color:#EDE3CE;line-height:1.45;max-width:380px;'+blurBase+'">'+item.txt+' <span style="color:#E8C870;font-style:italic;">'+item.gold+'</span></p>';
+    h += '<button class="wsc-anim" onclick="wsNextCard('+(i+2)+')" style="margin-top:28px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);'+blurBase+'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
     card.innerHTML = h;
     container.appendChild(card);
   });
@@ -1791,12 +1873,19 @@ function wsRenderCards(){
   qcard.id = 'wsc-quote';
   qcard.className = 'ws-card-full';
   qcard.style.cssText = 'position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .6s ease;';
-  qcard.innerHTML = '<p style="font-family:\'Inter\',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:20px;">Porque lo que realmente te pesa es esto:</p>'
-    + '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;font-style:italic;color:#E8C870;line-height:1.45;max-width:380px;margin-bottom:32px;">'+data.quote+'</p>'
-    + '<button onclick="wsShowFooter()" style="margin-top:12px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+  var qBlur = 'opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;';
+  qcard.innerHTML = '<p class="wsc-anim" style="font-family:\'Inter\',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:20px;'+qBlur+'">Porque lo que realmente te duele es esto:</p>'
+    + '<p class="wsc-anim" style="font-family:\'Playfair Display\',serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;font-style:italic;color:#E8C870;line-height:1.45;max-width:380px;margin-bottom:32px;'+qBlur+'">'+data.quote+'</p>'
+    + '<button class="wsc-anim" onclick="wsShowHero()" style="margin-top:12px;background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;box-shadow:0 0 16px rgba(184,137,42,.25);'+qBlur+'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
   container.appendChild(qcard);
 }
 
+function wsAnimCard(card){
+  var els=card.querySelectorAll('.wsc-anim');
+  els.forEach(function(el,i){
+    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';},400+i*1200);
+  });
+}
 function wsNextCard(n){
   var prev=document.getElementById('wsc'+(n-1));
   var next=document.getElementById('wsc'+n);
@@ -1804,27 +1893,27 @@ function wsNextCard(n){
   if(prev){prev.style.opacity='0';}
   setTimeout(function(){
     if(prev) prev.style.display='none';
-    if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';},50);}
+    if(next){next.style.display='flex';setTimeout(function(){next.style.opacity='1';wsAnimCard(next);},50);}
   },600);
 }
 var WS_FOOTER = {
   S: [
-    {type:'small', text:'entonces'},
+    {type:'small', text:'entonces...'},
     {type:'main', text:'La próxima vez que ese momento aparezca... no vas a estar sola.'},
     {type:'main', text:'Cuando la emoción tome el control, no tendrás que empezar desde cero.'},
     {type:'gold', text:'Solo abre Código Soberana y vuelve al lugar donde sabes responder como la mujer que realmente eres.'}
   ],
   P: [
-    {type:'small', text:'entonces'},
-    {type:'main', text:'La próxima vez que sientas que estás haciendo todo sola... no vas a quedarte ahí.'},
-    {type:'main', text:'Vas a saber exactamente qué movimiento hacer para que él quiera acercarse.'},
-    {type:'gold', text:'Solo abre Código Soberana y accede al sistema que convierte tu esfuerzo en conexión real.'}
+    {type:'small', text:'entonces...'},
+    {type:'main', text:'La próxima vez que él se cierre... ya no tendrás que improvisar.'},
+    {type:'main', text:'Cuando aparezca ese impulso de perseguirlo, no tendrás que adivinar qué hacer.'},
+    {type:'gold', text:'Solo abre Código Soberana y sigue el siguiente paso.'}
   ],
   D: [
-    {type:'small', text:'entonces'},
-    {type:'main', text:'La próxima vez que sientas que tu crecimiento te aleja de él... no vas a frenarte.'},
-    {type:'main', text:'Vas a saber cómo incluirlo sin hacerte pequeña.'},
-    {type:'gold', text:'Solo abre Código Soberana y encuentra el camino donde crecer juntos deja de ser una fantasía.'}
+    {type:'small', text:'entonces...'},
+    {type:'main', text:'La próxima vez que sientas esa distancia... ya no tendrás que cargarla sola.'},
+    {type:'main', text:'Cuando aparezca esa sensación de que otra vez están caminando en mundos distintos, no tendrás que resolverlo desde el cansancio.'},
+    {type:'gold', text:'Solo abre Código Soberana y vuelve a construir desde otro lugar.'}
   ]
 };
 
@@ -1834,32 +1923,34 @@ function wsRenderFooter(){
   cont.innerHTML = '';
   data.forEach(function(line, i){
     var p = document.createElement('p');
+    var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s cubic-bezier(.25,.46,.45,.94),filter 1.4s cubic-bezier(.25,.46,.45,.94),transform 1.2s cubic-bezier(.25,.46,.45,.94);";
     if(line.type==='small'){
-      p.style.cssText = "font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(240,230,234,.35);letter-spacing:.1em;margin-bottom:16px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+      p.style.cssText = "font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:rgba(240,230,234,.25);letter-spacing:.18em;text-transform:lowercase;margin-bottom:28px;" + base;
     } else if(line.type==='gold'){
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:700;color:#E8C870;font-style:italic;line-height:1.45;margin-bottom:8px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(18px,4.8vw,22px);font-weight:600;color:rgba(232,200,112,.75);font-style:italic;line-height:1.55;margin-top:8px;" + base;
     } else {
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;color:#F0E6EA;line-height:1.35;margin-bottom:16px;opacity:0;transform:translateY(12px);filter:blur(4px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;";
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(21px,5.5vw,27px);font-weight:600;color:rgba(240,230,234,.85);line-height:1.5;margin-bottom:24px;" + base;
     }
     p.textContent = line.text;
     cont.appendChild(p);
     setTimeout(function(){
-      p.style.opacity='1';p.style.transform='translateY(0)';p.style.filter='blur(0)';
-    }, 400 + i * 1500);
+      p.style.opacity='1';p.style.filter='blur(0)';p.style.transform='translateY(0)';
+    }, 600 + i * 2200);
   });
-  // Show app icon after all lines
   setTimeout(function(){
     var app = document.getElementById('wsc4-app');
     if(app){app.style.opacity='1';app.style.transform='translateY(0)';}
-  }, 400 + data.length * 1500 + 600);
+  }, 600 + data.length * 2200 + 800);
 }
 
 function wsShowFooter(){
-  var quote=document.getElementById('wsc-quote');
+  var hero=document.getElementById('ws-hero');
   var footer=document.getElementById('wsc4');
-  if(quote){quote.style.opacity='0';}
+  var mods=document.getElementById('ws-modules');
+  if(hero){hero.style.transition='opacity .6s ease';hero.style.opacity='0';}
   setTimeout(function(){
-    if(quote) quote.style.display='none';
+    if(hero) hero.style.display='none';
+    if(mods) mods.style.display='block';
     if(footer){footer.style.display='flex';setTimeout(function(){footer.style.opacity='1';wsRenderFooter();},50);}
     var ic=document.getElementById('ws-app-icon');
     if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
@@ -1887,27 +1978,28 @@ function wsShowFooter(){
 
 <div class="gema-wrap">
   <div id="gema-pre" style="display:flex;flex-direction:column;align-items:center;">
-    <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:900;letter-spacing:.2em;color:rgba(184,137,42,.5);text-transform:uppercase;margin-bottom:24px;opacity:0;transition:opacity .6s ease;" id="gema-eyebrow">Toca la gema para ver lo que hay dentro</p>
-    <div class="gema-img-wrap" onclick="openGemaVideo()">
-      <img src="workbook/assets/gemas/gema-workshop.png" alt="Gema" id="gema-icon" style="opacity:0;transition:opacity .5s ease;">
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:700;color:rgba(240,230,234,.85);line-height:1.4;margin-bottom:8px;opacity:0;filter:blur(8px);transform:translateY(16px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;" id="gema-eyebrow">No avanzar&#xE1;s sola.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:8px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-txt">Cada paso te muestra exactamente qu&#xE9; hacer.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:8px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-sub">Qu&#xE9; practicar.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:28px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-when">Y cu&#xE1;ndo aplicarlo en tu vida real.</p>
+    <div class="gema-img-wrap" style="opacity:0;transition:opacity 1s ease;" id="gema-gem-wrap">
+      <img src="workbook/assets/gemas/gema-workshop.png" alt="Gema" id="gema-icon" style="opacity:1;">
     </div>
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:#EDE3CE;line-height:1.45;margin-top:20px;max-width:340px;opacity:0;transition:opacity .6s ease;" id="gema-txt">Cada gema en tu camino te gu&#xED;a con <em style="color:#E8C870;font-style:italic;">lecciones en video y ejercicios pr&#xE1;cticos.</em></p>
-    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:10px;opacity:0;transition:opacity .6s ease;" id="gema-sub">Estrategia y ejecuci&#xF3;n en cada paso</p>
   </div>
 
   <div id="gema-video" class="gema-video-screen">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:900;color:#1a0810;margin-bottom:4px;">Dentro de cada gema</p>
-    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;margin-bottom:20px;">Esto es lo que encuentras</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:700;color:rgba(26,8,16,.7);line-height:1.45;margin-bottom:4px;max-width:340px;">Cada lecci&#xF3;n termina cuando sabes exactamente <em style="color:#8B6520;font-style:italic;">qu&#xE9; hacer despu&#xE9;s.</em></p>
+    <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.15em;color:rgba(26,8,16,.25);text-transform:uppercase;margin-bottom:20px;">Video · Aplicaci&#xF3;n inmediata</p>
     <div class="gema-phone">
       <div class="gema-phone-notch"></div>
       <iframe id="gema-iframe" allow="autoplay;fullscreen" allowfullscreen></iframe>
     </div>
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(15px,4vw,18px);font-weight:600;color:#2a1a0f;line-height:1.5;text-align:center;margin-top:20px;max-width:340px;">Es un sistema dise&#xF1;ado para que pases de la teor&#xED;a a la acci&#xF3;n <strong style="color:#8B6520;">en menos de 5 minutos.</strong></p>
-    <button class="btn-cta" style="width:100%;max-width:340px;border-radius:12px;margin-top:20px;animation:ctaPulse 2s ease-in-out infinite;" onclick="document.getElementById('gema-video').classList.remove('open');document.getElementById('gema-video').style.display='none';show('s-covers');">Continuar →</button>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:rgba(26,8,16,.5);line-height:1.55;text-align:center;margin-top:24px;max-width:320px;">Porque entender cambia poco.<br><em style="color:#8B6520;font-weight:700;font-style:italic;">Practicar cambia todo.</em></p>
+    <button class="btn-cta" style="width:100%;max-width:340px;border-radius:12px;margin-top:24px;animation:ctaPulse 2s ease-in-out infinite;" onclick="document.getElementById('gema-video').classList.remove('open');document.getElementById('gema-video').style.display='none';show('s-covers');initCovers();">Continuar →</button>
   </div>
 
-  <div id="gema-cta" style="margin-top:28px;opacity:0;transition:opacity .6s ease,transform .6s ease;transform:translateY(10px);">
-    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-covers')">Continuar →</button>
+  <div id="gema-cta" style="margin-top:28px;opacity:0;transition:opacity .8s ease,transform .8s ease;transform:translateY(10px);">
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="openGemaVideo()">Ver un paso por dentro →</button>
   </div>
 </div>
 </div>
@@ -1917,28 +2009,39 @@ function initGema(){
   var gv=document.getElementById('gema-video');
   gv.classList.remove('open');gv.style.display='none';
   document.getElementById('gema-pre').style.display='flex';
+  document.getElementById('gema-pre').style.opacity='1';
   document.getElementById('gema-cta').style.opacity='0';
   document.getElementById('gema-cta').style.transform='translateY(10px)';
-  setTimeout(function(){document.getElementById('gema-eyebrow').style.opacity='1';},300);
-  setTimeout(function(){document.getElementById('gema-icon').style.opacity='1';},600);
-  setTimeout(function(){document.getElementById('gema-txt').style.opacity='1';},1200);
-  setTimeout(function(){document.getElementById('gema-sub').style.opacity='1';},1800);
+  var ey=document.getElementById('gema-eyebrow');
+  var tx=document.getElementById('gema-txt');
+  var su=document.getElementById('gema-sub');
+  var wh=document.getElementById('gema-when');
+  var gw=document.getElementById('gema-gem-wrap');
+  [ey,tx,su,wh].forEach(function(e){if(e){e.style.opacity='0';e.style.filter='blur(8px)';e.style.transform='translateY(16px)';}});
+  if(gw) gw.style.opacity='0';
+  setTimeout(function(){ey.style.opacity='1';ey.style.filter='blur(0)';ey.style.transform='translateY(0)';},400);
+  setTimeout(function(){tx.style.opacity='1';tx.style.filter='blur(0)';tx.style.transform='translateY(0)';},1600);
+  setTimeout(function(){su.style.opacity='1';su.style.filter='blur(0)';su.style.transform='translateY(0)';},2600);
+  setTimeout(function(){wh.style.opacity='1';wh.style.filter='blur(0)';wh.style.transform='translateY(0)';},3600);
+  setTimeout(function(){if(gw) gw.style.opacity='1';},4400);
+  setTimeout(function(){
+    document.getElementById('gema-cta').style.opacity='1';
+    document.getElementById('gema-cta').style.transform='translateY(0)';
+  },5200);
 }
 function openGemaVideo(){
   if(typeof demoClick==='function') demoClick();
-  document.getElementById('gema-pre').style.transition='opacity .4s ease';
+  document.getElementById('gema-pre').style.transition='opacity .5s ease';
   document.getElementById('gema-pre').style.opacity='0';
+  document.getElementById('gema-cta').style.opacity='0';
   setTimeout(function(){
     document.getElementById('gema-pre').style.display='none';
+    document.getElementById('gema-cta').style.display='none';
     var vw=document.getElementById('gema-video');
     vw.classList.add('open');
     vw.style.display='flex';
     document.getElementById('gema-iframe').src='https://iframe.mediadelivery.net/embed/649326/0e5349b2-3f74-4cf1-8e36-158f97046031?autoplay=true&muted=true&loop=true&preload=true&controls=false';
-    setTimeout(function(){
-      document.getElementById('gema-cta').style.opacity='1';
-      document.getElementById('gema-cta').style.transform='translateY(0)';
-    },1500);
-  },400);
+  },500);
 }
 </script>
 
@@ -1962,9 +2065,9 @@ function openGemaVideo(){
 @keyframes covScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 </style>
 
-<div class="cov-title-wrap">
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:4px;">Tu contenido exclusivo</p>
-  <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.5);text-transform:uppercase;">8 secciones &middot; ejercicios pr&#xE1;cticos</p>
+<div class="cov-title-wrap" id="cov-title">
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:rgba(240,230,234,.85);line-height:1.4;margin-bottom:2px;">Todo el sistema estar&#xE1; aqu&#xED;.</p>
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.4);line-height:1.5;">Siempre disponible. <em style="color:#E8C870;font-style:italic;">Siempre contigo.</em></p>
 </div>
 
 <!-- Row 1: scroll left -->
@@ -2013,11 +2116,37 @@ function openGemaVideo(){
   </div>
 </div>
 
-<div class="cov-cta">
-  <button class="btn-cta" style="width:100%;max-width:380px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-testimonios')">Quiero acceder al sistema →</button>
+<div class="cov-cta" id="cov-cta" style="padding:20px 24px 40px;">
+</div>
+
+<!-- Glass overlay with favicon -->
+<div id="cov-glass" style="position:absolute;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;opacity:0;transition:opacity 1s ease;">
+  <div style="position:absolute;inset:0;background:rgba(15,10,11,.75);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;">
+    <div id="cov-app-icon" style="width:80px;height:80px;border-radius:20px;overflow:hidden;box-shadow:0 8px 40px rgba(184,137,42,.35);animation:appPulse 2s ease-in-out infinite;opacity:0;transform:scale(.6);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1);">
+      <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:100%;height:100%;display:block;border-radius:20px;">
+    </div>
+    <button id="cov-final-btn" class="btn-cta" style="width:100%;max-width:320px;border-radius:12px;margin-top:32px;animation:ctaPulse 2s ease-in-out infinite;opacity:0;transform:translateY(16px);transition:opacity .8s ease,transform .8s ease;" onclick="show('s-testimonios')">Quiero empezar hoy →</button>
+  </div>
 </div>
 
 </div>
+
+<script>
+function initCovers(){
+  var glass=document.getElementById('cov-glass');
+  var icon=document.getElementById('cov-app-icon');
+  var btn=document.getElementById('cov-final-btn');
+  if(glass){glass.style.display='none';glass.style.opacity='0';glass.style.transition='opacity 2.5s ease';}
+  if(icon){icon.style.opacity='0';icon.style.filter='blur(12px)';icon.style.transform='translateY(40px) scale(.7)';icon.style.transition='opacity 2s ease,filter 2s ease,transform 2s cubic-bezier(.25,.46,.45,.94)';}
+  if(btn){btn.style.opacity='0';btn.style.transform='translateY(20px)';btn.style.transition='opacity 1.5s ease,transform 1.5s ease';}
+  setTimeout(function(){
+    if(glass){glass.style.display='flex';setTimeout(function(){glass.style.opacity='1';},50);}
+    setTimeout(function(){if(icon){icon.style.opacity='1';icon.style.filter='blur(0)';icon.style.transform='translateY(0) scale(1)';}},1800);
+    setTimeout(function(){if(btn){btn.style.opacity='1';btn.style.transform='translateY(0)';}},3600);
+  },5000);
+}
+</script>
 
 <!-- ──────────── DEMO PWA - VIDEO TOUR ──────────── -->
 <div id="s-demo" class="screen">
@@ -2044,22 +2173,22 @@ function openGemaVideo(){
 <div class="demo-wrap">
 
   <div class="demo-intro" id="demo-intro">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,36px);font-weight:900;color:#1a0810;line-height:1.15;margin-bottom:4px;">Tu centro de mando</p>
-    <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(26,8,16,.3);text-transform:uppercase;margin-top:6px;">No es un PDF ni un Zoom</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:rgba(26,8,16,.6);line-height:1.45;margin-bottom:16px;">Aqu&#xED; es donde empiezas a convertirte en <em style="color:#8B6520;font-style:italic;">esa mujer.</em></p>
   </div>
 
-  <div class="demo-phone">
+  <div class="demo-phone" style="animation:phoneGlow 3s ease-in-out infinite;">
     <div class="demo-notch"></div>
     <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
   </div>
 
   <div class="demo-caption" id="demo-caption">
-    <p class="demo-line" style="color:#2a1a0f;font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;line-height:1.45;margin-top:24px;text-align:center;opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease;">Aqu&#xED; es donde ves exactamente en qu&#xE9; punto de tu transformaci&#xF3;n est&#xE1;s.</p>
-    <p class="demo-line" style="color:#8B6520;font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;font-style:italic;line-height:1.45;margin-top:8px;text-align:center;opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease;">Cada gema es un paso adelante.</p>
+    <p class="demo-line" style="color:#1a0810;font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:700;line-height:1.6;margin-top:28px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">Abres.</p>
+    <p class="demo-line" style="color:#1a0810;font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:700;line-height:1.6;margin-top:4px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">Practicas.</p>
+    <p class="demo-line" style="color:#1a0810;font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);font-weight:700;line-height:1.6;margin-top:4px;text-align:center;opacity:0;transform:translateY(12px);filter:blur(6px);transition:opacity 1s ease,transform 1s ease,filter 1s ease;">Avanzas.</p>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
-    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-gema');initGema();">Quiero saber m&#xE1;s →</button>
+    <button class="btn-cta" style="width:100%;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show('s-gema');initGema();">Quiero ver c&#xF3;mo funciona →</button>
   </div>
 
 </div>
@@ -2071,8 +2200,8 @@ function initDemo(){
   setTimeout(function(){document.getElementById('demo-intro').classList.add('in');},300);
   setTimeout(function(){document.getElementById('demo-caption').classList.add('in');},1200);
   var lines=document.querySelectorAll('.demo-line');
-  lines.forEach(function(l,i){setTimeout(function(){l.style.opacity='1';l.style.transform='translateY(0)';},1400+i*600);});
-  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},1400+lines.length*600+400);
+  lines.forEach(function(l,i){setTimeout(function(){l.style.opacity='1';l.style.transform='translateY(0)';l.style.filter='blur(0)';},1800+i*900);});
+  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},1800+lines.length*900+600);
 }
 </script>
 </div>
@@ -2080,8 +2209,7 @@ function initDemo(){
 <!-- ──────────── TESTIMONIOS ──────────── -->
 <div id="s-testimonios" class="screen">
   <div class="intro-box" style="animation:fadeUp .6s ease both;padding-top:126px;padding-bottom:16px;">
-    <h2 class="js-reveal" style="font-family:'Jost',sans-serif;font-size:28px;font-weight:700;color:#EDE3CE;text-align:center;line-height:1.2;margin-bottom:8px;">Lo que están logrando</h2>
-    <p class="js-reveal" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#B8892A;text-align:center;margin-bottom:24px;">otras Soberanas</p>
+    <p class="js-reveal" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,19px);font-weight:600;color:rgba(240,230,234,.4);text-align:center;line-height:1.5;margin-bottom:20px;">Antes de que tomes una decisi&#xF3;n,<br>d&#xE9;jame mostrarte lo que <em style="color:#E8C870;font-style:italic;">otras Soberanas</em> han logrado.</p>
 
     <div id="testi-wrap" class="js-reveal" style="position:relative;overflow:hidden;width:100%;margin-bottom:16px;">
       <div id="testi-inner" style="display:flex;transition:transform .4s ease;will-change:transform;width:300%;">
@@ -2153,8 +2281,21 @@ function initDemo(){
 </div>
 
 <!-- ──────────── PRECIO ──────────── -->
-<div id="s-precio" class="screen" style="overflow-y:auto;position:relative;max-height:100dvh;padding-top:40px;">
-  <div class="intro-box" style="animation:fadeUp .6s ease both;text-align:center;">
+<div id="s-precio" class="screen" style="overflow-y:auto;position:relative;max-height:100dvh;padding-top:0;">
+
+  <!-- Intro fullscreen por perfil -->
+  <div id="precio-intro" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;position:relative;">
+    <div id="precio-logo" style="position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity 1.5s ease;">
+      <span style="font-family:'Playfair Display',serif;font-size:16px;color:rgba(240,230,234,.15);font-weight:700;">Código</span><span style="font-family:'Playfair Display',serif;font-size:16px;color:rgba(184,137,42,.15);font-weight:700;font-style:italic;"> Soberana</span>
+    </div>
+    <div id="precio-phrase" style="max-width:400px;"></div>
+    <div id="precio-scroll" style="position:absolute;bottom:40px;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity 1s ease;">
+      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.15em;color:rgba(240,230,234,.2);text-transform:uppercase;margin-bottom:12px;">Desliza para empezar</p>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:s2pulse 2s ease infinite;"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+
+  <div class="intro-box" style="text-align:center;padding-top:40px;">
 
     <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);color:#E8C870;font-weight:700;line-height:1.2;margin-bottom:4px;" id="precio-eyebrow">Aqu&#xED; tienes tu acceso</p>
 
@@ -2440,7 +2581,7 @@ function show(id) {
   var h = document.getElementById('global-header');
   if (h) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';
-    var headerBg = {'s-josue':'#1E1218','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306'};
+    var headerBg = {'s-josue':'#000','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306'};
     h.style.background = headerBg[id] || '#0F0A0B';
     var sp = document.getElementById('header-spacer');
     if(sp){ sp.style.background = headerBg[id] || '#1E1218'; sp.style.display = headerScreens.indexOf(id) >= 0 ? 'block' : 'none'; }
@@ -2743,14 +2884,14 @@ var INSIGHTS = {
     'Eso que sientes cuando buscas y él se aleja... no es rechazo. Es un desencuentro que tiene solución.'
   ],
   1: [
-    'Esa versión tuya que aparece cuando discuten no es la mujer que quieres ser. Pero tampoco apareció por casualidad.',
-    'Esa versión tuya que aparece cuando discuten no es la mujer que quieres ser. Pero tampoco apareció por casualidad.',
-    'Esa versión tuya que aparece cuando discuten no es la mujer que quieres ser. Pero tampoco apareció por casualidad.'
+    'Hacerte pequeña para no incomodarlo no es amor. Y en el fondo, tú lo sabes.',
+    'Ser fuerte afuera y sentirte perdida adentro es más común de lo que crees. No estás sola en esto.',
+    'Esa persona que aparece cuando discuten y que no reconoces... no eres tú.'
   ],
   3: [
-    'Sabes qué hacer, pero en el momento real todo desaparece. Eso no es debilidad, es falta de un sistema que funcione bajo presión.',
+    'Sabes qué hacer, pero en el momento real todo desaparece. Eso no es debilidad.',
     'Creciste tanto que él se quedó atrás. Eso duele de una forma que nadie más entiende.',
-    'Estás cansada de ser la única que intenta. Lo sé. Y lo que vas a descubrir te va a cambiar eso.'
+    'Estás cansada de ser la única que intenta. Lo sé.'
   ]
 };
 
@@ -2764,10 +2905,10 @@ function showInsightPopup(qIdx, optIdx) {
 
   var popup = document.createElement('div');
   popup.id = 'insight-popup';
-  popup.style.cssText = 'position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;';
+  popup.style.cssText = 'position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;';
   popup.innerHTML = '<div style="width:100%;max-width:420px;background:rgba(30,18,24,.95);border:1px solid rgba(184,137,42,.3);border-radius:20px;padding:28px 24px;transform:translateY(20px);transition:transform .4s cubic-bezier(.23,1,.32,1);text-align:center;">'
     + '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(17px,4.5vw,21px);font-weight:700;color:#F0E6EA;line-height:1.55;margin-bottom:22px;">' + txt + '</p>'
-    + '<button onclick="closeInsight()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:\'Inter\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.4);">Entendido</button>'
+    + '<button onclick="closeInsight()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:\'Inter\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.4);">Continuar</button>'
     + '</div>';
   document.body.appendChild(popup);
   requestAnimationFrame(function(){
@@ -2910,34 +3051,25 @@ function showVideoScreen() {
   if (eyebrow) eyebrow.textContent = PROFILE_NAMES[topProfile] || '';
   var PROFILE_LINES = {
     S: [
-      'Has aprendido mucho sobre relaciones.',
-      'Pero cuando sientes que podrías perder algo importante, todo ese conocimiento desaparece.',
-      'Y entonces aparece una versión tuya que no reconoces.',
-      'Porque nadie te enseñó cómo mantenerte conectada contigo misma cuando la emoción toma el control.',
-      'Eso es exactamente lo que vamos a resolver en los próximos minutos.'
+      ['Has aprendido mucho sobre relaciones.', 'Pero cuando sientes que podrías <em>perder algo importante</em>, todo ese conocimiento desaparece.'],
+      ['Y entonces aparece una versión tuya que <em>no reconoces</em>.', 'Porque nadie te enseñó cómo mantenerte <em>conectada contigo misma</em> cuando la emoción toma el control.'],
+      ['Eso es exactamente lo que vamos a resolver en los <em>próximos minutos</em>.']
     ],
     P: [
-      'Cuanto más intentas recuperar la conexión, más lejos parece estar él.',
-      'Y lo más frustrante es que tus esfuerzos nacen del amor, no del rechazo.',
-      'Este video te muestra por qué pasa...',
-      'y qué hacer diferente.'
+      ['Cuanto más intentas recuperar la <em>conexión</em>, más lejos parece estar él.', 'Y lo más frustrante es que tus esfuerzos nacen del <em>amor</em>, no del rechazo.'],
+      ['Este video te muestra <em>por qué pasa</em>...', 'y <em>qué hacer</em> diferente.']
     ],
     D: [
-      'Has trabajado duro para convertirte en la mujer que eres hoy.',
-      'Lo que duele no es el éxito.',
-      'Lo que duele es sentir que mientras tú avanzabas, él se quedó atrás.',
-      'Eso es exactamente lo que vamos a abordar en los próximos minutos.'
+      ['Has trabajado duro para convertirte en la mujer que <em>eres hoy</em>.', 'Lo que duele no es el éxito. Lo que duele es sentir que mientras tú avanzabas, él <em>se quedó atrás</em>.'],
+      ['Eso es exactamente lo que vamos a abordar en los <em>próximos minutos</em>.']
     ]
   };
-  var voName = document.getElementById('vo-name');
-  var voLines = document.getElementById('vo-lines');
-  var voPlay = document.getElementById('vo-play');
-  // Build pre-video slides: each line is a centered slide with arrow
-  var allLines = [uName || ''].concat(PROFILE_LINES[topProfile] || PROFILE_LINES['S']);
+  var profileLines = PROFILE_LINES[topProfile] || PROFILE_LINES['S'];
+  var allSlides = [['{eyebrow}Antes de enviarte tus resultados', uName + ',', 'me di cuenta de algo.']].concat(profileLines);
   var voC = document.getElementById('vo-container');
   voC.innerHTML = '';
   window._voIdx = 0;
-  window._voSlides = allLines;
+  window._voSlides = allSlides;
   window._voIsPlay = true;
   voShowSlide(0);
 }
@@ -2946,46 +3078,63 @@ function voShowSlide(idx) {
   var overlay = document.getElementById(_voIsPlay ? 'video-overlay' : 'video-cta');
   var slides = window._voSlides;
   var isLast = idx >= slides.length - 1;
-  var isName = idx === 0;
+  var isName = idx === 0 && _voIsPlay;
   var progress = idx / (slides.length - 1);
+  var slideLines = slides[idx];
 
-  // Background gets lighter as she progresses
-  var r = Math.round(10 + progress * 50);
-  var g = Math.round(4 + progress * 8);
-  var b = Math.round(8 + progress * 20);
-  overlay.style.transition = 'background .8s ease';
-  overlay.style.background = 'rgb('+r+','+g+','+b+')';
+  if(_voIsPlay){
+    var opacity = Math.max(0.35, 1 - progress * 0.7);
+    var videoBlur = Math.round(24 - progress * 16);
+    var r = Math.round(10 + progress * 50);
+    var g = Math.round(4 + progress * 8);
+    var b = Math.round(8 + progress * 20);
+    overlay.style.transition = 'background 1.2s ease';
+    overlay.style.background = 'rgba('+r+','+g+','+b+',' + opacity.toFixed(2) + ')';
+    var vWrap = document.getElementById('video-wrap');
+    if(vWrap){vWrap.style.transition='filter 1.2s ease';vWrap.style.filter='blur('+videoBlur+'px)';}
+  }
 
   voC.innerHTML = '';
   var wrap = document.createElement('div');
   wrap.style.cssText = 'text-align:center;max-width:420px;width:100%;';
 
-  var p = document.createElement('p');
-  if (isName) {
-    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(42px,11vw,60px);font-weight:900;color:#E8C870;line-height:1.08;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
-  } else if (isLast) {
-    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:700;color:#E8C870;font-style:italic;line-height:1.45;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
-  } else {
-    p.style.cssText = "font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(24px,6vw,32px);font-weight:400;font-style:italic;color:rgba(240,230,234,.85);line-height:1.55;opacity:0;filter:blur(6px);transform:translateY(16px);transition:opacity .7s ease,filter .7s ease,transform .7s ease;";
-  }
-  p.textContent = slides[idx];
-  wrap.appendChild(p);
+  var allP = [];
+  slideLines.forEach(function(line, i) {
+    var p = document.createElement('p');
+    var isEyebrow = line.indexOf('{eyebrow}') === 0;
+    var cleanLine = isEyebrow ? line.replace('{eyebrow}','') : line;
+    var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
+    if (isEyebrow) {
+      p.style.cssText = "font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.3);text-transform:uppercase;margin-bottom:20px;" + base;
+    } else if (isName && !isEyebrow) {
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(38px,10vw,52px);font-weight:900;color:#E8C870;line-height:1.08;" + base;
+    } else if (isLast && _voIsPlay && i === slideLines.length - 1) {
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;font-style:italic;color:#E8C870;line-height:1.45;margin-top:16px;" + base;
+    } else {
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(20px,5.2vw,26px);font-weight:600;color:rgba(240,230,234,.85);line-height:1.5;margin-top:" + (i > 0 ? '16px' : '0') + ";" + base;
+    }
+    p.innerHTML = cleanLine;
+    wrap.appendChild(p);
+    allP.push(p);
+  });
 
   var btnWrap = document.createElement('div');
-  btnWrap.style.cssText = 'margin-top:36px;opacity:0;transition:opacity .5s ease;';
+  btnWrap.style.cssText = 'margin-top:36px;opacity:0;transition:opacity .8s ease;';
 
   if (isLast && _voIsPlay) {
     btnWrap.innerHTML = '<div style="position:relative;width:80px;height:80px;margin:0 auto 12px;"><button onclick="dismissVideoOverlay()" style="position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#D4A843,#B8892A,#8B6520);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:glowPulse 2s ease-in-out infinite;"><div style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.35) 50%,transparent 80%);animation:shimmer 2.5s ease-in-out infinite;pointer-events:none;"></div><svg width="24" height="24" viewBox="0 0 24 24" fill="#0f0408"><polygon points="8,4 20,12 8,20"/></svg></button></div><p style="font-family:\'Inter\',sans-serif;font-size:10px;font-weight:600;color:rgba(184,137,42,.4);letter-spacing:1.5px;text-transform:uppercase;">Reproducir</p>';
   } else if (isLast && !_voIsPlay) {
-    btnWrap.innerHTML = '<button class="btn-cta" style="width:100%;max-width:320px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show(\'s-josue\')">Continuar →</button>';
+    btnWrap.innerHTML = '<button class="btn-cta" style="width:100%;max-width:320px;border-radius:12px;animation:ctaPulse 2s ease-in-out infinite;" onclick="show(\'s-josue\');initJosue();">Continuar →</button>';
   } else {
     btnWrap.innerHTML = '<button onclick="voNext()" style="background:rgba(184,137,42,.08);border:1.5px solid rgba(184,137,42,.4);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;margin:0 auto;box-shadow:0 0 16px rgba(184,137,42,.25),0 0 32px rgba(184,137,42,.1);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>';
   }
   wrap.appendChild(btnWrap);
   voC.appendChild(wrap);
 
-  setTimeout(function(){ p.style.opacity='1'; p.style.filter='blur(0)'; p.style.transform='translateY(0)'; }, 200);
-  setTimeout(function(){ btnWrap.style.opacity = '1'; }, 1200);
+  allP.forEach(function(p, i) {
+    setTimeout(function(){ p.style.opacity='1'; p.style.filter='blur(0)'; p.style.transform='translateY(0)'; }, 400 + i * 1800);
+  });
+  setTimeout(function(){ btnWrap.style.opacity = '1'; }, 400 + allP.length * 1800 + 600);
 }
 
 function voNext() {
@@ -3003,36 +3152,38 @@ function voNext() {
 function showVideoCta(){
   var POST_VIDEO = {
     S: [
-      '{name},',
-      'Ahora sabes que el problema no es que te falte conocimiento.',
-      'Es que nadie te enseñó cómo acceder a ese conocimiento cuando más lo necesitas.',
-      'Déjame mostrarte por qué entiendo tan bien ese patrón... y cómo aprendí a ayudar a mujeres a cambiarlo.'
+      ['{eyebrow}Bien, ahora sabes que —', 'el problema no es que te falte <em>conocimiento</em>.', 'Es que nadie te enseñó cómo acceder a ese conocimiento cuando más lo <em>necesitas</em>.'],
+      ['{name}, déjame mostrarte por qué entiendo tan bien <em>ese patrón</em>... y cómo aprendí a ayudar a mujeres a cambiarlo.']
     ],
     P: [
-      '{name},',
-      'Ahora sabes algo importante:',
-      'Tu dolor no viene de amar demasiado.',
-      'Viene de estar atrapada en una dinámica que te empuja a hacer más de lo que realmente funciona.',
-      'Déjame mostrarte cómo aprendí esto... desde dentro de la misma dinámica que hoy te tiene agotada.'
+      ['{eyebrow}Bien, ahora sabes algo importante —', 'Tu dolor no viene de <em>amar demasiado</em>.', 'Viene de estar atrapada en una dinámica que te empuja a hacer más de lo que <em>realmente funciona</em>.'],
+      ['{name}, déjame mostrarte cómo aprendí esto... desde dentro de la misma <em>dinámica</em> que hoy te tiene agotada.']
     ],
     D: [
-      '{name},',
-      'Ahora sabes que el problema no es tu crecimiento.',
-      'El problema es la distancia que se creó mientras intentabas construir una vida mejor.',
-      'Déjame mostrarte por qué he dedicado años a ayudar a parejas que llegaron exactamente a ese punto.'
+      ['{eyebrow}Bien, ahora sabes que —', 'el problema no es tu <em>crecimiento</em>.', 'El problema es la distancia que se creó mientras intentabas construir una <em>vida mejor</em>.'],
+      ['{name}, déjame mostrarte por qué he dedicado años a ayudar a parejas que llegaron exactamente a <em>ese punto</em>.']
     ]
   };
   var cta=document.getElementById('video-cta');
-  if(cta) cta.style.display='block';
-  var lines=(POST_VIDEO[topProfile]||POST_VIDEO['S']).map(function(l){return l.replace('{name}',uName||'');});
+  var vWrap=document.getElementById('video-wrap');
+  if(cta){cta.style.display='block';cta.style.background='rgba(61,12,17,0)';}
+  if(vWrap){vWrap.style.transition='filter 2.5s ease';vWrap.style.filter='blur(16px)';}
+  setTimeout(function(){
+    if(cta) cta.style.background='rgba(30,6,10,.95)';
+  },50);
+  var slides=(POST_VIDEO[topProfile]||POST_VIDEO['S']).map(function(slide){return slide.map(function(l){return l.replace('{name}',uName||'');});});
   window._voIdx = 0;
-  window._voSlides = lines;
+  window._voSlides = slides;
   window._voIsPlay = false;
-  voShowSlide(0);
+  setTimeout(function(){
+    voShowSlide(0);
+  },2000);
 }
 function dismissVideoOverlay() {
   var overlay = document.getElementById('video-overlay');
   if (overlay) { overlay.style.transition='opacity .8s ease'; overlay.style.opacity = '0'; }
+  var vWrap = document.getElementById('video-wrap');
+  if(vWrap){vWrap.style.transition='filter 1.2s ease';vWrap.style.filter='blur(0)';}
   setTimeout(function(){ if (overlay) overlay.style.display = 'none'; }, 800);
 
   // Iniciar video con audio
@@ -3158,6 +3309,32 @@ function showPrecio() {
   document.getElementById('global-header').style.display='none';
   document.getElementById('header-spacer').style.display='none';
   if (uName) document.getElementById('precio-eyebrow').innerHTML = uName ? uName + ', aqui tienes tu acceso' : 'Aqui tienes tu acceso';
+  // Render intro phrase by profile
+  var PRECIO_INTRO = {
+    S: ['Nunca te faltó <em>conocimiento</em>.','Solo necesitabas aprender a seguir siendo tú cuando tus emociones <em>se apoderan de ti</em>.'],
+    P: ['No eres la responsable de sostener tú sola la <em>conexión</em>.','Solo necesitas dejar de responder desde el miedo a <em>perderla</em>.'],
+    D: ['No necesitas hacerte más pequeña para conservar el <em>amor</em>.','Solo necesitas aprender una forma distinta de <em>construir junto a él</em>.']
+  };
+  var lines = PRECIO_INTRO[topProfile] || PRECIO_INTRO['S'];
+  var phrase = document.getElementById('precio-phrase');
+  var logo = document.getElementById('precio-logo');
+  var scroll = document.getElementById('precio-scroll');
+  phrase.innerHTML = '';
+  lines.forEach(function(line, i){
+    var p = document.createElement('p');
+    p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(22px,5.8vw,30px);font-weight:700;color:rgba(240,230,234,.85);line-height:1.4;margin-top:" + (i > 0 ? '20px' : '0') + ";opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
+    p.innerHTML = line;
+    phrase.appendChild(p);
+  });
+  // Animate
+  setTimeout(function(){ if(logo) logo.style.opacity='1'; },300);
+  var ps = phrase.querySelectorAll('p');
+  ps.forEach(function(p,i){
+    setTimeout(function(){p.style.opacity='1';p.style.filter='blur(0)';p.style.transform='translateY(0)';}, 800 + i * 2000);
+  });
+  setTimeout(function(){ if(scroll) scroll.style.opacity='1'; }, 800 + ps.length * 2000 + 1000);
+  // Scroll to top
+  document.getElementById('s-precio').scrollTop = 0;
   // Contador 48h
   const exp = Date.now() + 48*60*60*1000;
   localStorage.setItem('cs_exp', exp);

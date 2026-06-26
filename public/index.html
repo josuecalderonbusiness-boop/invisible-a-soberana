@@ -1712,29 +1712,59 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: camino real + favicon en endpoint -->
+    <!-- HERO: cinta elegante con brújula y favicon -->
     <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;">
-      <!-- Texto perfil arriba -->
-      <div id="ws-hero-content" style="text-align:left;padding:70px 24px 0;position:relative;z-index:2;max-width:320px;"></div>
-      <!-- SVG camino real con favicon integrado -->
-      <div style="flex:1;position:relative;width:100%;overflow:hidden;">
-        <svg id="ws-camino-svg" viewBox="12000 33000 128000 44000" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
-          <path id="ws-road" d="M22081.14 72717.07c0,0 8000.62,-290.94 11346.37,-3927.6 3345.75,-3636.66 4509.46,-7782.48 8873.45,-8146.13 4364,-363.65 10328.13,436.35 12437.39,-1454.66 5369.09,-4813.66 -3934.52,-8660.06 3367.09,-16710.41 4264.76,-4702.13 11566.2,-5870.83 19194.7,-3752.59 8308.36,2307 14297.9,2371.74 21602.19,13354.33 5523.95,8305.72 16075.6,11610.17 23319.54,9129.37 7243.95,-2480.8 8137.01,-4862.38 7740.1,-8236.28 -396.92,-3373.9 -2580.03,-6251.62 -595.38,-8831.65 1984.66,-2580.03 5537.23,-3715.09 6928.03,-5627.44 1390.81,-1912.36 1332.84,-2723.68 1332.84,-2723.68 0,0 927.21,1680.53 173.86,3534.96 -753.35,1854.42 -3187.29,4636 -3245.23,6316.56 -57.93,1680.57 4176.89,8552.09 3020.32,12110.8 -1156.57,3558.7 -3974.36,8229.56 -14509.28,10913.84 -10534.91,2684.27 -21069.48,-1771.73 -25288.99,-6541.55 -7385.76,-8349.13 -9325.18,-13257.78 -20442.57,-15904.72 -3852.56,-917.25 -12883.35,-3856.8 -15268.28,454.34 -2328.55,4209.31 9400,19241.93 -10823.89,18695.47 -6926.1,-187.14 -8477.35,-2634.98 -13344.37,3448.77 -4867.02,6083.76 -12319.99,6041.88 -14708.34,6041.88 -2388.35,0 -6971.33,-2001.05 -7810.49,-3679.34 -839.17,-1678.3 6700.94,1535.73 6700.94,1535.73z" fill="none" stroke="rgba(232,200,112,.12)" stroke-width="600" stroke-linecap="round" style="transition:stroke .8s ease;"/>
-          <!-- Favicon: se posiciona con JS en el endpoint del path -->
-          <foreignObject id="ws-fav-fo" x="0" y="0" width="8000" height="10000" style="opacity:0;transition:opacity 1s ease;overflow:visible;">
-            <div xmlns="http://www.w3.org/1999/xhtml" id="ws-fav-inner" style="display:flex;flex-direction:column;align-items:center;position:absolute;">
-              <p style="font-family:'Playfair Display',serif;font-size:1200px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:400px;white-space:nowrap;">Abrir</p>
-              <div onclick="wsOpenApp()" style="cursor:pointer;width:5000px;height:5000px;border-radius:1300px;position:relative;overflow:visible;">
-                <div style="position:absolute;inset:-200px;border-radius:1500px;border:180px solid rgba(232,200,112,.5);box-shadow:0 0 1500px rgba(232,200,112,.3),0 0 3000px rgba(232,200,112,.1);"></div>
-                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:5000px;height:5000px;display:block;border-radius:1300px;position:relative;z-index:1;">
+      <!-- Texto perfil -->
+      <div id="ws-hero-content" style="text-align:left;padding:70px 28px 0;position:relative;z-index:2;max-width:300px;"></div>
+      <!-- Composición: cinta + brújula + favicon -->
+      <div style="flex:1;position:relative;width:100%;z-index:1;">
+        <svg id="ws-ribbon-svg" viewBox="0 0 375 420" width="100%" height="100%" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ribbonGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(245,237,224,.18)"/>
+              <stop offset="50%" stop-color="rgba(245,237,224,.12)"/>
+              <stop offset="100%" stop-color="rgba(245,237,224,.06)"/>
+            </linearGradient>
+            <linearGradient id="ribbonEdge" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="rgba(232,200,112,.15)"/>
+              <stop offset="100%" stop-color="rgba(232,200,112,.05)"/>
+            </linearGradient>
+            <!-- Light that travels along the ribbon -->
+            <radialGradient id="ribbonLight" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(232,200,112,.35)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+          </defs>
+          <!-- Ribbon body - thick elegant band -->
+          <path id="ws-ribbon" d="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40" stroke="url(#ribbonGrad)" stroke-width="42" stroke-linecap="round" fill="none"/>
+          <!-- Ribbon edge highlight -->
+          <path d="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40" stroke="url(#ribbonEdge)" stroke-width="44" stroke-linecap="round" fill="none" opacity=".3"/>
+          <!-- Traveling light -->
+          <circle id="ws-light" cx="60" cy="390" r="28" fill="url(#ribbonLight)" opacity="0">
+            <animateMotion id="ws-light-motion" dur="4s" fill="freeze" begin="indefinite" path="M60 390 C 60 360, 30 320, 60 280 C 100 230, 200 260, 240 220 C 280 180, 220 140, 270 100 C 310 68, 300 50, 290 40"/>
+          </circle>
+          <!-- Brújula al inicio de la cinta -->
+          <g id="ws-brujula-g" transform="translate(60,390)" opacity="0" style="transition:opacity 1s ease;">
+            <circle r="20" fill="none" stroke="rgba(232,200,112,.3)" stroke-width="1.5"/>
+            <circle r="14" fill="none" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
+            <line x1="0" y1="-10" x2="0" y2="-16" stroke="rgba(232,200,112,.4)" stroke-width="1.5"/>
+            <line x1="0" y1="10" x2="0" y2="16" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
+            <line x1="-10" y1="0" x2="-16" y2="0" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
+            <line x1="10" y1="0" x2="16" y2="0" stroke="rgba(232,200,112,.2)" stroke-width="1"/>
+            <polygon points="0,-11 3,2 -3,2" fill="rgba(232,200,112,.6)"/>
+            <polygon points="0,11 3,-2 -3,-2" fill="rgba(232,200,112,.2)"/>
+          </g>
+          <!-- Favicon al final de la cinta -->
+          <foreignObject id="ws-fav-fo" x="254" y="4" width="72" height="90" opacity="0" style="transition:opacity 1s ease;">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;align-items:center;">
+              <div onclick="wsOpenApp()" id="ws-fav-btn" style="cursor:pointer;width:52px;height:52px;border-radius:14px;position:relative;margin:0 auto;">
+                <div id="ws-fav-glow" style="position:absolute;inset:-3px;border-radius:17px;border:1.5px solid rgba(232,200,112,.3);box-shadow:0 0 0 rgba(232,200,112,0);transition:box-shadow 1s ease,border-color 1s ease;"></div>
+                <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:52px;height:52px;display:block;border-radius:14px;position:relative;z-index:1;">
               </div>
+              <p style="font-family:'Inter',sans-serif;font-size:7px;font-weight:500;letter-spacing:.1em;color:rgba(240,230,234,.25);text-transform:uppercase;margin-top:5px;">Abrir</p>
             </div>
           </foreignObject>
         </svg>
-      </div>
-      <!-- Toca para continuar -->
-      <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;padding:16px 0 24px;text-align:center;opacity:0;transition:opacity 1s ease;position:relative;z-index:2;">
-        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;">Toca para continuar</p>
       </div>
     </div>
 
@@ -1821,46 +1851,53 @@ function wsRenderHero(){
     cont.appendChild(p);
     allEls.push(p);
   });
-  // Reset nodes
-  document.querySelectorAll('.ws-node').forEach(function(n){n.setAttribute('fill','rgba(232,200,112,.1)');n.style.filter='none';});
-  var road=document.getElementById('ws-road');
-  if(road) road.style.stroke='rgba(240,230,234,.1)';
+  // Reset ribbon elements
+  var brujula=document.getElementById('ws-brujula-g');
   var favFo=document.getElementById('ws-fav-fo');
   var favGlow=document.getElementById('ws-fav-glow');
-  if(favFo) favFo.style.opacity='0';
-  if(favGlow) favGlow.style.opacity='0';
-  var toca=document.getElementById('ws-toca');
-  if(toca) toca.style.opacity='0';
+  var light=document.getElementById('ws-light');
+  if(brujula) brujula.setAttribute('opacity','0');
+  if(favFo) favFo.setAttribute('opacity','0');
+  if(favGlow){favGlow.style.boxShadow='0 0 0 rgba(232,200,112,0)';favGlow.style.borderColor='rgba(232,200,112,.3)';}
+  if(light) light.setAttribute('opacity','0');
   // Animate text
   allEls.forEach(function(el, i){
     setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 600 + i * 1400);
   });
-  // Then walk path
-  setTimeout(function(){wsWalkPath();}, 600 + allEls.length * 1400 + 1500);
+  // Show brújula
+  setTimeout(function(){if(brujula) brujula.setAttribute('opacity','1');}, 600 + allEls.length * 1400);
+  // Start light animation
+  setTimeout(function(){wsWalkPath();}, 600 + allEls.length * 1400 + 1200);
 }
 function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var road=document.getElementById('ws-road');
-  if(road) road.style.stroke='rgba(232,200,112,.18)';
-  // Position favicon at ~50% of path (rightmost/highest point)
-  var favFo=document.getElementById('ws-fav-fo');
-  if(road && favFo){
-    var len=road.getTotalLength();
-    var pt=road.getPointAtLength(len*0.48);
-    favFo.setAttribute('x', Math.round(pt.x) - 4000);
-    favFo.setAttribute('y', Math.round(pt.y) - 8000);
+  // Start light traveling along the ribbon
+  var light=document.getElementById('ws-light');
+  if(light){
+    light.setAttribute('opacity','1');
+    var motion=document.getElementById('ws-light-motion');
+    if(motion) motion.beginElement();
   }
-  // Show favicon
+  // After light arrives at favicon (4s), reveal it
   setTimeout(function(){
-    if(favFo) favFo.style.opacity='1';
-  },800);
-  // Show toca
-  setTimeout(function(){
-    var toca=document.getElementById('ws-toca');
-    if(toca) toca.style.opacity='1';
-  },1600);
+    var favFo=document.getElementById('ws-fav-fo');
+    if(favFo) favFo.setAttribute('opacity','1');
+    // Glow effect on favicon
+    setTimeout(function(){
+      var glow=document.getElementById('ws-fav-glow');
+      if(glow){
+        glow.style.boxShadow='0 0 16px rgba(232,200,112,.35),0 0 32px rgba(232,200,112,.12)';
+        glow.style.borderColor='rgba(232,200,112,.5)';
+      }
+      // Subtle breathe
+      var btn=document.getElementById('ws-fav-btn');
+      if(btn) btn.style.animation='appPulse 2.5s ease-in-out infinite';
+    },400);
+    // Fade out traveling light
+    if(light) light.setAttribute('opacity','0');
+  },4200);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

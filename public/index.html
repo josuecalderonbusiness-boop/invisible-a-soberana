@@ -1712,9 +1712,9 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: texto → huellas → texto 2 → favicon -->
+    <!-- HERO: texto cíclico arriba + favicon abajo -->
     <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:radial-gradient(ellipse at 50% 40%,#3D0C11,#1E1218 70%);">
-      <div id="ws-hero-stage" style="text-align:center;max-width:340px;"></div>
+      <div id="ws-hero-stage" style="text-align:center;max-width:340px;display:flex;flex-direction:column;align-items:center;"></div>
     </div>
 
     <!-- MODULOS: pantalla completa, una card a la vez -->
@@ -1787,23 +1787,15 @@ function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
   var stage = document.getElementById('ws-hero-stage');
   stage.innerHTML = '';
-  var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
-  // Title (main line)
-  var title = document.createElement('p');
-  title.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;" + base;
-  title.innerHTML = data[0].html || data[0].text;
-  stage.appendChild(title);
-  // Footsteps SVG
-  var steps = document.createElement('div');
-  steps.id = 'ws-steps';
-  steps.style.cssText = "margin:32px auto;opacity:0;transition:opacity 1s ease;";
-  steps.innerHTML = '';
-  stage.appendChild(steps);
-  // Sub text
-  var sub = document.createElement('p');
-  sub.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;margin-bottom:36px;" + base;
-  sub.textContent = data[1].text;
-  stage.appendChild(sub);
+  // Cycling text area
+  var textWrap = document.createElement('div');
+  textWrap.id = 'ws-hero-cycle';
+  textWrap.style.cssText = "min-height:60px;margin-bottom:40px;";
+  var cycleP = document.createElement('p');
+  cycleP.id = 'ws-hero-cycle-text';
+  cycleP.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;";
+  textWrap.appendChild(cycleP);
+  stage.appendChild(textWrap);
   // Favicon
   var favWrap = document.createElement('div');
   favWrap.id = 'ws-fav-wrap2';
@@ -1814,11 +1806,27 @@ function wsRenderHero(){
     +'</div>'
     +'<p style="font-family:\'Inter\',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>';
   stage.appendChild(favWrap);
-  // Animate sequence
-  setTimeout(function(){title.style.opacity='1';title.style.filter='blur(0)';title.style.transform='translateY(0)';},400);
-  setTimeout(function(){steps.style.opacity='1';},2000);
-  setTimeout(function(){sub.style.opacity='1';sub.style.filter='blur(0)';sub.style.transform='translateY(0)';},3200);
-  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},4800);
+  // Build phrases from both lines
+  var mainText = data[0].html || data[0].text;
+  var subText = data[1].text;
+  var phrases = [mainText, subText];
+  // Show favicon
+  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},600);
+  // Start cycling text
+  function showPhrase(i){
+    var p = phrases[i % phrases.length];
+    var isHTML = p.indexOf('<em>') !== -1;
+    cycleP.style.opacity='0';cycleP.style.filter='blur(4px)';cycleP.style.transform='translateY(8px)';
+    setTimeout(function(){
+      if(isHTML) cycleP.innerHTML=p; else cycleP.textContent=p;
+      cycleP.style.opacity='1';cycleP.style.filter='blur(0)';cycleP.style.transform='translateY(0)';
+    },600);
+    setTimeout(function(){
+      cycleP.style.opacity='0';cycleP.style.filter='blur(4px)';cycleP.style.transform='translateY(-6px)';
+      setTimeout(function(){showPhrase(i+1);},700);
+    },3500);
+  }
+  setTimeout(function(){showPhrase(0);},800);
 }
 function wsAnimHero(){
   wsRenderHero();

@@ -1712,13 +1712,10 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: No te vendo información -->
+    <!-- HERO: texto perfil dinámico -->
     <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;">
-      <p id="ws-l0" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;color:rgba(240,230,234,.25);text-transform:lowercase;margin-bottom:24px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;">entonces...</p>
-      <p id="ws-l1" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;color:#F0E6EA;line-height:1.1;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">No te vendo informaci&#xF3;n.</p>
-      <p id="ws-l2" style="font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,48px);font-weight:900;font-style:italic;color:#E8C870;line-height:1.1;margin-top:4px;opacity:0;transform:translateY(20px);filter:blur(6px);transition:opacity .7s ease,transform .7s ease,filter .7s ease;">Te entrego un sistema.</p>
-      <p id="ws-l3" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:500;color:rgba(240,230,234,.5);margin-top:20px;opacity:0;transition:opacity .6s ease;line-height:1.5;">Porque los cursos se olvidan.<br>Este sistema vive contigo.</p>
-      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .5s ease;animation:s2pulse 2s ease infinite;">
+      <div id="ws-hero-content"></div>
+      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .5s ease,filter .5s ease,transform .5s ease;animation:s2pulse 2s ease infinite;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
@@ -1759,6 +1756,26 @@ function wsSkipToCards(){
   wsRenderCards();
   setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';wsAnimCard(c1);}},200);
 }
+var WS_HERO_LINES = {
+  S: [
+    {type:'small', text:'entonces...'},
+    {type:'main', text:'La próxima vez que ese momento aparezca...'},
+    {type:'main', text:'no vas a estar sola.'},
+    {type:'sub', text:'Cuando la emoción tome el control, no tendrás que empezar desde cero.'}
+  ],
+  P: [
+    {type:'small', text:'entonces...'},
+    {type:'main', text:'La próxima vez que él se cierre...'},
+    {type:'main', text:'ya no tendrás que improvisar.'},
+    {type:'sub', text:'Cuando aparezca ese impulso de perseguirlo, no tendrás que adivinar qué hacer.'}
+  ],
+  D: [
+    {type:'small', text:'entonces...'},
+    {type:'main', text:'La próxima vez que sientas esa distancia...'},
+    {type:'main', text:'ya no tendrás que cargarla sola.'},
+    {type:'sub', text:'Cuando aparezca esa sensación de que otra vez están caminando en mundos distintos, no tendrás que resolverlo desde el cansancio.'}
+  ]
+};
 function wsShowHero(){
   var quote=document.getElementById('wsc-quote');
   if(quote){quote.style.opacity='0';}
@@ -1769,21 +1786,38 @@ function wsShowHero(){
     var hero=document.getElementById('ws-hero');
     if(hero){
       hero.style.display='flex';
-      ['ws-l0','ws-l1','ws-l2','ws-l3','ws-arrow'].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el){el.style.opacity='0';el.style.filter='blur(6px)';el.style.transform='translateY(20px)';}
-      });
-      wsAnimHero();
+      wsRenderHero();
     }
   },600);
 }
+function wsRenderHero(){
+  var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
+  var cont = document.getElementById('ws-hero-content');
+  cont.innerHTML = '';
+  var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
+  var allEls = [];
+  data.forEach(function(line){
+    var p = document.createElement('p');
+    if(line.type==='small'){
+      p.style.cssText = "font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:rgba(240,230,234,.25);letter-spacing:.18em;text-transform:lowercase;margin-bottom:24px;" + base;
+    } else if(line.type==='sub'){
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,21px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.5;margin-top:20px;" + base;
+    } else {
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-top:4px;" + base;
+    }
+    p.textContent = line.text;
+    cont.appendChild(p);
+    allEls.push(p);
+  });
+  var arrow = document.getElementById('ws-arrow');
+  if(arrow){arrow.style.opacity='0';arrow.style.filter='blur(6px)';arrow.style.transform='translateY(12px)';}
+  allEls.forEach(function(el, i){
+    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 400 + i * 1400);
+  });
+  setTimeout(function(){if(arrow){arrow.style.opacity='1';arrow.style.filter='blur(0)';arrow.style.transform='translateY(0)';}}, 400 + allEls.length * 1400 + 800);
+}
 function wsAnimHero(){
-  var l0=document.getElementById('ws-l0');
-  setTimeout(function(){l0.style.opacity='1';l0.style.filter='blur(0)';l0.style.transform='translateY(0)';},400);
-  setTimeout(function(){var l1=document.getElementById('ws-l1');l1.style.opacity='1';l1.style.transform='translateY(0)';l1.style.filter='blur(0)';},1800);
-  setTimeout(function(){var l2=document.getElementById('ws-l2');l2.style.opacity='1';l2.style.transform='translateY(0)';l2.style.filter='blur(0)';},3200);
-  setTimeout(function(){var l3=document.getElementById('ws-l3');l3.style.opacity='1';l3.style.filter='blur(0)';l3.style.transform='translateY(0)';},5000);
-  setTimeout(function(){var ar=document.getElementById('ws-arrow');ar.style.opacity='1';ar.style.filter='blur(0)';ar.style.transform='translateY(0)';},6500);
+  wsRenderHero();
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';
@@ -1898,21 +1932,12 @@ function wsNextCard(n){
 }
 var WS_FOOTER = {
   S: [
-    {type:'small', text:'entonces...'},
-    {type:'main', text:'La próxima vez que ese momento aparezca... no vas a estar sola.'},
-    {type:'main', text:'Cuando la emoción tome el control, no tendrás que empezar desde cero.'},
     {type:'gold', text:'Solo abre Código Soberana y vuelve al lugar donde sabes responder como la mujer que realmente eres.'}
   ],
   P: [
-    {type:'small', text:'entonces...'},
-    {type:'main', text:'La próxima vez que él se cierre... ya no tendrás que improvisar.'},
-    {type:'main', text:'Cuando aparezca ese impulso de perseguirlo, no tendrás que adivinar qué hacer.'},
     {type:'gold', text:'Solo abre Código Soberana y sigue el siguiente paso.'}
   ],
   D: [
-    {type:'small', text:'entonces...'},
-    {type:'main', text:'La próxima vez que sientas esa distancia... ya no tendrás que cargarla sola.'},
-    {type:'main', text:'Cuando aparezca esa sensación de que otra vez están caminando en mundos distintos, no tendrás que resolverlo desde el cansancio.'},
     {type:'gold', text:'Solo abre Código Soberana y vuelve a construir desde otro lugar.'}
   ]
 };

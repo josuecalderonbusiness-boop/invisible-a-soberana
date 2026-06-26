@@ -1719,9 +1719,27 @@ function initJosue(){
       <!-- Thin gold line -->
       <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
       <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
-      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:32px;background:none;border:1px solid rgba(184,137,42,.2);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;animation:s2pulse 2s ease infinite;position:relative;z-index:1;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+      <!-- Path with steps to gem -->
+      <div id="ws-path" style="margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:0;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+          <div class="ws-step" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
+          <div style="width:1px;height:16px;background:rgba(184,137,42,.1);"></div>
+          <div class="ws-step" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
+          <div style="width:1px;height:16px;background:rgba(184,137,42,.1);"></div>
+          <div class="ws-step" style="width:10px;height:10px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
+          <div style="width:1px;height:20px;background:rgba(184,137,42,.1);"></div>
+        </div>
+        <!-- Gem at bottom -->
+        <div id="ws-gem" onclick="wsWalkPath()" style="cursor:pointer;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px solid rgba(184,137,42,.2);transition:border-color .6s ease,box-shadow .6s ease,background .6s ease;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:stroke .6s ease,filter .6s ease;" id="ws-gem-svg">
+            <polygon points="12 2 22 8.5 18 21 6 21 2 8.5"/>
+            <line x1="12" y1="2" x2="12" y2="21"/>
+            <line x1="2" y1="8.5" x2="22" y2="8.5"/>
+            <polyline points="6 21 12 13 18 21"/>
+          </svg>
+        </div>
+        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;margin-top:10px;">Toca para avanzar</p>
+      </div>
     </div>
 
     <!-- MODULOS: pantalla completa, una card a la vez -->
@@ -1809,8 +1827,14 @@ function wsRenderHero(){
     cont.appendChild(p);
     allEls.push(p);
   });
-  var arrow = document.getElementById('ws-arrow');
-  if(arrow){arrow.style.opacity='0';arrow.style.filter='blur(6px)';arrow.style.transform='translateY(12px)';}
+  var path = document.getElementById('ws-path');
+  if(path){path.style.opacity='0';path.style.filter='blur(6px)';path.style.transform='translateY(12px)';}
+  // Reset steps
+  document.querySelectorAll('.ws-step').forEach(function(s){s.style.background='rgba(184,137,42,.15)';s.style.boxShadow='none';});
+  var gem=document.getElementById('ws-gem');
+  var gemSvg=document.getElementById('ws-gem-svg');
+  if(gem){gem.style.borderColor='rgba(184,137,42,.2)';gem.style.boxShadow='none';gem.style.background='transparent';}
+  if(gemSvg){gemSvg.style.stroke='rgba(184,137,42,.25)';gemSvg.style.filter='none';}
   if(glow) glow.style.opacity='0';
   if(line){line.style.opacity='0';line.style.width='40px';}
   // Animate glow + line first
@@ -1820,10 +1844,31 @@ function wsRenderHero(){
   allEls.forEach(function(el, i){
     setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 800 + i * 1600);
   });
-  setTimeout(function(){if(arrow){arrow.style.opacity='1';arrow.style.filter='blur(0)';arrow.style.transform='translateY(0)';}}, 800 + allEls.length * 1600 + 1000);
+  setTimeout(function(){if(path){path.style.opacity='1';path.style.filter='blur(0)';path.style.transform='translateY(0)';}}, 800 + allEls.length * 1600 + 1000);
 }
 function wsAnimHero(){
   wsRenderHero();
+}
+function wsWalkPath(){
+  var steps=document.querySelectorAll('.ws-step');
+  var gem=document.getElementById('ws-gem');
+  var gemSvg=document.getElementById('ws-gem-svg');
+  steps.forEach(function(s,i){
+    setTimeout(function(){
+      s.style.background='rgba(184,137,42,.7)';
+      s.style.boxShadow='0 0 8px rgba(184,137,42,.5),0 0 16px rgba(184,137,42,.2)';
+    },i*500);
+  });
+  setTimeout(function(){
+    gem.style.borderColor='rgba(184,137,42,.6)';
+    gem.style.boxShadow='0 0 20px rgba(184,137,42,.4),0 0 40px rgba(184,137,42,.15)';
+    gem.style.background='rgba(184,137,42,.08)';
+    gemSvg.style.stroke='#E8C870';
+    gemSvg.style.filter='drop-shadow(0 0 6px rgba(232,200,112,.5))';
+  },steps.length*500);
+  setTimeout(function(){
+    wsShowFooter();
+  },steps.length*500+1200);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

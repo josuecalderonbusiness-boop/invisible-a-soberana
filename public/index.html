@@ -1713,10 +1713,14 @@ function initJosue(){
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
     <!-- HERO: texto perfil dinámico -->
-    <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;">
-      <div id="ws-hero-content"></div>
-      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:28px;background:none;border:1.5px solid rgba(184,137,42,.3);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .5s ease,filter .5s ease,transform .5s ease;animation:s2pulse 2s ease infinite;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <div id="ws-hero" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;position:relative;overflow:hidden;">
+      <!-- Warm radial glow -->
+      <div id="ws-hero-glow" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(184,137,42,.12) 0%,rgba(184,137,42,.04) 40%,transparent 70%);opacity:0;transition:opacity 2s ease;pointer-events:none;"></div>
+      <!-- Thin gold line -->
+      <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
+      <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
+      <button id="ws-arrow" onclick="wsShowFooter()" style="margin-top:32px;background:none;border:1px solid rgba(184,137,42,.2);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;animation:s2pulse 2s ease infinite;position:relative;z-index:1;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
 
@@ -1789,28 +1793,34 @@ function wsShowHero(){
 function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
   var cont = document.getElementById('ws-hero-content');
+  var glow = document.getElementById('ws-hero-glow');
+  var line = document.getElementById('ws-hero-line');
   cont.innerHTML = '';
   var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
   var allEls = [];
-  data.forEach(function(line){
+  data.forEach(function(item){
     var p = document.createElement('p');
-    if(line.type==='small'){
-      p.style.cssText = "font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:rgba(240,230,234,.25);letter-spacing:.18em;text-transform:lowercase;margin-bottom:24px;" + base;
-    } else if(line.type==='sub'){
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,21px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.5;margin-top:20px;" + base;
+    if(item.type==='sub'){
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;margin-top:24px;max-width:340px;" + base;
     } else {
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,40px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-top:4px;" + base;
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(26px,6.5vw,36px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-top:4px;" + base;
     }
-    p.textContent = line.text;
+    p.textContent = item.text;
     cont.appendChild(p);
     allEls.push(p);
   });
   var arrow = document.getElementById('ws-arrow');
   if(arrow){arrow.style.opacity='0';arrow.style.filter='blur(6px)';arrow.style.transform='translateY(12px)';}
+  if(glow) glow.style.opacity='0';
+  if(line){line.style.opacity='0';line.style.width='40px';}
+  // Animate glow + line first
+  setTimeout(function(){if(glow) glow.style.opacity='1';},200);
+  setTimeout(function(){if(line){line.style.opacity='1';line.style.width='80px';}},400);
+  // Then text
   allEls.forEach(function(el, i){
-    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 400 + i * 1400);
+    setTimeout(function(){el.style.opacity='1';el.style.filter='blur(0)';el.style.transform='translateY(0)';}, 800 + i * 1600);
   });
-  setTimeout(function(){if(arrow){arrow.style.opacity='1';arrow.style.filter='blur(0)';arrow.style.transform='translateY(0)';}}, 400 + allEls.length * 1400 + 800);
+  setTimeout(function(){if(arrow){arrow.style.opacity='1';arrow.style.filter='blur(0)';arrow.style.transform='translateY(0)';}}, 800 + allEls.length * 1600 + 1000);
 }
 function wsAnimHero(){
   wsRenderHero();

@@ -1780,6 +1780,8 @@ function wsShowHero(){
     var hero=document.getElementById('ws-hero');
     if(hero){
       hero.style.display='flex';
+      hero.style.opacity='1';
+      hero.style.transition='none';
       wsRenderHero();
     }
   },600);

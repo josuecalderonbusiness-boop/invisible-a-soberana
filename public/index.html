@@ -1719,27 +1719,15 @@ function initJosue(){
       <!-- Thin gold line -->
       <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
       <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
-      <!-- Winding footpath -->
-      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:24px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:240px;height:280px;">
-        <svg viewBox="0 0 240 280" width="240" height="280" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Winding path like footsteps -->
-          <path id="ws-road" d="M120 8 C 60 8, 30 50, 50 80 C 70 110, 200 100, 190 140 C 180 175, 40 165, 55 200 C 70 235, 180 230, 170 260 L 150 275" stroke="rgba(184,137,42,.12)" stroke-width="2.5" stroke-linecap="round" fill="none" style="transition:stroke .8s ease;"/>
-          <!-- Footstep dots along the curve -->
-          <ellipse class="ws-node" cx="120" cy="10" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-10 120 10)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="62" cy="48" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(15 62 48)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="55" cy="82" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-20 55 82)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="140" cy="105" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(10 140 105)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="188" cy="135" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-15 188 135)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="120" cy="168" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(20 120 168)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="58" cy="195" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-10 58 195)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="100" cy="228" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(15 100 228)" style="transition:fill .5s ease;"/>
-          <ellipse class="ws-node" cx="165" cy="250" rx="6" ry="4" fill="rgba(184,137,42,.15)" transform="rotate(-5 165 250)" style="transition:fill .5s ease;"/>
-          <!-- Gem/flag at end -->
-          <g id="ws-gem-g" style="transition:filter .8s ease,opacity .8s ease;" opacity="0.25">
-            <circle cx="148" cy="272" r="10" fill="rgba(184,137,42,.06)" stroke="rgba(184,137,42,.2)" stroke-width="1.5"/>
-            <polygon points="148,264 154,269 151,277 145,277 142,269" fill="none" stroke="rgba(184,137,42,.25)" stroke-width="1" stroke-linejoin="round"/>
-          </g>
-        </svg>
+      <!-- Hitos path -->
+      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:24px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:260px;height:260px;">
+        <img src="assets/hitos.svg" alt="" style="width:100%;height:100%;object-fit:contain;filter:invert(1) brightness(0.4) sepia(1) hue-rotate(5deg) saturate(3);opacity:.25;transition:opacity 1.5s ease,filter 1.5s ease;" id="ws-hitos-img">
+        <!-- Glow spots over each hito cluster -->
+        <div class="ws-hito-glow" style="position:absolute;top:2%;right:18%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
+        <div class="ws-hito-glow" style="position:absolute;top:32%;left:18%;width:45px;height:45px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
+        <div class="ws-hito-glow" style="position:absolute;top:55%;right:8%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
+        <div class="ws-hito-glow" style="position:absolute;top:72%;left:5%;width:45px;height:45px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.4) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
+        <div class="ws-hito-glow" style="position:absolute;bottom:5%;right:20%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,112,.5) 0%,transparent 70%);opacity:0;transition:opacity .8s ease;"></div>
         <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;text-align:center;margin-top:4px;">Toca para avanzar</p>
       </div>
     </div>
@@ -1831,12 +1819,10 @@ function wsRenderHero(){
   });
   var path = document.getElementById('ws-path');
   if(path){path.style.opacity='0';path.style.filter='blur(6px)';path.style.transform='translateY(12px)';}
-  // Reset steps
-  document.querySelectorAll('.ws-step').forEach(function(s){s.style.background='rgba(184,137,42,.15)';s.style.boxShadow='none';});
-  var gem=document.getElementById('ws-gem');
-  var gemSvg=document.getElementById('ws-gem-svg');
-  if(gem){gem.style.borderColor='rgba(184,137,42,.2)';gem.style.boxShadow='none';gem.style.background='transparent';}
-  if(gemSvg){gemSvg.style.stroke='rgba(184,137,42,.25)';gemSvg.style.filter='none';}
+  // Reset hitos
+  var hitosImg=document.getElementById('ws-hitos-img');
+  if(hitosImg){hitosImg.style.opacity='.25';hitosImg.style.filter='invert(1) brightness(0.4) sepia(1) hue-rotate(5deg) saturate(3)';}
+  document.querySelectorAll('.ws-hito-glow').forEach(function(g){g.style.opacity='0';});
   if(glow) glow.style.opacity='0';
   if(line){line.style.opacity='0';line.style.width='40px';}
   // Animate glow + line first
@@ -1852,29 +1838,16 @@ function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var nodes=document.querySelectorAll('.ws-node');
-  var road=document.getElementById('ws-road');
-  var gemG=document.getElementById('ws-gem-g');
-  // Light up road
-  if(road) road.style.stroke='rgba(184,137,42,.35)';
-  // Light up nodes one by one
-  nodes.forEach(function(n,i){
+  var glows=document.querySelectorAll('.ws-hito-glow');
+  var img=document.getElementById('ws-hitos-img');
+  // Brighten the path image
+  if(img){img.style.opacity='.5';img.style.filter='invert(1) brightness(0.6) sepia(1) hue-rotate(5deg) saturate(3)';}
+  // Light up glow spots one by one
+  glows.forEach(function(g,i){
     setTimeout(function(){
-      n.setAttribute('fill','rgba(232,200,112,.8)');
-      n.style.filter='drop-shadow(0 0 6px rgba(232,200,112,.6))';
-    },i*400);
+      g.style.opacity='1';
+    },i*600);
   });
-  // Activate gem
-  setTimeout(function(){
-    if(gemG){
-      gemG.style.opacity='1';
-      gemG.style.filter='drop-shadow(0 0 12px rgba(232,200,112,.5))';
-      gemG.querySelector('circle').setAttribute('fill','rgba(184,137,42,.15)');
-      gemG.querySelector('circle').setAttribute('stroke','#E8C870');
-      gemG.querySelector('polygon').setAttribute('stroke','#E8C870');
-      gemG.querySelector('polygon').setAttribute('fill','rgba(232,200,112,.15)');
-    }
-  },nodes.length*400);
   // Transition to footer with pan effect
   setTimeout(function(){
     var hero=document.getElementById('ws-hero');
@@ -1893,7 +1866,7 @@ function wsWalkPath(){
       var ic=document.getElementById('ws-app-icon');
       if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
     },1200);
-  },nodes.length*400+1000);
+  },glows.length*600+800);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

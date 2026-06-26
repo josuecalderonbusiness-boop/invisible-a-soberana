@@ -2019,7 +2019,7 @@ function wsShowFooter(){
 
 <div class="gema-wrap">
   <div id="gema-pre" style="display:flex;flex-direction:column;align-items:center;">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:700;color:rgba(240,230,234,.85);line-height:1.4;margin-bottom:8px;opacity:0;filter:blur(8px);transform:translateY(16px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;" id="gema-eyebrow">No avanzar&#xE1;s sola.</p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:700;color:rgba(240,230,234,.85);line-height:1.4;margin-bottom:8px;opacity:0;filter:blur(8px);transform:translateY(16px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;" id="gema-eyebrow">No avanzar&#xE1;s <em style="color:#E8C870;font-style:italic;">sola.</em></p>
     <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:8px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-txt">Cada paso te muestra exactamente qu&#xE9; hacer.</p>
     <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:8px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-sub">Qu&#xE9; practicar.</p>
     <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,20px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;max-width:340px;margin-bottom:28px;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity 1s ease,filter 1s ease,transform 1s ease;" id="gema-when">Y cu&#xE1;ndo aplicarlo en tu vida real.</p>
@@ -2062,14 +2062,14 @@ function initGema(){
   [ey,tx,su,wh].forEach(function(e){if(e){e.style.opacity='0';e.style.filter='blur(8px)';e.style.transform='translateY(16px)';}});
   if(gw) gw.style.opacity='0';
   setTimeout(function(){ey.style.opacity='1';ey.style.filter='blur(0)';ey.style.transform='translateY(0)';},400);
-  setTimeout(function(){tx.style.opacity='1';tx.style.filter='blur(0)';tx.style.transform='translateY(0)';},1600);
-  setTimeout(function(){su.style.opacity='1';su.style.filter='blur(0)';su.style.transform='translateY(0)';},2600);
-  setTimeout(function(){wh.style.opacity='1';wh.style.filter='blur(0)';wh.style.transform='translateY(0)';},3600);
-  setTimeout(function(){if(gw) gw.style.opacity='1';},4400);
+  setTimeout(function(){tx.style.opacity='1';tx.style.filter='blur(0)';tx.style.transform='translateY(0)';},1400);
+  setTimeout(function(){su.style.opacity='1';su.style.filter='blur(0)';su.style.transform='translateY(0)';},2200);
+  setTimeout(function(){wh.style.opacity='1';wh.style.filter='blur(0)';wh.style.transform='translateY(0)';},3000);
+  setTimeout(function(){if(gw) gw.style.opacity='1';},3600);
   setTimeout(function(){
     document.getElementById('gema-cta').style.opacity='1';
     document.getElementById('gema-cta').style.transform='translateY(0)';
-  },5200);
+  },4200);
 }
 function openGemaVideo(){
   if(typeof demoClick==='function') demoClick();

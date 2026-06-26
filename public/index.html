@@ -2194,19 +2194,16 @@ function initCovers(){
 <div class="demo-wrap">
 
   <div class="demo-intro" id="demo-intro">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:rgba(26,8,16,.6);line-height:1.45;margin-bottom:16px;">Aqu&#xED; empieza <em style="color:#8B6520;font-style:italic;">tu recorrido.</em></p>
+    <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:rgba(26,8,16,.6);line-height:1.45;margin-bottom:0;">Aqu&#xED; empieza <em style="color:#8B6520;font-style:italic;">tu recorrido.</em></p>
+    <!-- Cycling phrase -->
+    <div id="demo-phrase" style="margin-top:10px;min-height:28px;">
+      <p id="demo-phrase-text" style="font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,17px);font-weight:600;color:rgba(26,8,16,.4);line-height:1.5;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
+    </div>
   </div>
 
   <div class="demo-phone" style="animation:phoneGlow 3s ease-in-out infinite;">
     <div class="demo-notch"></div>
     <iframe id="demo-iframe" data-src="https://iframe.mediadelivery.net/embed/649326/cb42190e-d87c-4dc8-b899-d5e778d1b1d4?autoplay=true&muted=true&loop=true&preload=true&controls=false" allow="autoplay;fullscreen" allowfullscreen></iframe>
-  </div>
-
-  <!-- Cycling phrase overlay on phone -->
-  <div id="demo-phrase" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:20;opacity:0;transition:opacity .6s ease;">
-    <div style="background:rgba(245,237,224,.88);padding:20px 28px;border-radius:14px;max-width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.08);">
-      <p id="demo-phrase-text" style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:700;color:rgba(26,8,16,.75);line-height:1.45;"></p>
-    </div>
   </div>
 
   <div class="demo-cta-wrap" id="demo-cta">
@@ -2225,26 +2222,21 @@ function initDemo(){
     {text:'No necesitas hacerlo perfecto.',gold:false},
     {text:'Solo avanzar una a la vez.',gold:true}
   ];
-  var phraseWrap=document.getElementById('demo-phrase');
   var phraseEl=document.getElementById('demo-phrase-text');
   function showPhrase(i){
-    if(i>=phrases.length){
-      phraseWrap.style.opacity='0';
-      setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},600);
-      return;
-    }
-    var p=phrases[i];
+    var p=phrases[i % phrases.length];
     phraseEl.textContent=p.text;
-    phraseEl.style.color=p.gold?'#8B6520':'rgba(26,8,16,.75)';
+    phraseEl.style.color=p.gold?'#8B6520':'rgba(26,8,16,.4)';
     phraseEl.style.fontStyle=p.gold?'italic':'normal';
-    phraseWrap.style.opacity='0';
-    setTimeout(function(){phraseWrap.style.opacity='1';},50);
+    phraseEl.style.opacity='0';phraseEl.style.filter='blur(4px)';phraseEl.style.transform='translateY(8px)';
+    setTimeout(function(){phraseEl.style.opacity='1';phraseEl.style.filter='blur(0)';phraseEl.style.transform='translateY(0)';},50);
     setTimeout(function(){
-      phraseWrap.style.opacity='0';
+      phraseEl.style.opacity='0';phraseEl.style.filter='blur(4px)';phraseEl.style.transform='translateY(-6px)';
       setTimeout(function(){showPhrase(i+1);},700);
     },2800);
   }
   setTimeout(function(){showPhrase(0);},1800);
+  setTimeout(function(){document.getElementById('demo-cta').classList.add('in');},1800+phrases.length*3500);
 }
 </script>
 </div>

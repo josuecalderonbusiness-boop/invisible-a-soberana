@@ -1718,7 +1718,7 @@ function initJosue(){
       <div id="ws-hero-content" style="text-align:left;padding:70px 24px 0;position:relative;z-index:2;max-width:320px;"></div>
       <!-- SVG camino real con favicon integrado -->
       <div style="flex:1;position:relative;width:100%;overflow:hidden;">
-        <svg id="ws-camino-svg" viewBox="0 0 150000 100000" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
+        <svg id="ws-camino-svg" viewBox="12000 33000 128000 44000" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;">
           <path id="ws-road" d="M22081.14 72717.07c0,0 8000.62,-290.94 11346.37,-3927.6 3345.75,-3636.66 4509.46,-7782.48 8873.45,-8146.13 4364,-363.65 10328.13,436.35 12437.39,-1454.66 5369.09,-4813.66 -3934.52,-8660.06 3367.09,-16710.41 4264.76,-4702.13 11566.2,-5870.83 19194.7,-3752.59 8308.36,2307 14297.9,2371.74 21602.19,13354.33 5523.95,8305.72 16075.6,11610.17 23319.54,9129.37 7243.95,-2480.8 8137.01,-4862.38 7740.1,-8236.28 -396.92,-3373.9 -2580.03,-6251.62 -595.38,-8831.65 1984.66,-2580.03 5537.23,-3715.09 6928.03,-5627.44 1390.81,-1912.36 1332.84,-2723.68 1332.84,-2723.68 0,0 927.21,1680.53 173.86,3534.96 -753.35,1854.42 -3187.29,4636 -3245.23,6316.56 -57.93,1680.57 4176.89,8552.09 3020.32,12110.8 -1156.57,3558.7 -3974.36,8229.56 -14509.28,10913.84 -10534.91,2684.27 -21069.48,-1771.73 -25288.99,-6541.55 -7385.76,-8349.13 -9325.18,-13257.78 -20442.57,-15904.72 -3852.56,-917.25 -12883.35,-3856.8 -15268.28,454.34 -2328.55,4209.31 9400,19241.93 -10823.89,18695.47 -6926.1,-187.14 -8477.35,-2634.98 -13344.37,3448.77 -4867.02,6083.76 -12319.99,6041.88 -14708.34,6041.88 -2388.35,0 -6971.33,-2001.05 -7810.49,-3679.34 -839.17,-1678.3 6700.94,1535.73 6700.94,1535.73z" fill="none" stroke="rgba(232,200,112,.12)" stroke-width="600" stroke-linecap="round" style="transition:stroke .8s ease;"/>
           <!-- Favicon: se posiciona con JS en el endpoint del path -->
           <foreignObject id="ws-fav-fo" x="0" y="0" width="8000" height="10000" style="opacity:0;transition:opacity 1s ease;overflow:visible;">
@@ -1844,13 +1844,13 @@ function wsAnimHero(){
 function wsWalkPath(){
   var road=document.getElementById('ws-road');
   if(road) road.style.stroke='rgba(232,200,112,.18)';
-  // Position favicon at path start (the path visually starts at bottom-left)
+  // Position favicon at ~50% of path (rightmost/highest point)
   var favFo=document.getElementById('ws-fav-fo');
   if(road && favFo){
     var len=road.getTotalLength();
-    var pt=road.getPointAtLength(0);
-    favFo.setAttribute('x', pt.x - 4000);
-    favFo.setAttribute('y', pt.y - 9000);
+    var pt=road.getPointAtLength(len*0.48);
+    favFo.setAttribute('x', Math.round(pt.x) - 4000);
+    favFo.setAttribute('y', Math.round(pt.y) - 8000);
   }
   // Show favicon
   setTimeout(function(){

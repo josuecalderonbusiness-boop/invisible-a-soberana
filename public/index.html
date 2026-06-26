@@ -1607,7 +1607,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 </div>
 
 <!-- ──────────── VIDEO POR PERFIL ──────────── -->
-<style>#s-video em,#s-precio em{color:#E8C870;font-style:italic;font-weight:inherit;}</style>
+<style>#s-video em,#s-precio em,#ws-hero em{color:#E8C870;font-style:italic;font-weight:inherit;}</style>
 <div id="s-video" class="screen" style="background:#000;padding:0;position:relative;overflow:hidden;">
 
   <!-- VIDEO FULLSCREEN (corre de fondo desde el inicio) -->
@@ -1713,7 +1713,7 @@ function initJosue(){
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
     <!-- HERO: texto → huellas → texto 2 → favicon -->
-    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:linear-gradient(170deg,#2A1420 0%,#1E1218 40%,#E8DDB8 100%);">
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:radial-gradient(ellipse at 50% 40%,#3D0C11,#1E1218 70%);">
       <div id="ws-hero-stage" style="text-align:center;max-width:340px;"></div>
     </div>
 
@@ -1755,15 +1755,15 @@ function wsSkipToCards(){
 }
 var WS_HERO_LINES = {
   S: [
-    {type:'main', text:'Así empieza el camino para volver a confiar en ti.'},
+    {type:'main', html:'Así empieza el camino para volver a <em>confiar en ti.</em>'},
     {type:'sub', text:'Avanzarás paso a paso por un recorrido diseñado para que la mujer que sabes que eres deje de desaparecer cada vez que el miedo toma el control.'}
   ],
   P: [
-    {type:'main', text:'Así empieza el camino para volver a sentirte segura.'},
+    {type:'main', html:'Así empieza el camino para volver a <em>sentirte segura.</em>'},
     {type:'sub', text:'Avanzarás paso a paso por un recorrido diseñado para que dejes de sentir que el futuro de tu relación depende únicamente de lo que tú hagas.'}
   ],
   D: [
-    {type:'main', text:'Así empieza el camino para volver a caminar acompañada.'},
+    {type:'main', html:'Así empieza el camino para volver a <em>caminar acompañada.</em>'},
     {type:'sub', text:'Avanzarás paso a paso por un recorrido diseñado para cerrar la distancia entre ustedes sin que tengas que apagar a la mujer en la que te has convertido.'}
   ]
 };
@@ -1791,7 +1791,7 @@ function wsRenderHero(){
   // Title (main line)
   var title = document.createElement('p');
   title.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;" + base;
-  title.textContent = data[0].text;
+  title.innerHTML = data[0].html || data[0].text;
   stage.appendChild(title);
   // Footsteps SVG
   var steps = document.createElement('div');

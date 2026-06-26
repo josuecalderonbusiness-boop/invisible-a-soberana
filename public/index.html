@@ -1730,9 +1730,9 @@ function initJosue(){
       <div id="ws-cards-container"></div>
 
       <!-- Footer final -->
-      <div id="wsc4" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;">
-        <div id="wsc4-content"></div>
-        <div id="wsc4-app" style="margin-top:36px;opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;">
+      <div id="ws-ft" class="ws-card-full" style="position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:52px 28px;text-align:center;opacity:0;transition:opacity .7s ease;">
+        <div id="ws-ft-content"></div>
+        <div id="ws-ft-app" style="margin-top:36px;opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;">
           <div onclick="wsOpenApp()" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;">
             <div id="ws-app-icon" style="width:72px;height:72px;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:appPulse 2s ease-in-out infinite;transition:transform .3s ease,box-shadow .3s ease;">
               <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:100%;height:100%;display:block;border-radius:18px;">
@@ -1754,7 +1754,7 @@ function wsSkipToCards(){
   if(hero) hero.style.display='none';
   var m=document.getElementById('ws-modules');
   m.style.display='block';
-  var ft=document.getElementById('wsc4');
+  var ft=document.getElementById('ws-ft');
   if(ft){ft.style.display='none';ft.style.opacity='0';}
   wsRenderCards();
   setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';wsAnimCard(c1);}},200);
@@ -1793,7 +1793,7 @@ function wsReveal(){
     var m=document.getElementById('ws-modules');
     m.style.display='block';
     // Reset footer
-    var ft=document.getElementById('wsc4');
+    var ft=document.getElementById('ws-ft');
     if(ft){ft.style.display='none';ft.style.opacity='0';}
     wsRenderCards();
     setTimeout(function(){var c1=document.getElementById('wsc1');if(c1){c1.style.display='flex';c1.style.opacity='1';wsAnimCard(c1);}},200);
@@ -1804,10 +1804,10 @@ function wsOpenApp(){
   icon.style.animation='none';
   icon.style.transform='scale(1.08)';
   if(typeof demoClick==='function') demoClick();
-  var wsc4=document.getElementById('wsc4');
+  var wsFt=document.getElementById('ws-ft');
   setTimeout(function(){
-    wsc4.style.transition='opacity .6s ease';
-    wsc4.style.opacity='0';
+    wsFt.style.transition='opacity .6s ease';
+    wsFt.style.opacity='0';
   },300);
   setTimeout(function(){
     show('s-demo');
@@ -1919,7 +1919,7 @@ var WS_FOOTER = {
 
 function wsRenderFooter(){
   var data = WS_FOOTER[topProfile] || WS_FOOTER['S'];
-  var cont = document.getElementById('wsc4-content');
+  var cont = document.getElementById('ws-ft-content');
   cont.innerHTML = '';
   data.forEach(function(line, i){
     var p = document.createElement('p');
@@ -1938,14 +1938,14 @@ function wsRenderFooter(){
     }, 600 + i * 2200);
   });
   setTimeout(function(){
-    var app = document.getElementById('wsc4-app');
+    var app = document.getElementById('ws-ft-app');
     if(app){app.style.opacity='1';app.style.transform='translateY(0)';}
   }, 600 + data.length * 2200 + 800);
 }
 
 function wsShowFooter(){
   var hero=document.getElementById('ws-hero');
-  var footer=document.getElementById('wsc4');
+  var footer=document.getElementById('ws-ft');
   var mods=document.getElementById('ws-modules');
   if(hero){hero.style.transition='opacity .6s ease';hero.style.opacity='0';}
   setTimeout(function(){

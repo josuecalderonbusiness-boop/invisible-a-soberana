@@ -1714,9 +1714,9 @@ function initJosue(){
 
     <!-- HERO: camino horizontal (2 pantallas) -->
     <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;">
-      <div id="ws-hero-slider" style="display:flex;width:200%;height:100%;transition:transform 2s cubic-bezier(.25,.46,.45,.94);">
+      <div id="ws-hero-slider" style="display:flex;width:200vw;height:100%;transition:transform 2s cubic-bezier(.25,.46,.45,.94);">
         <!-- Pantalla 1: texto + brújula -->
-        <div style="width:50%;min-height:100vh;position:relative;display:flex;flex-direction:column;justify-content:flex-start;padding:80px 28px 0;">
+        <div style="width:100vw;min-height:100vh;flex-shrink:0;position:relative;display:flex;flex-direction:column;justify-content:flex-start;padding:80px 28px 0;">
           <div id="ws-hero-content" style="text-align:left;position:relative;z-index:2;max-width:280px;"></div>
           <!-- Camino SVG fondo -->
           <div style="position:absolute;bottom:0;left:0;right:-100%;height:70%;z-index:0;opacity:.15;">
@@ -1730,7 +1730,7 @@ function initJosue(){
           <p id="ws-norte" style="position:absolute;bottom:8%;left:15%;font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:rgba(232,200,112,.5);font-style:italic;z-index:2;opacity:0;transition:opacity 1s ease;">Encuentra tu norte.</p>
         </div>
         <!-- Pantalla 2: texto arriba + favicon pegado al final del camino -->
-        <div style="width:50%;min-height:100vh;position:relative;display:flex;flex-direction:column;padding:40px 28px;overflow:hidden;">
+        <div style="width:100vw;min-height:100vh;flex-shrink:0;position:relative;display:flex;flex-direction:column;padding:40px 28px;overflow:hidden;">
           <div id="ws-hero-sub" style="text-align:right;max-width:320px;margin-left:auto;padding-top:60px;opacity:0;transition:opacity 1.2s ease;"></div>
           <!-- Toca para continuar -->
           <div id="ws-toca" onclick="wsOpenApp()" style="cursor:pointer;position:absolute;bottom:30px;left:0;right:0;text-align:center;opacity:0;transition:opacity 1s ease;">
@@ -1873,7 +1873,7 @@ function wsAnimHero(){
 function wsWalkPath(){
   var slider=document.getElementById('ws-hero-slider');
   // Slide to panel 2
-  if(slider) slider.style.transform='translateX(-50%)';
+  if(slider) slider.style.transform='translateX(-100vw)';
   // Show panel 2 elements after slide
   setTimeout(function(){
     var sub=document.getElementById('ws-hero-sub');

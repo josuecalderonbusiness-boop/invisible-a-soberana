@@ -1739,7 +1739,7 @@ function initJosue(){
         </div>
       </div>
       <!-- Favicon floating at path end (absolute within hero) -->
-      <div id="ws-favicon-wrap" style="position:absolute;right:18%;top:55%;z-index:10;display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.7);transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.34,1.56,.64,1);">
+      <div id="ws-favicon-wrap" style="position:absolute;right:22%;top:50%;z-index:10;display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(.7);transition:opacity 1.2s ease,transform 1.2s cubic-bezier(.34,1.56,.64,1);">
         <p id="ws-abrir-label" style="font-family:'Playfair Display',serif;font-size:12px;font-weight:600;color:rgba(232,200,112,.6);font-style:italic;margin-bottom:8px;">Abrir C&#xF3;digo Soberana</p>
         <div id="ws-hero-favicon" onclick="wsOpenApp()" style="cursor:pointer;width:72px;height:72px;border-radius:18px;position:relative;">
           <div style="position:absolute;inset:-3px;border-radius:21px;border:2px solid rgba(232,200,112,.5);box-shadow:0 0 16px rgba(232,200,112,.3),0 0 32px rgba(232,200,112,.1);animation:appPulse 2s ease-in-out infinite;"></div>
@@ -1830,7 +1830,7 @@ function wsRenderHero(){
     if(item.type==='sub'){
       // Sub goes to panel 2
     } else {
-      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(26px,6.5vw,36px);font-weight:900;color:#F0E6EA;line-height:1.15;margin-top:4px;" + base;
+      p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,30px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-top:4px;" + base;
       p.textContent = item.text;
       cont.appendChild(p);
       allEls.push(p);
@@ -1844,7 +1844,7 @@ function wsRenderHero(){
     data.forEach(function(item){
       if(item.type==='sub'){
         var p = document.createElement('p');
-        p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:600;color:rgba(240,230,234,.55);line-height:1.55;";
+        p.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,18px);font-weight:600;color:rgba(240,230,234,.55);line-height:1.55;";
         p.textContent = item.text;
         subEl.appendChild(p);
       }

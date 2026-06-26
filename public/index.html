@@ -1719,26 +1719,24 @@ function initJosue(){
       <!-- Thin gold line -->
       <div id="ws-hero-line" style="width:40px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(184,137,42,.4),transparent);margin-bottom:28px;opacity:0;transition:opacity 1.5s ease,width 2s ease;"></div>
       <div id="ws-hero-content" style="position:relative;z-index:1;"></div>
-      <!-- Path with steps to gem -->
-      <div id="ws-path" style="margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:0;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-          <div class="ws-step" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
-          <div style="width:1px;height:16px;background:rgba(184,137,42,.1);"></div>
-          <div class="ws-step" style="width:8px;height:8px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
-          <div style="width:1px;height:16px;background:rgba(184,137,42,.1);"></div>
-          <div class="ws-step" style="width:10px;height:10px;border-radius:50%;background:rgba(184,137,42,.15);transition:background .6s ease,box-shadow .6s ease;"></div>
-          <div style="width:1px;height:20px;background:rgba(184,137,42,.1);"></div>
-        </div>
-        <!-- Gem at bottom -->
-        <div id="ws-gem" onclick="wsWalkPath()" style="cursor:pointer;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1.5px solid rgba(184,137,42,.2);transition:border-color .6s ease,box-shadow .6s ease,background .6s ease;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transition:stroke .6s ease,filter .6s ease;" id="ws-gem-svg">
-            <polygon points="12 2 22 8.5 18 21 6 21 2 8.5"/>
-            <line x1="12" y1="2" x2="12" y2="21"/>
-            <line x1="2" y1="8.5" x2="22" y2="8.5"/>
-            <polyline points="6 21 12 13 18 21"/>
-          </svg>
-        </div>
-        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;margin-top:10px;">Toca para avanzar</p>
+      <!-- Curved path with nodes -->
+      <div id="ws-path" onclick="wsWalkPath()" style="margin-top:32px;cursor:pointer;opacity:0;filter:blur(6px);transform:translateY(12px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;position:relative;z-index:1;width:200px;height:220px;">
+        <svg viewBox="0 0 200 220" width="200" height="220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Path curve -->
+          <path id="ws-road" d="M100 10 C 40 50, 160 90, 100 130 C 60 155, 140 185, 100 210" stroke="rgba(184,137,42,.12)" stroke-width="2" stroke-dasharray="6 4" fill="none" style="transition:stroke .8s ease;"/>
+          <!-- Nodes along the path -->
+          <circle class="ws-node" cx="100" cy="10" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
+          <circle class="ws-node" cx="68" cy="55" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
+          <circle class="ws-node" cx="130" cy="95" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
+          <circle class="ws-node" cx="100" cy="130" r="6" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
+          <circle class="ws-node" cx="80" cy="165" r="5" fill="rgba(184,137,42,.15)" style="transition:fill .5s ease,filter .5s ease;"/>
+          <!-- Gem at end -->
+          <g id="ws-gem-g" style="transition:filter .6s ease,opacity .6s ease;" opacity="0.3">
+            <circle cx="100" cy="210" r="12" fill="rgba(184,137,42,.08)" stroke="rgba(184,137,42,.2)" stroke-width="1.5"/>
+            <polygon points="100,201 107,207 104,216 96,216 93,207" fill="none" stroke="rgba(184,137,42,.3)" stroke-width="1" stroke-linejoin="round"/>
+          </g>
+        </svg>
+        <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.2);text-transform:uppercase;text-align:center;margin-top:6px;">Toca para avanzar</p>
       </div>
     </div>
 
@@ -1850,25 +1848,48 @@ function wsAnimHero(){
   wsRenderHero();
 }
 function wsWalkPath(){
-  var steps=document.querySelectorAll('.ws-step');
-  var gem=document.getElementById('ws-gem');
-  var gemSvg=document.getElementById('ws-gem-svg');
-  steps.forEach(function(s,i){
+  var nodes=document.querySelectorAll('.ws-node');
+  var road=document.getElementById('ws-road');
+  var gemG=document.getElementById('ws-gem-g');
+  // Light up road
+  if(road) road.style.stroke='rgba(184,137,42,.35)';
+  // Light up nodes one by one
+  nodes.forEach(function(n,i){
     setTimeout(function(){
-      s.style.background='rgba(184,137,42,.7)';
-      s.style.boxShadow='0 0 8px rgba(184,137,42,.5),0 0 16px rgba(184,137,42,.2)';
-    },i*500);
+      n.setAttribute('fill','rgba(232,200,112,.8)');
+      n.style.filter='drop-shadow(0 0 6px rgba(232,200,112,.6))';
+    },i*400);
   });
+  // Activate gem
   setTimeout(function(){
-    gem.style.borderColor='rgba(184,137,42,.6)';
-    gem.style.boxShadow='0 0 20px rgba(184,137,42,.4),0 0 40px rgba(184,137,42,.15)';
-    gem.style.background='rgba(184,137,42,.08)';
-    gemSvg.style.stroke='#E8C870';
-    gemSvg.style.filter='drop-shadow(0 0 6px rgba(232,200,112,.5))';
-  },steps.length*500);
+    if(gemG){
+      gemG.style.opacity='1';
+      gemG.style.filter='drop-shadow(0 0 12px rgba(232,200,112,.5))';
+      gemG.querySelector('circle').setAttribute('fill','rgba(184,137,42,.15)');
+      gemG.querySelector('circle').setAttribute('stroke','#E8C870');
+      gemG.querySelector('polygon').setAttribute('stroke','#E8C870');
+      gemG.querySelector('polygon').setAttribute('fill','rgba(232,200,112,.15)');
+    }
+  },nodes.length*400);
+  // Transition to footer with pan effect
   setTimeout(function(){
-    wsShowFooter();
-  },steps.length*500+1200);
+    var hero=document.getElementById('ws-hero');
+    hero.style.transition='transform 1.2s ease,opacity 1.2s ease';
+    hero.style.transform='translateY(-100vh)';
+    hero.style.opacity='0';
+    setTimeout(function(){
+      hero.style.display='none';
+      hero.style.transform='none';
+      var mods=document.getElementById('ws-modules');
+      if(mods) mods.style.display='block';
+      var ft=document.getElementById('ws-ft');
+      if(ft){ft.style.display='flex';ft.style.opacity='0';ft.style.transform='translateY(60px)';ft.style.transition='opacity 1s ease,transform 1s ease';
+        setTimeout(function(){ft.style.opacity='1';ft.style.transform='translateY(0)';wsRenderFooter();},100);
+      }
+      var ic=document.getElementById('ws-app-icon');
+      if(ic){ic.style.transition='none';ic.style.opacity='1';ic.style.transform='scale(1)';setTimeout(function(){ic.style.animation='appPulse 2s ease-in-out infinite';},50);}
+    },1200);
+  },nodes.length*400+1000);
 }
 function wsReveal(){
   document.getElementById('ws-hero').style.transition='opacity .5s ease';

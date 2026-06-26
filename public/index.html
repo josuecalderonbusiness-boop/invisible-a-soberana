@@ -1787,15 +1787,17 @@ function wsRenderHero(){
   var data = WS_HERO_LINES[topProfile] || WS_HERO_LINES['S'];
   var stage = document.getElementById('ws-hero-stage');
   stage.innerHTML = '';
-  // Cycling text area
-  var textWrap = document.createElement('div');
-  textWrap.id = 'ws-hero-cycle';
-  textWrap.style.cssText = "min-height:60px;margin-bottom:40px;";
-  var cycleP = document.createElement('p');
-  cycleP.id = 'ws-hero-cycle-text';
-  cycleP.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;";
-  textWrap.appendChild(cycleP);
-  stage.appendChild(textWrap);
+  var base = "opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;";
+  // Title
+  var title = document.createElement('p');
+  title.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;" + base;
+  title.innerHTML = data[0].html || data[0].text;
+  stage.appendChild(title);
+  // Sub text
+  var sub = document.createElement('p');
+  sub.style.cssText = "font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.5);line-height:1.55;margin-top:20px;margin-bottom:36px;" + base;
+  sub.textContent = data[1].text;
+  stage.appendChild(sub);
   // Favicon
   var favWrap = document.createElement('div');
   favWrap.id = 'ws-fav-wrap2';
@@ -1806,27 +1808,10 @@ function wsRenderHero(){
     +'</div>'
     +'<p style="font-family:\'Inter\',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>';
   stage.appendChild(favWrap);
-  // Build phrases from both lines
-  var mainText = data[0].html || data[0].text;
-  var subText = data[1].text;
-  var phrases = [mainText, subText];
-  // Show favicon
-  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},600);
-  // Start cycling text
-  function showPhrase(i){
-    var p = phrases[i % phrases.length];
-    var isHTML = p.indexOf('<em>') !== -1;
-    cycleP.style.opacity='0';cycleP.style.filter='blur(4px)';cycleP.style.transform='translateY(8px)';
-    setTimeout(function(){
-      if(isHTML) cycleP.innerHTML=p; else cycleP.textContent=p;
-      cycleP.style.opacity='1';cycleP.style.filter='blur(0)';cycleP.style.transform='translateY(0)';
-    },600);
-    setTimeout(function(){
-      cycleP.style.opacity='0';cycleP.style.filter='blur(4px)';cycleP.style.transform='translateY(-6px)';
-      setTimeout(function(){showPhrase(i+1);},700);
-    },3500);
-  }
-  setTimeout(function(){showPhrase(0);},800);
+  // Animate sequence
+  setTimeout(function(){title.style.opacity='1';title.style.filter='blur(0)';title.style.transform='translateY(0)';},400);
+  setTimeout(function(){sub.style.opacity='1';sub.style.filter='blur(0)';sub.style.transform='translateY(0)';},2000);
+  setTimeout(function(){favWrap.style.opacity='1';favWrap.style.transform='scale(1)';},3500);
 }
 function wsAnimHero(){
   wsRenderHero();
@@ -2213,9 +2198,8 @@ function initCovers(){
 <div class="demo-wrap">
 
   <div class="demo-intro" id="demo-intro">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:700;color:rgba(26,8,16,.6);line-height:1.45;margin-bottom:0;">Aqu&#xED; empieza <em style="color:#8B6520;font-style:italic;">tu recorrido.</em></p>
-    <!-- Cycling phrase -->
-    <div id="demo-phrase" style="margin-top:10px;min-height:28px;">
+    <!-- Cycling phrase only -->
+    <div id="demo-phrase" style="min-height:28px;">
       <p id="demo-phrase-text" style="font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,17px);font-weight:600;color:rgba(26,8,16,.4);line-height:1.5;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
     </div>
   </div>

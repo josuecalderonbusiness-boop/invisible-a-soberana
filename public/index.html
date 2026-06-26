@@ -1713,7 +1713,7 @@ function initJosue(){
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
     <!-- HERO: texto → huellas → texto 2 → favicon -->
-    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:linear-gradient(170deg,#2A1420 0%,#1E1218 40%,#F5EDE0 100%);">
+    <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:linear-gradient(170deg,#2A1420 0%,#1E1218 40%,#E8DDB8 100%);">
       <div id="ws-hero-stage" style="text-align:center;max-width:340px;"></div>
     </div>
 
@@ -1797,7 +1797,7 @@ function wsRenderHero(){
   var steps = document.createElement('div');
   steps.id = 'ws-steps';
   steps.style.cssText = "margin:32px auto;opacity:0;transition:opacity 1s ease;";
-  steps.innerHTML = '<svg width="40" height="80" viewBox="0 0 40 80" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="14" cy="12" rx="6" ry="8" fill="rgba(232,200,112,.3)" transform="rotate(-15 14 12)"/><ellipse cx="26" cy="36" rx="6" ry="8" fill="rgba(232,200,112,.2)" transform="rotate(10 26 36)"/><ellipse cx="14" cy="60" rx="6" ry="8" fill="rgba(232,200,112,.15)" transform="rotate(-10 14 60)"/></svg>';
+  steps.innerHTML = '';
   stage.appendChild(steps);
   // Sub text
   var sub = document.createElement('p');

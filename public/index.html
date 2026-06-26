@@ -2029,13 +2029,14 @@ function wsShowFooter(){
   </div>
 
   <div id="gema-video" class="gema-video-screen">
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:700;color:rgba(26,8,16,.7);line-height:1.45;margin-bottom:4px;max-width:340px;">Dentro de cada gema <em style="color:#8B6520;font-style:italic;">encontrar&#xE1;s</em></p>
-    <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.15em;color:rgba(26,8,16,.25);text-transform:uppercase;margin-bottom:20px;">Video · Aplicaci&#xF3;n inmediata</p>
+    <!-- Cycling phrases -->
+    <div id="gema-cycle" style="min-height:30px;margin-bottom:16px;">
+      <p id="gema-cycle-text" style="font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);font-weight:600;color:rgba(26,8,16,.5);line-height:1.5;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
+    </div>
     <div class="gema-phone">
       <div class="gema-phone-notch"></div>
       <iframe id="gema-iframe" allow="autoplay;fullscreen" allowfullscreen></iframe>
     </div>
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(14px,3.5vw,17px);font-weight:600;color:rgba(26,8,16,.45);line-height:1.7;text-align:center;margin-top:24px;max-width:320px;">Un video corto.<br>Un ejercicio pr&#xE1;ctico.<br><em style="color:#8B6520;font-weight:700;font-style:italic;">Y una acci&#xF3;n concreta para llevar lo aprendido a tu vida.</em></p>
     <button class="btn-cta" style="width:100%;max-width:340px;border-radius:12px;margin-top:24px;animation:ctaPulse 2s ease-in-out infinite;" onclick="document.getElementById('gema-video').classList.remove('open');document.getElementById('gema-video').style.display='none';show('s-covers');initCovers();">Continuar →</button>
   </div>
 
@@ -2082,6 +2083,24 @@ function openGemaVideo(){
     vw.classList.add('open');
     vw.style.display='flex';
     document.getElementById('gema-iframe').src='https://iframe.mediadelivery.net/embed/649326/0e5349b2-3f74-4cf1-8e36-158f97046031?autoplay=true&muted=true&loop=true&preload=true&controls=false';
+    // Start cycling phrases
+    var gemaPhrases=['Un video corto.','Un ejercicio práctico.','Y una acción concreta para llevar lo aprendido a tu vida.'];
+    var gemaEl=document.getElementById('gema-cycle-text');
+    function gemaShowPhrase(i){
+      var isLast=(i%gemaPhrases.length)===gemaPhrases.length-1;
+      gemaEl.style.opacity='0';gemaEl.style.filter='blur(4px)';gemaEl.style.transform='translateY(8px)';
+      setTimeout(function(){
+        gemaEl.textContent=gemaPhrases[i%gemaPhrases.length];
+        gemaEl.style.color=isLast?'#8B6520':'rgba(26,8,16,.5)';
+        gemaEl.style.fontStyle=isLast?'italic':'normal';
+        gemaEl.style.opacity='1';gemaEl.style.filter='blur(0)';gemaEl.style.transform='translateY(0)';
+      },500);
+      setTimeout(function(){
+        gemaEl.style.opacity='0';gemaEl.style.filter='blur(4px)';gemaEl.style.transform='translateY(-6px)';
+        setTimeout(function(){gemaShowPhrase(i+1);},700);
+      },3200);
+    }
+    setTimeout(function(){gemaShowPhrase(0);},800);
   },500);
 }
 </script>

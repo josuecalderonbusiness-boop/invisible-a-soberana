@@ -22,7 +22,15 @@
       g.style.transition='opacity .12s ease,filter .65s ease';
       g.style.opacity='1';
       setTimeout(function(){g.style.filter='brightness(1)';},100);
-      setTimeout(cb,3000);
+      setTimeout(function(){
+        var btnWrap=document.getElementById('siS1ContinueWrap');
+        if(btnWrap){btnWrap.style.opacity='1';btnWrap.style.pointerEvents='all';}
+        window._siS1Continue=function(){
+          window._siS1Continue=null;
+          if(btnWrap){btnWrap.style.pointerEvents='none';btnWrap.style.transition='opacity .4s ease';btnWrap.style.opacity='0';}
+          cb();
+        };
+      },1200);
     },675+200+750);
   }
 
@@ -132,9 +140,6 @@
         hand.style.opacity='1';
         var txt=document.getElementById('siHandTxt');
         typewrite(txt,'Vamos a despejar esto rápido.',35,function(){
-          setTimeout(function(){
-            document.getElementById('siHandSub').classList.add('in');
-          },600);
           setTimeout(function(){
             mid.style.transition='opacity .9s ease';
             mid.style.opacity='0';

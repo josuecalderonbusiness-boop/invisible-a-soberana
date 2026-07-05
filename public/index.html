@@ -217,7 +217,7 @@
     display: none;
   }
   #s-quiz.active .quiz-header { display: block; }
-  .prog-row { display: flex; align-items: center; gap: 12px; max-width: 580px; margin: 0 auto; }
+  .prog-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: 580px; margin: 0 auto; }
   .prog-lbl { font-size: 11px; font-weight: 500; color: var(--text-muted); white-space: nowrap; letter-spacing: .5px; min-width: 32px; text-align: center; }
   .btn-back, .btn-restart {
     background: none; border: none; cursor: pointer;
@@ -1145,7 +1145,6 @@
   background: linear-gradient(180deg, #0f0408 0%, #1a0a0f 40%, #2a0510 70%, #3a0818 100%) !important;
 }
 </style>
-<style>.quiz-star{font-size:24px;color:rgba(255,255,255,0.12);transition:color 0.3s,transform 0.4s;display:inline-block;}.quiz-star.active{color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.8);animation:starPop 0.4s ease;}@keyframes starPop{0%{transform:scale(1)}50%{transform:scale(1.6)}100%{transform:scale(1)}}</style>
 <script>
 const SoberanaAudio = {
   ctx: null,
@@ -1293,13 +1292,21 @@ const SoberanaAudio = {
 
 </div>
 
+<!-- Tap para continuar — posición fija, siempre visible sin importar el alto del viewport -->
+<div id="siS1ContinueWrap" onclick="window._siS1Continue&&window._siS1Continue()" style="position:absolute;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .8s ease;cursor:pointer;">
+  <span style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.4);text-transform:uppercase;">Toca para continuar</span>
+  <button style="background:none;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;pointer-events:none;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+</div>
+
 <div class="si-mid" id="siMid">
   <div class="si-fade" id="mf0"><p style="font-size:clamp(38px,10vw,56px);font-weight:700;line-height:1.1;">Ya s&#xE9; por qu&#xE9; est&#xE1;s aqu&#xED;.</p></div>
   <div class="si-fade" id="mf1"><p>Est&#xE1;s cansada de intentar arreglar cosas que no te corresponden a ti sola, mientras &#xE9;l parece estar en otro mundo.</p></div>
   <div class="si-fade" id="mf2"><p><strong>No eres t&#xFA; la que est&#xE1; fallando.</strong></p></div>
   <div class="si-stay" id="mfLast">
     <p>Es que llevas tiempo usando las herramientas equivocadas para el problema correcto.</p>
-    <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-cursor" id="siHandCur"></span><br><span class="si-hand-sub" id="siHandSub">solo dame 2 minutos</span></div>
+    <div class="si-hand" id="siHand"><span class="si-hand-txt" id="siHandTxt"></span><span class="si-hand-cursor" id="siHandCur"></span></div>
   </div>
 </div>
 
@@ -1522,8 +1529,6 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
       <button class="btn-back" id="btn-back" onclick="prevQ()" title="Pregunta anterior">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <span id="star-lbl" style="font-family:Jost,sans-serif;font-size:11px;color:rgba(196,168,176,0.5);letter-spacing:1px;min-width:32px;text-align:center;">0 / 5</span>
-      <div id="star-row" style="display:flex;gap:6px;align-items:center;"><span id="st1" class="quiz-star">&#9733;</span><span id="st2" class="quiz-star">&#9733;</span><span id="st3" class="quiz-star">&#9733;</span><span id="st4" class="quiz-star">&#9733;</span><span id="st5" class="quiz-star">&#9733;</span></div>
       <button class="btn-restart" onclick="restartQuiz()" title="Empezar de nuevo">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.5-4M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1712,10 +1717,10 @@ function initJosue(){
 <div id="s-workshop" class="screen">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
 
-    <!-- HERO: título fijo + texto cíclico + favicon -->
+    <!-- HERO: titular + subtexto segmentados por perfil (S/P/D) + favicon -->
     <div id="ws-hero" style="flex:1;position:relative;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;background:radial-gradient(ellipse at 50% 40%,#3D0C11,#1E1218 70%);">
       <div id="ws-hero-stage" style="text-align:center;max-width:340px;display:flex;flex-direction:column;align-items:center;">
-        <p id="ws-hero-title" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:20px;opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;">Aqu&#xED; empieza <em style="color:#E8C870;font-style:italic;">tu recorrido.</em></p>
+        <p id="ws-hero-title" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;line-height:1.2;margin-bottom:20px;opacity:0;filter:blur(8px);transform:translateY(18px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease;"></p>
         <div id="ws-hero-cycle" style="min-height:30px;margin-bottom:36px;">
           <p id="ws-hero-cycle-text" style="font-family:'Playfair Display',serif;font-size:clamp(15px,3.8vw,19px);font-weight:600;color:rgba(240,230,234,.45);line-height:1.55;opacity:0;filter:blur(4px);transform:translateY(8px);transition:opacity .8s ease,filter .8s ease,transform .8s ease;"></p>
         </div>
@@ -1724,7 +1729,7 @@ function initJosue(){
             <div style="position:absolute;inset:-3px;border-radius:19px;border:1.5px solid rgba(232,200,112,.4);box-shadow:0 0 16px rgba(232,200,112,.2);animation:appPulse 2.5s ease-in-out infinite;"></div>
             <img src="workbook/assets/favicon/favicon-app.jpg" alt="" style="width:64px;height:64px;display:block;border-radius:16px;position:relative;z-index:1;">
           </div>
-          <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir</p>
+          <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.12em;color:rgba(240,230,234,.25);text-transform:uppercase;">Abrir C&#xF3;digo Soberana</p>
         </div>
       </div>
     </div>
@@ -1799,35 +1804,24 @@ function wsRenderHero(){
   var titleEl = document.getElementById('ws-hero-title');
   var cycleEl = document.getElementById('ws-hero-cycle-text');
   var favEl = document.getElementById('ws-hero-fav');
+  var prof = topProfile || 'S';
+  var data = WS_HERO_LINES[prof] || WS_HERO_LINES['S'];
   // Reset
-  if(titleEl){titleEl.style.opacity='0';titleEl.style.filter='blur(8px)';titleEl.style.transform='translateY(18px)';}
-  if(cycleEl){cycleEl.style.opacity='0';}
+  if(titleEl){titleEl.innerHTML = data[0].html;titleEl.style.opacity='0';titleEl.style.filter='blur(8px)';titleEl.style.transform='translateY(18px)';}
+  if(cycleEl){cycleEl.textContent = data[1].text;cycleEl.style.opacity='0';cycleEl.style.filter='blur(4px)';cycleEl.style.transform='translateY(8px)';}
   if(favEl){favEl.style.opacity='0';favEl.style.transform='scale(.85)';}
-  var phrases=['Cada gema representa un paso.','No necesitas hacerlo perfecto.','Solo avanzar una a la vez.'];
-  // Show title (stays)
+  // Title
   setTimeout(function(){
     if(titleEl){titleEl.style.opacity='1';titleEl.style.filter='blur(0)';titleEl.style.transform='translateY(0)';}
   },400);
-  // Show favicon
+  // Sub text
+  setTimeout(function(){
+    if(cycleEl){cycleEl.style.opacity='1';cycleEl.style.filter='blur(0)';cycleEl.style.transform='translateY(0)';}
+  },1400);
+  // Favicon
   setTimeout(function(){
     if(favEl){favEl.style.opacity='1';favEl.style.transform='scale(1)';}
-  },2000);
-  // Start cycling phrases
-  function showPhrase(i){
-    var isLast = (i % phrases.length) === phrases.length - 1;
-    cycleEl.style.opacity='0';cycleEl.style.filter='blur(4px)';cycleEl.style.transform='translateY(8px)';
-    setTimeout(function(){
-      cycleEl.textContent = phrases[i % phrases.length];
-      cycleEl.style.color = isLast ? 'rgba(232,200,112,.5)' : 'rgba(240,230,234,.45)';
-      cycleEl.style.fontStyle = isLast ? 'italic' : 'normal';
-      cycleEl.style.opacity='1';cycleEl.style.filter='blur(0)';cycleEl.style.transform='translateY(0)';
-    },500);
-    setTimeout(function(){
-      cycleEl.style.opacity='0';cycleEl.style.filter='blur(4px)';cycleEl.style.transform='translateY(-6px)';
-      setTimeout(function(){showPhrase(i+1);},700);
-    },3200);
-  }
-  setTimeout(function(){showPhrase(0);},1200);
+  },2400);
 }
 function wsAnimHero(){
   wsRenderHero();
@@ -2714,8 +2708,8 @@ function pick(i) {
       Object.entries(QS[qi].opts[a].v).forEach(([k,v]) => sc[k] += v);
     }
   });
-  // Insights only on Q1(0), Q2(1), Q4(3)
-  var hasInsight = [0,1,3];
+  // Insights on Q1(0), Q2(1), Q4(3), Q5(4, cierre definitivo)
+  var hasInsight = [0,1,3,4];
   if (hasInsight.indexOf(curQ) >= 0) {
     setTimeout(function(){ showInsightPopup(curQ, i); }, 480);
   } else {
@@ -2965,6 +2959,11 @@ var INSIGHTS = {
     'Sabes qué hacer, pero en el momento real todo desaparece. Eso no es debilidad.',
     'Creciste tanto que él se quedó atrás. Eso duele de una forma que nadie más entiende.',
     'Estás cansada de ser la única que intenta. Lo sé.'
+  ],
+  4: [
+    'Ya tienes claridad de qué te pasa. Lo que sigue es mostrarte exactamente por qué te pasa — y cómo dejar de perderte justo en el momento en que más te importa estar presente.',
+    'Y no vas a tener que elegir. Lo que sigue es mostrarte cómo tu crecimiento y tu relación pueden ir en la misma dirección, en vez de alejarse.',
+    'Tiene sentido que sientas eso. Lo que sigue es mostrarte el único movimiento que sí depende de ti — el que hace que todo lo demás empiece a moverse.'
   ]
 };
 
@@ -2979,9 +2978,10 @@ function showInsightPopup(qIdx, optIdx) {
   var popup = document.createElement('div');
   popup.id = 'insight-popup';
   popup.style.cssText = 'position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;';
+  var btnLabel = (qIdx === 4) ? 'Ver mi resultado &rarr;' : 'Continuar';
   popup.innerHTML = '<div style="width:100%;max-width:420px;background:rgba(30,18,24,.95);border:1px solid rgba(184,137,42,.3);border-radius:20px;padding:28px 24px;transform:translateY(20px);transition:transform .4s cubic-bezier(.23,1,.32,1);text-align:center;">'
     + '<p style="font-family:\'Playfair Display\',serif;font-size:clamp(17px,4.5vw,21px);font-weight:700;color:#F0E6EA;line-height:1.55;margin-bottom:22px;">' + txt + '</p>'
-    + '<button onclick="closeInsight()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:\'Inter\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.4);">Continuar</button>'
+    + '<button onclick="closeInsight()" style="width:100%;padding:16px;background:linear-gradient(135deg,#6B1A2A,#8B2D3F);color:#F0E6EA;border:none;border-radius:12px;font-family:\'Inter\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(107,26,42,.4);">' + btnLabel + '</button>'
     + '</div>';
   document.body.appendChild(popup);
   requestAnimationFrame(function(){

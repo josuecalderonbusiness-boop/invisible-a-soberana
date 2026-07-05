@@ -1142,7 +1142,14 @@
 }
 /* Fondo degradado vino en s-precio */
 #s-precio {
-  background: linear-gradient(180deg, #0f0408 0%, #1a0a0f 40%, #2a0510 70%, #3a0818 100%) !important;
+  background: linear-gradient(180deg, #050203 0%, #0f0408 55%, #1a0a0f 78%, #2a0510 92%, #3a0818 100%) !important;
+}
+.precio-scrub {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(28px);
+  transition: opacity 80ms linear, filter 80ms linear, transform 80ms linear;
+  will-change: opacity, filter, transform;
 }
 </style>
 <script>
@@ -1200,7 +1207,7 @@ const SoberanaAudio = {
 
 #s-intro{position:relative;overflow:hidden;padding:0!important;}
 
-#s-intro .si-s1{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:52px 28px;transition:opacity .9s ease;z-index:1;}
+#s-intro .si-s1{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:12vh 28px 52px;transition:opacity .9s ease;z-index:1;}
 
 #s-intro .si-s2{position:absolute;inset:0;background-color:#EDE4C8;background-image:linear-gradient(rgba(0,0,0,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.06) 1px,transparent 1px);background-size:32px 32px;display:flex;flex-direction:column;justify-content:center;padding:52px 28px;opacity:0;pointer-events:none;transition:opacity .9s ease;z-index:2;}
 
@@ -1292,11 +1299,12 @@ const SoberanaAudio = {
 
 </div>
 
-<!-- Tap para continuar — posición fija, siempre visible sin importar el alto del viewport -->
-<div id="siS1ContinueWrap" onclick="window._siS1Continue&&window._siS1Continue()" style="position:absolute;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .8s ease;cursor:pointer;">
+<!-- Tap para continuar — posición fija, más arriba para que nunca quede oculta en móvil -->
+<style>@keyframes s1pulseRight{0%,100%{transform:translateX(0);opacity:.7}50%{transform:translateX(5px);opacity:1}}</style>
+<div id="siS1ContinueWrap" onclick="window._siS1Continue&&window._siS1Continue()" style="position:absolute;left:0;right:0;bottom:22vh;z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .8s ease;cursor:pointer;">
   <span style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.4);text-transform:uppercase;">Toca para continuar</span>
-  <button style="background:none;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s2pulse 2s ease infinite;pointer-events:none;">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  <button style="background:none;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:s1pulseRight 2s ease infinite;pointer-events:none;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
   </button>
 </div>
 
@@ -1845,18 +1853,56 @@ function wsReveal(){
 }
 function wsOpenApp(){
   var icon=document.getElementById('ws-app-icon');
-  icon.style.animation='none';
-  icon.style.transform='scale(1.08)';
+  if(icon){
+    icon.style.animation='none';
+    icon.style.transform='scale(1.08)';
+  }
   if(typeof demoClick==='function') demoClick();
   var wsFt=document.getElementById('ws-ft');
+  var heroFav=document.getElementById('ws-hero-fav');
   setTimeout(function(){
-    wsFt.style.transition='opacity .6s ease';
-    wsFt.style.opacity='0';
+    if(wsFt){wsFt.style.transition='opacity .9s cubic-bezier(.23,1,.32,1)';wsFt.style.opacity='0';}
+    if(heroFav){heroFav.style.transition='opacity .9s cubic-bezier(.23,1,.32,1)';heroFav.style.opacity='0';}
   },300);
+
+  // Blur con "Aquí empieza tu recorrido" que se disuelve lento y revela el tour tal como está.
+  // Timing deliberadamente lento: este es un momento narrativo/emocional, no una interacción de UI repetitiva.
+  var ov=document.getElementById('ws-open-transition');
+  var ovTxt=document.getElementById('ws-open-transition-text');
+  var EASE_OUT='cubic-bezier(.23,1,.32,1)';
+  var EASE_INOUT='cubic-bezier(.65,0,.35,1)';
+  if(ov){
+    ov.style.display='flex';
+    ov.style.transition='none';
+    ov.style.opacity='0';
+    if(ovTxt){
+      ovTxt.style.transition='none';
+      ovTxt.style.opacity='0';ovTxt.style.filter='blur(14px)';ovTxt.style.transform='translateY(14px)';
+    }
+    setTimeout(function(){
+      ov.style.transition='opacity 1.2s '+EASE_OUT;
+      ov.style.opacity='1';
+      if(ovTxt){
+        ovTxt.style.transition='opacity 1.8s '+EASE_OUT+',filter 1.8s '+EASE_OUT+',transform 1.8s '+EASE_OUT;
+        ovTxt.style.opacity='1';ovTxt.style.filter='blur(0)';ovTxt.style.transform='translateY(0)';
+      }
+    },500);
+  }
+
+  // Se sostiene visible ~2.6s (tiempo real de lectura) antes de empezar a disolverse
   setTimeout(function(){
     show('s-demo');
-    setTimeout(initDemo,300);
-  },900);
+    setTimeout(initDemo,150);
+    if(ov){
+      if(ovTxt){
+        ovTxt.style.transition='opacity 1.6s '+EASE_INOUT+',filter 1.6s '+EASE_INOUT+',transform 1.6s '+EASE_INOUT;
+        ovTxt.style.opacity='0';ovTxt.style.filter='blur(14px)';ovTxt.style.transform='translateY(-14px)';
+      }
+      ov.style.transition='opacity 1.6s '+EASE_INOUT;
+      ov.style.opacity='0';
+      setTimeout(function(){ov.style.display='none';},1600);
+    }
+  },4300);
 }
 var WS_CARDS = {
   S: {
@@ -2207,8 +2253,6 @@ function initCovers(){
 <style>
 #s-demo{background:#F5EDE0;align-items:center;justify-content:center;padding:0 24px;min-height:100vh;overflow:hidden;}
 .demo-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;width:100%;max-width:400px;margin:0 auto;padding:90px 0 40px;}
-.demo-intro{text-align:center;margin-bottom:20px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
-.demo-intro.in{opacity:1;transform:translateY(0);}
 .demo-phone{width:240px;height:480px;border-radius:36px;border:4px solid #333;background:#000;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08);}
 @keyframes phoneGlow{0%,100%{box-shadow:0 0 50px rgba(184,137,42,.3),0 0 100px rgba(184,137,42,.12),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.05)}50%{box-shadow:0 0 60px rgba(184,137,42,.45),0 0 120px rgba(184,137,42,.2),0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.08)}}
 .demo-notch{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:90px;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:20;border:1px solid #1a1a1a;border-top:none;}
@@ -2222,6 +2266,8 @@ function initCovers(){
 .demo-caption p strong{color:#E8C870;font-weight:700;}
 .demo-cta-wrap{margin-top:28px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;}
 .demo-cta-wrap.in{opacity:1;transform:translateY(0);}
+.demo-intro{text-align:center;margin-bottom:20px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
+.demo-intro.in{opacity:1;transform:translateY(0);}
 </style>
 
 <div class="demo-wrap">
@@ -2342,8 +2388,6 @@ function initDemo(){
     <div id="load2-check" style="width:64px;height:64px;border-radius:50%;border:3px solid #B8892A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;opacity:0;transform:scale(0);transition:opacity .5s ease,transform .5s cubic-bezier(.23,1.5,.32,1);">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <div id="load2-txt" style="font-family:'Playfair Display',serif;font-size:clamp(24px,6vw,32px);font-weight:900;color:#F0E6EA;text-align:center;line-height:1.35;max-width:380px;min-height:80px;margin-bottom:20px;"></div>
-    <p id="load2-sub" style="font-family:'Inter',sans-serif;font-size:11px;font-weight:900;letter-spacing:.18em;color:rgba(184,137,42,.35);text-transform:uppercase;opacity:0;transition:opacity .6s ease;">Cargando tu acceso</p>
   </div>
 </div>
 
@@ -2362,72 +2406,52 @@ function initDemo(){
     </div>
   </div>
 
+  <!-- Bienvenida — texto flotando directo sobre el fondo, cada frase entra al pasar por ella -->
+  <div id="precio-welcome" style="padding:16vh 32px 14vh;position:relative;text-align:center;">
+
+    <p id="precio-welcome-name" class="precio-scrub" style="font-family:'Playfair Display',serif;font-size:clamp(26px,7vw,34px);font-weight:900;color:#F0E6EA;margin:0 auto 14vh;max-width:400px;"></p>
+
+    <p class="precio-scrub" style="font-family:'Playfair Display',serif;font-size:clamp(18px,4.5vw,22px);font-weight:600;color:rgba(240,230,234,.8);line-height:1.5;max-width:400px;margin:0 auto 14vh;">Hoy empieza oficialmente tu recorrido dentro de <em style="color:#E8C870;font-style:italic;">C&#xF3;digo Soberana</em>.</p>
+
+    <p class="precio-scrub" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;font-size:clamp(19px,5vw,23px);color:rgba(240,230,234,.55);margin:0 auto 14vh;max-width:400px;">No est&#xE1;s comprando un curso.</p>
+
+    <p class="precio-scrub" style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,23px);font-weight:600;color:#F0E6EA;line-height:1.55;max-width:400px;margin:0 auto;">Est&#xE1;s entrando a un proceso dise&#xF1;ado para ayudarte a convertirte en <em style="color:#E8C870;font-style:italic;">la mujer que acabas de descubrir que puedes ser.</em></p>
+
+    <div class="precio-scrub" style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:12vh;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(184,137,42,.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:s2pulse 2s ease infinite;margin-bottom:12px;"><polyline points="6 9 12 15 18 9"/></svg>
+      <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.15em;color:rgba(240,230,234,.2);text-transform:uppercase;">Sigue deslizando</p>
+    </div>
+  </div>
+
   <div class="intro-box" style="text-align:center;padding-top:40px;">
 
-    <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,5vw,26px);color:#E8C870;font-weight:700;line-height:1.2;margin-bottom:4px;" id="precio-eyebrow">Aqu&#xED; tienes tu acceso</p>
-
-    <!-- Título con branding correcto -->
-    <div style="margin-bottom:20px;line-height:1.2;">
-      <span style="font-family:'Jost',sans-serif;font-size:13px;color:rgba(237,227,206,.5);font-weight:300;letter-spacing:1px;display:block;margin-bottom:2px;">Workshop</span>
-      <span style="font-family:'Playfair Display',serif;font-size:28px;color:#fff;font-weight:700;font-style:normal;">Código</span>
-      <span style="font-family:'Playfair Display',serif;font-size:28px;color:#B8892A;font-weight:700;"> Soberana</span>
-    </div>
-
-    <!-- Contador -->
-    <div style="background:rgba(139,26,47,.15);border:1px solid rgba(139,26,47,.35);border-radius:14px;padding:14px;margin-bottom:16px;">
-      <p style="font-family:'Inter',sans-serif;font-size:9px;font-weight:900;color:#B8892A;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;">Tu acceso expira en</p>
-      <div id="countdown" style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:#EDE3CE;letter-spacing:4px;">48:00:00</div>
-    </div>
-
-    <!-- Card de producto estilo carrito -->
-    <div style="background:rgba(237,227,206,.05);border:1px solid rgba(184,137,42,.25);border-radius:16px;padding:16px;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:14px;">
-      <div style="width:20px;height:20px;border-radius:50%;border:2px solid #B8892A;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <div style="width:10px;height:10px;border-radius:50%;background:#B8892A;"></div>
-      </div>
-      <div style="flex:1;">
-        <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,.5);font-weight:300;margin-bottom:1px;">Workshop</p>
-        <p style="font-family:'Playfair Display',serif;font-size:16px;color:#EDE3CE;font-weight:700;font-style:normal;display:inline;">Código</p>
-        <p style="font-family:'Playfair Display',serif;font-size:16px;color:#B8892A;font-weight:700;display:inline;"> Soberana</p>
-        <p style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;color:rgba(237,227,206,.4);margin-top:2px;">Acceso vitalicio · 90 min · PWA incluida</p>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <p style="font-family:'Playfair Display',serif;font-size:26px;color:#B8892A;font-weight:900;">$27</p>
-        <p style="font-family:'Jost',sans-serif;font-size:9px;color:rgba(184,137,42,.6);">USD</p>
-      </div>
-    </div>
-
-    <button class="btn-unlock" id="btn-compra" onclick="goToCheckout()" style="font-size:16px;padding:18px;margin-bottom:8px;width:100%;">
-      Asegurar mi acceso ahora →
-    </button>
-    <p style="font-family:'Jost',sans-serif;font-size:11px;color:rgba(237,227,206,.35);margin-bottom:28px;">Acceso inmediato · Garantía 7 días sin preguntas</p>
-
-    <!-- Lo que incluye — fullscreen cards -->
+    <!-- Lo que incluye — reencuadrado como etapas, no beneficios -->
     <div id="precio-items" style="text-align:center;margin-bottom:28px;">
-      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:900;color:#F0E6EA;margin-bottom:4px;">Lo que recibes hoy</p>
-      <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,#B8892A,transparent);margin:0 auto 24px;"></div>
+      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:900;color:#F0E6EA;margin-bottom:10px;">Esto es lo que encontrar&#xE1;s desde el primer d&#xED;a.</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(16px,4vw,19px);color:rgba(240,230,234,.55);margin-bottom:24px;">No como beneficios. Sino como etapas.</p>
 
       <div id="pi-0" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Workshop C&#xF3;digo Soberana</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">3 protocolos · 90 minutos</p>
+        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Workshop principal</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Aqu&#xED; comienza tu transformaci&#xF3;n.</p>
       </div>
 
       <div id="pi-1" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Sistema instalable en tu tel&#xE9;fono</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Workbook PWA · Todo en un solo lugar</p>
+        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Sistema de pr&#xE1;ctica</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Aqu&#xED; conviertes las ideas en h&#xE1;bitos.</p>
       </div>
 
       <div id="pi-2" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
+        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
         <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Acceso de por vida</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Repasas tu camino cuando quieras</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Porque cada etapa de tu relaci&#xF3;n necesitar&#xE1; volver a este lugar.</p>
       </div>
 
       <div id="pi-3" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(184,137,42,.4));">✦</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Red de Soberanas</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Comunidad dentro de la app</p>
+        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Comunidad</p>
+        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Porque ninguna Soberana camina completamente sola.</p>
       </div>
     </div>
 
@@ -2940,7 +2964,6 @@ function togMov(i) {
 // ── ESTADO GATE ───────────────────────────────────────────
 let gateShown = false;
 let topProfile = '';
-let timerInterval = null;
 
 // ── SHOW BRIDGE ───────────────────────────────────────────
 // Insights empáticos — solo para Q1(0), Q2(1), Q4(3)
@@ -3302,12 +3325,8 @@ function startFinalLoad() {
   SoberanaAudio.campanita();
   var content = document.getElementById('load2-content');
   var check = document.getElementById('load2-check');
-  var txtEl = document.getElementById('load2-txt');
-  var sub = document.getElementById('load2-sub');
   content.style.opacity = '0';
   check.style.opacity = '0'; check.style.transform = 'scale(0)';
-  txtEl.innerHTML = '';
-  sub.style.opacity = '0';
 
   // Progress bar completes + celebration
   setTimeout(function(){
@@ -3316,64 +3335,10 @@ function startFinalLoad() {
     content.style.opacity = '1';
   }, 800);
 
-  // Write text word by word
-  setTimeout(function(){
-    var f = FRASES_PERFIL[topProfile] || FRASES_PERFIL['S'];
-    txtEl.innerHTML = '';
-    var words = f.main.split(' ');
-    var i = 0;
-    function tick(){
-      if(i >= words.length){
-        var endSpan = document.createElement('span');
-        endSpan.style.cssText = 'color:#E8C870;font-style:italic;';
-        var ew = f.end.split(' ');
-        var j = 0;
-        function tickEnd(){
-          if(j >= ew.length){
-            setTimeout(function(){ sub.style.opacity = '1'; }, 400);
-            setTimeout(function(){ showPrecio(); }, 4000);
-            return;
-          }
-          endSpan.textContent += (j > 0 ? ' ' : '') + ew[j]; j++;
-          setTimeout(tickEnd, 180);
-        }
-        txtEl.appendChild(document.createTextNode(' '));
-        txtEl.appendChild(endSpan);
-        tickEnd();
-        return;
-      }
-      txtEl.appendChild(document.createTextNode((i > 0 ? ' ' : '') + words[i])); i++;
-      setTimeout(tick, 120);
-    }
-    tick();
-  }, 1800);
+  setTimeout(function(){ showPrecio(); }, 2200);
 }
-
-const FRASES_PERFIL = {
-  S: { main: 'No te apagaste porque se había acabado el amor entre ustedes. Te apagaste porque nadie te enseñó a pedir lo que mereces sin sentir que eso te hacía menos. Eso se acaba en los próximos ', end: '90 minutos.' },
-  P: { main: 'Él se aleja de ti, pero no porque no te ame. Se aleja porque hay un código que ninguna mujer le enseñaron a leer. Y hoy, en los próximos ', end: '90 minutos, tú lo vas a conocer.' },
-  D: { main: 'El problema no es que crezcas y alcances tu mejor versión. Es que creces sin un mapa que te dice cómo llevar a alguien contigo. Ese mapa existe y te lo mostraré en los próximos ', end: '90 minutos.' }
-};
 
 function explotar2(){}
-
-function escribirFrase2(el, perfil) {
-  const f = FRASES_PERFIL[perfil] || FRASES_PERFIL['S'];
-  el.innerHTML = '';
-  const s1 = document.createElement('span'); el.appendChild(s1);
-  let i = 0;
-  function main() {
-    if(i<f.main.length){ s1.textContent+=f.main[i++]; setTimeout(main,28); }
-    else {
-      const s2 = document.createElement('span');
-      s2.style.cssText = 'color:#EDE3CE;font-style:normal;font-weight:700;';
-      el.appendChild(s2); let j=0;
-      function fin(){ if(j<f.end.length){ s2.textContent+=f.end[j++]; setTimeout(fin,38); } }
-      fin();
-    }
-  }
-  main();
-}
 
 // ── PRECIO ────────────────────────────────────────────────
 function showPrecio() {
@@ -3381,7 +3346,8 @@ function showPrecio() {
   document.getElementById('global-prog-bar').style.display='none';
   document.getElementById('global-header').style.display='none';
   document.getElementById('header-spacer').style.display='none';
-  if (uName) document.getElementById('precio-eyebrow').innerHTML = uName ? uName + ', aqui tienes tu acceso' : 'Aqui tienes tu acceso';
+  var welcomeName = document.getElementById('precio-welcome-name');
+  if (welcomeName) welcomeName.textContent = uName ? ('Bienvenida, ' + uName) : 'Bienvenida';
   // Render intro phrase by profile
   var PRECIO_INTRO = {
     S: ['Nunca te faltó <em>conocimiento</em>.','Solo necesitabas aprender a seguir siendo tú cuando tus emociones <em>se apoderan de ti</em>.'],
@@ -3408,22 +3374,7 @@ function showPrecio() {
   setTimeout(function(){ if(scroll) scroll.style.opacity='1'; }, 800 + ps.length * 2000 + 1000);
   // Scroll to top
   document.getElementById('s-precio').scrollTop = 0;
-  // Contador 48h
-  const exp = Date.now() + 48*60*60*1000;
-  localStorage.setItem('cs_exp', exp);
-  startCountdown(exp);
-}
-function startCountdown(exp) {
-  function tick() {
-    const diff = exp - Date.now();
-    if (diff <= 0) { document.getElementById('countdown').textContent = '00:00:00'; return; }
-    const h = Math.floor(diff/3600000).toString().padStart(2,'0');
-    const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
-    const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
-    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
-  }
-  tick();
-  timerInterval = setInterval(tick, 1000);
+  if (typeof updatePrecioWelcomeScrub === 'function') updatePrecioWelcomeScrub();
 }
 
 // ── FAQ ───────────────────────────────────────────────────
@@ -3586,6 +3537,11 @@ showPrecio = function() {
   setTimeout(initPrecioEffects, 100);
 };
 </script>
+<!-- Transición al tocar el favicon: blur con texto que se disuelve para revelar el tour tal como está -->
+<div id="ws-open-transition" style="display:none;position:fixed;inset:0;z-index:9500;align-items:center;justify-content:center;padding:40px 28px;background:rgba(15,10,11,.88);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);text-align:center;opacity:0;">
+  <p id="ws-open-transition-text" style="font-family:'Playfair Display',serif;font-size:clamp(22px,6vw,30px);font-weight:900;color:#F0E6EA;line-height:1.3;opacity:0;filter:blur(10px);transform:translateY(10px);">Aqu&#xED; empieza <em style="color:#E8C870;font-style:italic;">tu recorrido.</em></p>
+</div>
+
 <div id="popup-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:9000;align-items:center;justify-content:center;padding:20px;">
 
   <div id="popup-box" style="width:100%;max-width:400px;animation:fadeUp .4s ease both;position:relative;">
@@ -3865,6 +3821,31 @@ function initGateWa(){
       setTimeout(observeAll,300);
     };
   }
+})();
+// Scroll-scrubbing de "Bienvenida" en s-precio: el reveal va exactamente al ritmo del dedo, no a un timer.
+(function(){
+  var ticking = false;
+  function apply(){
+    var els = document.querySelectorAll('#precio-welcome .precio-scrub');
+    var vh = window.innerHeight;
+    var start = vh * 0.92;
+    var end = vh * 0.4;
+    els.forEach(function(el){
+      var top = el.getBoundingClientRect().top;
+      var p = (start - top) / (start - end);
+      if (p < 0) p = 0; else if (p > 1) p = 1;
+      el.style.opacity = p;
+      el.style.filter = 'blur(' + ((1 - p) * 10).toFixed(1) + 'px)';
+      el.style.transform = 'translateY(' + ((1 - p) * 28).toFixed(1) + 'px)';
+    });
+    ticking = false;
+  }
+  function onScroll(){
+    if (!ticking) { requestAnimationFrame(apply); ticking = true; }
+  }
+  var container = document.getElementById('s-precio');
+  if (container) container.addEventListener('scroll', onScroll, {passive:true});
+  window.updatePrecioWelcomeScrub = apply;
 })();
 </script>
 <script>document.addEventListener("click",function(e){var opt=e.target.closest(".opt");if(!opt)return; if(!document.getElementById("s-quiz").classList.contains("active"))return; SoberanaAudio.tono(1200,0.08,'sine',0.06); SoberanaAudio.tono(1800,0.12,'sine',0.04,0.05);var starIdx=curQ+1;var toEl=document.getElementById("st"+starIdx);if(!toEl)return;var fromR=opt.getBoundingClientRect();var toR=toEl.getBoundingClientRect();var star=document.createElement("span");star.textContent="\u2605";star.style.cssText="position:fixed;z-index:99999;font-size:22px;color:#D4A843;text-shadow:0 0 12px rgba(212,168,67,0.9);pointer-events:none;left:"+(fromR.left+fromR.width/2-11)+"px;top:"+(fromR.top+fromR.height/2-11)+"px;";document.body.appendChild(star);requestAnimationFrame(function(){requestAnimationFrame(function(){star.style.transition="all 0.5s cubic-bezier(.4,0,.2,1)";star.style.left=(toR.left+toR.width/2-11)+"px";star.style.top=(toR.top+toR.height/2-11)+"px";star.style.opacity="0";setTimeout(function(){toEl.classList.add("active");star.remove();},500);});});});</script>

@@ -2378,16 +2378,7 @@ function initDemo(){
       <div class="testi-dot" onclick="goTesti(2)"></div>
     </div>
 
-    <button class="btn-cta" onclick="startFinalLoad()">Quiero lo mismo →</button>
-  </div>
-</div>
-
-<!-- ──────────── CARGANDO ACCESO ──────────── -->
-<div id="s-loading2" class="screen" style="justify-content:center;align-items:center;position:relative;overflow:hidden;background:#0F0A0B;">
-  <div id="load2-content" style="position:relative;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 28px;text-align:center;opacity:0;transition:opacity .8s ease;">
-    <div id="load2-check" style="width:64px;height:64px;border-radius:50%;border:3px solid #B8892A;display:flex;align-items:center;justify-content:center;margin-bottom:24px;opacity:0;transform:scale(0);transition:opacity .5s ease,transform .5s cubic-bezier(.23,1.5,.32,1);">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
+    <button class="btn-cta" onclick="showPrecio()">Quiero lo mismo →</button>
   </div>
 </div>
 
@@ -2425,51 +2416,131 @@ function initDemo(){
 
   <div class="intro-box" style="text-align:center;padding-top:40px;">
 
-    <!-- Lo que incluye — reencuadrado como etapas, no beneficios -->
+    <!-- Lo que incluye — mazo de cartas en abanico, cada una empuja a las demás -->
+    <style>
+      .pi-card-abs{position:absolute;top:0;left:50%;width:200px;margin-left:-100px;transition:transform .6s cubic-bezier(.23,1,.32,1),opacity .6s ease,box-shadow .6s ease,filter .6s ease;transform-origin:bottom center;cursor:pointer;}
+      .pi-card{border-radius:22px;padding:36px 20px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;box-shadow:0 20px 40px rgba(0,0,0,.45);}
+      .pi-card.pi-gold{background:#7A5A1F;border:1.5px solid #96712B;}
+      .pi-card.pi-wine{background:#6B1A2A;border:1.5px solid #862237;}
+      .pi-card.pi-beige{background:#EDE3CE;border:1.5px solid #DACBA6;}
+      .pi-card.pi-burgundy{background:#3D0C11;border:1.5px solid #571219;}
+      .pi-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(15,10,11,.6);border:1.5px solid rgba(184,137,42,.35);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;}
+      .pi-dot{width:7px;height:7px;border-radius:50%;background:rgba(184,137,42,.25);transition:background .3s,transform .3s;cursor:pointer;}
+      .pi-dot.active{background:#B8892A;transform:scale(1.3);}
+    </style>
     <div id="precio-items" style="text-align:center;margin-bottom:28px;">
-      <p style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:900;color:#F0E6EA;margin-bottom:10px;">Esto es lo que encontrar&#xE1;s desde el primer d&#xED;a.</p>
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(16px,4vw,19px);color:rgba(240,230,234,.55);margin-bottom:24px;">No como beneficios. Sino como etapas.</p>
+      <p class="precio-scrub" style="font-family:'Playfair Display',serif;font-size:clamp(22px,5.5vw,28px);font-weight:900;color:#F0E6EA;margin-bottom:36px;">Esto es lo que encontrar&#xE1;s desde el primer d&#xED;a.</p>
 
-      <div id="pi-0" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Workshop principal</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Aqu&#xED; comienza tu transformaci&#xF3;n.</p>
+      <div class="precio-scrub" style="position:relative;max-width:400px;margin:0 auto;">
+        <div id="pi-stage" style="position:relative;height:340px;">
+
+          <div class="pi-card-abs" data-idx="0" onclick="piGoTo(0)">
+            <div class="pi-card pi-gold">
+              <div class="pi-icon-wrap" style="width:54px;height:54px;margin:0 auto 18px;"><img class="pi-icon" src="assets/gema.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(255,244,214,.6)) drop-shadow(0 0 20px rgba(255,244,214,.3));animation:wsFloat 3.4s ease-in-out infinite;"></div>
+              <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:900;color:#FFF3D6;margin-bottom:8px;">Workshop principal</p>
+              <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:rgba(255,243,214,.75);letter-spacing:.05em;">Aqu&#xED; comienza tu transformaci&#xF3;n.</p>
+            </div>
+          </div>
+
+          <div class="pi-card-abs" data-idx="1" onclick="piGoTo(1)">
+            <div class="pi-card pi-wine">
+              <div class="pi-icon-wrap" style="width:54px;height:54px;margin:0 auto 18px;"><img class="pi-icon" src="assets/espejo.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(245,230,200,.6)) drop-shadow(0 0 20px rgba(245,230,200,.3));animation:wsFloat 3.8s ease-in-out infinite .3s;"></div>
+              <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:900;color:#F5E6C8;margin-bottom:8px;">Sistema de pr&#xE1;ctica</p>
+              <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:rgba(245,230,200,.7);letter-spacing:.05em;">Aqu&#xED; conviertes las ideas en h&#xE1;bitos.</p>
+            </div>
+          </div>
+
+          <div class="pi-card-abs" data-idx="2" onclick="piGoTo(2)">
+            <div class="pi-card pi-beige">
+              <div class="pi-icon-wrap" style="width:54px;height:54px;margin:0 auto 18px;"><img class="pi-icon" src="assets/llave.png" alt="" style="width:100%;filter:drop-shadow(0 3px 6px rgba(61,12,17,.35));animation:wsFloat 3.2s ease-in-out infinite .6s;"></div>
+              <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:900;color:#3D0C11;margin-bottom:8px;">Acceso de por vida</p>
+              <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:rgba(61,12,17,.65);letter-spacing:.05em;">Porque cada etapa de tu relaci&#xF3;n necesitar&#xE1; volver a este lugar.</p>
+            </div>
+          </div>
+
+          <div class="pi-card-abs" data-idx="3" onclick="piGoTo(3)">
+            <div class="pi-card pi-burgundy">
+              <div class="pi-icon-wrap" style="width:54px;height:54px;margin:0 auto 18px;"><img class="pi-icon" src="assets/red.png" alt="" style="width:100%;filter:invert(1) brightness(1.5) drop-shadow(0 0 10px rgba(232,201,126,.6)) drop-shadow(0 0 20px rgba(232,201,126,.3));animation:wsFloat 3.6s ease-in-out infinite .9s;"></div>
+              <p style="font-family:'Playfair Display',serif;font-size:clamp(17px,4.5vw,21px);font-weight:900;color:#E8C870;margin-bottom:8px;">Comunidad</p>
+              <p style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:rgba(240,230,234,.6);letter-spacing:.05em;">Porque ninguna Soberana camina completamente sola.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="pi-arrow" onclick="piPrev()" style="left:-4px;" aria-label="Anterior">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="pi-arrow" onclick="piNext()" style="right:-4px;" aria-label="Siguiente">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
 
-      <div id="pi-1" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Sistema de pr&#xE1;ctica</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Aqu&#xED; conviertes las ideas en h&#xE1;bitos.</p>
-      </div>
-
-      <div id="pi-2" class="precio-card" style="background:linear-gradient(135deg,rgba(184,137,42,.12),rgba(184,137,42,.04));border:1.5px solid rgba(184,137,42,.35);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Acceso de por vida</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Porque cada etapa de tu relaci&#xF3;n necesitar&#xE1; volver a este lugar.</p>
-      </div>
-
-      <div id="pi-3" class="precio-card" style="background:linear-gradient(135deg,rgba(139,26,47,.15),rgba(139,26,47,.05));border:1.5px solid rgba(139,26,47,.4);border-radius:18px;padding:28px 22px;margin-bottom:16px;text-align:center;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .6s ease,transform .6s cubic-bezier(.23,1,.32,1);">
-        <span style="font-size:28px;display:block;margin-bottom:12px;">&#x1F7EB;</span>
-        <p style="font-family:'Playfair Display',serif;font-size:clamp(19px,5vw,24px);font-weight:900;color:#E8C870;margin-bottom:6px;">Comunidad</p>
-        <p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:rgba(237,227,206,.5);letter-spacing:.05em;">Porque ninguna Soberana camina completamente sola.</p>
+      <div id="pi-dots" style="display:flex;justify-content:center;gap:8px;margin-top:24px;">
+        <span class="pi-dot active" onclick="piGoTo(0)"></span>
+        <span class="pi-dot" onclick="piGoTo(1)"></span>
+        <span class="pi-dot" onclick="piGoTo(2)"></span>
+        <span class="pi-dot" onclick="piGoTo(3)"></span>
       </div>
     </div>
 
     <script>
     (function(){
-      var precioObs=new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-          if(e.isIntersecting){
-            var cards=document.querySelectorAll('.precio-card');
-            cards.forEach(function(c,i){
-              setTimeout(function(){c.style.opacity='1';c.style.transform='translateY(0) scale(1)';},i*300);
-            });
-            precioObs.disconnect();
-          }
+      var piIdx = 0;
+      var PI_COUNT = 4;
+      // Geometría del abanico por distancia (diff) al centro activo
+      var PI_FAN = {
+        0: { tx: 0,   ty: 0,  rot: 0,   scale: 1,    z: 10, op: 1,    blur: 0 },
+        1: { tx: 78,  ty: 30, rot: 14,  scale: 0.9,  z: 6,  op: 0.85, blur: 2.5 },
+        '-1': { tx: -78, ty: 30, rot: -14, scale: 0.9,  z: 6,  op: 0.85, blur: 2.5 },
+        2: { tx: 138, ty: 68, rot: 26,  scale: 0.8,  z: 2,  op: 0.5,  blur: 5 },
+        '-2': { tx: -138, ty: 68, rot: -26, scale: 0.8,  z: 2,  op: 0.5,  blur: 5 }
+      };
+      function piGoTo(idx){
+        piIdx = (idx + PI_COUNT) % PI_COUNT;
+        document.querySelectorAll('.pi-card-abs').forEach(function(el){
+          var i = parseInt(el.getAttribute('data-idx'), 10);
+          var diff = i - piIdx;
+          if (diff > PI_COUNT/2) diff -= PI_COUNT;
+          if (diff < -PI_COUNT/2) diff += PI_COUNT;
+          var f = PI_FAN[diff] || PI_FAN[diff < 0 ? -2 : 2];
+          el.style.transform = 'translateX(' + f.tx + 'px) translateY(' + f.ty + 'px) rotate(' + f.rot + 'deg) scale(' + f.scale + ')';
+          el.style.zIndex = f.z;
+          el.style.opacity = f.op;
+          el.style.filter = f.blur ? 'blur(' + f.blur + 'px)' : 'none';
         });
-      },{threshold:0.1});
-      var target=document.getElementById('precio-items');
-      if(target) precioObs.observe(target);
+        // Parallax: el ícono se desplaza y se asienta más lento que la tarjeta que lo empuja.
+        document.querySelectorAll('.pi-icon-wrap').forEach(function(el, i){
+          var offset = (i - piIdx) * 26;
+          el.style.transition = 'none';
+          el.style.transform = 'translateX(' + offset + 'px)';
+          void el.offsetWidth;
+          requestAnimationFrame(function(){
+            el.style.transition = 'transform 1.15s cubic-bezier(.16,1,.3,1)';
+            el.style.transform = 'translateX(0)';
+          });
+        });
+        document.querySelectorAll('.pi-dot').forEach(function(d,i){ d.classList.toggle('active', i===piIdx); });
+        // Auto-avance: si no toca nada en 5s, pasa sola a la siguiente. Cualquier interacción reinicia el conteo.
+        if(piAutoTimer) clearTimeout(piAutoTimer);
+        piAutoTimer = setTimeout(function(){ piNext(); }, 5000);
+      }
+      var piAutoTimer = null;
+      function piPrev(){ piGoTo(piIdx-1); }
+      function piNext(){ piGoTo(piIdx+1); }
+      window.piGoTo = piGoTo; window.piPrev = piPrev; window.piNext = piNext;
+      piGoTo(0);
+      // Swipe táctil, además de las flechas
+      var stage = document.getElementById('pi-stage');
+      if(stage){
+        var sx = 0;
+        stage.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, {passive:true});
+        stage.addEventListener('touchend', function(e){
+          var dx = e.changedTouches[0].clientX - sx;
+          if(dx < -40) piNext();
+          if(dx > 40) piPrev();
+        }, {passive:true});
+      }
     })();
     </script>
 
@@ -2668,11 +2739,11 @@ let curQ = 0, ans = [], sc = {S:0,P:0,D:0}; window._curQ = 0; var uName = '', uE
 
 // ── HELPERS ───────────────────────────────────────────────
 function show(id) {
-  var headerScreens = ['s-josue','s-workshop','s-testimonios','s-loading2'];
+  var headerScreens = ['s-josue','s-workshop','s-testimonios'];
   var h = document.getElementById('global-header');
   if (h) {
     h.style.display = headerScreens.indexOf(id) >= 0 ? 'flex' : 'none';
-    var headerBg = {'s-josue':'#000','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#F5EDE0','s-testimonios':'#1E1218','s-loading2':'#080306'};
+    var headerBg = {'s-josue':'#000','s-workshop':'#1E1218','s-covers':'#0F0A0B','s-demo':'#F5EDE0','s-testimonios':'#1E1218'};
     h.style.background = headerBg[id] || '#0F0A0B';
     var sp = document.getElementById('header-spacer');
     if(sp){ sp.style.background = headerBg[id] || '#1E1218'; sp.style.display = headerScreens.indexOf(id) >= 0 ? 'block' : 'none'; }
@@ -3316,33 +3387,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ── LOADING 2 (FINAL) ─────────────────────────────────────
-
-function lanzarParticulas() {}
-function startFinalLoad() {
-  show('s-loading2');
-  setGlobalProgress(100);
-  SoberanaAudio.campanita();
-  var content = document.getElementById('load2-content');
-  var check = document.getElementById('load2-check');
-  content.style.opacity = '0';
-  check.style.opacity = '0'; check.style.transform = 'scale(0)';
-
-  // Progress bar completes + celebration
-  setTimeout(function(){
-    SoberanaAudio.diagnosticoListo();
-    check.style.opacity = '1'; check.style.transform = 'scale(1)';
-    content.style.opacity = '1';
-  }, 800);
-
-  setTimeout(function(){ showPrecio(); }, 2200);
-}
-
-function explotar2(){}
-
 // ── PRECIO ────────────────────────────────────────────────
 function showPrecio() {
   show('s-precio');
+  SoberanaAudio.campanita();
   document.getElementById('global-prog-bar').style.display='none';
   document.getElementById('global-header').style.display='none';
   document.getElementById('header-spacer').style.display='none';
@@ -3427,12 +3475,12 @@ function showWaBridge() {
 // ── BARRA DE PROGRESO GLOBAL ──────────────────────────────
 // Pasos: intro=0, qualify=5, quiz P1-P5=10-50, gate=52, gate-wa=54,
 //        loading=55, video=60, josue=70, workshop=78, testimonios=85,
-//        loading2=90, precio=100
+//        precio=100
 const SCREEN_PROGRESS = {
   's-intro': 0, 's-qualify': 5, 's-quiz': 10,
-  's-gate-wa': 54, 's-loading': 55, 
+  's-gate-wa': 54, 's-loading': 55,
   's-video': 60, 's-josue': 70, 's-workshop': 78,
-  's-testimonios': 85, 's-loading2': 90, 's-precio': 100
+  's-testimonios': 85, 's-precio': 100
 };
 function setGlobalProgress(pct) {
   const fill = document.getElementById('p-fill');
@@ -3826,7 +3874,7 @@ function initGateWa(){
 (function(){
   var ticking = false;
   function apply(){
-    var els = document.querySelectorAll('#precio-welcome .precio-scrub');
+    var els = document.querySelectorAll('#s-precio .precio-scrub');
     var vh = window.innerHeight;
     var start = vh * 0.92;
     var end = vh * 0.4;

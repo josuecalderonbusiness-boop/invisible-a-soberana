@@ -3295,6 +3295,12 @@ const VIDEO_URLS = {
 P: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true',
 D: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true'
 };
+// Duración real de cada video (segundos). La pantalla degradada post-video aparece 2s antes del final.
+const VIDEO_DURATIONS_SEC = {
+ S: 233, // 3:53
+ P: 41,
+ D: 41
+};
 const PROFILE_NAMES = {
   S: 'La Soberana Silenciosa',
   P: 'La que Busca Conexión',
@@ -3472,10 +3478,11 @@ function dismissVideoOverlay() {
     existingIframe.src = src.replace('muted=true', 'muted=false&t=0');
   }
 
-  // Después del video: pantalla negra + texto introspectivo
+  // Después del video: pantalla negra + texto introspectivo (2s antes de que termine)
+  var durSec = VIDEO_DURATIONS_SEC[topProfile] || 41;
   setTimeout(function(){
     showVideoCta();
-  }, 39000);
+  }, (durSec - 2) * 1000);
 }
 
 // ── TESTIMONIOS SWIPE ─────────────────────────────────────

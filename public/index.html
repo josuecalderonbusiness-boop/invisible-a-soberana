@@ -47,6 +47,28 @@
     --font-elegant: 'Cormorant Garamond', Georgia, serif;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { -webkit-tap-highlight-color: transparent; }
+  button, a, [role="button"] { outline: none; -webkit-tap-highlight-color: transparent; }
+  button:focus, a:focus, [role="button"]:focus,
+  button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: none; }
+  @keyframes jellyPress {
+    0%   { transform: scale(1,1); }
+    25%  { transform: scale(.90,1.08); }
+    45%  { transform: scale(1.06,.94); }
+    65%  { transform: scale(.97,1.03); }
+    85%  { transform: scale(1.015,.99); }
+    100% { transform: scale(1,1); }
+  }
+  @keyframes clickRipple {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: .5; }
+    100% { transform: translate(-50%,-50%) scale(1); opacity: 0; }
+  }
+  .click-ripple {
+    position: fixed; z-index: 9999; pointer-events: none;
+    width: 110px; height: 110px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,200,112,.55) 0%, rgba(184,137,42,.22) 45%, transparent 72%);
+    animation: clickRipple .55s ease-out forwards;
+  }
   body {
     font-family: var(--font-body);
     background: var(--charcoal-deep);
@@ -3484,6 +3506,31 @@ function dismissVideoOverlay() {
     showVideoCta();
   }, (durSec - 2) * 1000);
 }
+
+// ── CLICK FEEDBACK (gelatina + onda dorada) ────────────────
+document.addEventListener('click', function(e){
+  var el = e.target.closest('button, .opt, [role="button"]');
+  if (!el) return;
+  // Se aplica directo en el inline style: muchos botones ya traen su propia
+  // animación de pulso inline (ctaPulse, s2pulse...) que gana por especificidad
+  // sobre cualquier clase, así que hay que pisarla y restaurarla al terminar.
+  if (el._jellyTimeout) clearTimeout(el._jellyTimeout);
+  if (el._jellyOrigAnim === undefined) el._jellyOrigAnim = el.style.animation || '';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'jellyPress .5s cubic-bezier(.36,.07,.19,.97) both';
+  el._jellyTimeout = setTimeout(function(){
+    el.style.animation = el._jellyOrigAnim;
+    el._jellyOrigAnim = undefined;
+  }, 500);
+
+  var ripple = document.createElement('div');
+  ripple.className = 'click-ripple';
+  ripple.style.left = e.clientX + 'px';
+  ripple.style.top = e.clientY + 'px';
+  document.body.appendChild(ripple);
+  setTimeout(function(){ ripple.remove(); }, 600);
+}, true);
 
 // ── TESTIMONIOS SWIPE ─────────────────────────────────────
 let testiIdx = 0;

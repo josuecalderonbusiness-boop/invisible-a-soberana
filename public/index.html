@@ -1698,7 +1698,7 @@ window.wGoTo=wGoTo; window.initWrapped=function(){wCur=0;wCanTap=false;document.
 <script>
 function initJosue(){
   var ifr=document.getElementById('josue-iframe');
-  ifr.src='https://iframe.mediadelivery.net/embed/649326/ac766f43-81e6-420e-b019-a69dd9b76630?autoplay=true&muted=true&preload=true&controls=false&showSpeed=false&showTimeline=false';
+  ifr.src='https://iframe.mediadelivery.net/embed/700408/08004109-97e7-4bc1-8411-a42546977eea?autoplay=true&muted=true&preload=true&controls=false&showSpeed=false&showTimeline=false';
   var dark=document.getElementById('josue-dark');
   var ov=document.getElementById('josue-overlay');
   var bio=document.getElementById('josue-bio');
@@ -3317,7 +3317,7 @@ const VIDEO_URLS = {
 P: 'https://iframe.mediadelivery.net/embed/700408/7a5d7256-c08c-46e5-9c03-134faa342d42?autoplay=true&muted=true&preload=true',
 D: 'https://iframe.mediadelivery.net/embed/636956/a24ce52e-4395-4b7c-8b6b-50a154ec746c?autoplay=true&muted=true&preload=true'
 };
-// Duración real de cada video (segundos). La pantalla degradada post-video aparece 2s antes del final.
+// Duración real de cada video (segundos). La pantalla degradada post-video aparece justo cuando termina.
 const VIDEO_DURATIONS_SEC = {
  S: 233, // 3:53
  P: 158, // 2:38
@@ -3500,11 +3500,11 @@ function dismissVideoOverlay() {
     existingIframe.src = src.replace('muted=true', 'muted=false&t=0');
   }
 
-  // Después del video: pantalla negra + texto introspectivo (2s antes de que termine)
+  // Después del video: pantalla negra + texto introspectivo (justo cuando termina)
   var durSec = VIDEO_DURATIONS_SEC[topProfile] || 41;
   setTimeout(function(){
     showVideoCta();
-  }, (durSec - 2) * 1000);
+  }, durSec * 1000);
 }
 
 // ── CLICK FEEDBACK (gelatina + onda dorada) ────────────────

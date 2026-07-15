@@ -137,7 +137,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-footer-brand { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
 .mc-footer-brand .gold { color: var(--gold-primary); font-style: italic; }
 .mc-footer-links { margin-top: 14px; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
-.mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.3); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
+.mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.55); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
 
 /* ── Sticky bottom bar ── */
 #mc-sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: rgba(30,18,24,.92); backdrop-filter: blur(10px); border-top: 1px solid rgba(184,137,42,.25); transform: translateY(110%); transition: transform .4s ease; }
@@ -150,6 +150,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 </head>
 <body>
 
+<main>
 <!-- ══════════════════ HERO ══════════════════ -->
 <section class="mc-hero">
   <div class="mc-eyebrow">Masterclass Soberana</div>
@@ -237,6 +238,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
   </footer>
 </div>
+</main>
 
 <!-- ══════════════════ STICKY CTA ══════════════════ -->
 <div id="mc-sticky">

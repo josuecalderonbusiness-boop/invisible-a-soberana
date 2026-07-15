@@ -92,7 +92,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
   <!-- ══════════════════ ESPACIO — EN VIVO ══════════════════ -->
   <div class="db-space" id="db-live">
-    <div class="db-badge live">En vivo próximamente</div>
+    <div class="db-badge live" id="db-live-badge">En vivo próximamente</div>
     <h1 class="db-h1">Masterclass Soberana</h1>
     <p class="db-date">📅 Sábado 1 de agosto · 🕖 7:00 p.m. Colombia (6:00 p.m. México)</p>
     <div class="db-countdown" id="db-countdown">
@@ -101,7 +101,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
       <div class="db-cd-unit"><div class="db-cd-n" id="db-cd-m">–</div><div class="db-cd-l">Min</div></div>
       <div class="db-cd-unit"><div class="db-cd-n" id="db-cd-s">–</div><div class="db-cd-l">Seg</div></div>
     </div>
-    <p class="db-note">Tu lugar ya está reservado. Tu acceso al evento se habilita justo aquí, en este mismo espacio, cuando llegue el momento.</p>
+    <p class="db-note" id="db-live-note">Tu lugar ya está reservado. Tu acceso a cada parte del evento se habilita justo aquí, en este mismo espacio, cuando llegue el momento.</p>
     <a class="db-zoom-btn disabled" id="db-zoom-btn" href="#" target="_blank">Se activa el día del evento</a>
   </div>
 
@@ -140,24 +140,88 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Fuente única de la fecha del evento — misma constante que la Landing, Gracias y api/whatsapp.js
-// (ver entry-product-system/SKILL.md → "Mecanismo de derivación automática por fecha").
-const EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
 const PRODUCTO_SLUG = 'mas-se-aleja';
 
-// PENDIENTE — Josué entrega el link real antes del evento (ver masterclass-platform-system,
-// Bitácora 2026-07-15). Mientras sea null, el botón queda deshabilitado aunque llegue la hora.
-const ZOOM_URL = null;
+// ── Sesiones de video del evento — proveedor intercambiable ──────────────────────────
+// El sistema nunca depende de Zoom (ni de ningún proveedor) — solo entrega el link que
+// corresponde al momento actual. Cada sesión es solo {inicio, fin, url, etiqueta}; el
+// proveedor real (Zoom, Meet, lo que sea) es un detalle de la URL, no de la arquitectura.
+//
+// Este lanzamiento usa Zoom Básico (tope de 40 min por reunión), por eso el evento se
+// reparte en 2 sesiones consecutivas en vez de una sola. El día que se pase a un plan sin
+// tope (Zoom Pro u otro proveedor), este arreglo pasa a tener una sola entrada — nada más
+// del sistema cambia (ver entry-product-system/SKILL.md → "Mecanismo de derivación
+// automática por fecha").
+//
+// Los 2 links reales de Zoom ya están cargados (2026-07-15) — Parte 2 corrida a 7:45pm para
+// que coincida con la hora real en que Josué programó esa reunión (no 7:40pm como se planeó
+// originalmente en el canvas; el horario real de Zoom manda sobre el plan).
+const EVENTO_SESIONES = [
+  { inicio: new Date('2026-08-01T19:00:00-05:00'), fin: new Date('2026-08-01T19:35:00-05:00'), url: 'https://us05web.zoom.us/j/85736270769?pwd=0YoWw7WEMaLZFbHXtT3atOuhI7owwq.1', etiqueta: 'Entrar — Parte 1' },
+  { inicio: new Date('2026-08-01T19:45:00-05:00'), fin: new Date('2026-08-01T20:15:00-05:00'), url: 'https://us05web.zoom.us/j/83908777239?pwd=MnMBk1jr3fQC8PUoJdyfwaaO1Dv2ra.1', etiqueta: 'Entrar — Parte 2 (preguntas)' }
+];
+const EVENTO_INICIO = EVENTO_SESIONES[0].inicio;
+const EVENTO_FIN    = EVENTO_SESIONES[EVENTO_SESIONES.length - 1].fin; // el Dashboard pasa a Replay después de esto
+const ENTRADA_ANTICIPADA_MS = 10 * 60000; // se puede entrar 10 min antes de que abra cada sesión
 
 let dbEmail = '';
 
 function dbFmt(n) { return String(n).padStart(2, '0'); }
 
-function dbEnVivo() { return Date.now() < EVENTO_FECHA.getTime(); }
+function dbEnVivo() { return Date.now() < EVENTO_FIN.getTime(); }
+
+// La sesión que debería estar activa ahora mismo (incluye la ventana de entrada anticipada), o null.
+function dbSesionActual() {
+  const now = Date.now();
+  return EVENTO_SESIONES.find(function (s) {
+    return now >= s.inicio.getTime() - ENTRADA_ANTICIPADA_MS && now < s.fin.getTime();
+  }) || null;
+}
+
+// La próxima sesión que todavía no empieza, o null si ya pasaron todas.
+function dbProximaSesion() {
+  const now = Date.now();
+  return EVENTO_SESIONES.find(function (s) { return s.inicio.getTime() > now; }) || null;
+}
 
 function dbTickCountdown() {
-  const diff = EVENTO_FECHA.getTime() - Date.now();
-  if (diff <= 0) { dbShowEspacio(); return; }
+  const sesion = dbSesionActual();
+  const btn = document.getElementById('db-zoom-btn');
+  const badge = document.getElementById('db-live-badge');
+  const note = document.getElementById('db-live-note');
+
+  if (sesion) {
+    document.getElementById('db-countdown').style.display = 'none';
+    badge.textContent = '● En vivo ahora';
+    if (sesion.url) {
+      btn.href = sesion.url;
+      btn.textContent = sesion.etiqueta + ' →';
+      btn.classList.remove('disabled');
+      btn.classList.add('enabled');
+      note.textContent = 'Ya puedes entrar — toca el botón de abajo.';
+    } else {
+      btn.classList.remove('enabled');
+      btn.classList.add('disabled');
+      btn.textContent = 'El link llega en un momento';
+      note.textContent = 'Ya estamos en vivo — el link se activa aquí en cuanto esté listo.';
+    }
+    return;
+  }
+
+  const proxima = dbProximaSesion();
+  if (!proxima) { dbShowEspacio(); return; } // ya pasaron todas las sesiones → Replay
+
+  document.getElementById('db-countdown').style.display = 'flex';
+  btn.classList.remove('enabled');
+  btn.classList.add('disabled');
+  const esPrimera = proxima === EVENTO_SESIONES[0];
+  badge.textContent = esPrimera ? 'En vivo próximamente' : 'En un descanso';
+  note.textContent = esPrimera
+    ? 'Tu lugar ya está reservado. Tu acceso se habilita justo aquí cuando llegue el momento.'
+    : 'Volvemos en un momento — la segunda parte se habilita aquí mismo.';
+  btn.textContent = esPrimera ? 'Se activa el día del evento' : 'Se activa en el descanso';
+
+  const diff = proxima.inicio.getTime() - Date.now();
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -166,15 +230,6 @@ function dbTickCountdown() {
   document.getElementById('db-cd-h').textContent = dbFmt(h);
   document.getElementById('db-cd-m').textContent = dbFmt(m);
   document.getElementById('db-cd-s').textContent = dbFmt(s);
-
-  // Botón de Zoom se activa 15 minutos antes del evento, si ya hay link real.
-  if (diff <= 15 * 60000 && ZOOM_URL) {
-    const btn = document.getElementById('db-zoom-btn');
-    btn.href = ZOOM_URL;
-    btn.textContent = 'Entrar a la transmisión →';
-    btn.classList.remove('disabled');
-    btn.classList.add('enabled');
-  }
 }
 
 function dbShowEspacio() {

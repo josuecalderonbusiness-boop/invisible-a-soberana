@@ -45,9 +45,12 @@ const AUDIO_DIA6         = '4265678347083267';
 // única fuente de verdad, ver entry-product-system/SKILL.md → "Mecanismo de
 // derivación automática por fecha". No duplicar este valor en otro lugar.
 // ════════════════════════════════════════════════════════════════
-const MASTERCLASS_EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
+// Fin de la última sesión de video del evento (no el inicio) — con Zoom Básico el evento se
+// reparte en 2 sesiones consecutivas (ver Dashboard, EVENTO_SESIONES); el producto sigue siendo
+// "En Vivo" hasta que termina la última. Mantener este valor igual a EVENTO_FIN del Dashboard.
+const MASTERCLASS_EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00');
 const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/masterclass/mas-se-aleja/dashboard';
-function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FECHA.getTime(); }
+function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FIN.getTime(); }
 
 export default async function handler(req, res) {
 
@@ -598,7 +601,7 @@ async function ejecutarPaso(phone, paso, nombre) {
 
   // ── MASTERCLASS SOBERANA ($9) — entry-product-system, ver
   // C:\BUSINESS-SYSTEMS\ENTRY-PRODUCTS\001-masterclass-soberana\05-whatsapp\secuencia-whatsapp.md
-  // Estado (En Vivo / Replay) derivado de MASTERCLASS_EVENTO_FECHA arriba — nunca hardcodear el
+  // Estado (En Vivo / Replay) derivado de MASTERCLASS_EVENTO_FIN arriba — nunca hardcodear el
   // mensaje sin revisar masterclassEnVivo() primero, ver entry-product-system/SKILL.md.
 
   else if (paso === 'bienvenida_masterclass') {

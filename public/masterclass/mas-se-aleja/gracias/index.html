@@ -150,8 +150,8 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
 // ── Estado derivado de la fecha del evento — misma fuente única que la Landing
 // (ver entry-product-system/SKILL.md → "Mecanismo de derivación automática por fecha").
 (function () {
-  var EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
-  if (Date.now() >= EVENTO_FECHA.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
+  var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
+  if (Date.now() >= EVENTO_FIN.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
 
   var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
   document.title = 'Tu lugar está reservado — Masterclass Soberana';

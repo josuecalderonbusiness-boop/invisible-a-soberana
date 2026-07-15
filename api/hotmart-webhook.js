@@ -223,9 +223,11 @@ export default async function handler(req, res) {
 // Nombre funcional, reutilizable para cualquier producto de entrada futuro en estado Evergreen/Replay
 // (ver regla de nomenclatura en la misma Skill) — nunca renombrar por producto.
 // Estado derivado de la fecha del evento — misma fuente que public/masterclass/mas-se-aleja/*
-// y api/whatsapp.js (MASTERCLASS_EVENTO_FECHA). No duplicar este valor con otro distinto.
-const MASTERCLASS_EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
-function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FECHA.getTime(); }
+// y api/whatsapp.js (MASTERCLASS_EVENTO_FIN). No duplicar este valor con otro distinto. Es el FIN
+// de la última sesión de video (no el inicio) — con Zoom Básico el evento se reparte en 2 sesiones
+// consecutivas, ver Dashboard (EVENTO_SESIONES).
+const MASTERCLASS_EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00');
+function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FIN.getTime(); }
 
 async function enviarBienvenidaWhatsApp(phone, nombre, email) {
   if (!phone) {

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mi espacio — Código Soberana</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --wine-deep: #3D0C11; --wine-primary: #6B1A2A;
+  --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
+  --charcoal-deep: #1E1218; --charcoal: #2A1C21; --charcoal-soft: #3A2830;
+  --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-elegant: 'Cormorant Garamond', Georgia, serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--charcoal-deep); overflow-x: hidden; min-height: 100vh; }
+body { font-family: var(--font-body); color: var(--text-light); }
+
+.db-wrap { min-height: 100vh; min-height: 100dvh; padding: 60px 24px; max-width: 480px; margin: 0 auto; }
+
+/* ── Login ── */
+.db-login { width: 100%; margin-top: 40px; text-align: center; }
+.db-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 18px; }
+.db-title { font-family: var(--font-display); font-size: clamp(24px, 6vw, 30px); font-weight: 900; line-height: 1.3; }
+.db-sub { font-family: var(--font-elegant); font-style: italic; font-size: 16px; color: var(--text-muted); margin: 14px 0 32px; }
+.db-input { width: 100%; padding: 16px 18px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.3); background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 15px; margin-bottom: 14px; }
+.db-input::placeholder { color: rgba(240,230,234,.35); }
+.db-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-family: var(--font-body); font-weight: 700; font-size: 15px; }
+.db-btn:disabled { opacity: .6; cursor: default; }
+.db-err { display: none; margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.3); font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.db-err a { color: var(--gold-light); }
+
+/* ── Biblioteca ── */
+.db-lib { display: none; width: 100%; }
+.db-lib-header { text-align: center; margin-bottom: 32px; }
+.db-lib-title { font-family: var(--font-display); font-size: clamp(22px, 5.5vw, 26px); font-weight: 900; }
+.db-lib-sub { font-family: 'Jost', sans-serif; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+.db-card { border: 1.5px solid rgba(184,137,42,.25); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer; transition: border-color .2s; }
+.db-card:hover { border-color: rgba(184,137,42,.5); }
+.db-card.selected { border-color: var(--gold-primary); background: rgba(184,137,42,.05); }
+.db-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.db-card-nombre { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+.db-card-badge { font-family: 'Jost', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 5px 10px; border-radius: 20px; flex-shrink: 0; }
+.db-card-badge.live { background: rgba(184,137,42,.15); color: var(--gold-light); }
+.db-card-badge.replay { background: rgba(255,255,255,.06); color: var(--text-muted); }
+
+/* ── Detalle (dentro de la card seleccionada) ── */
+.db-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(184,137,42,.15); text-align: center; }
+.db-badge { display: inline-flex; align-items: center; gap: 8px; font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 16px; border-radius: 30px; margin-bottom: 18px; }
+.db-badge.live { background: rgba(184,137,42,.12); border: 1px solid rgba(184,137,42,.4); color: var(--gold-light); }
+.db-badge.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--gold-light); animation: dbPulse 1.4s ease infinite; }
+.db-badge.replay { background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.25); color: var(--text-muted); }
+@keyframes dbPulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+.db-countdown { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
+.db-cd-unit { background: rgba(255,255,255,.03); border: 1px solid rgba(184,137,42,.2); border-radius: 12px; padding: 12px 8px; min-width: 54px; }
+.db-cd-n { font-family: var(--font-display); font-size: 21px; font-weight: 900; color: var(--gold-light); }
+.db-cd-l { font-family: 'Jost', sans-serif; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+.db-note { font-family: var(--font-elegant); font-style: italic; font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 340px; margin: 0 auto 22px; }
+
+.db-zoom-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border-radius: 12px; border: none; font-family: var(--font-body); font-weight: 700; font-size: 14px; text-decoration: none; }
+.db-zoom-btn.enabled { background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); cursor: pointer; }
+.db-zoom-btn.disabled { background: rgba(255,255,255,.04); color: var(--text-muted); cursor: default; border: 1px solid rgba(184,137,42,.15); }
+
+.db-video-box { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: var(--charcoal); margin-bottom: 20px; }
+.db-video-box iframe { width: 100%; height: 100%; border: none; }
+
+.db-apuntes { width: 100%; text-align: left; margin-top: 6px; }
+.db-apuntes-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px; }
+.db-apuntes textarea { width: 100%; min-height: 120px; padding: 14px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.25); background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 14px; line-height: 1.6; resize: vertical; }
+.db-apuntes-saved { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 8px; opacity: 0; transition: opacity .3s; }
+.db-apuntes-saved.show { opacity: 1; }
+
+.db-footer { margin-top: 48px; text-align: center; }
+.db-footer-brand { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: rgba(237,227,206,.4); }
+.db-footer-brand .gold { color: rgba(184,137,42,.55); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="db-wrap">
+
+  <!-- ══════════════════ LOGIN ══════════════════ -->
+  <div class="db-login" id="db-login">
+    <div class="db-eyebrow">Tu espacio</div>
+    <h1 class="db-title">Código <em style="font-style:italic;color:var(--gold-light)">Soberana</em></h1>
+    <p class="db-sub">Ingresa el correo con el que compraste para entrar.</p>
+    <input class="db-input" id="db-email" type="email" placeholder="tu@correo.com" autocomplete="email">
+    <button class="db-btn" id="db-login-btn" onclick="dbLogin()">Entrar a mi espacio →</button>
+    <div class="db-err" id="db-err">
+      No encontramos ninguna compra activa con ese correo. Si ya compraste, escríbenos y lo activamos:
+      <br><br><a id="db-err-wa" href="#" target="_blank">Escribir por WhatsApp</a>
+    </div>
+  </div>
+
+  <!-- ══════════════════ BIBLIOTECA ══════════════════ -->
+  <div class="db-lib" id="db-lib">
+    <div class="db-lib-header">
+      <div class="db-eyebrow">Tu espacio</div>
+      <h1 class="db-lib-title">Tus masterclasses</h1>
+      <p class="db-lib-sub" id="db-lib-count"></p>
+    </div>
+    <div id="db-cards"></div>
+  </div>
+
+  <div class="db-footer">
+    <div class="db-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
+  </div>
+</div>
+
+<script>
+// El acceso a Firestore vive detrás de api/mi-espacio-login.js y api/mi-espacio-apuntes.js — el
+// cliente nunca habla directo con Firestore (las reglas de seguridad no cubren estas colecciones
+// nuevas; ver comentario en esos archivos).
+
+// ── Registro de masterclasses — agregar una entrada nueva es lo único que hace falta para que
+// "Mi Espacio" soporte un producto más (ver masterclass-platform-system, Bitácora "Corrección #2 de
+// alcance", 2026-07-15). El proveedor de video sigue siendo intercambiable dentro de cada una
+// (ver entry-product-system/SKILL.md → "Sesiones de video").
+const PRODUCTOS = {
+  'mas-se-aleja': {
+    nombre: 'Masterclass Soberana',
+    sesiones: [
+      { inicio: new Date('2026-08-01T19:00:00-05:00'), fin: new Date('2026-08-01T19:35:00-05:00'), url: 'https://us05web.zoom.us/j/85736270769?pwd=0YoWw7WEMaLZFbHXtT3atOuhI7owwq.1', etiqueta: 'Entrar — Parte 1' },
+      { inicio: new Date('2026-08-01T19:45:00-05:00'), fin: new Date('2026-08-01T20:15:00-05:00'), url: 'https://us05web.zoom.us/j/83908777239?pwd=MnMBk1jr3fQC8PUoJdyfwaaO1Dv2ra.1', etiqueta: 'Entrar — Parte 2 (preguntas)' }
+    ],
+    fechaEventoTexto: '📅 Sábado 1 de agosto · 🕖 7:00 p.m. Colombia (6:00 p.m. México)',
+    bunnyUrl: null // PENDIENTE — se llena cuando se sube la grabación (Fase 2.7 Integración)
+  }
+};
+const ENTRADA_ANTICIPADA_MS = 10 * 60000;
+
+let dbEmail = '';
+let dbCompras = [];
+let dbSeleccion = 0;
+
+function dbFmt(n) { return String(n).padStart(2, '0'); }
+
+function dbEventoFin(config) { return config.sesiones[config.sesiones.length - 1].fin; }
+function dbEnVivo(config) { return Date.now() < dbEventoFin(config).getTime(); }
+
+function dbSesionActual(config) {
+  const now = Date.now();
+  return config.sesiones.find(function (s) {
+    return now >= s.inicio.getTime() - ENTRADA_ANTICIPADA_MS && now < s.fin.getTime();
+  }) || null;
+}
+function dbProximaSesion(config) {
+  const now = Date.now();
+  return config.sesiones.find(function (s) { return s.inicio.getTime() > now; }) || null;
+}
+
+async function dbLogin() {
+  const email = document.getElementById('db-email').value.trim().toLowerCase();
+  const btn = document.getElementById('db-login-btn');
+  const err = document.getElementById('db-err');
+  err.classList.remove('show'); err.style.display = 'none';
+  if (!email || !email.includes('@')) return;
+
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/mi-espacio-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    });
+    const data = await res.json();
+    const compras = (data.compras || []).filter(function (c) { return PRODUCTOS[c.producto]; });
+
+    if (!compras.length) {
+      document.getElementById('db-err-wa').href =
+        'https://wa.me/573189045623?text=' + encodeURIComponent('Hola Josué, no encuentro mi acceso a mi espacio. Mi correo es: ' + email);
+      err.style.display = 'block';
+      btn.textContent = 'Entrar a mi espacio →';
+      btn.disabled = false;
+      return;
+    }
+
+    compras.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); }); // más reciente primero
+    dbEmail = email;
+    dbCompras = compras;
+    localStorage.setItem('mi_espacio_email', email);
+    dbShowBiblioteca();
+  } catch (e) {
+    console.error(e);
+    btn.textContent = 'Entrar a mi espacio →';
+    btn.disabled = false;
+  }
+}
+
+function dbShowBiblioteca() {
+  document.getElementById('db-login').style.display = 'none';
+  document.getElementById('db-lib').style.display = 'block';
+  document.getElementById('db-lib-count').textContent =
+    dbCompras.length === 1 ? '1 masterclass' : (dbCompras.length + ' masterclasses');
+  dbSeleccion = 0;
+  dbRenderCards();
+}
+
+function dbRenderCards() {
+  const wrap = document.getElementById('db-cards');
+  wrap.innerHTML = '';
+  dbCompras.forEach(function (compra, i) {
+    const config = PRODUCTOS[compra.producto];
+    const enVivo = dbEnVivo(config);
+    const card = document.createElement('div');
+    card.className = 'db-card' + (i === dbSeleccion ? ' selected' : '');
+    card.onclick = function () { dbSeleccion = i; dbRenderCards(); };
+    card.innerHTML =
+      '<div class="db-card-top">' +
+        '<div class="db-card-nombre">' + config.nombre + '</div>' +
+        '<div class="db-card-badge ' + (enVivo ? 'live' : 'replay') + '">' + (enVivo ? 'En vivo' : 'Replay') + '</div>' +
+      '</div>' +
+      (i === dbSeleccion ? '<div class="db-detail" id="db-detail-' + i + '"></div>' : '');
+    wrap.appendChild(card);
+  });
+  dbRenderDetail(dbSeleccion);
+}
+
+function dbRenderDetail(i) {
+  const compra = dbCompras[i];
+  const config = PRODUCTOS[compra.producto];
+  const el = document.getElementById('db-detail-' + i);
+  if (!el) return;
+
+  if (dbEnVivo(config)) {
+    el.innerHTML =
+      '<div class="db-badge live" id="db-live-badge">En vivo próximamente</div>' +
+      '<p style="font-family:\'Jost\',sans-serif;font-size:12px;color:var(--text-muted);margin-bottom:18px;">' + config.fechaEventoTexto + '</p>' +
+      '<div class="db-countdown" id="db-countdown">' +
+        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-d">–</div><div class="db-cd-l">Días</div></div>' +
+        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-h">–</div><div class="db-cd-l">Horas</div></div>' +
+        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-m">–</div><div class="db-cd-l">Min</div></div>' +
+        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-s">–</div><div class="db-cd-l">Seg</div></div>' +
+      '</div>' +
+      '<p class="db-note" id="db-live-note">Tu lugar ya está reservado. Tu acceso a cada parte del evento se habilita justo aquí, cuando llegue el momento.</p>' +
+      '<a class="db-zoom-btn disabled" id="db-zoom-btn" href="#" target="_blank">Se activa el día del evento</a>';
+    dbTickCountdown(config);
+    clearInterval(window._dbInterval);
+    window._dbInterval = setInterval(function () { dbTickCountdown(config); }, 1000);
+  } else {
+    clearInterval(window._dbInterval);
+    el.innerHTML =
+      '<div class="db-video-box" id="db-video-box">' +
+        (config.bunnyUrl
+          ? '<iframe src="' + config.bunnyUrl + '" allow="autoplay;fullscreen" allowfullscreen></iframe>'
+          : '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se sube la grabación del evento en vivo.</p>') +
+      '</div>' +
+      '<div class="db-apuntes">' +
+        '<div class="db-apuntes-label">Tus apuntes</div>' +
+        '<textarea id="db-apuntes-txt" placeholder="Escribe aquí lo que quieras recordar de esta clase..."></textarea>' +
+        '<div class="db-apuntes-saved" id="db-apuntes-saved">Guardado ✓</div>' +
+      '</div>';
+    dbLoadApuntes(compra.producto);
+    document.getElementById('db-apuntes-txt').addEventListener('input', function () {
+      clearTimeout(window._dbApuntesTimer);
+      const producto = compra.producto;
+      window._dbApuntesTimer = setTimeout(async function () {
+        try {
+          await fetch('/api/mi-espacio-apuntes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: dbEmail, producto: producto, texto: document.getElementById('db-apuntes-txt').value })
+          });
+          const saved = document.getElementById('db-apuntes-saved');
+          saved.classList.add('show');
+          setTimeout(function () { saved.classList.remove('show'); }, 1500);
+        } catch (e) { console.warn('Error guardando apuntes:', e.message); }
+      }, 900);
+    });
+  }
+}
+
+function dbTickCountdown(config) {
+  const sesion = dbSesionActual(config);
+  const btn = document.getElementById('db-zoom-btn');
+  const badge = document.getElementById('db-live-badge');
+  const note = document.getElementById('db-live-note');
+  if (!btn || !badge || !note) return;
+
+  if (sesion) {
+    document.getElementById('db-countdown').style.display = 'none';
+    badge.textContent = '● En vivo ahora';
+    if (sesion.url) {
+      btn.href = sesion.url;
+      btn.textContent = sesion.etiqueta + ' →';
+      btn.classList.remove('disabled'); btn.classList.add('enabled');
+      note.textContent = 'Ya puedes entrar — toca el botón de abajo.';
+    } else {
+      btn.classList.remove('enabled'); btn.classList.add('disabled');
+      btn.textContent = 'El link llega en un momento';
+      note.textContent = 'Ya estamos en vivo — el link se activa aquí en cuanto esté listo.';
+    }
+    return;
+  }
+
+  const proxima = dbProximaSesion(config);
+  if (!proxima) { dbRenderCards(); return; } // ya pasaron todas las sesiones → Replay
+
+  document.getElementById('db-countdown').style.display = 'flex';
+  btn.classList.remove('enabled'); btn.classList.add('disabled');
+  const esPrimera = proxima === config.sesiones[0];
+  badge.textContent = esPrimera ? 'En vivo próximamente' : 'En un descanso';
+  note.textContent = esPrimera
+    ? 'Tu lugar ya está reservado. Tu acceso se habilita justo aquí cuando llegue el momento.'
+    : 'Volvemos en un momento — la siguiente parte se habilita aquí mismo.';
+  btn.textContent = esPrimera ? 'Se activa el día del evento' : 'Se activa en el descanso';
+
+  const diff = proxima.inicio.getTime() - Date.now();
+  document.getElementById('db-cd-d').textContent = dbFmt(Math.floor(diff / 86400000));
+  document.getElementById('db-cd-h').textContent = dbFmt(Math.floor((diff % 86400000) / 3600000));
+  document.getElementById('db-cd-m').textContent = dbFmt(Math.floor((diff % 3600000) / 60000));
+  document.getElementById('db-cd-s').textContent = dbFmt(Math.floor((diff % 60000) / 1000));
+}
+
+async function dbLoadApuntes(producto) {
+  try {
+    const res = await fetch('/api/mi-espacio-apuntes?email=' + encodeURIComponent(dbEmail) + '&producto=' + encodeURIComponent(producto));
+    const data = await res.json();
+    if (data.texto) document.getElementById('db-apuntes-txt').value = data.texto;
+  } catch (e) { console.warn('No se pudieron cargar apuntes:', e.message); }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const saved = localStorage.getItem('mi_espacio_email');
+  if (saved) { document.getElementById('db-email').value = saved; dbLogin(); }
+});
+</script>
+
+</body>
+</html>

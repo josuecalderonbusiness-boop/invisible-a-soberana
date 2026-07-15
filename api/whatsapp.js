@@ -49,7 +49,7 @@ const AUDIO_DIA6         = '4265678347083267';
 // reparte en 2 sesiones consecutivas (ver Dashboard, EVENTO_SESIONES); el producto sigue siendo
 // "En Vivo" hasta que termina la última. Mantener este valor igual a EVENTO_FIN del Dashboard.
 const MASTERCLASS_EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00');
-const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/masterclass/mas-se-aleja/dashboard';
+const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/mi-espacio';
 function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FIN.getTime(); }
 
 export default async function handler(req, res) {
@@ -605,9 +605,9 @@ async function ejecutarPaso(phone, paso, nombre) {
   // mensaje sin revisar masterclassEnVivo() primero, ver entry-product-system/SKILL.md.
 
   else if (paso === 'bienvenida_masterclass') {
-    // El Dashboard (public/masterclass/mas-se-aleja/dashboard) es la casa permanente del producto
-    // desde el momento de la compra — ver masterclass-platform-system, Bitácora 2026-07-15.
-    // WhatsApp acompaña con recordatorios, nunca sustituye al Dashboard como destino.
+    // "Mi Espacio" (public/mi-espacio) es la casa permanente del producto desde el momento de la
+    // compra — biblioteca compartida entre masterclasses, ver masterclass-platform-system, Bitácora
+    // "Corrección #2 de alcance" (2026-07-15). WhatsApp acompaña, nunca sustituye al Dashboard.
     if (masterclassEnVivo()) {
       await sendWhatsApp(phone,
         `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +

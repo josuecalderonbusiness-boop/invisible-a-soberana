@@ -114,6 +114,7 @@ export default async function handler(req, res) {
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
+        await guardarCompraMasterclass(email, primerNombre, 'mas-se-aleja');
         await enviarBienvenidaWhatsApp(telefonoLimpio, primerNombre, email);
       }
 
@@ -191,6 +192,9 @@ export default async function handler(req, res) {
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
+    if (isMasterclass) {
+      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', 'mas-se-aleja');
+    }
 
     if (isMasterclass && !bienvenidaYaEnviada) {
       await enviarBienvenidaWhatsApp(
@@ -337,6 +341,44 @@ async function guardarEnFirestore(email, nombre, tipo, producto) {
     console.log('Firestore workbook_acceso actualizado:', email);
   } catch(err) {
     console.error('Error Firestore:', err.message);
+  }
+}
+
+// ── Biblioteca de masterclasses compradas — un documento POR COMPRA, no por email ─────────
+// A diferencia de workbook_acceso (un doc por email, se sobreescribe), esta colección permite que
+// una misma clienta acumule varias masterclasses sin que una compra borre a la anterior. El
+// Dashboard compartido ("Mi Espacio") lee de aquí — ver masterclass-platform-system, Bitácora
+// "Corrección #2 de alcance" (2026-07-15).
+async function guardarCompraMasterclass(email, nombre, producto) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const { google } = await import('googleapis');
+    const auth = new google.auth.GoogleAuth({
+      credentials: serviceAccount,
+      scopes: ['https://www.googleapis.com/auth/datastore']
+    });
+    const token = await auth.getAccessToken();
+    const docId = `${email}__${producto}`;
+    const url = `https://firestore.googleapis.com/v1/projects/soberana-app/databases/(default)/documents/masterclass_compras/${encodeURIComponent(docId)}`;
+    await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fields: {
+          email: { stringValue: email },
+          nombre: { stringValue: nombre },
+          producto: { stringValue: producto },
+          activo: { booleanValue: true },
+          fecha: { stringValue: new Date().toISOString() }
+        }
+      })
+    });
+    console.log('Firestore masterclass_compras actualizado:', docId);
+  } catch (err) {
+    console.error('Error guardando compra de masterclass:', err.message);
   }
 }
 

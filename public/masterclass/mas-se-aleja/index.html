@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Masterclass Soberana — Código Soberana</title>
+<meta name="description" content="Descubre por qué todo lo que has intentado hasta hoy ha seguido desgastándote... y cuál es el primer cambio que realmente empieza a transformar tu relación.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PENDIENTE: Meta Pixel + GA4
+     No se encontró Pixel ID / GA4 Measurement ID hardcodeado en ningún
+     archivo del repo invisible-a-soberana. Pegar aquí el snippet real
+     de Meta Pixel (fbq init + PageView) y de GA4 (gtag.js) en cuanto
+     Josué los confirme. Mismo Pixel/GA4 del ecosistema Código Soberana
+     — no crear uno nuevo — segmentar por eventos/UTMs/parámetros.
+     ══════════════════════════════════════════════════════════════════ -->
+
+<style>
+:root {
+  --wine-deep: #3D0C11;
+  --wine-primary: #6B1A2A;
+  --wine-medium: #8B2D3F;
+  --wine-light: #A84455;
+  --wine-pale: #C97080;
+  --gold-deep: #7A5C1E;
+  --gold-primary: #B8892A;
+  --gold-medium: #D4A843;
+  --gold-light: #E8C870;
+  --charcoal-deep: #1E1218;
+  --charcoal: #2A1C21;
+  --charcoal-soft: #3A2830;
+  --text-light: #F0E6EA;
+  --text-muted: #C4A8B0;
+  --cream-warm: #F9F3E8;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-elegant: 'Cormorant Garamond', Georgia, serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+* { -webkit-tap-highlight-color: transparent; }
+button, a { outline: none; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--charcoal-deep); overflow-x: hidden; }
+body { font-family: var(--font-body); color: var(--text-light); }
+
+.mc-wrap { max-width: 560px; margin: 0 auto; padding: 0 24px; position: relative; }
+
+/* ── Reveal on scroll (mismo patrón de blur-entrance que index.html) ── */
+.reveal { opacity: 0; transform: translateY(18px); filter: blur(6px); transition: opacity .7s ease, transform .7s ease, filter .7s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+/* ── Eyebrow / kicker (Jost, uppercase, letter-spacing) ── */
+.mc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 18px; }
+
+/* ── Hero ── */
+.mc-hero { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 24px 60px; background: linear-gradient(160deg, var(--charcoal-deep) 0%, #24151B 55%, var(--charcoal-deep) 100%); }
+.mc-headline { font-family: var(--font-display); font-size: clamp(28px, 7vw, 42px); font-weight: 900; line-height: 1.18; color: var(--text-light); max-width: 480px; }
+.mc-headline em { font-family: var(--font-display); font-style: italic; font-weight: 700; color: var(--gold-light); }
+.mc-sub { font-family: 'Jost', sans-serif; font-size: clamp(15px, 3.5vw, 17px); font-style: italic; color: var(--text-muted); line-height: 1.65; max-width: 440px; margin: 22px auto 0; }
+
+/* ── Botón CTA (mismo gradiente sticky-gold de index.html) ── */
+.mc-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 360px; padding: 18px 32px; margin-top: 32px;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
+  background-size: 300% 100%;
+  color: var(--charcoal-deep); border: none; border-radius: 12px;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: .3px;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 8px 28px rgba(184,137,42,.4);
+  animation: mcCtaPulse 2.4s ease-in-out infinite, mcGoldShift 3s ease infinite;
+  transition: transform .2s, box-shadow .2s;
+}
+.mc-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(184,137,42,.55); }
+@keyframes mcCtaPulse { 0%,100% { box-shadow: 0 8px 28px rgba(184,137,42,.4); } 50% { box-shadow: 0 10px 40px rgba(184,137,42,.65); } }
+@keyframes mcGoldShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.mc-price-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.4); margin-top: 12px; }
+
+/* ── Bloque promesa/dolor (Cormorant, sección editorial) ── */
+.mc-section { padding: 72px 0; }
+.mc-quote { font-family: var(--font-elegant); font-style: italic; font-weight: 400; font-size: clamp(18px, 4.5vw, 21px); line-height: 1.75; color: rgba(240,230,234,.85); text-align: center; max-width: 460px; margin: 0 auto; }
+.mc-quote strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
+
+/* ── Video placeholder ── */
+.mc-video-box {
+  aspect-ratio: 16/9; width: 100%; border-radius: 16px; margin: 0 auto;
+  background: linear-gradient(155deg, var(--charcoal), var(--charcoal-soft));
+  border: 1px solid rgba(184,137,42,.2);
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+}
+.mc-video-play { width: 64px; height: 64px; border-radius: 50%; background: rgba(184,137,42,.12); border: 1.5px solid rgba(184,137,42,.45); display: flex; align-items: center; justify-content: center; }
+.mc-video-note { font-family: 'Jost', sans-serif; font-size: 12px; color: rgba(240,230,234,.35); text-align: center; padding: 0 30px; }
+
+/* ── Beneficios ── */
+.mc-benefit { display: flex; gap: 16px; align-items: flex-start; padding: 22px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
+.mc-benefit:last-child { border-bottom: none; }
+.mc-benefit-mark { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--gold-light); margin-top: 2px; }
+.mc-benefit-txt { font-family: var(--font-body); font-size: 15px; font-weight: 500; color: rgba(240,230,234,.9); line-height: 1.55; }
+.mc-benefit-txt strong { color: var(--gold-light); font-weight: 700; }
+
+/* ── FAQ (mismo patrón faq-item de index.html) ── */
+.mc-faq-label { font-family: 'Jost', sans-serif; font-size: 10px; color: var(--gold-primary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+.faq-item { border-bottom: 1px solid rgba(184,137,42,.15); padding: 16px 0; cursor: pointer; }
+.faq-q { font-family: 'Jost', sans-serif; font-size: 14px; color: #EDE3CE; font-weight: 500; padding-right: 20px; position: relative; line-height: 1.4; }
+.faq-q::after { content: '+'; position: absolute; right: 0; top: -2px; color: #B8892A; font-size: 18px; transition: transform .2s; }
+.faq-item.open .faq-q::after { transform: rotate(45deg); }
+.faq-a { font-family: var(--font-elegant); font-size: 14px; font-style: italic; color: rgba(237,227,206,.6); line-height: 1.65; max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .3s; }
+.faq-item.open .faq-a { max-height: 220px; padding-top: 12px; }
+
+/* ── Garantía / trust ── */
+.mc-guarantee { border-top: 1px solid rgba(184,137,42,.12); border-bottom: 1px solid rgba(184,137,42,.12); padding: 32px 0; }
+.mc-guarantee p { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(237,227,206,.7); margin-bottom: 12px; }
+
+/* ── Footer ── */
+.mc-footer { text-align: center; padding: 40px 24px 60px; }
+.mc-footer-brand { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.mc-footer-brand .gold { color: var(--gold-primary); font-style: italic; }
+.mc-footer-links { margin-top: 14px; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
+.mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.3); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
+
+/* ── Sticky bottom bar ── */
+#mc-sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: rgba(30,18,24,.92); backdrop-filter: blur(10px); border-top: 1px solid rgba(184,137,42,.25); transform: translateY(110%); transition: transform .4s ease; }
+#mc-sticky.show { transform: translateY(0); }
+.mc-sticky-txt { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-sticky-btn { flex-shrink: 0; padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer; background: linear-gradient(90deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep)); background-size: 300% 100%; animation: mcGoldShift 3s ease infinite; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: var(--charcoal-deep); letter-spacing: .3px; white-space: nowrap; }
+
+@media (max-width: 380px) { .mc-sticky-txt { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="mc-hero">
+  <div class="mc-eyebrow">Masterclass Soberana</div>
+  <h1 class="mc-headline">Descubre por qué todo lo que has intentado hasta hoy ha seguido <em>desgastándote</em>...<br>y cuál es el primer cambio que realmente empieza a transformar tu relación.</h1>
+  <p class="mc-sub">La mayoría de mujeres no están destruyendo su relación por falta de amor. La están desgastando intentando salvarla desde el único lugar donde nunca tuvieron control.</p>
+  <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
+  <p class="mc-price-note">Acceso inmediato · Pago seguro con Hotmart</p>
+</section>
+
+<div class="mc-wrap">
+
+  <!-- ══════════════════ PROMESA / RECONOCIMIENTO ══════════════════ -->
+  <section class="mc-section reveal">
+    <p class="mc-quote">Llevas años dando todo de ti para salvar tu relación. Cediendo. Ajustando quién eres. Aguantando para no generar conflicto. Y en algún punto dejaste de preguntarte si ese esfuerzo estaba funcionando — simplemente asumiste que <strong>todavía no habías encontrado la manera correcta</strong> de hacerlo.<br><br>En menos de una hora vas a entender por qué eso nunca fue el problema.</p>
+  </section>
+
+  <!-- ══════════════════ VIDEO ══════════════════ -->
+  <section class="mc-section reveal" style="padding-top:0;">
+    <div class="mc-video-box">
+      <div class="mc-video-play">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#E8C870"><polygon points="6 3 20 12 6 21"/></svg>
+      </div>
+      <p class="mc-video-note">Video pendiente — se coloca aquí una vez grabada la masterclass (Fase 2 del sistema de lanzamiento)</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ BENEFICIOS ══════════════════ -->
+  <section class="mc-section reveal">
+    <div class="mc-benefit">
+      <div class="mc-benefit-mark">1</div>
+      <p class="mc-benefit-txt"><strong>Vas a entender por qué nada de lo que intentaste antes funcionó</strong> — y por qué eso nunca significó que no lo intentaste lo suficiente.</p>
+    </div>
+    <div class="mc-benefit">
+      <div class="mc-benefit-mark">2</div>
+      <p class="mc-benefit-txt"><strong>Vas a identificar el primer cambio real</strong> que puede empezar a transformar tu relación — la dirección exacta, no una teoría más.</p>
+    </div>
+    <div class="mc-benefit">
+      <div class="mc-benefit-mark">3</div>
+      <p class="mc-benefit-txt"><strong>Vas a salir con alivio, no con más confusión</strong> — el mismo alivio de dejar de cargar sola la pregunta de qué está mal contigo.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ FAQ ══════════════════ -->
+  <section class="mc-section reveal" style="padding-top:0;">
+    <p class="mc-faq-label">Preguntas frecuentes</p>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Esto es para separarme o para quedarme?</div>
+      <div class="faq-a">Ninguna de las dos. Es para que entiendas qué ha estado pasando realmente, antes de decidir cualquier cosa desde la claridad en vez de desde el agotamiento.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Funciona si él no participa?</div>
+      <div class="faq-a">Sí. Esta masterclass no depende de que él haga nada — depende únicamente de que tú entiendas algo que hasta hoy nadie te había explicado así.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">$9 parece muy poco para algo que promete tanto.</div>
+      <div class="faq-a">Es intencional. El precio nunca debe ser la barrera para entender esto — la barrera real es la confianza, y por eso empezamos aquí, no con un compromiso grande.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Cuándo tengo acceso?</div>
+      <div class="faq-a">Inmediatamente después de tu pago.</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ GARANTÍA / TRUST ══════════════════ -->
+  <section class="mc-guarantee reveal">
+    <p>🛡️&nbsp; Compra protegida por Hotmart</p>
+    <p>⚡&nbsp; Acceso inmediato después del pago</p>
+  </section>
+
+  <!-- ══════════════════ CTA FINAL ══════════════════ -->
+  <section class="mc-section reveal" style="text-align:center;">
+    <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
+    <p class="mc-price-note">Acceso inmediato · $9 USD</p>
+  </section>
+
+  <!-- ══════════════════ FOOTER ══════════════════ -->
+  <footer class="mc-footer">
+    <div class="mc-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
+    <div class="mc-footer-links">
+      <a href="/privacidad.html" target="_blank">Política de Privacidad</a>
+      <span style="color:rgba(184,137,42,.2);font-size:10px;padding:6px 0;">·</span>
+      <a href="/terminos.html" target="_blank">Términos</a>
+      <span style="color:rgba(184,137,42,.2);font-size:10px;padding:6px 0;">·</span>
+      <a href="/reembolso.html" target="_blank">Reembolsos</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════ STICKY CTA ══════════════════ -->
+<div id="mc-sticky">
+  <span class="mc-sticky-txt">Masterclass Soberana — $9</span>
+  <button class="mc-sticky-btn" onclick="goToCheckout()">Empezar →</button>
+</div>
+
+<script>
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+function goToCheckout() {
+  // PENDIENTE Analytics: disparar evento de "InitiateCheckout"/GA4 aquí cuando se instale el Pixel/GA4.
+  window.open('https://pay.hotmart.com/W106744574H', '_blank');
+}
+
+// Sticky bar aparece después de pasar el hero
+(function () {
+  var sticky = document.getElementById('mc-sticky');
+  var hero = document.querySelector('.mc-hero');
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) sticky.classList.remove('show');
+      else sticky.classList.add('show');
+    });
+  }, { threshold: 0 });
+  obs.observe(hero);
+})();
+
+// Reveal on scroll (mismo patrón .js-reveal de index.html, una sola vez)
+(function () {
+  var els = document.querySelectorAll('.reveal');
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(function (el) { obs.observe(el); });
+})();
+</script>
+
+</body>
+</html>

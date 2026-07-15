@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tu acceso está listo — Masterclass Soberana</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- PENDIENTE: Meta Pixel + GA4 — mismo snippet que masterclass.html, disparar evento Purchase/conversión aquí -->
+
+<style>
+:root {
+  --wine-deep: #3D0C11; --wine-primary: #6B1A2A;
+  --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
+  --charcoal-deep: #1E1218; --charcoal: #2A1C21;
+  --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-elegant: 'Cormorant Garamond', Georgia, serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--charcoal-deep); overflow-x: hidden; }
+body { font-family: var(--font-body); color: var(--text-light); }
+
+.gc-wrap { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; max-width: 480px; margin: 0 auto; }
+
+.gc-check { width: 64px; height: 64px; border-radius: 50%; background: rgba(184,137,42,.12); border: 1.5px solid rgba(184,137,42,.5); display: flex; align-items: center; justify-content: center; margin-bottom: 28px; animation: gcPop .6s cubic-bezier(.34,1.5,.64,1) both; }
+@keyframes gcPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.gc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 16px; }
+.gc-title { font-family: var(--font-display); font-size: clamp(26px, 6.5vw, 34px); font-weight: 900; line-height: 1.25; color: var(--text-light); }
+.gc-title em { font-style: italic; color: var(--gold-light); }
+.gc-sub { font-family: var(--font-elegant); font-style: italic; font-size: clamp(16px, 4vw, 19px); color: rgba(240,230,234,.75); line-height: 1.65; margin: 20px auto 0; max-width: 400px; }
+
+.gc-steps { width: 100%; margin-top: 44px; text-align: left; }
+.gc-step { display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
+.gc-step:last-child { border-bottom: none; }
+.gc-step-n { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--gold-light); margin-top: 1px; }
+.gc-step-txt { font-family: var(--font-body); font-size: 14px; color: rgba(240,230,234,.85); line-height: 1.55; }
+.gc-step-txt strong { color: var(--gold-light); }
+
+.gc-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 18px 28px; margin-top: 40px;
+  background: linear-gradient(135deg, #25D366, #1FAE54);
+  color: #fff; border: none; border-radius: 12px;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: .3px;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 8px 28px rgba(37,211,102,.35);
+  animation: gcBtnPulse 2.4s ease-in-out infinite;
+  transition: transform .2s;
+}
+.gc-btn:hover { transform: translateY(-2px); }
+@keyframes gcBtnPulse { 0%,100% { box-shadow: 0 8px 28px rgba(37,211,102,.35); } 50% { box-shadow: 0 10px 38px rgba(37,211,102,.55); } }
+.gc-btn svg { flex-shrink: 0; }
+
+.gc-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.35); margin-top: 14px; line-height: 1.6; }
+
+.gc-footer { margin-top: 56px; }
+.gc-footer-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: rgba(237,227,206,.5); }
+.gc-footer-brand .gold { color: rgba(184,137,42,.6); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="gc-wrap">
+  <div class="gc-check">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+
+  <div class="gc-eyebrow">Compra confirmada</div>
+  <h1 class="gc-title">Tu acceso a la <em>Masterclass Soberana</em> está listo.</h1>
+  <p class="gc-sub">En menos de una hora vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.</p>
+
+  <div class="gc-steps">
+    <div class="gc-step">
+      <div class="gc-step-n">1</div>
+      <p class="gc-step-txt"><strong>Toca el botón verde de abajo</strong> — se abre WhatsApp con un mensaje ya escrito, solo tienes que enviarlo.</p>
+    </div>
+    <div class="gc-step">
+      <div class="gc-step-n">2</div>
+      <p class="gc-step-txt">Recibes ahí mismo <strong>el acceso a la masterclass</strong> y las instrucciones para verla.</p>
+    </div>
+    <div class="gc-step">
+      <div class="gc-step-n">3</div>
+      <p class="gc-step-txt">Después de verla, seguimos la conversación por WhatsApp — sin spam, solo lo que necesitas para dar el primer cambio real.</p>
+    </div>
+  </div>
+
+  <a class="gc-btn" id="gc-wa-btn" href="https://wa.me/573189045623?text=Hola%20Josu%C3%A9%2C%20acabo%20de%20comprar%20la%20Masterclass%20Soberana.%20Quiero%20recibir%20mi%20acceso%20%F0%9F%99%8C" target="_blank">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.2-1.36c1.46.8 3.1 1.22 4.84 1.22 5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm5.84 14.24c-.24.68-1.4 1.32-1.94 1.36-.5.05-1.02.25-3.4-.72-2.86-1.18-4.7-4.1-4.84-4.3-.14-.2-1.16-1.56-1.16-2.98 0-1.4.74-2.1 1-2.4.26-.28.58-.34.78-.34.2 0 .4 0 .56.01.18.02.42-.07.66.5.24.58.82 2 .9 2.14.08.14.13.3.02.5-.1.2-.16.32-.32.5-.16.18-.33.4-.47.54-.16.16-.32.33-.14.65.18.32.8 1.32 1.72 2.14 1.18 1.05 2.18 1.38 2.5 1.54.32.16.5.14.68-.08.18-.22.78-.9 1-1.22.2-.3.42-.26.7-.16.28.1 1.8.85 2.1 1.01.3.16.5.24.58.36.08.16.08.86-.16 1.54z"/></svg>
+    Recibir mi acceso por WhatsApp
+  </a>
+  <p class="gc-note">Se abre WhatsApp automáticamente · El mensaje ya viene escrito, solo envíalo</p>
+
+  <div class="gc-footer">
+    <div class="gc-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
+  </div>
+</div>
+
+<script>
+// PENDIENTE Analytics: disparar evento Purchase (Meta Pixel) / purchase (GA4) al cargar esta página.
+document.getElementById('gc-wa-btn').addEventListener('click', function () {
+  // PENDIENTE: evento de conversión "wa_click_masterclass" cuando el Pixel/GA4 estén instalados.
+});
+</script>
+
+</body>
+</html>

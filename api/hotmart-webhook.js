@@ -50,12 +50,24 @@ export default async function handler(req, res) {
 
     const BREVO_KEY             = process.env.BREVO_KEY;
     const SOBERANA_7D_PRODUCT_ID = '7386435';
+    const MASTERCLASS_PRODUCT_ID = '8128025';
+    // PENDIENTE: crear la lista "COMPRADORA_MASTERCLASS" en Brevo y reemplazar este valor.
+    // Mientras sea null, las compradoras de la masterclass caen en la lista del Workshop (11)
+    // pero quedan marcadas con el atributo PRODUCTO='masterclass' para no perder el dato.
+    const MASTERCLASS_LIST_ID   = null;
+
     const isCompra7D            = String(productId) === SOBERANA_7D_PRODUCT_ID;
-    const targetList            = isCompra7D ? 14 : 11;
+    const isMasterclass         = String(productId) === MASTERCLASS_PRODUCT_ID;
+    const targetList            = isCompra7D ? 14 : (isMasterclass && MASTERCLASS_LIST_ID ? MASTERCLASS_LIST_ID : 11);
+    const tipoContacto          = isCompra7D ? '7d' : (isMasterclass ? 'masterclass' : 'workshop');
+    const perfilContacto        = isCompra7D ? 'COMPRADORA_7D' : (isMasterclass ? 'COMPRADORA_MASTERCLASS' : 'COMPRADORA_WORKSHOP');
     const primerNombre          = nombre.split(' ')[0] || '';
     const telefonoLimpio        = limpiarTelefono(telefono);
 
-    console.log(`Tipo: ${isCompra7D ? 'Soberana 7D' : 'Workshop'} → Lista #${targetList}`);
+    if (isMasterclass && !MASTERCLASS_LIST_ID) {
+      console.log('⚠️  Masterclass sin lista Brevo propia todavía — usando lista 11 (Workshop) con atributo PRODUCTO=masterclass');
+    }
+    console.log(`Tipo: ${tipoContacto} → Lista #${targetList}`);
 
     // ── Buscar contacto en Brevo ─────────────────────────────────
     const searchRes = await fetch(
@@ -74,7 +86,8 @@ export default async function handler(req, res) {
           attributes: {
             FIRSTNAME:     primerNombre,
             SMS:           telefonoLimpio,
-            HOTMART_PHONE: telefonoLimpio
+            HOTMART_PHONE: telefonoLimpio,
+            ...(isMasterclass ? { PRODUCTO: 'masterclass' } : {})
           },
           listIds: [targetList],
           updateEnabled: true
@@ -86,11 +99,11 @@ export default async function handler(req, res) {
         nombre:   primerNombre,
         email:    email,
         whatsapp: telefonoLimpio,
-        perfil:   isCompra7D ? 'COMPRADORA_7D' : 'COMPRADORA_WORKSHOP',
+        perfil:   perfilContacto,
         lista:    String(targetList),
         mensaje:  'Contacto nuevo creado desde Hotmart'
       });
-      await guardarEnFirestore(email, primerNombre, isCompra7D ? '7d' : 'workshop');
+      await guardarEnFirestore(email, primerNombre, tipoContacto);
 
       return res.status(200).json({
         received: true, action: 'contact_created', email, list: targetList
@@ -133,6 +146,10 @@ export default async function handler(req, res) {
       updateBody.attributes.FIRSTNAME = primerNombre;
     }
 
+    if (isMasterclass) {
+      updateBody.attributes.PRODUCTO = 'masterclass';
+    }
+
     const updateRes = await fetch(
       `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
       {
@@ -150,15 +167,15 @@ export default async function handler(req, res) {
       nombre:   primerNombre || contact.attributes?.FIRSTNAME || '',
       email:    email,
       whatsapp: telefonoLimpio || contact.attributes?.SMS || '',
-      perfil:   isCompra7D ? 'COMPRADORA_7D' : 'COMPRADORA_WORKSHOP',
+      perfil:   perfilContacto,
       lista:    String(targetList),
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
-    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', isCompra7D ? '7d' : 'workshop');
+    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto);
 
     return res.status(200).json({
       received:        true,
-      action:          isCompra7D ? 'moved_to_compradoras_7d' : 'moved_to_compradoras_workshop',
+      action:          `moved_to_compradoras_${tipoContacto}`,
       email,
       list:            targetList,
       removedFromLists: listsToRemove,

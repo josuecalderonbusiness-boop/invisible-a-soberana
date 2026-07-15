@@ -150,7 +150,26 @@ export default async function handler(req, res) {
       const texto = (msg.text?.body || '').trim();
       const textoL = texto.toLowerCase();
 
-      // Bienvenida → procesar inmediato en Vercel
+      // Bienvenida MASTERCLASS → distinta de la del Workshop, se revisa primero
+      // porque el mensaje prellenado de masterclass-gracias.html dice
+      // "acabo de comprar la Masterclass Soberana" y si no se separa cae en
+      // el flujo genérico de abajo (bienvenida_pacto_soberana, que es del Workshop).
+      const esBienvenidaMasterclass = textoL.includes('masterclass soberana');
+      if (esBienvenidaMasterclass) {
+        if (msgId) {
+          const dup = await verificarDuplicado(msgId);
+          if (dup) {
+            console.log(`Duplicado bienvenida masterclass ignorado: ${msgId}`);
+            return res.status(200).json({ ok: true });
+          }
+        }
+        const contacto = await buscarContacto(phone);
+        const nombre   = contacto?.nombre || 'amiga';
+        await ejecutarPaso(phone, 'bienvenida_masterclass', nombre);
+        return res.status(200).json({ ok: true });
+      }
+
+      // Bienvenida Workshop → procesar inmediato en Vercel
       const esBienvenida = textoL.includes('acabo de comprar') || textoL.includes('comunidad vip') || textoL.includes('soberana');
       if (esBienvenida) {
         if (msgId) {
@@ -163,6 +182,24 @@ export default async function handler(req, res) {
         const contacto = await buscarContacto(phone);
         const nombre   = contacto?.nombre || 'amiga';
         await sendTemplate(phone, nombre, 'bienvenida_pacto_soberana');
+        return res.status(200).json({ ok: true });
+      }
+
+      // "Ya la vi" → confirma que vio la masterclass, dispara el puente al Workshop.
+      // NOTA: coincidencia simple por texto — si en el futuro esta frase se usa en
+      // otro flujo, hay que scoping por estado del contacto en vez de por texto plano.
+      if (textoL.includes('ya la vi')) {
+        if (msgId) {
+          const dup = await verificarDuplicado(msgId);
+          if (dup) {
+            console.log(`Duplicado "ya la vi" ignorado: ${msgId}`);
+            return res.status(200).json({ ok: true });
+          }
+        }
+        await cancelarTrigger(phone, 'recordatorio_replay_masterclass');
+        const contacto = await buscarContacto(phone);
+        const nombre   = contacto?.nombre || 'amiga';
+        await ejecutarPaso(phone, 'puente_workshop', nombre);
         return res.status(200).json({ ok: true });
       }
 
@@ -540,6 +577,44 @@ async function ejecutarPaso(phone, paso, nombre) {
     // Día 3 — plantilla audio (antes día 6)
     await sendTemplateDia6(phone, n);
     await programarTrigger(phone, 'dia6_diagnostico', 3, n); // PRUEBA: 3 min (producción: 4320 = 3 días)
+  }
+
+  // ── MASTERCLASS SOBERANA ($9) — entry-product-system, ver
+  // C:\BUSINESS-SYSTEMS\ENTRY-PRODUCTS\001-masterclass-soberana\05-whatsapp\secuencia-whatsapp.md
+  // PENDIENTE antes de producción real: link de replay (Fase 2, aún no grabada)
+  // y plantillas de Meta si se necesitan botones — hoy todo es texto libre.
+
+  else if (paso === 'bienvenida_masterclass') {
+    await sendWhatsApp(phone,
+      `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 🙌 Tu acceso a la Masterclass Soberana ya está activo.\n\n` +
+      `Aquí tienes el link: [LINK REPLAY PENDIENTE]\n\n` +
+      `Tómate el tiempo que necesites — son menos de 60 minutos y vas a entender algo que probablemente nadie te había explicado así.\n\n` +
+      `Cuando la termines, escríbeme: *Ya la vi* 👇`
+    );
+    await programarTrigger(phone, 'recordatorio_replay_masterclass', 5, n); // PRUEBA: 5 min (producción: 1440 = 1 día)
+  }
+  else if (paso === 'recordatorio_replay_masterclass') {
+    await sendWhatsApp(phone,
+      `¿Alcanzaste a ver la masterclass? Si no has podido, no pasa nada — aquí está el link de nuevo:\n\n` +
+      `[LINK REPLAY PENDIENTE]\n\n` +
+      `Cuando la veas, escríbeme: *Ya la vi*`
+    );
+  }
+  else if (paso === 'puente_workshop') {
+    // Se dispara manualmente (o desde Apps Script) cuando ella confirma "Ya la vi"
+    await sendWhatsApp(phone,
+      `Ya identificaste el patrón — eso es lo que te dio la masterclass.\n\n` +
+      `Lo que todavía no tienes es el cómo. Eso es exactamente lo que hace el Workshop Código Soberana: te da los 3 protocolos para empezar a cambiar ese patrón esta semana, no algún día.\n\n` +
+      `https://pay.hotmart.com/U104868259N?checkoutMode=10&bid=1782363245752`
+    );
+    await programarTrigger(phone, 'seguimiento_masterclass', 5, n); // PRUEBA: 5 min (producción: 2880 = 48h)
+  }
+  else if (paso === 'seguimiento_masterclass') {
+    await sendWhatsApp(phone,
+      `No te escribo para presionarte — solo para dejarte el link a la mano por si esta semana es el momento:\n\n` +
+      `https://pay.hotmart.com/U104868259N?checkoutMode=10&bid=1782363245752\n\n` +
+      `Cuando quieras, aquí estoy.`
+    );
   }
 
   // ── FASE 2 ────────────────────────────────────────────────────

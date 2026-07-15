@@ -278,8 +278,10 @@ async function manejarBoton(phone, btnId, btnTx) {
   const nombre   = contacto?.nombre || '';
   const n        = nombre || '';
 
-  // ── MASTERCLASS SOBERANA — botón "Entrar" de bienvenida_live_cs / bienvenida_acceso_cs ──
-  if (btnId === 'masterclass_entrar' || btnTx === 'entrar') {
+  // ── MASTERCLASS SOBERANA — botón "Entrar a mi espacio" de bienvenida_live_cs / bienvenida_replay_cs ──
+  // El payload 'masterclass_entrar' lo fija enviarBienvenidaWhatsApp (hotmart-webhook.js) al mandar
+  // la plantilla vía API — btnTx es respaldo por si algún envío no pasa por ese código.
+  if (btnId === 'masterclass_entrar' || btnTx.includes('entrar')) {
     await ejecutarPaso(phone, 'bienvenida_masterclass', n);
   }
 

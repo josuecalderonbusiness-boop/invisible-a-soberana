@@ -232,7 +232,7 @@ async function enviarBienvenidaWhatsApp(phone, nombre, email) {
     console.log(`Sin teléfono para ${email} — no se puede enviar la bienvenida de WhatsApp`);
     return;
   }
-  const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_acceso_cs';
+  const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
   const number = String(phone).replace(/[^0-9]/g, '');
   try {
     const res = await fetch(

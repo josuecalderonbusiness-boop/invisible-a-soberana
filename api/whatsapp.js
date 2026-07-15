@@ -608,7 +608,8 @@ async function ejecutarPaso(phone, paso, nombre) {
     if (masterclassEnVivo()) {
       await sendWhatsApp(phone,
         `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
-        `Tu lugar en la Masterclass Soberana ya quedó reservado. Aquí tienes tu espacio — ahí vas a ver la cuenta regresiva y tu acceso se habilita solo el día del evento:\n\n` +
+        `Tu lugar para la Masterclass ya quedó reservado.\n\n` +
+        `Toca este link para ingresar a tu espacio privado, donde encontrarás toda la información del evento y podrás acceder el día de la transmisión en vivo:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
         `Nos vemos el sábado 1 de agosto, 7:00 p.m. (Colombia).`
       );
@@ -616,7 +617,8 @@ async function ejecutarPaso(phone, paso, nombre) {
     } else {
       await sendWhatsApp(phone,
         `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
-        `Tu acceso a la Masterclass Soberana ya está listo. Entra aquí cuando quieras:\n\n` +
+        `Tu Masterclass ya está disponible.\n\n` +
+        `Toca este link para ingresar a tu espacio privado y verla cuando quieras:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
         `Cuando la veas, escríbeme: *Ya la vi* 👇`
       );

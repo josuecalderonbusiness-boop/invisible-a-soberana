@@ -9,14 +9,32 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- ══════════════════════════════════════════════════════════════════
-     PENDIENTE: Meta Pixel + GA4
-     No se encontró Pixel ID / GA4 Measurement ID hardcodeado en ningún
-     archivo del repo invisible-a-soberana. Pegar aquí el snippet real
-     de Meta Pixel (fbq init + PageView) y de GA4 (gtag.js) en cuanto
-     Josué los confirme. Mismo Pixel/GA4 del ecosistema Código Soberana
-     — no crear uno nuevo — segmentar por eventos/UTMs/parámetros.
-     ══════════════════════════════════════════════════════════════════ -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1209108340676480');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-60269X4BEN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-60269X4BEN');
+</script>
 
 <style>
 :root {
@@ -230,7 +248,8 @@ body { font-family: var(--font-body); color: var(--text-light); }
 function toggleFaq(el) { el.classList.toggle('open'); }
 
 function goToCheckout() {
-  // PENDIENTE Analytics: disparar evento de "InitiateCheckout"/GA4 aquí cuando se instale el Pixel/GA4.
+  if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { value: 9.00, currency: 'USD' });
+  if (typeof gtag === 'function') gtag('event', 'begin_checkout', { value: 9.00, currency: 'USD', items: [{ item_name: 'Masterclass Soberana - Mas Se Aleja' }] });
   window.open('https://pay.hotmart.com/W106744574H', '_blank');
 }
 

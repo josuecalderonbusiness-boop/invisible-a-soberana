@@ -9,7 +9,47 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- PENDIENTE: Meta Pixel + GA4 — mismo snippet que masterclass.html, disparar evento Purchase/conversión aquí -->
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1209108340676480');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-60269X4BEN"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-60269X4BEN');
+</script>
+
+<script>
+// Evento de conversión — protegido con sessionStorage para no duplicar si recarga la página.
+(function () {
+  if (sessionStorage.getItem('mc_purchase_fired')) return;
+  fbq('track', 'Purchase', { value: 9.00, currency: 'USD' });
+  gtag('event', 'purchase', {
+    value: 9.00,
+    currency: 'USD',
+    transaction_id: 'mc-mas-se-aleja-' + Date.now(),
+    items: [{ item_name: 'Masterclass Soberana - Mas Se Aleja', price: 9.00 }]
+  });
+  sessionStorage.setItem('mc_purchase_fired', '1');
+})();
+</script>
 
 <style>
 :root {
@@ -102,9 +142,9 @@ body { font-family: var(--font-body); color: var(--text-light); }
 </div>
 
 <script>
-// PENDIENTE Analytics: disparar evento Purchase (Meta Pixel) / purchase (GA4) al cargar esta página.
 document.getElementById('gc-wa-btn').addEventListener('click', function () {
-  // PENDIENTE: evento de conversión "wa_click_masterclass" cuando el Pixel/GA4 estén instalados.
+  if (typeof fbq === 'function') fbq('trackCustom', 'wa_click_masterclass');
+  if (typeof gtag === 'function') gtag('event', 'wa_click_masterclass');
 });
 </script>
 

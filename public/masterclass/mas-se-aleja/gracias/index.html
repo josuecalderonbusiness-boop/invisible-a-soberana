@@ -112,8 +112,8 @@ body { font-family: var(--font-body); color: var(--text-light); }
   </div>
 
   <div class="gc-eyebrow">Compra confirmada</div>
-  <h1 class="gc-title">Tu acceso a la <em>Masterclass Soberana</em> está listo.</h1>
-  <p class="gc-sub">En menos de una hora vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.</p>
+  <h1 class="gc-title" id="gc-title-el">Tu acceso a la <em>Masterclass Soberana</em> está listo.</h1>
+  <p class="gc-sub" id="gc-sub-el">En menos de una hora vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.</p>
 
   <div class="gc-steps">
     <div class="gc-step">
@@ -122,7 +122,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
     <div class="gc-step">
       <div class="gc-step-n">2</div>
-      <p class="gc-step-txt">Recibes ahí mismo <strong>el acceso a la masterclass</strong> y las instrucciones para verla.</p>
+      <p class="gc-step-txt" id="gc-step2-txt">Recibes ahí mismo <strong>el acceso a la masterclass</strong> y las instrucciones para verla.</p>
     </div>
     <div class="gc-step">
       <div class="gc-step-n">3</div>
@@ -146,6 +146,19 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   if (typeof fbq === 'function') fbq('trackCustom', 'wa_click_masterclass');
   if (typeof gtag === 'function') gtag('event', 'wa_click_masterclass');
 });
+
+// ── Estado derivado de la fecha del evento — misma fuente única que la Landing
+// (ver entry-product-system/SKILL.md → "Mecanismo de derivación automática por fecha").
+(function () {
+  var EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
+  if (Date.now() >= EVENTO_FECHA.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
+
+  var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  document.title = 'Tu lugar está reservado — Masterclass Soberana';
+  set('gc-title-el', 'Tu lugar en la <em>Masterclass Soberana</em> está reservado.');
+  set('gc-sub-el', 'El sábado 1 de agosto a las 7:00 p.m. (Colombia) vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.');
+  set('gc-step2-txt', 'Recibes ahí mismo <strong>la confirmación de tu lugar</strong> y todo lo que necesitas saber antes del evento en vivo.');
+})();
 </script>
 
 </body>

@@ -157,7 +157,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <h1 class="mc-headline">Descubre por qué todo lo que has intentado hasta hoy ha seguido <em>desgastándote</em>...<br>y cuál es el primer cambio que realmente empieza a transformar tu relación.</h1>
   <p class="mc-sub">La mayoría de mujeres no están destruyendo su relación por falta de amor. La están desgastando intentando salvarla desde el único lugar donde nunca tuvieron control.</p>
   <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
-  <p class="mc-price-note">Acceso inmediato · Pago seguro con Hotmart</p>
+  <p class="mc-price-note" id="mc-hero-note">Acceso inmediato · Pago seguro con Hotmart</p>
 </section>
 
 <div class="mc-wrap">
@@ -210,20 +210,20 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">¿Cuándo tengo acceso?</div>
-      <div class="faq-a">Inmediatamente después de tu pago.</div>
+      <div class="faq-a" id="mc-faq-acceso-a">Inmediatamente después de tu pago.</div>
     </div>
   </section>
 
   <!-- ══════════════════ GARANTÍA / TRUST ══════════════════ -->
   <section class="mc-guarantee reveal">
     <p>🛡️&nbsp; Compra protegida por Hotmart</p>
-    <p>⚡&nbsp; Acceso inmediato después del pago</p>
+    <p id="mc-guarantee-acceso">⚡&nbsp; Acceso inmediato después del pago</p>
   </section>
 
   <!-- ══════════════════ CTA FINAL ══════════════════ -->
   <section class="mc-section reveal" style="text-align:center;">
     <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
-    <p class="mc-price-note">Acceso inmediato · $9 USD</p>
+    <p class="mc-price-note" id="mc-cta-final-note">Acceso inmediato · $9 USD</p>
   </section>
 
   <!-- ══════════════════ FOOTER ══════════════════ -->
@@ -247,6 +247,20 @@ body { font-family: var(--font-body); color: var(--text-light); }
 </div>
 
 <script>
+// ── Estado derivado de la fecha del evento (fuente única — ver entry-product-system/SKILL.md
+// → "Mecanismo de derivación automática por fecha"). Antes del evento: En Vivo. Después: Replay,
+// que es el copy "acceso inmediato" ya escrito por defecto en el HTML — no hace falta tocarlo.
+(function () {
+  var EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
+  if (Date.now() >= EVENTO_FECHA.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
+
+  var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  set('mc-hero-note', 'Tu lugar queda reservado · Pago seguro con Hotmart');
+  set('mc-faq-acceso-a', 'El sábado 1 de agosto a las 7:00 p.m. (Colombia) entramos en vivo. Tu lugar queda reservado apenas completes el pago, y te aviso por WhatsApp antes de empezar.');
+  set('mc-guarantee-acceso', '📅&nbsp; Evento en vivo: sábado 1 de agosto, 7:00 p.m. Colombia');
+  set('mc-cta-final-note', 'Cupo reservado · $9 USD');
+})();
+
 function toggleFaq(el) { el.classList.toggle('open'); }
 
 function goToCheckout() {

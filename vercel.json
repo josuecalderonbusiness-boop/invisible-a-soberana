@@ -11,6 +11,7 @@
     { "source": "/instalar", "destination": "/public/instalar/index.html" },
     { "source": "/masterclass/mas-se-aleja", "destination": "/public/masterclass/mas-se-aleja/index.html" },
     { "source": "/masterclass/mas-se-aleja/gracias", "destination": "/public/masterclass/mas-se-aleja/gracias/index.html" },
+    { "source": "/masterclass/mas-se-aleja/dashboard", "destination": "/public/masterclass/mas-se-aleja/dashboard/index.html" },
     { "source": "/:path*", "destination": "/public/index.html" }
   ]
 }

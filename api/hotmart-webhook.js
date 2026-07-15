@@ -110,7 +110,7 @@ export default async function handler(req, res) {
         lista:    String(targetList),
         mensaje:  'Contacto nuevo creado desde Hotmart'
       });
-      await guardarEnFirestore(email, primerNombre, tipoContacto);
+      await guardarEnFirestore(email, primerNombre, tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
@@ -190,7 +190,7 @@ export default async function handler(req, res) {
       lista:    String(targetList),
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
-    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto);
+    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
 
     if (isMasterclass && !bienvenidaYaEnviada) {
       await enviarBienvenidaWhatsApp(
@@ -222,13 +222,17 @@ export default async function handler(req, res) {
 // Gracias ni escriba primero (ver entry-product-system/SKILL.md → "El Webhook como orquestador").
 // Nombre funcional, reutilizable para cualquier producto de entrada futuro en estado Evergreen/Replay
 // (ver regla de nomenclatura en la misma Skill) — nunca renombrar por producto.
-const WHATSAPP_TEMPLATE_BIENVENIDA = 'bienvenida_acceso_cs';
+// Estado derivado de la fecha del evento — misma fuente que public/masterclass/mas-se-aleja/*
+// y api/whatsapp.js (MASTERCLASS_EVENTO_FECHA). No duplicar este valor con otro distinto.
+const MASTERCLASS_EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
+function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FECHA.getTime(); }
 
 async function enviarBienvenidaWhatsApp(phone, nombre, email) {
   if (!phone) {
     console.log(`Sin teléfono para ${email} — no se puede enviar la bienvenida de WhatsApp`);
     return;
   }
+  const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_acceso_cs';
   const number = String(phone).replace(/[^0-9]/g, '');
   try {
     const res = await fetch(
@@ -242,20 +246,20 @@ async function enviarBienvenidaWhatsApp(phone, nombre, email) {
         body: JSON.stringify({
           messaging_product: 'whatsapp', to: number, type: 'template',
           template: {
-            name: WHATSAPP_TEMPLATE_BIENVENIDA, language: { code: 'es_MX' },
-            components: [{
-              type: 'body',
-              parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre || 'amiga' }]
-            }]
+            name: templateName, language: { code: 'es_MX' },
+            components: [
+              { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre || 'amiga' }] },
+              { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'masterclass_entrar' }] }
+            ]
           }
         })
       }
     );
     const data = await res.json();
     if (data.messages?.[0]?.id) {
-      console.log(`Plantilla ${WHATSAPP_TEMPLATE_BIENVENIDA} enviada a ${number} (${email})`);
+      console.log(`Plantilla ${templateName} enviada a ${number} (${email})`);
     } else {
-      console.error(`Fallo enviando ${WHATSAPP_TEMPLATE_BIENVENIDA} a ${number}:`, JSON.stringify(data));
+      console.error(`Fallo enviando ${templateName} a ${number}:`, JSON.stringify(data));
     }
   } catch (err) {
     console.error('Error enviando bienvenida de WhatsApp:', err.message);
@@ -298,7 +302,11 @@ async function guardarEnSheets(data) {
 }
 
 // ── Fecha Colombia ───────────────────────────────────────────────
-async function guardarEnFirestore(email, nombre, tipo) {
+// producto: slug del Entry Product (ej. 'mas-se-aleja') — solo aplica cuando tipo === 'masterclass'.
+// Nota: un mismo email compra una sola masterclass hoy; si en el futuro una compradora acumula
+// varias, este doc-por-email deja de alcanzar y hace falta una subcolección por producto — no se
+// construye antes de que un caso real lo necesite.
+async function guardarEnFirestore(email, nombre, tipo, producto) {
   try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     const { google } = await import('googleapis');
@@ -319,6 +327,7 @@ async function guardarEnFirestore(email, nombre, tipo) {
           nombre: { stringValue: nombre },
           activo: { booleanValue: true },
           tipo: { stringValue: tipo },
+          ...(producto ? { producto: { stringValue: producto } } : {}),
           fecha: { stringValue: new Date().toISOString() }
         }
       })

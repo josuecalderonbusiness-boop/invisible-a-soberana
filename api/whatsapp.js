@@ -39,6 +39,16 @@ const AUDIO_DIA2_TERMINO = '1620415032329794';
 const AUDIO_DIA2_NO_VIO  = '2362093030941177';
 const AUDIO_DIA6         = '4265678347083267';
 
+// ════════════════════════════════════════════════════════════════
+// MASTERCLASS SOBERANA — mas-se-aleja (entry-product-system)
+// Misma fecha que public/masterclass/mas-se-aleja/index.html y gracias/index.html —
+// única fuente de verdad, ver entry-product-system/SKILL.md → "Mecanismo de
+// derivación automática por fecha". No duplicar este valor en otro lugar.
+// ════════════════════════════════════════════════════════════════
+const MASTERCLASS_EVENTO_FECHA = new Date('2026-08-01T19:00:00-05:00');
+const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/masterclass/mas-se-aleja/dashboard';
+function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FECHA.getTime(); }
+
 export default async function handler(req, res) {
 
   // ── GET: verificación webhook Meta ──────────────────────────────
@@ -268,8 +278,13 @@ async function manejarBoton(phone, btnId, btnTx) {
   const nombre   = contacto?.nombre || '';
   const n        = nombre || '';
 
+  // ── MASTERCLASS SOBERANA — botón "Entrar" de bienvenida_live_cs / bienvenida_acceso_cs ──
+  if (btnId === 'masterclass_entrar' || btnTx === 'entrar') {
+    await ejecutarPaso(phone, 'bienvenida_masterclass', n);
+  }
+
   // ── DÍA 0 — Botones de bienvenida ───────────────────────────
-  if (btnTx.includes('pude') || btnTx.includes('ya pude')) {
+  else if (btnTx.includes('pude') || btnTx.includes('ya pude')) {
     await sendUrlButton(phone,
       `Tu herramienta de trabajo ya está lista. 🛠️\n\nAquí vas a registrar tus respuestas del Workshop, activar tus recordatorios y aplicar cada palanca a tu ritmo.\n\n👇 Descárgala antes de empezar.`,
       'Ver herramienta', 'https://soberana-app.josuecalderon.lat/workbook'
@@ -581,22 +596,41 @@ async function ejecutarPaso(phone, paso, nombre) {
 
   // ── MASTERCLASS SOBERANA ($9) — entry-product-system, ver
   // C:\BUSINESS-SYSTEMS\ENTRY-PRODUCTS\001-masterclass-soberana\05-whatsapp\secuencia-whatsapp.md
-  // PENDIENTE antes de producción real: link de replay (Fase 2, aún no grabada)
-  // y plantillas de Meta si se necesitan botones — hoy todo es texto libre.
+  // Estado (En Vivo / Replay) derivado de MASTERCLASS_EVENTO_FECHA arriba — nunca hardcodear el
+  // mensaje sin revisar masterclassEnVivo() primero, ver entry-product-system/SKILL.md.
 
   else if (paso === 'bienvenida_masterclass') {
+    // El Dashboard (public/masterclass/mas-se-aleja/dashboard) es la casa permanente del producto
+    // desde el momento de la compra — ver masterclass-platform-system, Bitácora 2026-07-15.
+    // WhatsApp acompaña con recordatorios, nunca sustituye al Dashboard como destino.
+    if (masterclassEnVivo()) {
+      await sendWhatsApp(phone,
+        `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
+        `Tu lugar en la Masterclass Soberana ya quedó reservado. Aquí tienes tu espacio — ahí vas a ver la cuenta regresiva y tu acceso se habilita solo el día del evento:\n\n` +
+        `${MASTERCLASS_DASHBOARD_URL}\n\n` +
+        `Nos vemos el sábado 1 de agosto, 7:00 p.m. (Colombia).`
+      );
+      await programarTrigger(phone, 'recordatorio_evento_masterclass', 5, n); // PRUEBA: 5 min (producción: recordatorio real antes del evento)
+    } else {
+      await sendWhatsApp(phone,
+        `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
+        `Tu acceso a la Masterclass Soberana ya está listo. Entra aquí cuando quieras:\n\n` +
+        `${MASTERCLASS_DASHBOARD_URL}\n\n` +
+        `Cuando la veas, escríbeme: *Ya la vi* 👇`
+      );
+      await programarTrigger(phone, 'recordatorio_replay_masterclass', 5, n); // PRUEBA: 5 min (producción: 1440 = 1 día)
+    }
+  }
+  else if (paso === 'recordatorio_evento_masterclass') {
     await sendWhatsApp(phone,
-      `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 🙌 Tu acceso a la Masterclass Soberana ya está activo.\n\n` +
-      `Aquí tienes el link: [LINK REPLAY PENDIENTE]\n\n` +
-      `Tómate el tiempo que necesites — son menos de 60 minutos y vas a entender algo que probablemente nadie te había explicado así.\n\n` +
-      `Cuando la termines, escríbeme: *Ya la vi* 👇`
+      `¿Ya guardaste la fecha? 💛 Nos vemos el sábado 1 de agosto a las 7:00 p.m. (Colombia).\n\n` +
+      `Aquí tienes tu espacio de nuevo:\n\n${MASTERCLASS_DASHBOARD_URL}`
     );
-    await programarTrigger(phone, 'recordatorio_replay_masterclass', 5, n); // PRUEBA: 5 min (producción: 1440 = 1 día)
   }
   else if (paso === 'recordatorio_replay_masterclass') {
     await sendWhatsApp(phone,
-      `¿Alcanzaste a ver la masterclass? Si no has podido, no pasa nada — aquí está el link de nuevo:\n\n` +
-      `[LINK REPLAY PENDIENTE]\n\n` +
+      `¿Alcanzaste a ver la masterclass? Si no has podido, no pasa nada — aquí está tu espacio de nuevo:\n\n` +
+      `${MASTERCLASS_DASHBOARD_URL}\n\n` +
       `Cuando la veas, escríbeme: *Ya la vi*`
     );
   }

@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     if (!searchRes.ok) {
       // Contacto no existe — crear con todos los datos
       console.log('Contacto no existe — creando:', email);
-      await fetch('https://api.brevo.com/v3/contacts', {
+      const createRes = await fetch('https://api.brevo.com/v3/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
         body: JSON.stringify({
@@ -93,6 +93,13 @@ export default async function handler(req, res) {
           updateEnabled: true
         })
       });
+
+      if (!createRes.ok) {
+        const errBody = await createRes.text();
+        console.error('Brevo contact creation FAILED:', createRes.status, errBody);
+      } else {
+        console.log('Brevo contact creation OK:', createRes.status);
+      }
 
       await guardarEnSheets({
         fecha:    now(),

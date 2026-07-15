@@ -112,6 +112,11 @@ export default async function handler(req, res) {
       });
       await guardarEnFirestore(email, primerNombre, tipoContacto);
 
+      // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
+      if (isMasterclass) {
+        await enviarBienvenidaWhatsApp(telefonoLimpio, primerNombre, email);
+      }
+
       return res.status(200).json({
         received: true, action: 'contact_created', email, list: targetList
       });
@@ -157,6 +162,13 @@ export default async function handler(req, res) {
       updateBody.attributes.PRODUCTO = 'masterclass';
     }
 
+    // Solo enviar la bienvenida de WhatsApp si nunca se le ha enviado antes a este contacto —
+    // evita duplicados si por alguna razón el webhook se dispara más de una vez para la misma compra.
+    const bienvenidaYaEnviada = contact.attributes?.BIENVENIDA_WA_ENVIADA === true;
+    if (isMasterclass && !bienvenidaYaEnviada) {
+      updateBody.attributes.BIENVENIDA_WA_ENVIADA = true;
+    }
+
     const updateRes = await fetch(
       `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
       {
@@ -180,6 +192,16 @@ export default async function handler(req, res) {
     });
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto);
 
+    if (isMasterclass && !bienvenidaYaEnviada) {
+      await enviarBienvenidaWhatsApp(
+        telefonoLimpio || contact.attributes?.SMS || '',
+        primerNombre || contact.attributes?.FIRSTNAME || '',
+        email
+      );
+    } else if (isMasterclass) {
+      console.log(`Bienvenida ya se había enviado antes a ${email} — no se repite`);
+    }
+
     return res.status(200).json({
       received:        true,
       action:          `moved_to_compradoras_${tipoContacto}`,
@@ -192,6 +214,51 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Webhook error:', err);
     return res.status(200).json({ received: true, error: err.message });
+  }
+}
+
+// ── Bienvenida proactiva de WhatsApp (plantilla de Meta) ──────────
+// El webhook es quien decide y dispara — no depende de que la clienta llegue a la página de
+// Gracias ni escriba primero (ver entry-product-system/SKILL.md → "El Webhook como orquestador").
+// Nombre funcional, reutilizable para cualquier producto de entrada futuro en estado Evergreen/Replay
+// (ver regla de nomenclatura en la misma Skill) — nunca renombrar por producto.
+const WHATSAPP_TEMPLATE_BIENVENIDA = 'bienvenida_acceso_cs';
+
+async function enviarBienvenidaWhatsApp(phone, nombre, email) {
+  if (!phone) {
+    console.log(`Sin teléfono para ${email} — no se puede enviar la bienvenida de WhatsApp`);
+    return;
+  }
+  const number = String(phone).replace(/[^0-9]/g, '');
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp', to: number, type: 'template',
+          template: {
+            name: WHATSAPP_TEMPLATE_BIENVENIDA, language: { code: 'es_MX' },
+            components: [{
+              type: 'body',
+              parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre || 'amiga' }]
+            }]
+          }
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.messages?.[0]?.id) {
+      console.log(`Plantilla ${WHATSAPP_TEMPLATE_BIENVENIDA} enviada a ${number} (${email})`);
+    } else {
+      console.error(`Fallo enviando ${WHATSAPP_TEMPLATE_BIENVENIDA} a ${number}:`, JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error('Error enviando bienvenida de WhatsApp:', err.message);
   }
 }
 

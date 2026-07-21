@@ -12,6 +12,8 @@
     { "source": "/masterclass/mas-se-aleja", "destination": "/public/masterclass/mas-se-aleja/index.html" },
     { "source": "/masterclass/mas-se-aleja/gracias", "destination": "/public/masterclass/mas-se-aleja/gracias/index.html" },
     { "source": "/mi-espacio", "destination": "/public/mi-espacio/index.html" },
+    { "source": "/test", "destination": "/public/index.html" },
+    { "source": "/", "destination": "/public/inicio/index.html" },
     { "source": "/:path*", "destination": "/public/index.html" }
   ]
 }

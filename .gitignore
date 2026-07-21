@@ -74,3 +74,5 @@ test-notif.js
 
 # dataconnect generated files
 .dataconnect
+
+.vercel

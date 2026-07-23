@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Masterclass Soberana — Código Soberana</title>
-<meta name="description" content="Descubre por qué todo lo que has intentado hasta hoy ha seguido desgastándote... y cuál es el primer cambio que realmente empieza a transformar tu relación.">
+<meta name="description" content="Has intentado hablar. Has intentado esperar. Has intentado cambiar tú. Y aun así... nada cambia.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -42,12 +42,11 @@ src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
   --wine-primary: #6B1A2A;
   --wine-medium: #8B2D3F;
   --wine-light: #A84455;
-  --wine-pale: #C97080;
   --gold-deep: #7A5C1E;
   --gold-primary: #B8892A;
   --gold-medium: #D4A843;
   --gold-light: #E8C870;
-  --charcoal-deep: #1E1218;
+  --charcoal-deep: #221214;
   --charcoal: #2A1C21;
   --charcoal-soft: #3A2830;
   --text-light: #F0E6EA;
@@ -60,28 +59,61 @@ src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 * { -webkit-tap-highlight-color: transparent; }
 button, a { outline: none; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
 html, body { background: var(--charcoal-deep); overflow-x: hidden; }
 body { font-family: var(--font-body); color: var(--text-light); }
 
-.mc-wrap { max-width: 560px; margin: 0 auto; padding: 0 24px; position: relative; }
+/* ── Contenedor de pantallas — revelación una idea a la vez ── */
+#mc-scroll { scroll-snap-type: y proximity; }
+.screen {
+  min-height: 100vh; min-height: 100dvh;
+  scroll-snap-align: start; scroll-snap-stop: always;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  text-align: center; padding: 90px 28px 70px; position: relative;
+}
+.screen-wrap { max-width: 460px; margin: 0 auto; }
+/* ── Ancla arriba en vez de centrado — evita que el video "salte" de nuevo cuando el texto
+   de abajo se expande después (s5, una vez que le dio play) ── */
+#s5.mc-anchor-top { justify-content: flex-start; }
 
-/* ── Reveal on scroll (mismo patrón de blur-entrance que index.html) ── */
-.reveal { opacity: 0; transform: translateY(18px); filter: blur(6px); transition: opacity .7s ease, transform .7s ease, filter .7s ease; }
+/* ── Temperatura por zona — misma familia burgundy siempre, nunca degradado.
+   Hero + Video (s1-s5): burgundy profundo (color base del body). Después del video (s6-s7):
+   apenas más claro, casi imperceptible. Zona CTA (s8) en adelante: vuelve al profundo. ── */
+#s6, #s7 { background: var(--charcoal); }
+
+/* ── Reveal al entrar en viewport ── */
+.reveal { opacity: 0; transform: translateY(8px); filter: blur(4px); transition: opacity 1.6s cubic-bezier(.16,1,.3,1), transform 1.6s cubic-bezier(.16,1,.3,1), filter 1.6s cubic-bezier(.16,1,.3,1); }
 .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
 
-/* ── Eyebrow / kicker (Jost, uppercase, letter-spacing) ── */
-.mc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 18px; }
+.mc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 26px; }
 
-/* ── Hero ── */
-.mc-hero { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 24px 60px; background: linear-gradient(160deg, var(--charcoal-deep) 0%, #24151B 55%, var(--charcoal-deep) 100%); }
-.mc-headline { font-family: var(--font-display); font-size: clamp(28px, 7vw, 42px); font-weight: 900; line-height: 1.18; color: var(--text-light); max-width: 480px; }
-.mc-headline em { font-family: var(--font-display); font-style: italic; font-weight: 700; color: var(--gold-light); }
-.mc-sub { font-family: 'Jost', sans-serif; font-size: clamp(15px, 3.5vw, 17px); font-style: italic; color: var(--text-muted); line-height: 1.65; max-width: 440px; margin: 22px auto 0; }
+/* ── Línea única, grande, con aire ── */
+.mc-line { font-family: var(--font-elegant); font-style: italic; font-weight: 400; font-size: clamp(24px, 6.5vw, 34px); line-height: 1.6; color: rgba(240,230,234,.95); }
+.mc-line strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
 
-/* ── Botón CTA (mismo gradiente sticky-gold de index.html) ── */
+/* ── "Carta" — hero (s1-s4): tipografía más grande, más aire, entrada con más blur desde más abajo ── */
+.mc-letter-line { font-size: clamp(32px, 10vw, 50px); line-height: 1.5; }
+.reveal-letter { opacity: 0; transform: translateY(34px); filter: blur(12px); transition: opacity 1.9s cubic-bezier(.16,1,.3,1), transform 1.9s cubic-bezier(.16,1,.3,1), filter 1.9s cubic-bezier(.16,1,.3,1); }
+.reveal-letter.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+/* ── Botón continuar (discreto, guía sin presionar) ── */
+.mc-continue { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 54px; background: none; border: none; cursor: pointer; opacity: .7; transition: opacity .25s; text-decoration:none; }
+.mc-continue:hover { opacity: 1; }
+.mc-continue span { font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.mc-continue svg { animation: mcBounce 1.8s ease-in-out infinite; }
+@keyframes mcBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+
+/* ── Puntos de progreso ── */
+#mc-dots { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 400; display: flex; flex-direction: column; gap: 8px; }
+#mc-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(184,137,42,.25); transition: background .3s, transform .3s; }
+#mc-dots .dot.active { background: var(--gold-primary); transform: scale(1.4); }
+@media (max-width: 480px) { #mc-dots { display: none; } }
+
+/* ── Botón CTA dorado (mismo gradiente en toda la marca) ── */
 .mc-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; max-width: 360px; padding: 18px 32px; margin-top: 32px;
+  width: 100%; max-width: 360px; padding: 18px 32px; margin-top: 8px;
   background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
   background-size: 300% 100%;
   color: var(--charcoal-deep); border: none; border-radius: 12px;
@@ -94,144 +126,491 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 34px rgba(184,137,42,.55); }
 @keyframes mcCtaPulse { 0%,100% { box-shadow: 0 8px 28px rgba(184,137,42,.4); } 50% { box-shadow: 0 10px 40px rgba(184,137,42,.65); } }
 @keyframes mcGoldShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-.mc-price-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.4); margin-top: 12px; }
+.mc-price-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.4); margin-top: 14px; }
 
-/* ── Bloque promesa/dolor (Cormorant, sección editorial) ── */
-.mc-section { padding: 72px 0; }
-.mc-quote { font-family: var(--font-elegant); font-style: italic; font-weight: 400; font-size: clamp(18px, 4.5vw, 21px); line-height: 1.75; color: rgba(240,230,234,.85); text-align: center; max-width: 460px; margin: 0 auto; }
-.mc-quote strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
+.mc-event-checks { text-align: left; margin: 18px 0; display: flex; flex-direction: column; gap: 8px; }
+.mc-event-checks p { font-family: 'Jost', sans-serif; font-size: 13px; color: rgba(240,230,234,.85); line-height: 1.5; }
+.mc-event-checks p span { color: var(--gold-light); font-weight: 700; margin-right: 6px; }
 
-/* ── Video placeholder ── */
-.mc-video-box {
-  aspect-ratio: 16/9; width: 100%; border-radius: 16px; margin: 0 auto;
-  background: linear-gradient(155deg, var(--charcoal), var(--charcoal-soft));
-  border: 1px solid rgba(184,137,42,.2);
-  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+/* ── Contador — urgencia natural del evento en vivo (solo mientras el Estado es LIVE) ── */
+#mc-countdown-box { margin: 22px 0 6px; }
+#mc-countdown { display: flex; justify-content: center; gap: 18px; }
+.mc-cd-unit { display: flex; flex-direction: column; align-items: center; min-width: 46px; }
+.mc-cd-num { font-family: var(--font-display); font-size: clamp(24px, 6vw, 30px); font-weight: 700; color: var(--text-light); line-height: 1; font-variant-numeric: tabular-nums; }
+.mc-cd-lbl { font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Video ── */
+.mc-video-box { aspect-ratio: 16/9; width: 100%; border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,.4); border: 1px solid rgba(184,137,42,.2); }
+/* ── Sobre-escribe el .reveal genérico (que trae translateY+blur) — el video solo hace fade, sin moverse ni doblar el blur que ya trae por su cuenta ── */
+.mc-video-box.reveal { opacity: 0; transform: none; filter: none; transition: opacity 2s ease 3.6s, transform 1.8s cubic-bezier(.16,1,.3,1) 0s; }
+.mc-video-box.reveal.in { opacity: 1; }
+.mc-video-box.shift-up { transform: translateY(-34px) scale(1.05); }
+.mc-video-box iframe {
+  border: none; position: absolute; inset: 0; width: 100%; height: 100%;
+  filter: blur(22px); animation: mcVideoBlurClear 6s ease-out forwards; transition: filter .6s ease;
 }
-.mc-video-play { width: 64px; height: 64px; border-radius: 50%; background: rgba(184,137,42,.12); border: 1.5px solid rgba(184,137,42,.45); display: flex; align-items: center; justify-content: center; }
-.mc-video-note { font-family: 'Jost', sans-serif; font-size: 12px; color: rgba(240,230,234,.35); text-align: center; padding: 0 30px; }
+@keyframes mcVideoBlurClear { 0% { filter: blur(26px); } 100% { filter: blur(11px); } }
 
-/* ── Beneficios ── */
-.mc-benefit { display: flex; gap: 16px; align-items: flex-start; padding: 22px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
-.mc-benefit:last-child { border-bottom: none; }
-.mc-benefit-mark { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--gold-light); margin-top: 2px; }
-.mc-benefit-txt { font-family: var(--font-body); font-size: 15px; font-weight: 500; color: rgba(240,230,234,.9); line-height: 1.55; }
-.mc-benefit-txt strong { color: var(--gold-light); font-weight: 700; }
+/* ── Texto arriba del video, fuera del cuadro — aparición escalonada ── */
+.mc-video-kicker { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 12px; max-height: 40px; overflow: hidden; transition: opacity .6s ease, max-height .6s ease, margin .6s ease; }
+.mc-video-subtext { font-family: var(--font-body); font-weight: 400; font-size: clamp(17px, 4.5vw, 20px); line-height: 1.6; color: rgba(240,230,234,.92); text-align: center; max-width: 420px; margin: 0 auto 26px; max-height: 160px; overflow: hidden; transition: opacity .6s ease, max-height .6s ease, margin .6s ease; }
+.mc-video-kicker.hide, .mc-video-subtext.hide { opacity: 0; max-height: 0; margin-top: 0; margin-bottom: 0; }
 
-/* ── FAQ (mismo patrón faq-item de index.html) ── */
-.mc-faq-label { font-family: 'Jost', sans-serif; font-size: 10px; color: var(--gold-primary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
-.faq-item { border-bottom: 1px solid rgba(184,137,42,.15); padding: 16px 0; cursor: pointer; }
-.faq-q { font-family: 'Jost', sans-serif; font-size: 14px; color: #EDE3CE; font-weight: 500; padding-right: 20px; position: relative; line-height: 1.4; }
-.faq-q::after { content: '+'; position: absolute; right: 0; top: -2px; color: #B8892A; font-size: 18px; transition: transform .2s; }
-.faq-item.open .faq-q::after { transform: rotate(45deg); }
-.faq-a { font-family: var(--font-elegant); font-size: 14px; font-style: italic; color: rgba(237,227,206,.6); line-height: 1.65; max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .3s; }
-.faq-item.open .faq-a { max-height: 220px; padding-top: 12px; }
+/* ── Capa burgundy sobre el video (color, el blur ya lo pone el iframe de arriba) — tipo glass ── */
+.mc-video-tint {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(160deg, rgba(61,12,17,.55), rgba(107,26,42,.3));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 0 50px rgba(0,0,0,.3);
+  animation: mcTintClear 6s ease-out forwards;
+  transition: opacity .6s ease;
+}
+.mc-video-tint.hide { opacity: 0; }
+@keyframes mcTintClear {
+  0% { opacity: 1; }
+  100% { opacity: .55; }
+}
 
-/* ── Garantía / trust ── */
-.mc-guarantee { border-top: 1px solid rgba(184,137,42,.12); border-bottom: 1px solid rgba(184,137,42,.12); padding: 32px 0; }
-.mc-guarantee p { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(237,227,206,.7); margin-bottom: 12px; }
+/* ── Botón "Activa el sonido" — palpita sobre el video ── */
+#mc-unmute-btn {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 5;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 15px 28px; border-radius: 40px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
+  background-size: 300% 100%;
+  font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--charcoal-deep);
+  box-shadow: 0 8px 28px rgba(184,137,42,.5);
+  animation: mcCtaPulse 2s ease-in-out infinite, mcGoldShift 3s ease infinite;
+  transition: opacity .5s ease, transform .5s ease;
+}
+#mc-unmute-btn.hide { opacity: 0; transform: translate(-50%,-50%) scale(.9); pointer-events: none; }
 
-/* ── Footer ── */
-.mc-footer { text-align: center; padding: 40px 24px 60px; }
-.mc-footer-brand { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
-.mc-footer-brand .gold { color: var(--gold-primary); font-style: italic; }
-.mc-footer-links { margin-top: 14px; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
+/* ── Reveal cuando termina el video — nada antes, nada después del video salvo esto ──
+   Misma tipografía/color que el título y subtítulo de arriba (.mc-video-kicker / .mc-video-subtext),
+   para que se sienta como la continuación de la misma conversación, no un estilo nuevo. ── */
+#mc-event-reveal { max-height: 0; overflow: hidden; opacity: 0; transition: max-height .8s ease, opacity .8s ease, margin .8s ease; margin-top: 0; text-align: center; }
+#mc-event-reveal.show { max-height: 900px; opacity: 1; margin-top: 32px; }
+.mc-reveal-big { font-family: 'Jost', sans-serif; font-weight: 700; font-size: clamp(15px, 4vw, 18px); letter-spacing: .5px; line-height: 1.5; color: var(--gold-primary); opacity: 0; transform: translateY(16px); filter: blur(6px); transition: opacity 1.8s ease, transform 1.8s ease, filter 1.8s ease; }
+.mc-reveal-big.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+.mc-reveal-small { font-family: var(--font-body); font-weight: 400; font-size: clamp(17px, 4.5vw, 20px); line-height: 1.6; color: rgba(240,230,234,.92); margin-top: 12px; max-width: 420px; margin-left: auto; margin-right: auto; opacity: 0; transform: translateY(12px); filter: blur(4px); transition: opacity 1.8s ease, transform 1.8s ease, filter 1.8s ease; }
+.mc-reveal-small.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+.mc-reveal-arrow { text-align: center; color: var(--gold-primary); font-size: 18px; opacity: 0; margin-top: 16px; transition: opacity 1.2s ease; }
+.mc-reveal-arrow.in { opacity: .6; }
+#mc-event-reveal .mc-btn { margin-top: 18px; }
+.mc-continue-center { display: flex; margin: 30px auto 0; }
+
+/* ── Asomo borroso (glass) de la siguiente pantalla — curiosidad de "hay algo más" ── */
+.mc-peek { position: absolute; bottom: 14px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 1.4s ease; }
+.mc-peek.show { opacity: 1; }
+.mc-peek-text {
+  font-family: 'Jost', sans-serif; font-size: 12px; color: rgba(240,230,234,.4);
+  filter: blur(3px); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  padding: 8px 20px; border-radius: 20px;
+}
+
+/* ── Headline de énfasis (pregunta central) ── */
+.mc-emphasis { font-family: var(--font-display); font-weight: 900; font-size: clamp(19px, 5.2vw, 25px); line-height: 1.35; color: var(--gold-light); margin-top: 26px; }
+
+/* ── Beneficios ("en este espacio vas a descubrir") ── */
+/* ── Tarjeta agenda — reemplaza los bullets por notas ancladas a la fecha real del evento ── */
+.mc-agenda-card {
+  background: linear-gradient(155deg, var(--cream-warm), #F0E6D2);
+  border-radius: 20px; padding: 28px 24px 24px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  border: 1px solid rgba(122,92,30,.15);
+}
+.mc-agenda-week { display: flex; justify-content: space-between; }
+.mc-agenda-day { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'Jost', sans-serif; }
+.mc-agenda-day span:first-child { font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--wine-medium); text-transform: uppercase; }
+.mc-agenda-day span:last-child { font-size: 14px; font-weight: 600; color: var(--wine-deep); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.mc-agenda-day.active span:last-child { background: linear-gradient(135deg, var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-weight: 700; }
+.mc-agenda-date { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--wine-deep); text-align: center; margin-top: 18px; }
+.mc-agenda-divider { height: 1px; background: rgba(122,92,30,.2); margin: 20px 0; }
+.mc-agenda-kicker { font-family: var(--font-elegant); font-style: italic; font-size: 15px; color: var(--wine-primary); text-align: center; margin-bottom: 18px; }
+.mc-agenda-notes { display: flex; flex-direction: column; gap: 10px; }
+.mc-note {
+  background: rgba(255,255,255,.5); border-left: 3px solid var(--gold-primary); border-radius: 4px 10px 10px 4px;
+  padding: 13px 16px; font-family: 'Jost', sans-serif; font-size: 13.5px; line-height: 1.55; color: var(--charcoal-deep);
+  display: flex; gap: 8px; align-items: flex-start; text-align: left;
+}
+.mc-note-dot { flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--wine-medium); border: none; margin-top: 6px; }
+.mc-word { opacity: 0; transition: opacity .3s ease; }
+.mc-word.in { opacity: 1; }
+
+/* ── s8 — secuencia "Imagina..." antes de la agenda: una frase a la vez en el mismo lugar,
+   se van reemplazando (no se apilan), termina en "Solo tú." grande, y la hoja de agenda se
+   desliza encima desde abajo. ── */
+.mc-imagine-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 28px; text-align: center; z-index: 1; }
+.mc-imagine-line, .mc-imagine-checklist, .mc-imagine-big { position: absolute; }
+.mc-imagine-line { font-family: var(--font-elegant); font-style: italic; font-size: clamp(20px, 5.5vw, 28px); color: rgba(240,230,234,.92); opacity: 0; filter: blur(4px); transition: opacity 1.2s ease, filter 1.2s ease; }
+.mc-imagine-line.in { opacity: 1; filter: blur(0); }
+.mc-imagine-checklist { display: flex; flex-direction: column; gap: 14px; opacity: 0; transition: opacity 1s ease; }
+.mc-imagine-checklist.in { opacity: 1; }
+.mc-imagine-check { font-family: 'Jost', sans-serif; font-size: clamp(16px, 4.2vw, 19px); color: var(--gold-light); opacity: 0; transform: translateY(8px); transition: opacity .8s ease, transform .8s ease; }
+.mc-imagine-check.in { opacity: 1; transform: translateY(0); }
+.mc-imagine-big { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 11vw, 60px); color: var(--gold-light); opacity: 0; transform: translateY(10px); filter: blur(6px); transition: opacity 1.6s ease, transform 1.6s ease, filter 1.6s ease; }
+.mc-imagine-big.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+.mc-agenda-slide {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 90px 28px 70px; transform: translateY(100%);
+  transition: transform 1.5s cubic-bezier(.16,1,.3,1);
+}
+.mc-agenda-slide.in { transform: translateY(0); }
+
+/* ── s9 (CTA final) reutiliza la tarjeta de agenda — hora + checks + contador en tono oscuro sobre crema ── */
+.mc-agenda-time { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--wine-deep); text-align: center; margin-top: 4px; }
+.mc-agenda-checks { text-align: left; margin: 4px 0 6px; display: flex; flex-direction: column; gap: 8px; }
+.mc-agenda-checks p { font-family: 'Jost', sans-serif; font-size: 13px; color: var(--charcoal-deep); line-height: 1.5; }
+.mc-agenda-checks p span { color: var(--wine-medium); font-weight: 700; margin-right: 6px; }
+.mc-agenda-card .mc-cd-num { color: var(--wine-deep); }
+.mc-agenda-card .mc-cd-lbl { color: var(--wine-medium); }
+.mc-agenda-card .mc-price-note { color: rgba(61,12,17,.55); }
+
+/* ── Cola libre — ya no forzada por pantallas ── */
+.mc-tail { max-width: 460px; margin: 0 auto; padding: 0 28px; }
+.mc-tail-section { padding: 56px 0; }
+
+/* ── FAQ tipo chat — burbujas, no acordeón. Mismos colores de marca, nunca verde WhatsApp. ── */
+.mc-chat-title { font-family: var(--font-elegant); font-style: italic; font-size: 17px; color: var(--gold-light); text-align: center; margin-bottom: 20px; }
+
+/* ── Ventana de chat — conversación simulada, altura automática (se ve todo, sin corte) ── */
+.mc-chat-window {
+  position: relative; height: auto; overflow: visible;
+  border-radius: 18px; background: rgba(255,255,255,.02); border: 1px solid rgba(184,137,42,.14);
+  padding: 20px 14px 16px;
+}
+.mc-chat-log { display: flex; flex-direction: column; gap: 12px; }
+.mc-msg-row { display: flex; flex-direction: column; max-width: 82%; }
+.mc-msg-row.her { align-self: flex-end; align-items: flex-end; }
+.mc-msg-row.josue { align-self: flex-start; align-items: flex-start; }
+.mc-msg-sender { font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--gold-primary); margin-bottom: 4px; padding-left: 2px; }
+.mc-msg-bubble {
+  padding: 10px 14px; font-size: 14px; line-height: 1.5; border-radius: 4px 14px 14px 14px;
+}
+.mc-msg-bubble.her {
+  background: linear-gradient(135deg, rgba(184,137,42,.22), rgba(184,137,42,.12)); border: 1px solid rgba(184,137,42,.32);
+  border-radius: 14px 14px 4px 14px; font-family: 'Jost', sans-serif; color: rgba(240,230,234,.96);
+}
+.mc-msg-bubble.josue {
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px 14px 14px 4px; font-family: var(--font-body); color: rgba(240,230,234,.92);
+}
+.mc-cursor { display: inline-block; width: 2px; height: 13px; background: var(--gold-light); margin-left: 2px; vertical-align: middle; animation: mcCursorBlink .8s step-end infinite; }
+@keyframes mcCursorBlink { 50% { opacity: 0; } }
+.mc-typing-dots { display: inline-flex; gap: 4px; padding: 13px 15px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px 14px 14px 4px; }
+.mc-typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(240,230,234,.55); animation: mcTypingBounce 1.2s infinite ease-in-out; }
+.mc-typing-dots span:nth-child(2) { animation-delay: .15s; }
+.mc-typing-dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes mcTypingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+/* ── "Josué está grabando..." — mismo lugar que los puntitos, pero con micrófono pulsante ── */
+.mc-recording-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 11px 15px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); border-radius: 14px 14px 14px 4px; font-family: 'Jost', sans-serif; font-size: 12.5px; color: rgba(240,230,234,.75); }
+.mc-recording-mic { width: 16px; height: 16px; flex-shrink: 0; color: var(--gold-light); animation: mcMicPulse 1.3s ease-in-out infinite; }
+@keyframes mcMicPulse { 0%, 100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+
+/* ── Nota de voz — burbuja reproducible, nunca autoplay, ella la escucha cuando quiera ── */
+.mc-voice-bubble {
+  display: flex; align-items: center; gap: 10px; min-width: 190px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px 14px 14px 4px; padding: 10px 14px;
+}
+.mc-voice-play {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-medium));
+  color: var(--charcoal-deep); display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.mc-voice-mid { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.mc-voice-track { height: 3px; border-radius: 3px; background: rgba(240,230,234,.18); overflow: hidden; }
+.mc-voice-fill { height: 100%; width: 0%; background: var(--gold-light); }
+.mc-voice-time { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(240,230,234,.5); font-variant-numeric: tabular-nums; }
+
+/* ── Área de composición — ella ve escribirse la pregunta y la envía ella misma ── */
+.mc-chat-compose { display: flex; align-items: center; gap: 10px; margin-top: 14px; transition: opacity .4s ease; }
+.mc-chat-compose.hide { opacity: 0; pointer-events: none; height: 0; overflow: hidden; margin: 0; }
+.mc-compose-bubble { flex: 1; min-height: 20px; background: rgba(255,255,255,.05); border: 1px solid rgba(184,137,42,.25); border-radius: 20px; padding: 11px 18px; font-family: 'Jost', sans-serif; font-size: 14px; color: rgba(240,230,234,.9); }
+.mc-send-btn {
+  flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
+  background-size: 300% 100%; color: var(--charcoal-deep); font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .35; pointer-events: none; transition: opacity .3s ease;
+}
+.mc-send-btn.pulse { opacity: 1; pointer-events: auto; animation: mcCtaPulse 1.4s ease-in-out infinite, mcGoldShift 3s ease infinite; }
+.mc-compose-hint { text-align: center; font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.4); margin-top: 8px; opacity: 0; transition: opacity .4s ease; }
+.mc-compose-hint.show { opacity: 1; }
+
+/* ── Botón "Quiero estar en este espacio" — siempre visible, nunca la obligamos a escuchar
+   todos los audios primero para poder seguir ── */
+.mc-chat-cta { text-align: center; padding-top: 26px; }
+
+/* ── Nota personal de Josué — reemplaza el bloque de "garantía" genérico ── */
+.mc-note-title { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: var(--text-light); text-align: center; margin-bottom: 20px; }
+.mc-note-line { font-family: var(--font-body); font-weight: 400; font-size: 16px; line-height: 1.7; color: rgba(240,230,234,.85); text-align: center; margin-bottom: 14px; }
+.mc-note-signoff { font-weight: 600; color: var(--gold-light); margin-top: 6px; }
+.mc-note-trust { text-align: center; margin-top: 26px; }
+.mc-note-trust p { font-family: 'Jost', sans-serif; font-size: 12px; color: rgba(240,230,234,.4); margin-bottom: 6px; }
+
+/* ── Silencio antes del footer — la página termina sin ruido, no con más empuje ── */
+.mc-silence { height: 260px; }
+
+.mc-footer { text-align: center; padding: 0 0 60px; }
+.mc-footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
 .mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.55); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
 
-/* ── Sticky bottom bar ── */
-#mc-sticky { position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: rgba(30,18,24,.92); backdrop-filter: blur(10px); border-top: 1px solid rgba(184,137,42,.25); transform: translateY(110%); transition: transform .4s ease; }
-#mc-sticky.show { transform: translateY(0); }
-.mc-sticky-txt { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mc-sticky-btn { flex-shrink: 0; padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer; background: linear-gradient(90deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep)); background-size: 300% 100%; animation: mcGoldShift 3s ease infinite; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: var(--charcoal-deep); letter-spacing: .3px; white-space: nowrap; }
+/* ── Fecha flotante — recuadro fijo pequeño, siempre visible, ni arriba ni abajo del todo ── */
+#mc-float-date {
+  position: fixed; bottom: 18px; right: 14px; z-index: 450;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  background: rgba(30,18,24,.92); backdrop-filter: blur(10px);
+  border: 1px solid rgba(184,137,42,.3); border-radius: 14px;
+  padding: 12px 16px; text-decoration: none; cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  transition: transform .2s, opacity .5s ease;
+  opacity: 0; pointer-events: none;
+}
+#mc-float-date.show { opacity: 1; pointer-events: auto; }
+#mc-float-date:hover { transform: translateY(-2px); }
+.mc-float-live { font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #6FD98C; display: flex; align-items: center; gap: 5px; }
+.mc-float-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #6FD98C; animation: mcLivePulse 1.6s ease-in-out infinite; }
+@keyframes mcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+.mc-float-date-txt { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); }
+.mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: -2px; }
+.mc-float-days { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+.mc-float-days strong { font-family: var(--font-display); font-size: 15px; color: var(--gold-light); font-weight: 700; }
 
-@media (max-width: 380px) { .mc-sticky-txt { display: none; } }
+@media (max-width: 340px) { #mc-float-date { padding: 10px 13px; } .mc-float-date-txt { font-size: 12px; } }
 </style>
 </head>
 <body>
 
-<main>
-<!-- ══════════════════ HERO ══════════════════ -->
-<section class="mc-hero">
-  <div class="mc-eyebrow">Masterclass Soberana</div>
-  <h1 class="mc-headline">Descubre por qué todo lo que has intentado hasta hoy ha seguido <em>desgastándote</em>...<br>y cuál es el primer cambio que realmente empieza a transformar tu relación.</h1>
-  <p class="mc-sub">La mayoría de mujeres no están destruyendo su relación por falta de amor. La están desgastando intentando salvarla desde el único lugar donde nunca tuvieron control.</p>
-  <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
-  <p class="mc-price-note" id="mc-hero-note">Acceso inmediato · Pago seguro con Hotmart</p>
-</section>
+<!-- ══════════════════ PUNTOS DE PROGRESO ══════════════════ -->
+<div id="mc-dots">
+  <div class="dot" data-target="s1"></div>
+  <div class="dot" data-target="s2"></div>
+  <div class="dot" data-target="s3"></div>
+  <div class="dot" data-target="s4"></div>
+  <div class="dot" data-target="s5"></div>
+  <div class="dot" data-target="s6"></div>
+  <div class="dot" data-target="s7"></div>
+  <div class="dot" data-target="s8"></div>
+  <div class="dot" data-target="s9"></div>
+</div>
 
-<div class="mc-wrap">
+<main id="mc-scroll">
 
-  <!-- ══════════════════ PROMESA / RECONOCIMIENTO ══════════════════ -->
-  <section class="mc-section reveal">
-    <p class="mc-quote">Llevas años dando todo de ti para salvar tu relación. Cediendo. Ajustando quién eres. Aguantando para no generar conflicto. Y en algún punto dejaste de preguntarte si ese esfuerzo estaba funcionando — simplemente asumiste que <strong>todavía no habías encontrado la manera correcta</strong> de hacerlo.<br><br>En menos de una hora vas a entender por qué eso nunca fue el problema.</p>
+  <!-- ══ 1 ══ -->
+  <section class="screen" id="s1">
+    <div class="screen-wrap reveal reveal-letter">
+      <p class="mc-line mc-letter-line">Has intentado hablar.</p>
+    </div>
+    <a class="mc-continue reveal" href="#s2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
   </section>
 
-  <!-- ══════════════════ VIDEO ══════════════════ -->
-  <section class="mc-section reveal" style="padding-top:0;">
-    <div class="mc-video-box" style="padding:0; overflow:hidden; position:relative;">
-      <iframe
-        src="https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
-        loading="lazy"
-        style="border:none; position:absolute; top:0; height:100%; width:100%;"
-        allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
-        allowfullscreen="true">
-      </iframe>
+  <!-- ══ 2 ══ -->
+  <section class="screen" id="s2">
+    <div class="screen-wrap reveal reveal-letter">
+      <p class="mc-line mc-letter-line">Has intentado esperar.</p>
+    </div>
+    <a class="mc-continue reveal" href="#s3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <!-- ══ 3 ══ -->
+  <section class="screen" id="s3">
+    <div class="screen-wrap reveal reveal-letter">
+      <p class="mc-line mc-letter-line">Has intentado cambiar tú.</p>
+    </div>
+    <a class="mc-continue reveal" href="#s4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <!-- ══ 4 — EL GIRO ══ -->
+  <section class="screen" id="s4">
+    <div class="screen-wrap">
+      <p class="mc-line mc-letter-line reveal reveal-letter">Y aun así...</p>
+      <p class="mc-line mc-letter-line reveal reveal-letter" style="transition-delay:1s; margin-top:10px;"><strong>nada cambia.</strong></p>
+    </div>
+    <a class="mc-continue reveal" href="#s5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <!-- ══ 5 — VIDEO (nada antes, nada después salvo el reveal a -30s) ══ -->
+  <section class="screen" id="s5" style="padding-top:70px; padding-bottom:50px;">
+    <div class="screen-wrap reveal" style="max-width:520px; width:100%;">
+      <p class="mc-video-kicker reveal" id="mc-video-kicker">Antes de reservar tu lugar...</p>
+      <p class="mc-video-subtext reveal" id="mc-video-subtext" style="transition-delay:1.8s;">Quiero mostrarte en menos de 2 minutos por qué todo lo que has intentado hasta hoy no produjo el cambio que esperabas.</p>
+
+      <div class="mc-video-box reveal" id="mc-video-box">
+        <iframe
+          id="mc-video-iframe"
+          src="https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=true&loop=false&muted=true&preload=true&responsive=true"
+          loading="lazy"
+          allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
+          allowfullscreen="true">
+        </iframe>
+        <div class="mc-video-tint" id="mc-video-tint"></div>
+        <button id="mc-unmute-btn" onclick="unmuteVideo()">▶&nbsp; Activa el sonido</button>
+      </div>
+
+      <!-- Aparece automáticamente cuando el video termina -->
+      <div id="mc-event-reveal">
+        <p class="mc-reveal-big">Pero todavía hay algo que necesito preguntarte.</p>
+        <p class="mc-reveal-arrow" style="transition-delay:2.6s;">↓</p>
+        <a class="mc-continue mc-continue-center reveal" id="mc-reveal-continue" href="#s6" style="transition-delay:4s;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+      </div>
+    </div>
+
+    <!-- Asomo borroso de lo que sigue — curiosidad de "hay algo más", sin depender de scroll libre -->
+    <div class="mc-peek" id="mc-peek"><p class="mc-peek-text">Quiero pedirte algo antes de seguir.</p></div>
+  </section>
+
+  <!-- ══ 6 — LA PREGUNTA (ritmo cinematográfico: beats separados, silencio real antes de la
+       pregunta — no todo el texto entrando junto) ══ -->
+  <section class="screen" id="s6">
+    <div class="screen-wrap">
+      <p class="mc-line reveal" style="font-size:clamp(19px,4.8vw,23px);">Quiero pedirte algo antes de seguir.</p>
+      <p class="mc-video-subtext reveal" style="margin-top:24px; transition-delay:1.2s;">No tomes una decisión todavía.<br><br>Ni para entrar.<br>Ni para salir.</p>
+      <p class="mc-line reveal" style="font-size:clamp(17px,4.2vw,20px); margin-top:24px; transition-delay:2.6s;">Respóndete esto con absoluta honestidad.</p>
+      <p class="mc-line reveal" style="font-size:clamp(18px,4.5vw,21px); margin-top:34px; transition-delay:4.8s;">¿Cuántas veces más estás dispuesta a seguir intentando exactamente de la misma manera...<br><strong>esperando un resultado diferente?</strong></p>
+    </div>
+    <a class="mc-continue reveal" href="#s7" style="transition-delay:6.2s;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <!-- ══ 7 — SI ESA PREGUNTA TE INCOMODÓ ══ -->
+  <section class="screen" id="s7">
+    <div class="screen-wrap reveal">
+      <p class="mc-line" style="font-size:clamp(18px,4.5vw,21px);">Si esa pregunta te incomodó...<br>es porque probablemente ya sabes algo.</p>
+      <p class="mc-video-subtext" style="margin-top:24px;">Sabes que llevas mucho tiempo haciendo más.<br>Hablando más.<br>Esperando más.<br>Intentando más.</p>
+      <p class="mc-line" style="font-size:clamp(17px,4.2vw,20px); margin-top:24px;">Y, aun así...<br><strong>la relación sigue sintiéndose exactamente en el mismo lugar.</strong></p>
+      <p class="mc-video-subtext" style="margin-top:24px;">Eso no significa que no hayas luchado lo suficiente.<br><br>Significa que probablemente has estado luchando desde el lugar equivocado.</p>
+    </div>
+    <a class="mc-continue reveal" href="#s8"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <!-- ══ 8 — "IMAGINA..." + AGENDA (la hoja se desliza encima de "Solo tú.") ══ -->
+  <section class="screen" id="s8" style="padding:0; overflow:hidden;">
+
+    <div class="mc-imagine-stage" id="mc-imagine-stage">
+      <p class="mc-imagine-line" id="mc-imagine-1">Imagina por un momento esto...</p>
+      <div class="mc-imagine-checklist" id="mc-imagine-checklist">
+        <p class="mc-imagine-check">✓ Sábado.</p>
+        <p class="mc-imagine-check">✓ 7:00 de la noche.</p>
+        <p class="mc-imagine-check">✓ Sin interrupciones.</p>
+        <p class="mc-imagine-check">✓ Sin tener que convencer a nadie.</p>
+      </div>
+      <p class="mc-imagine-big" id="mc-imagine-big">Solo tú.</p>
+    </div>
+
+    <div class="mc-agenda-slide" id="mc-agenda-slide">
+      <div class="screen-wrap" style="max-width:420px; width:100%;">
+        <div class="mc-agenda-card">
+          <div class="mc-agenda-week">
+            <div class="mc-agenda-day"><span>D</span><span>26</span></div>
+            <div class="mc-agenda-day"><span>L</span><span>27</span></div>
+            <div class="mc-agenda-day"><span>M</span><span>28</span></div>
+            <div class="mc-agenda-day"><span>X</span><span>29</span></div>
+            <div class="mc-agenda-day"><span>J</span><span>30</span></div>
+            <div class="mc-agenda-day"><span>V</span><span>31</span></div>
+            <div class="mc-agenda-day active"><span>S</span><span>1</span></div>
+          </div>
+          <p class="mc-agenda-date">Sábado — 1 de agosto de 2026</p>
+
+          <div class="mc-agenda-divider"></div>
+
+          <p class="mc-agenda-kicker">Durante este espacio vas a descubrir:</p>
+
+          <div class="mc-agenda-notes">
+            <div class="mc-note"><span class="mc-note-dot"></span><span class="mc-note-text">Por qué cada intento termina agotándote más a ti que acercándolos a ustedes.</span></div>
+            <div class="mc-note"><span class="mc-note-dot"></span><span class="mc-note-text">Qué está sosteniendo realmente ese ciclo que llevas años intentando romper.</span></div>
+            <div class="mc-note"><span class="mc-note-dot"></span><span class="mc-note-text">Y cuál es el primer cambio que hace que dejes de cargar sola con el peso de la relación.</span></div>
+          </div>
+        </div>
+      </div>
+      <a class="mc-continue" id="mc-agenda-continue" href="#s9"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
     </div>
   </section>
 
-  <!-- ══════════════════ BENEFICIOS ══════════════════ -->
-  <section class="mc-section reveal">
-    <div class="mc-benefit">
-      <div class="mc-benefit-mark">1</div>
-      <p class="mc-benefit-txt"><strong>Vas a entender por qué nada de lo que intentaste antes funcionó</strong> — y por qué eso nunca significó que no lo intentaste lo suficiente.</p>
+  <!-- ══ 9 — CTA FINAL ══ -->
+  <section class="screen" id="s9">
+    <div class="screen-wrap reveal" style="max-width:420px;">
+      <div class="mc-agenda-card">
+        <div class="mc-agenda-week">
+          <div class="mc-agenda-day"><span>D</span><span>26</span></div>
+          <div class="mc-agenda-day"><span>L</span><span>27</span></div>
+          <div class="mc-agenda-day"><span>M</span><span>28</span></div>
+          <div class="mc-agenda-day"><span>X</span><span>29</span></div>
+          <div class="mc-agenda-day"><span>J</span><span>30</span></div>
+          <div class="mc-agenda-day"><span>V</span><span>31</span></div>
+          <div class="mc-agenda-day active"><span>S</span><span>1</span></div>
+        </div>
+        <p class="mc-agenda-date">Sábado — 1 de agosto de 2026</p>
+        <p class="mc-agenda-time">🕖 7:00 p.m. Colombia</p>
+
+        <div class="mc-agenda-divider"></div>
+
+        <div class="mc-agenda-checks">
+          <p><span>✔</span>Participas en vivo.</p>
+          <p><span>✔</span>Si no puedes asistir, tendrás acceso a la grabación dentro de Mi Espacio.</p>
+        </div>
+
+        <div id="mc-countdown-box">
+          <div id="mc-countdown" aria-live="polite">
+            <div class="mc-cd-unit"><span class="mc-cd-num" id="cd-d">--</span><span class="mc-cd-lbl">días</span></div>
+            <div class="mc-cd-unit"><span class="mc-cd-num" id="cd-h">--</span><span class="mc-cd-lbl">hrs</span></div>
+            <div class="mc-cd-unit"><span class="mc-cd-num" id="cd-m">--</span><span class="mc-cd-lbl">min</span></div>
+          </div>
+        </div>
+
+        <button class="mc-btn" id="mc-btn-2" onclick="goToCheckout()" style="margin-top:22px; width:100%;">Sí, quiero estar ahí</button>
+        <p class="mc-price-note" id="mc-hero-note">Tu lugar queda reservado · Pago seguro con Hotmart</p>
+      </div>
     </div>
-    <div class="mc-benefit">
-      <div class="mc-benefit-mark">2</div>
-      <p class="mc-benefit-txt"><strong>Vas a identificar el primer cambio real</strong> que puede empezar a transformar tu relación — la dirección exacta, no una teoría más.</p>
+    <a class="mc-continue reveal" href="#mc-tail-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+</main>
+
+<!-- ══════════════════ COLA LIBRE — PREGUNTAS (chat) / NOTA DE JOSUÉ / FOOTER ══════════════════ -->
+<div class="mc-tail" id="mc-tail-start">
+  <section class="mc-tail-section">
+    <p class="mc-chat-title reveal">Tal vez todavía tengas estas preguntas.</p>
+
+    <div class="mc-chat-window" id="mc-chat-window">
+      <div class="mc-chat-log" id="mc-chat-log"></div>
     </div>
-    <div class="mc-benefit">
-      <div class="mc-benefit-mark">3</div>
-      <p class="mc-benefit-txt"><strong>Vas a salir con alivio, no con más confusión</strong> — el mismo alivio de dejar de cargar sola la pregunta de qué está mal contigo.</p>
+
+    <div class="mc-chat-compose" id="mc-chat-compose">
+      <div class="mc-compose-bubble"><span id="mc-compose-text"></span><span class="mc-cursor" id="mc-compose-cursor"></span></div>
+      <button class="mc-send-btn" id="mc-send-btn" aria-label="Enviar">➤</button>
+    </div>
+    <p class="mc-compose-hint" id="mc-compose-hint">Toca enviar para continuar</p>
+  </section>
+
+  <section class="mc-chat-cta" id="mc-chat-cta">
+    <button class="mc-btn" onclick="goToCheckout()">Quiero estar en este espacio.</button>
+    <a class="mc-continue reveal" href="#mc-note-section" style="margin-top:30px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+
+  <section class="mc-tail-section reveal" id="mc-note-section" style="padding-top:8px;">
+    <p class="mc-note-title">Antes de irte... quiero decirte algo.</p>
+    <p class="mc-note-line">No sé qué está pasando hoy en tu relación.</p>
+    <p class="mc-note-line">No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada.</p>
+    <p class="mc-note-line mc-note-signoff">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
+
+    <div class="mc-note-trust">
+      <p>🛡 Compra protegida por Hotmart</p>
+      <p id="mc-guarantee-acceso">📅 Sábado 1 de agosto · 7:00 p.m.</p>
     </div>
   </section>
 
-  <!-- ══════════════════ FAQ ══════════════════ -->
-  <section class="mc-section reveal" style="padding-top:0;">
-    <p class="mc-faq-label">Preguntas frecuentes</p>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">¿Esto es para separarme o para quedarme?</div>
-      <div class="faq-a">Ninguna de las dos. Es para que entiendas qué ha estado pasando realmente, antes de decidir cualquier cosa desde la claridad en vez de desde el agotamiento.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">¿Funciona si él no participa?</div>
-      <div class="faq-a">Sí. Esta masterclass no depende de que él haga nada — depende únicamente de que tú entiendas algo que hasta hoy nadie te había explicado así.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">$9 parece muy poco para algo que promete tanto.</div>
-      <div class="faq-a">Es intencional. El precio nunca debe ser la barrera para entender esto — la barrera real es la confianza, y por eso empezamos aquí, no con un compromiso grande.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">¿Cuándo tengo acceso?</div>
-      <div class="faq-a" id="mc-faq-acceso-a">Inmediatamente después de tu pago.</div>
-    </div>
+  <section class="mc-tail-section reveal" style="text-align:center;">
+    <button class="mc-btn" id="mc-btn-3" onclick="goToCheckout()">Reservar mi lugar para el sábado.</button>
+    <p class="mc-price-note" id="mc-cta-final-note">Acceso inmediato • Evento en vivo • USD $9</p>
   </section>
 
-  <!-- ══════════════════ GARANTÍA / TRUST ══════════════════ -->
-  <section class="mc-guarantee reveal">
-    <p>🛡️&nbsp; Compra protegida por Hotmart</p>
-    <p id="mc-guarantee-acceso">⚡&nbsp; Acceso inmediato después del pago</p>
-  </section>
+  <div class="mc-silence"></div>
 
-  <!-- ══════════════════ CTA FINAL ══════════════════ -->
-  <section class="mc-section reveal" style="text-align:center;">
-    <button class="mc-btn" onclick="goToCheckout()">Quiero entender qué está pasando — $9</button>
-    <p class="mc-price-note" id="mc-cta-final-note">Acceso inmediato · $9 USD</p>
-  </section>
-
-  <!-- ══════════════════ FOOTER ══════════════════ -->
   <footer class="mc-footer">
-    <div class="mc-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
     <div class="mc-footer-links">
       <a href="/privacidad.html" target="_blank">Política de Privacidad</a>
       <span style="color:rgba(184,137,42,.2);font-size:10px;padding:6px 0;">·</span>
@@ -241,30 +620,120 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
   </footer>
 </div>
-</main>
 
-<!-- ══════════════════ STICKY CTA ══════════════════ -->
-<div id="mc-sticky">
-  <span class="mc-sticky-txt">Masterclass Soberana — $9</span>
-  <button class="mc-sticky-btn" onclick="goToCheckout()">Empezar →</button>
-</div>
+<!-- ══════════════════ FECHA FLOTANTE — siempre visible ══════════════════ -->
+<a href="#" id="mc-float-date" onclick="goToCheckout(); return false;">
+  <span class="mc-float-live"><span class="mc-float-live-dot"></span>EN VIVO</span>
+  <span class="mc-float-date-txt">Sábado 1 agosto</span>
+  <span class="mc-float-time">7:00 pm</span>
+  <span class="mc-float-days">Quedan: <strong id="mc-float-days-num">--</strong> días</span>
+</a>
 
 <script>
 // ── Estado derivado de la fecha del evento (fuente única — ver entry-product-system/SKILL.md
-// → "Mecanismo de derivación automática por fecha"). Antes del evento: En Vivo. Después: Replay,
-// que es el copy "acceso inmediato" ya escrito por defecto en el HTML — no hace falta tocarlo.
+// → "Mecanismo de derivación automática por fecha"). Antes del evento: LIVE (Reserva tu lugar).
+// Después: Replay/Evergreen — el contador se oculta, el copy pasa a acceso inmediato.
 (function () {
+  var EVENTO_INICIO = new Date('2026-08-01T19:00:00-05:00'); // arranca el evento
   var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
-  if (Date.now() >= EVENTO_FIN.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
+  var cdBox = document.getElementById('mc-countdown-box');
 
-  var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
-  set('mc-hero-note', 'Tu lugar queda reservado · Pago seguro con Hotmart');
-  set('mc-faq-acceso-a', 'El sábado 1 de agosto a las 7:00 p.m. (Colombia) entramos en vivo. Tu lugar queda reservado apenas completes el pago, y te aviso por WhatsApp antes de empezar.');
-  set('mc-guarantee-acceso', '📅&nbsp; Evento en vivo: sábado 1 de agosto, 7:00 p.m. Colombia');
-  set('mc-cta-final-note', 'Cupo reservado · $9 USD');
+  if (Date.now() >= EVENTO_FIN.getTime()) {
+    // Replay/Evergreen — se oculta el contador (grande y flotante) y se ajusta el copy que ya no aplica
+    if (cdBox) cdBox.style.display = 'none';
+    var floatEl = document.getElementById('mc-float-date'); if (floatEl) floatEl.classList.remove('show');
+    var set0 = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+    set0('mc-hero-note', 'Acceso inmediato · Pago seguro con Hotmart');
+    set0('mc-guarantee-acceso', '⚡&nbsp; Acceso inmediato después del pago');
+    set0('mc-cta-final-note', 'Acceso inmediato · $9 USD');
+    // Los botones tenían texto atado a un evento con fecha fija — en Evergreen ya no aplica
+    set0('mc-btn-2', 'Sí, quiero verlo');
+    set0('mc-btn-3', 'Empezar ahora');
+    return;
+  }
+
+  // Contador — urgencia natural, se detiene solo cuando arranca el evento (nunca cuenta "negativo")
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var tick = function () {
+    var ms = EVENTO_INICIO.getTime() - Date.now();
+    var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+    if (ms <= 0) {
+      var cd = document.getElementById('mc-countdown'); if (cd) cd.style.display = 'none';
+      set('mc-float-days-num', '0');
+      return;
+    }
+    var totalMin = Math.floor(ms / 60000);
+    var d = Math.floor(totalMin / 1440);
+    var h = Math.floor((totalMin % 1440) / 60);
+    var m = totalMin % 60;
+    set('cd-d', pad(d)); set('cd-h', pad(h)); set('cd-m', pad(m));
+    set('mc-float-days-num', pad(Math.ceil(ms / 86400000))); // días redondeados hacia arriba, "quedan 3" no "quedan 2.6"
+  };
+  tick();
+  setInterval(tick, 30000);
 })();
 
-function toggleFaq(el) { el.classList.toggle('open'); }
+// ── Diseño sonoro — micro-sonidos + fondo ambient. Nunca suena hasta que ella activa el sonido
+// del video (mismo gesto que ya desbloquea autoplay con audio en el navegador). Fondo muy bajo,
+// sube/baja levemente según la pantalla (no melodía, solo temperatura emocional). ──
+var mcSound = (function () {
+  var base = '../assets/';
+  var files = {
+    pop: base + 'reginaldoito-cell-send-plim-140592.mp3',
+    typing: base + 'sarthakraj_308-typing-on-laptop-keyboard-308455.mp3',
+    whisper: base + 'koiroylers-subtle-transition-356008.mp3',
+    notify: base + 'universfield-new-notification-040-493469.mp3',
+    click: base + 'universfield-new-notification-062-494544.mp3',
+    ambient: base + 'psyai-spa-relaxation-background-soft-ambient-instrument-484999.mp3'
+  };
+  var enabled = false;
+  var cache = {};
+  var ambientEl = null;
+  var typingEl = null;
+
+  function get(name) {
+    if (!cache[name]) cache[name] = new Audio(files[name]);
+    return cache[name];
+  }
+
+  function play(name, vol) {
+    if (!enabled) return;
+    try {
+      var a = get(name).cloneNode(); // clon para permitir sonidos superpuestos
+      a.volume = vol == null ? 0.5 : vol;
+      a.play().catch(function () {});
+    } catch (e) {}
+  }
+
+  function startAmbient() {
+    if (ambientEl) return;
+    ambientEl = get('ambient');
+    ambientEl.loop = true;
+    ambientEl.volume = 0.05;
+    ambientEl.play().catch(function () {});
+  }
+
+  function setAmbientVolume(v) {
+    if (ambientEl) ambientEl.volume = v;
+  }
+
+  function startTyping() {
+    if (!enabled) return;
+    try {
+      typingEl = get('typing').cloneNode();
+      typingEl.volume = 0.12;
+      typingEl.play().catch(function () {});
+    } catch (e) {}
+  }
+
+  function stopTyping() {
+    if (typingEl) { typingEl.pause(); typingEl = null; }
+  }
+
+  function enable() { enabled = true; startAmbient(); }
+
+  return { enable: enable, play: play, setAmbientVolume: setAmbientVolume, startTyping: startTyping, stopTyping: stopTyping };
+})();
 
 function goToCheckout() {
   if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { value: 9.00, currency: 'USD' });
@@ -272,28 +741,393 @@ function goToCheckout() {
   window.open('https://pay.hotmart.com/W106744574H', '_blank');
 }
 
-// Sticky bar aparece después de pasar el hero
-(function () {
-  var sticky = document.getElementById('mc-sticky');
-  var hero = document.querySelector('.mc-hero');
-  var obs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) sticky.classList.remove('show');
-      else sticky.classList.add('show');
-    });
-  }, { threshold: 0 });
-  obs.observe(hero);
+// Reinicia el video desde 0 con sonido (recarga el iframe con muted=false) — más confiable que
+// mandarle un comando "unmute" al reproductor, porque no depende de que Bunny lo interprete bien.
+// El click ya cuenta como gesto del usuario, así que el navegador permite el autoplay con sonido.
+function unmuteVideo() {
+  mcSound.enable(); // arranca el fondo ambient — mismo gesto que desbloquea audio en el navegador
+  var iframe = document.getElementById('mc-video-iframe');
+  iframe.style.animation = 'none'; // corta mcVideoBlurClear, que lo dejaba congelado en 11px de blur
+  iframe.style.filter = 'blur(0)';
+  iframe.src = 'https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=true&loop=false&muted=false&preload=true&responsive=true';
+
+  var tint = document.getElementById('mc-video-tint');
+  tint.style.animation = 'none'; // corta la animación mcTintClear, que la dejaba congelada en .55 de opacidad
+  tint.classList.add('hide');
+
+  document.getElementById('mc-unmute-btn').classList.add('hide');
+
+  // Al darle play: primero se borra el título, después el subtítulo, y recién entonces el
+  // video sube despacio (y crece un poco) — en secuencia, no los 3 pasos a la vez.
+  document.getElementById('mc-video-kicker').classList.add('hide');
+  setTimeout(function () {
+    document.getElementById('mc-video-subtext').classList.add('hide');
+  }, 450);
+  setTimeout(function () {
+    document.getElementById('mc-video-box').classList.add('shift-up');
+    document.getElementById('s5').classList.add('mc-anchor-top'); // no se vuelve a mover después
+  }, 1000);
+}
+
+// ── Bloqueo de scroll — no se puede avanzar más allá del video hasta que aparezca el reveal.
+// Intercepta el gesto ANTES de que mueva la página (no corrige después, que se veía como un
+// parpadeo del resto del contenido). Solo bloquea mientras s5 es la pantalla visible y "hacia
+// abajo" — subir para releer el hero sigue funcionando siempre.
+// Salida de seguridad: se libera sola a los 100s aunque el detector del video nunca dispare
+// (nunca la deja atrapada sin salida si Bunny no responde el protocolo Player.js). ──
+var mcUnlockScroll = (function () {
+  var s6 = document.getElementById('s6');
+  var locked = true;
+
+  // Posición pura, sin IntersectionObserver — el umbral de visibilidad podía fluctuar unos
+  // instantes durante la animación del scroll-snap y desbloquear sola por error.
+  function blockedDown() { return locked && window.scrollY < s6.offsetTop - 2; }
+
+  window.addEventListener('wheel', function (e) {
+    if (blockedDown() && e.deltaY > 0) e.preventDefault();
+  }, { passive: false });
+
+  var touchStartY = 0;
+  window.addEventListener('touchstart', function (e) { touchStartY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchmove', function (e) {
+    if (blockedDown() && (touchStartY - e.touches[0].clientY) > 0) e.preventDefault();
+  }, { passive: false });
+
+  window.addEventListener('keydown', function (e) {
+    if (blockedDown() && ['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1) e.preventDefault();
+  });
+
+  // Bloquea también el salto directo por los puntos de progreso (s6 en adelante) mientras está bloqueado
+  document.querySelectorAll('#mc-dots .dot').forEach(function (d) {
+    var idx = parseInt(d.dataset.target.replace('s', ''), 10);
+    d.addEventListener('click', function (e) {
+      if (locked && idx > 5) { e.stopImmediatePropagation(); e.preventDefault(); }
+    }, true);
+  });
+
+  setTimeout(function () { locked = false; }, 100000); // salida de seguridad
+
+  return function () { locked = false; };
 })();
 
-// Reveal on scroll (mismo patrón .js-reveal de index.html, una sola vez)
+// ── Reveal del bloque de evento a 8s del final — con temporizador fijo, no con mensajes del
+// reproductor (el protocolo Player.js de Bunny no estaba disparando el evento "timeupdate" de
+// forma confiable; esto no depende de que ningún mensaje cruzado funcione).
+// IMPORTANTE: REVEAL_EN_SEG está hardcodeado (112s de duración - 8s = 104s). Si se reemplaza el
+// video por uno de otra duración, hay que actualizar este número o el reveal va a aparecer en
+// el momento equivocado.
+(function () {
+  var revealBox = document.getElementById('mc-event-reveal');
+  var REVEAL_EN_SEG = 104; // 8s antes del final (video de 112s / 1:52)
+  var DELAY_MS = REVEAL_EN_SEG * 1000;
+
+  function fire() {
+    mcUnlockScroll();
+    // El video se queda tal como quedó al reproducirse (sin volver a oscurecer/desenfocar) —
+    // solo aparece el texto de abajo.
+    revealBox.classList.add('show');
+    revealBox.querySelector('.mc-reveal-big').classList.add('in');
+    revealBox.querySelector('.mc-reveal-arrow').classList.add('in'); // el delay de 1.2s ya está en su CSS inline
+    document.getElementById('mc-reveal-continue').classList.add('in'); // el delay de 2.4s ya está en su CSS inline
+    revealBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(function () {
+      var peek = document.getElementById('mc-peek');
+      if (peek) peek.classList.add('show');
+    }, 6500); // aparece justo después del botón "Desliza"
+  }
+
+  // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,
+  // así que este momento coincide con cuando realmente empieza a reproducirse.
+  document.getElementById('mc-video-iframe').addEventListener('load', function () {
+    setTimeout(fire, DELAY_MS);
+  });
+})();
+
+// Fecha flotante — visible desde el principio (no espera a pasar ninguna pantalla), se oculta
+// sola en Replay/Evergreen (ver bloque de Estado más arriba, que ya la esconde si aplica).
+(function () {
+  var el = document.getElementById('mc-float-date');
+  if (el && Date.now() < new Date('2026-08-01T20:15:00-05:00').getTime()) el.classList.add('show');
+})();
+
+// Reveal al entrar en viewport
 (function () {
   var els = document.querySelectorAll('.reveal');
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
     });
-  }, { threshold: 0.15 });
+  }, { threshold: 0.2 });
   els.forEach(function (el) { obs.observe(el); });
+})();
+
+// ── Secuencia "Imagina..." (s8) — una frase reemplaza a la anterior en el mismo lugar,
+// termina en "Solo tú." grande, y recién ahí la hoja de agenda se desliza encima desde abajo.
+// Al terminar de deslizarse, las notas de la agenda aparecen palabra por palabra (mismo ritmo
+// de lectura que ya usábamos, ahora encadenado a esta secuencia en vez de un observer aparte). ──
+(function () {
+  var stage = document.getElementById('mc-imagine-stage');
+  var line1 = document.getElementById('mc-imagine-1');
+  var checklist = document.getElementById('mc-imagine-checklist');
+  var checks = checklist ? checklist.querySelectorAll('.mc-imagine-check') : [];
+  var big = document.getElementById('mc-imagine-big');
+  var slide = document.getElementById('mc-agenda-slide');
+  var continueLink = document.getElementById('mc-agenda-continue');
+  var texts = document.querySelectorAll('#s8 .mc-note-text');
+  if (!stage || !slide) return;
+
+  texts.forEach(function (t) {
+    var words = t.textContent.trim().split(/\s+/);
+    t.innerHTML = words.map(function (w) { return '<span class="mc-word">' + w + '</span>'; }).join(' ');
+  });
+
+  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
+
+  function revealWords() {
+    var delay = 0;
+    texts.forEach(function (t) {
+      var words = t.querySelectorAll('.mc-word');
+      words.forEach(function (w) {
+        setTimeout(function () { w.classList.add('in'); }, delay);
+        delay += 150; // ritmo de lectura
+      });
+      delay += 350; // pausa breve entre notas
+    });
+  }
+
+  async function run() {
+    line1.classList.add('in');
+    await wait(2600);
+    line1.classList.remove('in');
+    await wait(900);
+
+    checklist.classList.add('in');
+    var d = 0;
+    checks.forEach(function (c) {
+      setTimeout(function () { c.classList.add('in'); }, d);
+      d += 550;
+    });
+    await wait(d + 1800); // se quedan juntas un momento antes de borrarse
+    checklist.classList.remove('in');
+    await wait(1000);
+
+    big.classList.add('in');
+    await wait(2000);
+
+    slide.classList.add('in');
+    await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas
+    revealWords();
+  }
+
+  var started = false;
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting && !started) { started = true; run(); }
+    });
+  }, { threshold: .5 }).observe(stage);
+})();
+
+// Puntos de progreso — resaltan la pantalla visible y permiten saltar
+(function () {
+  var dots = document.querySelectorAll('#mc-dots .dot');
+  var screens = document.querySelectorAll('.screen');
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      var t = document.getElementById(d.dataset.target);
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+  // Volumen del fondo ambient por pantalla — sube/baja de temperatura, nunca golpes de volumen
+  var mcAmbientVol = { s5: .05, s6: .06, s7: .08, s8: .09, s9: .07 };
+  var lastActive = null;
+
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var dot = document.querySelector('#mc-dots .dot[data-target="' + e.target.id + '"]');
+      if (!dot) return;
+      if (e.isIntersecting) {
+        dots.forEach(function (d) { d.classList.remove('active'); });
+        dot.classList.add('active');
+        if (mcAmbientVol[e.target.id] != null) mcSound.setAmbientVolume(mcAmbientVol[e.target.id]);
+        if (lastActive && lastActive !== e.target.id) mcSound.play('whisper', .18); // susurro al cambiar de pantalla
+        lastActive = e.target.id;
+      }
+    });
+  }, { threshold: 0.5 });
+  screens.forEach(function (s) { obs.observe(s); });
+})();
+
+// Volumen del ambient en la cola libre — baja de nuevo en la nota final de Josué
+(function () {
+  var noteSection = document.getElementById('mc-note-section');
+  if (!noteSection) return;
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) mcSound.setAmbientVolume(.035);
+    });
+  }, { threshold: .4 }).observe(noteSection);
+})();
+
+// ── Conversación de WhatsApp simulada — ELLA envía cada pregunta con su propio clic (se ve
+// escribir en el compose, el botón enviar empieza a palpitar recién cuando terminó de escribir).
+// Josué responde con una NOTA DE VOZ real (audio), nunca autoplay — ella la escucha cuando
+// quiera, a su propio ritmo. El botón final está siempre visible, nunca la obligamos a
+// escuchar los 3 audios para poder seguir. El contenedor del chat tiene altura fija y hace
+// scroll interno solo — los mensajes viejos van subiendo y desapareciendo arriba. ──
+(function () {
+  var chatWindow = document.getElementById('mc-chat-window');
+  var log = document.getElementById('mc-chat-log');
+  var composeBox = document.getElementById('mc-chat-compose');
+  var composeText = document.getElementById('mc-compose-text');
+  var sendBtn = document.getElementById('mc-send-btn');
+  var hint = document.getElementById('mc-compose-hint');
+  if (!chatWindow || !log || !composeBox) return;
+
+  var MC_CHAT_BLOCKS = [
+    { q: 'Sí... pero ¿y si mi pareja nunca cambia?', audio: '../assets/respuesta1.mp4' },
+    { q: 'Sí... pero ¿y si ya hice terapia?', audio: '../assets/respuesta2.mp4' },
+    { q: 'Sí... pero ¿y si ese día no puedo conectarme?', audio: '../assets/respuesta3.mp4' }
+  ];
+
+  function scrollDown() { chatWindow.scrollTop = chatWindow.scrollHeight; }
+  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
+  function fmtTime(s) {
+    if (!isFinite(s)) return '0:00';
+    var m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  // Escribe la pregunta en el compose (no en el chat todavía) — letra por letra
+  function typeIntoCompose(text) {
+    return new Promise(function (resolve) {
+      composeText.textContent = '';
+      var i = 0;
+      (function step() {
+        composeText.textContent = text.slice(0, i);
+        if (i <= text.length) { i++; setTimeout(step, 30); }
+        else resolve();
+      })();
+    });
+  }
+
+  // Espera el clic real de ella en el botón de enviar (pulsando, con la anotación visible)
+  function waitForSend() {
+    return new Promise(function (resolve) {
+      sendBtn.classList.add('pulse');
+      hint.classList.add('show');
+      function onClick() {
+        sendBtn.removeEventListener('click', onClick);
+        sendBtn.classList.remove('pulse');
+        hint.classList.remove('show');
+        mcSound.play('pop', .4);
+        resolve();
+      }
+      sendBtn.addEventListener('click', onClick);
+    });
+  }
+
+  // Mueve el texto del compose al chat como mensaje de ella, y limpia el compose
+  function commitHerMessage(text) {
+    var row = document.createElement('div');
+    row.className = 'mc-msg-row her';
+    var bubble = document.createElement('div');
+    bubble.className = 'mc-msg-bubble her';
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    log.appendChild(row);
+    composeText.textContent = '';
+    scrollDown();
+  }
+
+  // "Josué está grabando..." (micrófono) y después la nota de voz reproducible — nunca autoplay
+  function addJosueVoice(src) {
+    return new Promise(function (resolve) {
+      var row = document.createElement('div');
+      row.className = 'mc-msg-row josue';
+      var sender = document.createElement('div');
+      sender.className = 'mc-msg-sender';
+      sender.textContent = 'Josué Calderón';
+      var recording = document.createElement('div');
+      recording.className = 'mc-recording-indicator';
+      recording.innerHTML = '<svg class="mc-recording-mic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V22h2v-2.06A9 9 0 0 0 21 11h-2z"/></svg><span>Josué está grabando...</span>';
+      row.appendChild(sender);
+      row.appendChild(recording);
+      log.appendChild(row);
+      scrollDown();
+      mcSound.startTyping();
+
+      setTimeout(function () {
+        mcSound.stopTyping();
+        mcSound.play('notify', .3); // llegó la nota de voz
+        var bubble = document.createElement('div');
+        bubble.className = 'mc-voice-bubble';
+
+        var audio = document.createElement('audio');
+        audio.preload = 'metadata';
+        audio.src = src;
+
+        var playBtn = document.createElement('button');
+        playBtn.className = 'mc-voice-play';
+        playBtn.setAttribute('aria-label', 'Reproducir');
+        playBtn.textContent = '▶';
+
+        var mid = document.createElement('div');
+        mid.className = 'mc-voice-mid';
+        var track = document.createElement('div');
+        track.className = 'mc-voice-track';
+        var fill = document.createElement('div');
+        fill.className = 'mc-voice-fill';
+        track.appendChild(fill);
+        var time = document.createElement('span');
+        time.className = 'mc-voice-time';
+        time.textContent = '0:00';
+        mid.appendChild(track);
+        mid.appendChild(time);
+
+        audio.addEventListener('loadedmetadata', function () { time.textContent = fmtTime(audio.duration); });
+        audio.addEventListener('timeupdate', function () {
+          if (audio.duration) fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+          time.textContent = fmtTime(audio.duration - audio.currentTime);
+        });
+        audio.addEventListener('ended', function () { playBtn.textContent = '▶'; fill.style.width = '0%'; time.textContent = fmtTime(audio.duration); mcSound.play('click', .3); });
+        playBtn.addEventListener('click', function () {
+          if (audio.paused) { audio.play(); playBtn.textContent = '❚❚'; }
+          else { audio.pause(); playBtn.textContent = '▶'; }
+        });
+
+        bubble.appendChild(playBtn);
+        bubble.appendChild(mid);
+        bubble.appendChild(audio);
+        row.replaceChild(bubble, recording);
+        scrollDown();
+        resolve();
+      }, 1500);
+    });
+  }
+
+  async function runBlock(block) {
+    await typeIntoCompose(block.q);
+    await waitForSend();
+    commitHerMessage(block.q);
+    await wait(500);
+    await addJosueVoice(block.audio);
+  }
+
+  async function run() {
+    for (var i = 0; i < MC_CHAT_BLOCKS.length; i++) {
+      await runBlock(MC_CHAT_BLOCKS[i]);
+      await wait(900);
+    }
+    composeBox.classList.add('hide');
+    hint.classList.add('hide');
+  }
+
+  var started = false;
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting && !started) { started = true; run(); }
+    });
+  }, { threshold: .3 }).observe(chatWindow);
 })();
 </script>
 

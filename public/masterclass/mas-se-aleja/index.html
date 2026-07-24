@@ -388,10 +388,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 #mc-float-date {
   position: fixed; bottom: 18px; right: 14px; z-index: 450;
   display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
-  background: rgba(30,18,24,.92); backdrop-filter: blur(10px);
-  border: 1px solid rgba(184,137,42,.3); border-radius: 14px;
+  background: linear-gradient(155deg, rgba(139,45,63,.97), rgba(61,12,17,.98)); backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(232,200,112,.55); border-radius: 14px;
   padding: 12px 16px; text-decoration: none; cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  box-shadow: 0 10px 34px rgba(184,137,42,.3), 0 10px 30px rgba(0,0,0,.5);
   transition: transform .2s, opacity .5s ease;
   opacity: 0; pointer-events: none;
 }
@@ -401,7 +401,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-float-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #6FD98C; animation: mcLivePulse 1.6s ease-in-out infinite; }
 @keyframes mcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 .mc-float-date-txt { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); }
-.mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: -2px; }
+.mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.85); margin-top: -2px; display: flex; flex-direction: column; gap: 1px; }
 .mc-float-days { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 .mc-float-days strong { font-family: var(--font-display); font-size: 15px; color: var(--gold-light); font-weight: 700; }
 
@@ -645,7 +645,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 <a href="#" id="mc-float-date" onclick="goToCheckout(); return false;">
   <span class="mc-float-live"><span class="mc-float-live-dot"></span>EN VIVO</span>
   <span class="mc-float-date-txt">Sábado 1 agosto</span>
-  <span class="mc-float-time">7:00 pm</span>
+  <span class="mc-float-time"><span>🇨🇴 7:00 p.m.</span><span>🇲🇽 6:00 p.m.</span></span>
   <span class="mc-float-days">Quedan: <strong id="mc-float-days-num">--</strong> días</span>
 </a>
 

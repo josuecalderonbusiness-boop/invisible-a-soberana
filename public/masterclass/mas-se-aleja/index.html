@@ -976,7 +976,7 @@ var mcUnlockScroll = (function () {
       d += 550;
     });
     var lastCheckAt = d - 550;
-    await wait(lastCheckAt + 1000); // 1s después de que terminó de aparecer el último check
+    await wait(lastCheckAt + 2000); // 2s después de que terminó de aparecer el último check
 
     slide.classList.add('in');
     await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas

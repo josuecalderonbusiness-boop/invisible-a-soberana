@@ -316,16 +316,23 @@ body { font-family: var(--font-body); color: var(--text-light); }
   display: flex; align-items: center; gap: 10px; min-width: 190px;
   background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
   border-radius: 14px 14px 14px 4px; padding: 10px 14px;
+  transition: background .5s ease, border-color .5s ease;
 }
+/* ── Escuchada — tinte dorado sutil, para que se sienta distinta de la que todavía falta ── */
+.mc-voice-bubble.heard { background: rgba(184,137,42,.1); border-color: rgba(184,137,42,.3); }
 .mc-voice-play {
   flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
   background: linear-gradient(135deg, var(--gold-primary), var(--gold-medium));
   color: var(--charcoal-deep); display: flex; align-items: center; justify-content: center; font-size: 12px;
+  transition: opacity .4s ease;
 }
+.mc-voice-bubble.heard .mc-voice-play { opacity: .55; }
 .mc-voice-mid { flex: 1; display: flex; flex-direction: column; gap: 5px; }
 .mc-voice-track { height: 3px; border-radius: 3px; background: rgba(240,230,234,.18); overflow: hidden; }
 .mc-voice-fill { height: 100%; width: 0%; background: var(--gold-light); }
 .mc-voice-time { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(240,230,234,.5); font-variant-numeric: tabular-nums; }
+.mc-voice-listen-hint { font-family: 'Jost', sans-serif; font-size: 10.5px; color: rgba(232,200,112,.65); margin-top: 6px; padding-left: 2px; opacity: 0; transition: opacity .5s ease; }
+.mc-voice-listen-hint.show { opacity: 1; }
 
 /* ── Área de composición — ella ve escribirse la pregunta y la envía ella misma ── */
 .mc-chat-compose { display: flex; align-items: center; gap: 10px; margin-top: 14px; transition: opacity .4s ease; }
@@ -730,9 +737,26 @@ var mcSound = (function () {
     if (typingEl) { typingEl.pause(); typingEl = null; }
   }
 
-  function enable() { enabled = true; startAmbient(); }
+  // "unlock" solo habilita los micro-sonidos (tipeo, pop, notify...) — no toca el ambient, que
+  // sigue reservado al gesto de "Activa el sonido" del video. "enable" hace ambas cosas.
+  function unlock() { enabled = true; }
+  function enable() { unlock(); startAmbient(); }
 
-  return { enable: enable, play: play, setAmbientVolume: setAmbientVolume, startTyping: startTyping, stopTyping: stopTyping };
+  return { enable: enable, unlock: unlock, play: play, setAmbientVolume: setAmbientVolume, startTyping: startTyping, stopTyping: stopTyping };
+})();
+
+// ── Desbloqueo de audio en el primer toque/clic en cualquier parte de la página — los navegadores
+// exigen un gesto del usuario para poder reproducir audio. Antes, los micro-sonidos (tipeo, pop del
+// envío) solo se activaban si ella tocaba "Activa el sonido" en el video; si llegaba al chat sin
+// tocarlo, se quedaban mudos. Esto los desbloquea con el primer gesto, sea cual sea. ──
+(function () {
+  function unlockOnce() {
+    mcSound.unlock();
+    document.removeEventListener('click', unlockOnce, true);
+    document.removeEventListener('touchstart', unlockOnce, true);
+  }
+  document.addEventListener('click', unlockOnce, true);
+  document.addEventListener('touchstart', unlockOnce, true);
 })();
 
 function goToCheckout() {
@@ -941,6 +965,15 @@ var mcUnlockScroll = (function () {
   var mcAmbientVol = { s5: .05, s6: .06, s7: .08, s8: .09, s9: .07 };
   var lastActive = null;
 
+  // Susurro al cambiar de pantalla — solo a partir del video (s1-s4 son el "carta", sin sonido
+  // de transición todavía), solo avanzando hacia adelante (releer hacia arriba no debe sonar),
+  // y con un mínimo de tiempo entre susurros para que un scroll rápido entre pantallas no los
+  // encime uno sobre otro.
+  var SCREEN_ORDER = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9'];
+  var WHISPER_FROM = SCREEN_ORDER.indexOf('s6'); // nada al entrar al video (s5) — solo después, de s6 en adelante
+  var WHISPER_MIN_GAP_MS = 800;
+  var lastWhisperAt = 0;
+
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       var dot = document.querySelector('#mc-dots .dot[data-target="' + e.target.id + '"]');
@@ -949,7 +982,18 @@ var mcUnlockScroll = (function () {
         dots.forEach(function (d) { d.classList.remove('active'); });
         dot.classList.add('active');
         if (mcAmbientVol[e.target.id] != null) mcSound.setAmbientVolume(mcAmbientVol[e.target.id]);
-        if (lastActive && lastActive !== e.target.id) mcSound.play('whisper', .18); // susurro al cambiar de pantalla
+
+        if (lastActive && lastActive !== e.target.id) {
+          var fromIdx = SCREEN_ORDER.indexOf(lastActive);
+          var toIdx = SCREEN_ORDER.indexOf(e.target.id);
+          var goingForward = fromIdx !== -1 && toIdx !== -1 && toIdx > fromIdx;
+          var pastVideo = toIdx >= WHISPER_FROM;
+          var now = Date.now();
+          if (goingForward && pastVideo && (now - lastWhisperAt) > WHISPER_MIN_GAP_MS) {
+            mcSound.play('whisper', .18);
+            lastWhisperAt = now;
+          }
+        }
         lastActive = e.target.id;
       }
     });
@@ -997,15 +1041,17 @@ var mcUnlockScroll = (function () {
     return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
-  // Escribe la pregunta en el compose (no en el chat todavía) — letra por letra
+  // Escribe la pregunta en el compose (no en el chat todavía) — letra por letra, con el
+  // sonidito de teclado sonando mientras se escribe (se corta solo al terminar)
   function typeIntoCompose(text) {
     return new Promise(function (resolve) {
       composeText.textContent = '';
+      mcSound.startTyping();
       var i = 0;
       (function step() {
         composeText.textContent = text.slice(0, i);
         if (i <= text.length) { i++; setTimeout(step, 30); }
-        else resolve();
+        else { mcSound.stopTyping(); resolve(); }
       })();
     });
   }
@@ -1084,12 +1130,28 @@ var mcUnlockScroll = (function () {
         mid.appendChild(track);
         mid.appendChild(time);
 
+        var listenHint = document.createElement('p');
+        listenHint.className = 'mc-voice-listen-hint';
+        listenHint.textContent = 'Escúchalo para continuar';
+
         audio.addEventListener('loadedmetadata', function () { time.textContent = fmtTime(audio.duration); });
         audio.addEventListener('timeupdate', function () {
           if (audio.duration) fill.style.width = (audio.currentTime / audio.duration * 100) + '%';
           time.textContent = fmtTime(audio.duration - audio.currentTime);
         });
-        audio.addEventListener('ended', function () { playBtn.textContent = '▶'; fill.style.width = '0%'; time.textContent = fmtTime(audio.duration); mcSound.play('click', .3); });
+        // Al terminar de escucharla: se pinta de dorado (ya la escuchó, la otra sigue pendiente)
+        // y recién ahí se libera el siguiente mensaje — nunca antes.
+        var heard = false;
+        audio.addEventListener('ended', function () {
+          playBtn.textContent = '▶'; fill.style.width = '0%'; time.textContent = fmtTime(audio.duration);
+          mcSound.play('click', .3);
+          if (!heard) {
+            heard = true;
+            bubble.classList.add('heard');
+            listenHint.classList.remove('show');
+            resolve();
+          }
+        });
         playBtn.addEventListener('click', function () {
           if (audio.paused) { audio.play(); playBtn.textContent = '❚❚'; }
           else { audio.pause(); playBtn.textContent = '▶'; }
@@ -1099,8 +1161,9 @@ var mcUnlockScroll = (function () {
         bubble.appendChild(mid);
         bubble.appendChild(audio);
         row.replaceChild(bubble, recording);
+        row.appendChild(listenHint);
+        setTimeout(function () { listenHint.classList.add('show'); }, 400);
         scrollDown();
-        resolve();
       }, 1500);
     });
   }

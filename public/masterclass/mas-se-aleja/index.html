@@ -380,7 +380,19 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ── Silencio antes del footer — la página termina sin ruido, no con más empuje ── */
 .mc-silence { height: 260px; }
 
-.mc-footer { text-align: center; padding: 0 0 60px; }
+/* ── Pensamiento pequeño de Josué — cita entre comillas, cursiva, antes de la firma ── */
+.mc-quote-signature { font-family: var(--font-elegant); font-style: italic; font-size: 15px; line-height: 1.6; color: rgba(240,230,234,.75); max-width: 340px; margin: 0 auto; }
+.mc-quote-author { font-family: 'Jost', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--gold-primary); margin-top: 10px; }
+
+/* ── Línea que separa la landing de los enlaces de documentación ── */
+.mc-footer-divider { max-width: 200px; margin: 34px auto 0; height: 1px; background: rgba(184,137,42,.18); }
+
+.mc-footer { text-align: center; padding: 34px 0 60px; }
+.mc-footer-signature { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.4); }
+/* ── Fuente de marca — misma que el wordmark "Código Soberana" en el resto del ecosistema ── */
+.mc-footer-brand { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 15px; color: var(--text-light); margin-top: 6px; }
+.mc-footer-brand sup { font-size: 9px; }
+.mc-footer-tagline { font-family: var(--font-body); font-size: 11px; color: rgba(240,230,234,.4); margin-top: 6px; margin-bottom: 22px; }
 .mc-footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
 .mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.55); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
 
@@ -618,7 +630,6 @@ body { font-family: var(--font-body); color: var(--text-light); }
     <p class="mc-note-line mc-note-signoff">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
 
     <div class="mc-note-trust">
-      <p>🛡 Compra protegida por Hotmart</p>
       <p id="mc-guarantee-acceso">📅 Sábado 1 de agosto · 7:00 p.m.</p>
     </div>
   </section>
@@ -630,7 +641,18 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
   <div class="mc-silence"></div>
 
+  <section class="mc-tail-section reveal" style="text-align:center; padding-top:0; padding-bottom:0;">
+    <p class="mc-quote-signature">"Hay relaciones que cambian cuando una mujer deja de sobrevivir… y vuelve a vivir."</p>
+    <p class="mc-quote-author">— Josué Calderón</p>
+  </section>
+
+  <div class="mc-footer-divider"></div>
+
   <footer class="mc-footer">
+    <p class="mc-footer-signature">Josué Calderón © 2026</p>
+    <p class="mc-footer-brand">Invisible a Soberana<sup>™</sup></p>
+    <p class="mc-footer-tagline">Porque una mujer que se encuentra... transforma todo lo que toca.</p>
+
     <div class="mc-footer-links">
       <a href="/privacidad.html" target="_blank">Política de Privacidad</a>
       <span style="color:rgba(184,137,42,.2);font-size:10px;padding:6px 0;">·</span>

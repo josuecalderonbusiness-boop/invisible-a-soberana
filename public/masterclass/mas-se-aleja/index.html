@@ -246,6 +246,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-imagine-pause-group { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .mc-imagine-pause-group .mc-imagine-big, .mc-imagine-pause-group .mc-imagine-line { position: static; }
 .mc-imagine-pause-group .mc-imagine-big { font-size: clamp(30px, 8.5vw, 46px); }
+/* ── "Cuéntame más" — solo aparece cuando terminó de leer las 3 líneas, y solo con su clic
+   se revelan los checks. No es un scroll pasivo, es una pregunta que ella responde. ── */
+#mc-pause-continue { opacity: 0; margin-top: -6px; transition: opacity 1s ease; pointer-events: none; }
+#mc-pause-continue.in { opacity: 1; pointer-events: auto; }
 .mc-imagine-line { font-family: var(--font-elegant); font-style: italic; font-size: clamp(20px, 5.5vw, 28px); color: rgba(240,230,234,.92); opacity: 0; filter: blur(4px); transition: opacity 1.2s ease, filter 1.2s ease; }
 .mc-imagine-line strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
 .mc-imagine-line.in { opacity: 1; filter: blur(0); }
@@ -397,10 +401,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 #mc-float-date {
   position: fixed; bottom: 18px; right: 14px; z-index: 450;
   display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
-  background: linear-gradient(155deg, rgba(139,45,63,.97), rgba(61,12,17,.98)); backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(232,200,112,.55); border-radius: 14px;
+  background: linear-gradient(155deg, rgba(20,7,9,.97), rgba(10,4,5,.98)); backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(232,200,112,.45); border-radius: 14px;
   padding: 12px 16px; text-decoration: none; cursor: pointer;
-  box-shadow: 0 10px 34px rgba(184,137,42,.3), 0 10px 30px rgba(0,0,0,.5);
+  box-shadow: 0 10px 34px rgba(0,0,0,.55), 0 10px 30px rgba(0,0,0,.5);
   transition: transform .2s, opacity .5s ease;
   opacity: 0; pointer-events: none;
 }
@@ -528,6 +532,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
         <p class="mc-imagine-big" id="mc-pause-big">Haz una pausa.</p>
         <p class="mc-imagine-line" id="mc-pause-90">Solo por 90 minutos.</p>
         <p class="mc-imagine-line" id="mc-pause-reason">Para volver a sentir que tu relación <strong>SÍ</strong> puede construirse entre dos...<br>y no únicamente sobre tus hombros.</p>
+        <a class="mc-continue" id="mc-pause-continue" href="#"><span>Cuéntame más</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
       </div>
       <div class="mc-imagine-checklist" id="mc-imagine-checklist">
         <p class="mc-imagine-check">✓ Sábado 1 de agosto.</p>
@@ -912,6 +917,7 @@ var mcUnlockScroll = (function () {
   var pauseBig = document.getElementById('mc-pause-big');
   var pause90 = document.getElementById('mc-pause-90');
   var pauseReason = document.getElementById('mc-pause-reason');
+  var pauseContinue = document.getElementById('mc-pause-continue');
   var checklist = document.getElementById('mc-imagine-checklist');
   var checks = checklist ? checklist.querySelectorAll('.mc-imagine-check') : [];
   var slide = document.getElementById('mc-agenda-slide');
@@ -944,8 +950,20 @@ var mcUnlockScroll = (function () {
     pause90.classList.add('in');
     await wait(1700);
     pauseReason.classList.add('in');
-    await wait(3200); // se quedan las tres juntas un momento antes de borrarse
+    await wait(1600); // le da tiempo de leer la razón antes de ofrecerle continuar
+    pauseContinue.classList.add('in');
 
+    // No sigue sola — espera el clic real de ella en "Cuéntame más"
+    await new Promise(function (resolve) {
+      function onClick(e) {
+        e.preventDefault();
+        pauseContinue.removeEventListener('click', onClick);
+        resolve();
+      }
+      pauseContinue.addEventListener('click', onClick);
+    });
+
+    pauseContinue.classList.remove('in');
     pauseBig.classList.remove('in');
     pause90.classList.remove('in');
     pauseReason.classList.remove('in');
@@ -957,9 +975,8 @@ var mcUnlockScroll = (function () {
       setTimeout(function () { c.classList.add('in'); }, d);
       d += 550;
     });
-    await wait(d + 1800); // se quedan juntas un momento antes de borrarse
-    checklist.classList.remove('in');
-    await wait(1000);
+    var lastCheckAt = d - 550;
+    await wait(lastCheckAt + 1000); // 1s después de que terminó de aparecer el último check
 
     slide.classList.add('in');
     await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas

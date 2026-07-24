@@ -284,6 +284,11 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ── Cola libre — ya no forzada por pantallas ── */
 .mc-tail { max-width: 460px; margin: 0 auto; padding: 0 28px; }
 .mc-tail-section { padding: 56px 0; }
+/* ── El bloque de WhatsApp sí ocupa la pantalla completa, centrado — como una .screen más ── */
+.mc-chat-screen { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; padding: 90px 0 70px; }
+/* ── La carta de Josué queda oculta — solo aparece cuando ella oprime la flecha bajo el botón,
+   nunca por scroll normal ── */
+#mc-note-section.mc-locked { display: none; }
 
 /* ── FAQ tipo chat — burbujas, no acordeón. Mismos colores de marca, nunca verde WhatsApp. ── */
 .mc-chat-title { font-family: var(--font-elegant); font-style: italic; font-size: 17px; color: var(--gold-light); text-align: center; margin-bottom: 20px; }
@@ -587,7 +592,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
 <!-- ══════════════════ COLA LIBRE — PREGUNTAS (chat) / NOTA DE JOSUÉ / FOOTER ══════════════════ -->
 <div class="mc-tail" id="mc-tail-start">
-  <section class="mc-tail-section">
+  <section class="mc-tail-section mc-chat-screen">
     <p class="mc-chat-title reveal">Tal vez todavía tengas estas preguntas.</p>
 
     <div class="mc-chat-window" id="mc-chat-window">
@@ -603,10 +608,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
   <section class="mc-chat-cta" id="mc-chat-cta">
     <button class="mc-btn" onclick="goToCheckout()">Quiero estar en este espacio.</button>
-    <a class="mc-continue reveal" href="#mc-note-section" style="margin-top:30px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+    <a class="mc-continue reveal" id="mc-note-arrow" href="#mc-note-section" style="margin-top:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
   </section>
 
-  <section class="mc-tail-section reveal" id="mc-note-section" style="padding-top:8px;">
+  <section class="mc-tail-section reveal mc-locked" id="mc-note-section" style="padding-top:8px;">
     <p class="mc-note-title">Antes de irte... quiero decirte algo.</p>
     <p class="mc-note-line">No sé qué está pasando hoy en tu relación.</p>
     <p class="mc-note-line">No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada.</p>
@@ -1015,6 +1020,19 @@ var mcUnlockScroll = (function () {
   screens.forEach(function (s) { obs.observe(s); });
 })();
 
+// ── La carta de Josué está oculta (display:none) — nunca aparece por scroll normal, solo
+// cuando ella oprime la flecha bajo "Quiero estar en este espacio". ──
+(function () {
+  var arrow = document.getElementById('mc-note-arrow');
+  var noteSection = document.getElementById('mc-note-section');
+  if (!arrow || !noteSection) return;
+  arrow.addEventListener('click', function (e) {
+    e.preventDefault();
+    noteSection.classList.remove('mc-locked');
+    noteSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+
 // Volumen del ambient en la cola libre — baja de nuevo en la nota final de Josué
 (function () {
   var noteSection = document.getElementById('mc-note-section');
@@ -1053,6 +1071,19 @@ var mcUnlockScroll = (function () {
     if (!isFinite(s)) return '0:00';
     var m = Math.floor(s / 60), sec = Math.floor(s % 60);
     return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  // Las notas de voz vienen grabadas bajas — el <audio> nativo no pasa de volumen 1.0, así que
+  // las amplificamos de verdad con un GainNode (Web Audio API) en vez de solo subir .volume.
+  var mcVoiceCtx = null;
+  function boostVoiceAudio(audioEl) {
+    try {
+      if (!mcVoiceCtx) mcVoiceCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var src = mcVoiceCtx.createMediaElementSource(audioEl);
+      var gain = mcVoiceCtx.createGain();
+      gain.gain.value = 2.2;
+      src.connect(gain).connect(mcVoiceCtx.destination);
+    } catch (e) {}
   }
 
   // Escribe la pregunta en el compose (no en el chat todavía) — letra por letra, con el
@@ -1127,6 +1158,7 @@ var mcUnlockScroll = (function () {
         var audio = document.createElement('audio');
         audio.preload = 'metadata';
         audio.src = src;
+        boostVoiceAudio(audio);
 
         var playBtn = document.createElement('button');
         playBtn.className = 'mc-voice-play';
@@ -1169,7 +1201,10 @@ var mcUnlockScroll = (function () {
           }
         });
         playBtn.addEventListener('click', function () {
-          if (audio.paused) { audio.play(); playBtn.textContent = '❚❚'; }
+          if (audio.paused) {
+            if (mcVoiceCtx && mcVoiceCtx.state === 'suspended') mcVoiceCtx.resume();
+            audio.play(); playBtn.textContent = '❚❚';
+          }
           else { audio.pause(); playBtn.textContent = '▶'; }
         });
 

@@ -250,6 +250,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
    desliza encima desde abajo. ── */
 .mc-imagine-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 28px; text-align: center; z-index: 1; }
 .mc-imagine-line, .mc-imagine-checklist, .mc-imagine-big { position: absolute; }
+/* ── Grupo "Haz una pausa" — las tres líneas se acumulan apiladas, no una reemplaza a la otra ── */
+.mc-imagine-pause-group { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.mc-imagine-pause-group .mc-imagine-big, .mc-imagine-pause-group .mc-imagine-line { position: static; }
+.mc-imagine-pause-group .mc-imagine-big { font-size: clamp(30px, 8.5vw, 46px); }
 .mc-imagine-line { font-family: var(--font-elegant); font-style: italic; font-size: clamp(20px, 5.5vw, 28px); color: rgba(240,230,234,.92); opacity: 0; filter: blur(4px); transition: opacity 1.2s ease, filter 1.2s ease; }
 .mc-imagine-line.in { opacity: 1; filter: blur(0); }
 .mc-imagine-checklist { display: flex; flex-direction: column; gap: 14px; opacity: 0; transition: opacity 1s ease; }
@@ -503,18 +507,21 @@ body { font-family: var(--font-body); color: var(--text-light); }
     <a class="mc-continue reveal" href="#s8"><span>Te propongo algo</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
   </section>
 
-  <!-- ══ 8 — "IMAGINA..." + AGENDA (la hoja se desliza encima de "Solo tú.") ══ -->
+  <!-- ══ 8 — "HAZ UNA PAUSA..." + AGENDA (la hoja se desliza encima de los checks) ══ -->
   <section class="screen" id="s8" style="padding:0; overflow:hidden;">
 
     <div class="mc-imagine-stage" id="mc-imagine-stage">
-      <p class="mc-imagine-line" id="mc-imagine-1">Imagina por un momento esto...</p>
-      <div class="mc-imagine-checklist" id="mc-imagine-checklist">
-        <p class="mc-imagine-check">✓ Sábado.</p>
-        <p class="mc-imagine-check">✓ 7:00 de la noche.</p>
-        <p class="mc-imagine-check">✓ Sin interrupciones.</p>
-        <p class="mc-imagine-check">✓ Sin tener que convencer a nadie.</p>
+      <!-- Las tres líneas se acumulan sin borrarse — recién al final se borra todo junto -->
+      <div class="mc-imagine-pause-group" id="mc-imagine-pause-group">
+        <p class="mc-imagine-big" id="mc-pause-big">Haz una pausa.</p>
+        <p class="mc-imagine-line" id="mc-pause-90">Solo por 90 minutos.</p>
+        <p class="mc-imagine-line" id="mc-pause-reason">Para dejar de sentir que el futuro de tu relación depende únicamente de ti.</p>
       </div>
-      <p class="mc-imagine-big" id="mc-imagine-big">Solo tú.</p>
+      <div class="mc-imagine-checklist" id="mc-imagine-checklist">
+        <p class="mc-imagine-check">✓ Sábado 1 de agosto.</p>
+        <p class="mc-imagine-check">✓ 7:00 p.m. Colombia.</p>
+        <p class="mc-imagine-check">✓ 6:00 p.m. México.</p>
+      </div>
     </div>
 
     <div class="mc-agenda-slide" id="mc-agenda-slide">
@@ -895,16 +902,17 @@ var mcUnlockScroll = (function () {
   els.forEach(function (el) { obs.observe(el); });
 })();
 
-// ── Secuencia "Imagina..." (s8) — una frase reemplaza a la anterior en el mismo lugar,
-// termina en "Solo tú." grande, y recién ahí la hoja de agenda se desliza encima desde abajo.
-// Al terminar de deslizarse, las notas de la agenda aparecen palabra por palabra (mismo ritmo
-// de lectura que ya usábamos, ahora encadenado a esta secuencia en vez de un observer aparte). ──
+// ── Secuencia "Haz una pausa..." (s8) — las tres líneas se acumulan sin borrarse, recién al
+// final se borra todo junto y aparecen los checks (fecha + hora Colombia/México). Al terminar,
+// la hoja de agenda se desliza encima desde abajo, y las notas aparecen palabra por palabra. ──
 (function () {
   var stage = document.getElementById('mc-imagine-stage');
-  var line1 = document.getElementById('mc-imagine-1');
+  var pauseGroup = document.getElementById('mc-imagine-pause-group');
+  var pauseBig = document.getElementById('mc-pause-big');
+  var pause90 = document.getElementById('mc-pause-90');
+  var pauseReason = document.getElementById('mc-pause-reason');
   var checklist = document.getElementById('mc-imagine-checklist');
   var checks = checklist ? checklist.querySelectorAll('.mc-imagine-check') : [];
-  var big = document.getElementById('mc-imagine-big');
   var slide = document.getElementById('mc-agenda-slide');
   var continueLink = document.getElementById('mc-agenda-continue');
   var texts = document.querySelectorAll('#s8 .mc-note-text');
@@ -930,10 +938,17 @@ var mcUnlockScroll = (function () {
   }
 
   async function run() {
-    line1.classList.add('in');
-    await wait(2600);
-    line1.classList.remove('in');
-    await wait(900);
+    pauseBig.classList.add('in');
+    await wait(1700);
+    pause90.classList.add('in');
+    await wait(1700);
+    pauseReason.classList.add('in');
+    await wait(3200); // se quedan las tres juntas un momento antes de borrarse
+
+    pauseBig.classList.remove('in');
+    pause90.classList.remove('in');
+    pauseReason.classList.remove('in');
+    await wait(1000);
 
     checklist.classList.add('in');
     var d = 0;
@@ -944,9 +959,6 @@ var mcUnlockScroll = (function () {
     await wait(d + 1800); // se quedan juntas un momento antes de borrarse
     checklist.classList.remove('in');
     await wait(1000);
-
-    big.classList.add('in');
-    await wait(2000);
 
     slide.classList.add('in');
     await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas

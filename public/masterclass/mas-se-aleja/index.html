@@ -878,12 +878,12 @@ var mcUnlockScroll = (function () {
 // ── Reveal del bloque de evento a 8s del final — con temporizador fijo, no con mensajes del
 // reproductor (el protocolo Player.js de Bunny no estaba disparando el evento "timeupdate" de
 // forma confiable; esto no depende de que ningún mensaje cruzado funcione).
-// IMPORTANTE: REVEAL_EN_SEG está hardcodeado (112s de duración - 4s = 108s). Si se reemplaza el
+// IMPORTANTE: REVEAL_EN_SEG está hardcodeado (112s de duración - 5s = 107s). Si se reemplaza el
 // video por uno de otra duración, hay que actualizar este número o el reveal va a aparecer en
 // el momento equivocado.
 (function () {
   var revealBox = document.getElementById('mc-event-reveal');
-  var REVEAL_EN_SEG = 108; // 4s antes del final (video de 112s / 1:52)
+  var REVEAL_EN_SEG = 107; // 5s antes del final (video de 112s / 1:52)
   var DELAY_MS = REVEAL_EN_SEG * 1000;
 
   function fire() {
@@ -904,6 +904,14 @@ var mcUnlockScroll = (function () {
   // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,
   // así que este momento coincide con cuando realmente empieza a reproducirse.
   document.getElementById('mc-video-iframe').addEventListener('load', function () {
+    // Refuerzo — además del ?muted=true en la URL, le manda el comando "mute" al reproductor de
+    // Bunny por postMessage. No depende de que Bunny confirme nada (fire-and-forget), solo evita
+    // que se escuche con volumen si por lo que sea el query param no bastó.
+    try {
+      var iframeWin = document.getElementById('mc-video-iframe').contentWindow;
+      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
+      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [0] }), '*');
+    } catch (e) {}
     setTimeout(fire, DELAY_MS);
   });
 })();

@@ -84,6 +84,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ── Reveal al entrar en viewport ── */
 .reveal { opacity: 0; transform: translateY(8px); filter: blur(4px); transition: opacity 1.6s cubic-bezier(.16,1,.3,1), transform 1.6s cubic-bezier(.16,1,.3,1), filter 1.6s cubic-bezier(.16,1,.3,1); }
 .reveal.in { opacity: 1; transform: translateY(0); filter: blur(0); }
+/* ── Variante lateral — entra desde la derecha en vez de subir, para pantallas que deben
+   sentirse como "la siguiente hoja", no como el resto ── */
+.reveal-side { transform: translateX(60px); }
+.reveal-side.in { transform: translateX(0); }
 
 .mc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 26px; }
 
@@ -427,6 +431,13 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.85); margin-top: -2px; display: flex; flex-direction: column; gap: 1px; }
 .mc-float-days { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 .mc-float-days strong { font-family: var(--font-display); font-size: 15px; color: var(--gold-light); font-weight: 700; }
+/* ── Botoncito dentro de la tarjeta flotante — dice explícitamente qué pasa al tocarla ── */
+.mc-float-cta {
+  display: block; margin-top: 9px; padding: 7px 14px; border-radius: 999px; text-align: center;
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
+  background-size: 300% 100%; animation: mcGoldShift 3s ease infinite;
+  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--charcoal-deep);
+}
 
 @media (max-width: 340px) { #mc-float-date { padding: 10px 13px; } .mc-float-date-txt { font-size: 12px; } }
 </style>
@@ -583,7 +594,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
   <!-- ══ 9 — CTA FINAL ══ -->
   <section class="screen" id="s9">
-    <div class="screen-wrap reveal" style="max-width:420px;">
+    <div class="screen-wrap reveal reveal-side" style="max-width:420px;">
       <div class="mc-agenda-card">
         <p class="mc-agenda-date" style="margin-top:0;">Sábado 1 de agosto</p>
         <p class="mc-agenda-time">🕖 7:00 p.m.</p>
@@ -679,6 +690,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <span class="mc-float-date-txt">Sábado 1 agosto</span>
   <span class="mc-float-time"><span>🇨🇴 7:00 p.m.</span><span>🇲🇽 6:00 p.m.</span></span>
   <span class="mc-float-days">Quedan: <strong id="mc-float-days-num">--</strong> días</span>
+  <span class="mc-float-cta">Reservar mi lugar</span>
 </a>
 
 <script>

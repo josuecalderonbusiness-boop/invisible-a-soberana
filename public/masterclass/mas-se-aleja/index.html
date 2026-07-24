@@ -251,8 +251,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 #mc-pause-continue { opacity: 0; margin-top: -6px; transition: opacity 1s ease; pointer-events: none; }
 #mc-pause-continue.in { opacity: 1; pointer-events: auto; }
 /* ── Apunta a la derecha — rebote horizontal, no vertical como el resto de las flechas ── */
-#mc-pause-continue svg { animation: mcBounceRight 1.8s ease-in-out infinite; }
+#mc-pause-continue svg, #mc-checks-continue svg, #mc-agenda-continue svg { animation: mcBounceRight 1.8s ease-in-out infinite; }
 @keyframes mcBounceRight { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+#mc-checks-continue { opacity: 0; margin-top: 6px; transition: opacity 1s ease; pointer-events: none; }
+#mc-checks-continue.in { opacity: 1; pointer-events: auto; }
 .mc-imagine-line { font-family: var(--font-elegant); font-style: italic; font-size: clamp(20px, 5.5vw, 28px); color: rgba(240,230,234,.92); opacity: 0; filter: blur(4px); transition: opacity 1.2s ease, filter 1.2s ease; }
 .mc-imagine-line strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
 .mc-imagine-line.in { opacity: 1; filter: blur(0); }
@@ -265,13 +267,15 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-imagine-big { font-family: var(--font-display); font-weight: 900; font-size: clamp(38px, 11vw, 60px); color: var(--gold-light); opacity: 0; transform: translateY(10px); filter: blur(6px); transition: opacity 1.6s ease, transform 1.6s ease, filter 1.6s ease; }
 .mc-imagine-big.in { opacity: 1; transform: translateY(0); filter: blur(0); }
 
+/* ── Entra en fade + blur desde la derecha (no ya deslizando hacia arriba) — recién con el
+   clic de la flecha bajo los checks, no automático. ── */
 .mc-agenda-slide {
   position: absolute; inset: 0; z-index: 2;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 90px 28px 70px; transform: translateY(100%);
-  transition: transform 1.5s cubic-bezier(.16,1,.3,1);
+  padding: 90px 28px 70px; transform: translateX(60px); opacity: 0; filter: blur(14px);
+  transition: transform 1.6s cubic-bezier(.16,1,.3,1), opacity 1.6s ease, filter 1.6s ease;
 }
-.mc-agenda-slide.in { transform: translateY(0); }
+.mc-agenda-slide.in { transform: translateX(0); opacity: 1; filter: blur(0); }
 
 /* ── s9 (CTA final) reutiliza la tarjeta de agenda — hora + checks + contador en tono oscuro sobre crema ── */
 .mc-agenda-time { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--wine-deep); text-align: center; margin-top: 4px; }
@@ -543,6 +547,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
         <p class="mc-imagine-check">✓ Sábado 1 de agosto.</p>
         <p class="mc-imagine-check">✓ 7:00 p.m. Colombia.</p>
         <p class="mc-imagine-check">✓ 6:00 p.m. México.</p>
+        <a class="mc-continue" id="mc-checks-continue" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></a>
       </div>
     </div>
 
@@ -571,7 +576,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
           </div>
         </div>
       </div>
-      <a class="mc-continue" id="mc-agenda-continue" href="#s9"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
+      <a class="mc-continue" id="mc-agenda-continue" href="#s9"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
     </div>
   </section>
 
@@ -923,6 +928,7 @@ var mcUnlockScroll = (function () {
   var pause90 = document.getElementById('mc-pause-90');
   var pauseReason = document.getElementById('mc-pause-reason');
   var pauseContinue = document.getElementById('mc-pause-continue');
+  var checksContinue = document.getElementById('mc-checks-continue');
   var checklist = document.getElementById('mc-imagine-checklist');
   var checks = checklist ? checklist.querySelectorAll('.mc-imagine-check') : [];
   var slide = document.getElementById('mc-agenda-slide');
@@ -989,6 +995,18 @@ var mcUnlockScroll = (function () {
     });
     var lastCheckAt = d - 750;
     await wait(lastCheckAt + 2000); // 2s después de que terminó de aparecer el último check
+    checksContinue.classList.add('in');
+
+    // Tampoco sigue sola acá — espera su clic en la flecha bajo los checks
+    await new Promise(function (resolve) {
+      function onClick(e) {
+        e.preventDefault();
+        checksContinue.removeEventListener('click', onClick);
+        resolve();
+      }
+      checksContinue.addEventListener('click', onClick);
+    });
+    checksContinue.classList.remove('in');
 
     slide.classList.add('in');
     await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas

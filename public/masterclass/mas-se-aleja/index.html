@@ -908,12 +908,6 @@ var mcUnlockScroll = (function () {
   });
 })();
 
-// Fecha flotante — visible desde el principio (no espera a pasar ninguna pantalla), se oculta
-// sola en Replay/Evergreen (ver bloque de Estado más arriba, que ya la esconde si aplica).
-(function () {
-  var el = document.getElementById('mc-float-date');
-  if (el && Date.now() < new Date('2026-08-01T20:15:00-05:00').getTime()) el.classList.add('show');
-})();
 
 // Reveal al entrar en viewport
 (function () {
@@ -975,6 +969,10 @@ var mcUnlockScroll = (function () {
     await wait(1000);
 
     checklist.classList.add('in');
+    // La fecha flotante aparece justo cuando ella ve estos checks — antes no, para no
+    // adelantarle el dato antes de que la página misma se lo cuente.
+    var floatDate = document.getElementById('mc-float-date');
+    if (floatDate && Date.now() < new Date('2026-08-01T20:15:00-05:00').getTime()) floatDate.classList.add('show');
     var d = 0;
     checks.forEach(function (c) {
       setTimeout(function () { c.classList.add('in'); }, d);

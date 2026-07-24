@@ -677,7 +677,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 // del video (mismo gesto que ya desbloquea autoplay con audio en el navegador). Fondo muy bajo,
 // sube/baja levemente según la pantalla (no melodía, solo temperatura emocional). ──
 var mcSound = (function () {
-  var base = '../assets/';
+  var base = '/masterclass/assets/';
   var files = {
     pop: base + 'reginaldoito-cell-send-plim-140592.mp3',
     typing: base + 'sarthakraj_308-typing-on-laptop-keyboard-308455.mp3',
@@ -984,9 +984,9 @@ var mcUnlockScroll = (function () {
   if (!chatWindow || !log || !composeBox) return;
 
   var MC_CHAT_BLOCKS = [
-    { q: 'Sí... pero ¿y si mi pareja nunca cambia?', audio: '../assets/respuesta1.mp4' },
-    { q: 'Sí... pero ¿y si ya hice terapia?', audio: '../assets/respuesta2.mp4' },
-    { q: 'Sí... pero ¿y si ese día no puedo conectarme?', audio: '../assets/respuesta3.mp4' }
+    { q: 'Sí... pero ¿y si mi pareja nunca cambia?', audio: '/masterclass/assets/respuesta1.mp4' },
+    { q: 'Sí... pero ¿y si ya hice terapia?', audio: '/masterclass/assets/respuesta2.mp4' },
+    { q: 'Sí... pero ¿y si ese día no puedo conectarme?', audio: '/masterclass/assets/respuesta3.mp4' }
   ];
 
   function scrollDown() { chatWindow.scrollTop = chatWindow.scrollHeight; }

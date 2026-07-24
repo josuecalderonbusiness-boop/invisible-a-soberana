@@ -258,8 +258,8 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-imagine-line { font-family: var(--font-elegant); font-style: italic; font-size: clamp(20px, 5.5vw, 28px); color: rgba(240,230,234,.92); opacity: 0; filter: blur(4px); transition: opacity 1.2s ease, filter 1.2s ease; }
 .mc-imagine-line strong { font-style: normal; font-weight: 700; color: var(--gold-light); }
 .mc-imagine-line.in { opacity: 1; filter: blur(0); }
-.mc-imagine-checklist { display: flex; flex-direction: column; gap: 14px; opacity: 0; transition: opacity 1s ease; }
-.mc-imagine-checklist.in { opacity: 1; }
+.mc-imagine-checklist { display: flex; flex-direction: column; gap: 14px; opacity: 0; pointer-events: none; transition: opacity 1s ease; }
+.mc-imagine-checklist.in { opacity: 1; pointer-events: auto; }
 /* ── Los bullets entran desde la derecha, en fade, más despacio (eco del "Cuéntame más" que
    apunta hacia allá) ── */
 .mc-imagine-check { font-family: 'Jost', sans-serif; font-size: clamp(16px, 4.2vw, 19px); color: var(--gold-light); opacity: 0; transform: translateX(36px); transition: opacity 1.6s ease, transform 1.6s ease; }
@@ -270,12 +270,12 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ── Entra en fade + blur desde la derecha (no ya deslizando hacia arriba) — recién con el
    clic de la flecha bajo los checks, no automático. ── */
 .mc-agenda-slide {
-  position: absolute; inset: 0; z-index: 2;
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 90px 28px 70px; transform: translateX(60px); opacity: 0; filter: blur(14px);
   transition: transform 1.6s cubic-bezier(.16,1,.3,1), opacity 1.6s ease, filter 1.6s ease;
 }
-.mc-agenda-slide.in { transform: translateX(0); opacity: 1; filter: blur(0); }
+.mc-agenda-slide.in { transform: translateX(0); opacity: 1; filter: blur(0); pointer-events: auto; }
 
 /* ── s9 (CTA final) reutiliza la tarjeta de agenda — hora + checks + contador en tono oscuro sobre crema ── */
 .mc-agenda-time { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--wine-deep); text-align: center; margin-top: 4px; }

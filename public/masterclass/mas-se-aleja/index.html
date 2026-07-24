@@ -729,6 +729,10 @@ var mcSound = (function () {
     try {
       typingEl = get('typing').cloneNode();
       typingEl.volume = 0.12;
+      // El clip arranca con silencio/ruido de fondo — el tecleo real empieza a los 7s
+      var seekTo = function () { typingEl.currentTime = 7; };
+      if (typingEl.readyState >= 1) seekTo();
+      else typingEl.addEventListener('loadedmetadata', seekTo, { once: true });
       typingEl.play().catch(function () {});
     } catch (e) {}
   }

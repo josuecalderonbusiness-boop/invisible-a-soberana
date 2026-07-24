@@ -476,7 +476,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
       <div class="mc-video-box reveal" id="mc-video-box">
         <iframe
           id="mc-video-iframe"
-          src="https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=false&loop=false&muted=true&preload=true&responsive=true"
+          src="https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=true&loop=false&muted=true&preload=true&responsive=true"
           loading="lazy"
           allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
           allowfullscreen="true">
@@ -884,17 +884,9 @@ var mcUnlockScroll = (function () {
     revealBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  // Arranca a contar en cuanto el iframe carga. El video ya NO usa autoplay=true de la URL —
-  // lo arrancamos nosotros por comando (mute primero, play después), porque Bunny parecía
-  // "decidir" reproducir con sonido apenas detectaba cualquier interacción de la usuaria en la
-  // página (aunque fuera lejos del video), ignorando el ?muted=true. Mandar el mute explícito
-  // antes del play no le deja margen para decidir nada por su cuenta.
+  // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,
+  // así que este momento coincide con cuando realmente empieza a reproducirse.
   document.getElementById('mc-video-iframe').addEventListener('load', function () {
-    try {
-      var iframeWin = document.getElementById('mc-video-iframe').contentWindow;
-      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
-      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'play', args: [] }), '*');
-    } catch (e) {}
     setTimeout(fire, DELAY_MS);
   });
 })();

@@ -196,8 +196,15 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-reveal-small.in { opacity: 1; transform: translateY(0); filter: blur(0); }
 .mc-reveal-arrow { text-align: center; color: var(--gold-primary); font-size: 18px; opacity: 0; margin-top: 16px; transition: opacity 1.2s ease; }
 .mc-reveal-arrow.in { opacity: .6; }
+/* ── Silencio antes de la frase — puntos suspensivos, como si siguiera pensando ── */
+.mc-reveal-ellipsis { font-family: var(--font-elegant); font-style: italic; font-size: 26px; letter-spacing: 5px; color: rgba(240,230,234,.4); opacity: 0; transition: opacity 1.1s ease; }
+.mc-reveal-ellipsis.in { opacity: 1; }
 #mc-event-reveal .mc-btn { margin-top: 18px; }
 .mc-continue-center { display: flex; margin: 30px auto 0; }
+/* ── "Responderla" — no es un "desliza", es una pregunta esperando respuesta: el clic se
+   siente como responder, no como avanzar de pantalla. ── */
+.mc-answer-btn { animation: mcBounce 1.8s ease-in-out infinite; }
+.mc-answer-btn span { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-primary); }
 
 /* ── Asomo borroso (glass) de la siguiente pantalla — curiosidad de "hay algo más" ── */
 .mc-peek { position: absolute; bottom: 14px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 1.4s ease; }
@@ -459,28 +466,30 @@ body { font-family: var(--font-body); color: var(--text-light); }
         <button id="mc-unmute-btn" onclick="unmuteVideo()">▶&nbsp; Activa el sonido</button>
       </div>
 
-      <!-- Aparece automáticamente cuando el video termina -->
+      <!-- Aparece automáticamente cuando el video termina — Josué sigue "hablando", no un
+           presentador anunciando el siguiente slide: silencio, puntos suspensivos, y recién
+           después la frase. El botón dice "Responderla", no "Desliza" — el clic se siente como
+           responder una pregunta, no como avanzar de pantalla. -->
       <div id="mc-event-reveal">
-        <p class="mc-reveal-big">Pero todavía hay algo que necesito preguntarte.</p>
-        <p class="mc-reveal-arrow" style="transition-delay:2.6s;">↓</p>
-        <a class="mc-continue mc-continue-center reveal" id="mc-reveal-continue" href="#s6" style="transition-delay:4s;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
+        <p class="mc-reveal-ellipsis">···</p>
+        <p class="mc-reveal-big" style="transition-delay:1.3s;">Porque hay una pregunta que yo no puedo responder por ti.</p>
+        <a class="mc-continue mc-continue-center reveal mc-answer-btn" id="mc-reveal-continue" href="#s6" style="transition-delay:3.1s;"><span>Responderla ↓</span></a>
       </div>
     </div>
 
     <!-- Asomo borroso de lo que sigue — curiosidad de "hay algo más", sin depender de scroll libre -->
-    <div class="mc-peek" id="mc-peek"><p class="mc-peek-text">Quiero pedirte algo antes de seguir.</p></div>
+    <div class="mc-peek" id="mc-peek"><p class="mc-peek-text">Solo responde esto con absoluta honestidad...</p></div>
   </section>
 
   <!-- ══ 6 — LA PREGUNTA (ritmo cinematográfico: beats separados, silencio real antes de la
        pregunta — no todo el texto entrando junto) ══ -->
   <section class="screen" id="s6">
     <div class="screen-wrap">
-      <p class="mc-line reveal" style="font-size:clamp(19px,4.8vw,23px);">Quiero pedirte algo antes de seguir.</p>
-      <p class="mc-video-subtext reveal" style="margin-top:24px; transition-delay:1.2s;">No tomes una decisión todavía.<br><br>Ni para entrar.<br>Ni para salir.</p>
-      <p class="mc-line reveal" style="font-size:clamp(17px,4.2vw,20px); margin-top:24px; transition-delay:2.6s;">Respóndete esto con absoluta honestidad.</p>
-      <p class="mc-line reveal" style="font-size:clamp(18px,4.5vw,21px); margin-top:34px; transition-delay:4.8s;">¿Cuántas veces más estás dispuesta a seguir intentando exactamente de la misma manera...<br><strong>esperando un resultado diferente?</strong></p>
+      <p class="mc-line reveal" style="font-size:clamp(19px,4.8vw,23px);">Solo responde esto con absoluta honestidad...</p>
+      <p class="mc-video-subtext reveal" style="margin-top:24px; transition-delay:1.4s;">No tomes una decisión todavía.<br><br>Ni para entrar.<br>Ni para salir.</p>
+      <p class="mc-line reveal" style="font-size:clamp(18px,4.5vw,21px); margin-top:34px; color:var(--gold-light); transition-delay:3.2s;">¿Cuánto tiempo más estás dispuesta a seguir sintiéndote sola... estando en una relación?</p>
     </div>
-    <a class="mc-continue reveal" href="#s7" style="transition-delay:6.2s;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
+    <a class="mc-continue reveal" href="#s7" style="transition-delay:4.8s;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
   </section>
 
   <!-- ══ 7 — SI ESA PREGUNTA TE INCOMODÓ ══ -->
@@ -851,14 +860,14 @@ var mcUnlockScroll = (function () {
     // El video se queda tal como quedó al reproducirse (sin volver a oscurecer/desenfocar) —
     // solo aparece el texto de abajo.
     revealBox.classList.add('show');
-    revealBox.querySelector('.mc-reveal-big').classList.add('in');
-    revealBox.querySelector('.mc-reveal-arrow').classList.add('in'); // el delay de 1.2s ya está en su CSS inline
-    document.getElementById('mc-reveal-continue').classList.add('in'); // el delay de 2.4s ya está en su CSS inline
+    revealBox.querySelector('.mc-reveal-ellipsis').classList.add('in');
+    revealBox.querySelector('.mc-reveal-big').classList.add('in'); // el delay de 1.3s ya está en su CSS inline
+    document.getElementById('mc-reveal-continue').classList.add('in'); // el delay de 3.1s ya está en su CSS inline
     revealBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     setTimeout(function () {
       var peek = document.getElementById('mc-peek');
       if (peek) peek.classList.add('show');
-    }, 6500); // aparece justo después del botón "Desliza"
+    }, 5000); // aparece justo después del botón "Responderla"
   }
 
   // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,

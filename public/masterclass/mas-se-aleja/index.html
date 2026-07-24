@@ -887,14 +887,6 @@ var mcUnlockScroll = (function () {
   // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,
   // así que este momento coincide con cuando realmente empieza a reproducirse.
   document.getElementById('mc-video-iframe').addEventListener('load', function () {
-    // Refuerzo — además del ?muted=true en la URL, le manda el comando "mute" al reproductor de
-    // Bunny por postMessage. No depende de que Bunny confirme nada (fire-and-forget), solo evita
-    // que se escuche con volumen si por lo que sea el query param no bastó.
-    try {
-      var iframeWin = document.getElementById('mc-video-iframe').contentWindow;
-      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
-      iframeWin.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [0] }), '*');
-    } catch (e) {}
     setTimeout(fire, DELAY_MS);
   });
 })();

@@ -687,7 +687,7 @@ var mcSound = (function () {
   var base = '/masterclass/assets/';
   var files = {
     pop: base + 'reginaldoito-cell-send-plim-140592.mp3',
-    typing: base + 'sarthakraj_308-typing-on-laptop-keyboard-308455.mp3',
+    typing: base + 'dragon-studio-typing-with-keyboard-435489.mp3',
     whisper: base + 'koiroylers-subtle-transition-356008.mp3',
     notify: base + 'universfield-new-notification-040-493469.mp3',
     click: base + 'universfield-new-notification-062-494544.mp3',
@@ -728,11 +728,8 @@ var mcSound = (function () {
     if (!enabled) return;
     try {
       typingEl = get('typing').cloneNode();
-      typingEl.volume = 0.12;
-      // El clip arranca con silencio/ruido de fondo — el tecleo real empieza a los 7s
-      var seekTo = function () { typingEl.currentTime = 7; };
-      if (typingEl.readyState >= 1) seekTo();
-      else typingEl.addEventListener('loadedmetadata', seekTo, { once: true });
+      typingEl.volume = 0.24;
+      typingEl.loop = true; // se corta con stopTyping() cuando termina de escribirse la pregunta
       typingEl.play().catch(function () {});
     } catch (e) {}
   }
@@ -994,7 +991,7 @@ var mcUnlockScroll = (function () {
           var pastVideo = toIdx >= WHISPER_FROM;
           var now = Date.now();
           if (goingForward && pastVideo && (now - lastWhisperAt) > WHISPER_MIN_GAP_MS) {
-            mcSound.play('whisper', .18);
+            mcSound.play('whisper', .32);
             lastWhisperAt = now;
           }
         }
@@ -1054,7 +1051,11 @@ var mcUnlockScroll = (function () {
       var i = 0;
       (function step() {
         composeText.textContent = text.slice(0, i);
-        if (i <= text.length) { i++; setTimeout(step, 30); }
+        if (i <= text.length) {
+          i++;
+          // Ritmo de tipeo humano — variación aleatoria entre letras, no un metrónomo
+          setTimeout(step, 60 + Math.random() * 70);
+        }
         else { mcSound.stopTyping(); resolve(); }
       })();
     });
@@ -1069,7 +1070,7 @@ var mcUnlockScroll = (function () {
         sendBtn.removeEventListener('click', onClick);
         sendBtn.classList.remove('pulse');
         hint.classList.remove('show');
-        mcSound.play('pop', .4);
+        mcSound.play('pop', .65);
         resolve();
       }
       sendBtn.addEventListener('click', onClick);
@@ -1104,11 +1105,9 @@ var mcUnlockScroll = (function () {
       row.appendChild(recording);
       log.appendChild(row);
       scrollDown();
-      mcSound.startTyping();
 
       setTimeout(function () {
-        mcSound.stopTyping();
-        mcSound.play('notify', .3); // llegó la nota de voz
+        mcSound.play('notify', .5); // llegó la nota de voz
         var bubble = document.createElement('div');
         bubble.className = 'mc-voice-bubble';
 
@@ -1148,7 +1147,7 @@ var mcUnlockScroll = (function () {
         var heard = false;
         audio.addEventListener('ended', function () {
           playBtn.textContent = '▶'; fill.style.width = '0%'; time.textContent = fmtTime(audio.duration);
-          mcSound.play('click', .3);
+          mcSound.play('click', .5);
           if (!heard) {
             heard = true;
             bubble.classList.add('heard');

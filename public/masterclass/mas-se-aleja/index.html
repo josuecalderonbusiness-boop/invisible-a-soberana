@@ -153,12 +153,22 @@ body { font-family: var(--font-body); color: var(--text-light); }
   filter: blur(22px); animation: mcVideoBlurClear 6s ease-out forwards; transition: filter .6s ease;
 }
 @keyframes mcVideoBlurClear { 0% { filter: blur(26px); } 100% { filter: blur(11px); } }
-@media (max-width: 600px) { #s5 { padding-top: 40px; } }
+@media (max-width: 600px) { #s5 { padding-top: 16px !important; padding-bottom: 30px !important; } }
 
 /* ── Texto arriba del video, fuera del cuadro — aparición escalonada ── */
 .mc-video-kicker { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 12px; max-height: 40px; overflow: hidden; transition: opacity .6s ease, max-height .6s ease, margin .6s ease; }
 .mc-video-subtext { font-family: var(--font-body); font-weight: 400; font-size: clamp(17px, 4.5vw, 20px); line-height: 1.6; color: rgba(240,230,234,.92); text-align: center; max-width: 420px; margin: 0 auto 26px; max-height: 160px; overflow: hidden; transition: opacity .6s ease, max-height .6s ease, margin .6s ease; }
 .mc-video-kicker.hide, .mc-video-subtext.hide { opacity: 0; max-height: 0; margin-top: 0; margin-bottom: 0; }
+
+/* ── Titular + contador que reemplazan al kicker/subtítulo apenas ella activa el sonido — mismo
+   espacio, mismo mecanismo de max-height/opacity, para que se sienta como continuación, no un
+   bloque nuevo que empuja el layout. ── */
+.mc-video-headline { text-align: center; max-height: 0; opacity: 0; overflow: hidden; margin-bottom: 0; transition: opacity .7s ease .2s, max-height .7s ease .2s, margin .7s ease .2s; }
+.mc-video-headline.show { opacity: 1; max-height: 220px; margin-bottom: 18px; }
+.mc-video-headline-line1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(14px, 3.6vw, 17px); color: var(--text-light); margin-bottom: 3px; }
+.mc-video-headline-line2 { font-family: var(--font-display); font-weight: 900; font-size: clamp(18px, 5vw, 23px); color: var(--text-light); line-height: 1.25; }
+.mc-video-headline-line2 em { font-style: italic; color: var(--gold-light); }
+.mc-video-timer { font-family: 'Jost', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; color: var(--gold-primary); margin-top: 12px; font-variant-numeric: tabular-nums; }
 
 /* ── Capa burgundy sobre el video (color, el blur ya lo pone el iframe de arriba) — tipo glass ── */
 .mc-video-tint {
@@ -249,7 +259,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ── Grupo "Haz una pausa" — las tres líneas se acumulan apiladas, no una reemplaza a la otra ── */
 .mc-imagine-pause-group { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .mc-imagine-pause-group .mc-imagine-big, .mc-imagine-pause-group .mc-imagine-line { position: static; }
-.mc-imagine-pause-group .mc-imagine-big { font-size: clamp(30px, 8.5vw, 46px); }
+.mc-imagine-pause-group .mc-imagine-big { font-size: clamp(21px, 6vw, 30px); }
 /* ── "Cuéntame más" — aparece cuando terminó de leer las 3 líneas. El clic es el gesto
    recomendado (acelera), no obligatorio — si no lo toca, los checks aparecen solos igual. ── */
 #mc-pause-continue { opacity: 0; margin-top: 10px; transition: opacity 1s ease; pointer-events: none; }
@@ -304,9 +314,6 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-chat-screen { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; padding: 130px 0 70px; }
 /* ── La carta de Josué — pantalla propia, centrada (contenido fijo, no crece como el chat) ── */
 .mc-letter-screen { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 100px 0 40px; }
-/* ── La carta de Josué queda oculta — solo aparece cuando ella oprime la flecha bajo el botón,
-   nunca por scroll normal ── */
-#mc-note-section.mc-locked { display: none; }
 
 /* ── FAQ tipo chat — burbujas, no acordeón. Mismos colores de marca, nunca verde WhatsApp. ── */
 .mc-chat-title { font-family: var(--font-body); font-weight: 600; font-size: 17px; color: var(--gold-light); text-align: center; margin-bottom: 20px; }
@@ -417,36 +424,43 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 0; }
 .mc-footer-links a { font-family: 'Jost', sans-serif; font-size: 10px; color: rgba(237,227,206,.55); letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 6px 12px; }
 
-/* ── Fecha flotante — recuadro fijo pequeño, siempre visible, ni arriba ni abajo del todo ── */
+/* ── Fecha flotante — barra superior pequeña y horizontal, siempre visible, nunca tapa el pie
+   de página ni la carta final (antes era una tarjeta vertical fija abajo-derecha que sí lo hacía). ── */
 #mc-float-date {
-  position: fixed; bottom: 18px; right: 14px; z-index: 450;
-  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  position: fixed; top: 14px; left: 50%; z-index: 450;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: linear-gradient(155deg, rgba(20,7,9,.97), rgba(10,4,5,.98)); backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(232,200,112,.45); border-radius: 14px;
-  padding: 12px 16px; text-decoration: none; cursor: pointer;
+  border: 1.5px solid rgba(232,200,112,.45); border-radius: 12px;
+  padding: 8px 14px; text-decoration: none; cursor: pointer;
   box-shadow: 0 10px 34px rgba(0,0,0,.55), 0 10px 30px rgba(0,0,0,.5);
   transition: transform .2s, opacity .5s ease;
   opacity: 0; pointer-events: none;
+  max-width: calc(100% - 24px);
 }
 #mc-float-date.show { opacity: 1; pointer-events: auto; }
-#mc-float-date:hover { transform: translateY(-2px); }
+#mc-float-date:hover { transform: translateX(-50%) translateY(-2px); }
+.mc-float-row1 { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.mc-float-row2 { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .mc-float-live { font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #6FD98C; display: flex; align-items: center; gap: 5px; }
 .mc-float-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #6FD98C; animation: mcLivePulse 1.6s ease-in-out infinite; }
 @keyframes mcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-.mc-float-date-txt { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-light); }
-.mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.85); margin-top: -2px; display: flex; flex-direction: column; gap: 1px; }
-.mc-float-days { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 5px; }
-.mc-float-days strong { font-family: var(--font-display); font-size: 15px; color: var(--gold-light); font-weight: 700; }
+.mc-float-date-txt { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--text-light); }
+.mc-float-time { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.85); }
+.mc-float-lugar { font-family: 'Jost', sans-serif; font-size: 10px; color: var(--text-muted); }
+.mc-float-days { font-family: 'Jost', sans-serif; font-size: 10px; color: var(--text-muted); }
+.mc-float-days strong { font-family: var(--font-display); font-size: 12px; color: var(--gold-light); font-weight: 700; }
 /* ── Botoncito dentro de la tarjeta flotante — dice explícitamente qué pasa al tocarla ── */
 .mc-float-cta {
-  display: block; margin-top: 9px; padding: 7px 14px; border-radius: 999px; text-align: center;
+  display: block; padding: 5px 11px; border-radius: 999px; text-align: center;
   background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium), var(--gold-primary), var(--gold-deep));
   background-size: 300% 100%; animation: mcGoldShift 3s ease infinite;
-  font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--charcoal-deep);
+  font-family: 'Jost', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--charcoal-deep);
 }
 
-@media (max-width: 340px) { #mc-float-date { padding: 10px 13px; } .mc-float-date-txt { font-size: 12px; } }
+@media (max-width: 340px) { #mc-float-date { padding: 7px 11px; } .mc-float-date-txt { font-size: 11px; } }
 </style>
+<script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
 </head>
 <body>
 
@@ -503,6 +517,12 @@ body { font-family: var(--font-body); color: var(--text-light); }
       <p class="mc-video-kicker reveal" id="mc-video-kicker">Antes de reservar tu lugar...</p>
       <p class="mc-video-subtext reveal" id="mc-video-subtext" style="transition-delay:1.8s;">Quiero mostrarte en menos de 2 minutos por qué todo lo que has intentado hasta hoy no produjo el cambio que esperabas.</p>
 
+      <div class="mc-video-headline" id="mc-video-headline">
+        <p class="mc-video-headline-line1">He intentado de todo...</p>
+        <p class="mc-video-headline-line2">¿Porqué nada <em>cambia?</em></p>
+        <p class="mc-video-timer" id="mc-video-timer">01:52</p>
+      </div>
+
       <div class="mc-video-box reveal" id="mc-video-box">
         <iframe
           id="mc-video-iframe"
@@ -544,7 +564,6 @@ body { font-family: var(--font-body); color: var(--text-light); }
       <p class="mc-line mc-cursive" style="font-size:clamp(18px,4.5vw,21px);">Sé que esa pregunta te incomodó.</p>
       <p class="mc-line" style="font-size:clamp(17px,4.2vw,20px); margin-top:24px;">Y quizá ahora mismo estés pensando...</p>
       <p class="mc-line" style="font-size:clamp(23px,6.2vw,29px); font-weight:700; color:var(--gold-light); margin-top:20px;">"Entonces... ¿qué hago?"</p>
-      <p style="margin-top:20px; color:var(--gold-primary); font-size:18px; opacity:.6;">↓</p>
     </div>
     <!-- La frase va sobre la flecha, no abajo — para que sepa que al oprimirla está lo que él propone -->
     <a class="mc-continue reveal" href="#s8"><span>Te propongo algo</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
@@ -563,9 +582,8 @@ body { font-family: var(--font-body); color: var(--text-light); }
       </div>
       <div class="mc-imagine-checklist" id="mc-imagine-checklist">
         <span class="mc-imagine-live"><span class="mc-imagine-live-dot"></span>EN VIVO</span>
-        <p class="mc-imagine-check">✓ Sábado 1 de agosto.</p>
-        <p class="mc-imagine-check">✓ 🇨🇴 7:00 p.m. Colombia.</p>
-        <p class="mc-imagine-check">✓ 🇲🇽 6:00 p.m. México.</p>
+        <p class="mc-imagine-check" id="mc-agenda-date-check">✓ Sábado 1 de agosto.</p>
+        <p class="mc-imagine-check" id="mc-agenda-time-check">✓ 7:00 p.m. (tu hora)</p>
         <a class="mc-continue" id="mc-checks-continue" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></a>
       </div>
     </div>
@@ -603,8 +621,8 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <section class="screen" id="s9">
     <div class="screen-wrap reveal reveal-side" style="max-width:420px;">
       <div class="mc-agenda-card">
-        <p class="mc-agenda-date" style="margin-top:0;">Sábado 1 de agosto</p>
-        <p class="mc-agenda-time">🕖 7:00 p.m.</p>
+        <p class="mc-agenda-date" id="mc-s9-date" style="margin-top:0;">Sábado 1 de agosto</p>
+        <p class="mc-agenda-time" id="mc-s9-time">🕖 7:00 p.m.</p>
 
         <div class="mc-agenda-divider"></div>
 
@@ -653,18 +671,18 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
   </section>
 
-  <section class="mc-tail-section reveal mc-locked mc-letter-screen" id="mc-note-section">
-    <p class="mc-note-title">Antes de irte... quiero decirte algo.</p>
-    <p class="mc-note-line">No sé qué está pasando hoy en tu relación.</p>
-    <p class="mc-note-line">No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada.</p>
-    <p class="mc-note-line mc-note-signoff">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
+  <section class="mc-tail-section mc-letter-screen" id="mc-note-section">
+    <p class="mc-note-title reveal" style="transition-delay:0s;">Antes de irte... quiero decirte algo.</p>
+    <p class="mc-note-line reveal" style="transition-delay:.8s;">No sé qué está pasando hoy en tu relación.</p>
+    <p class="mc-note-line reveal" style="transition-delay:1.8s;">No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada.</p>
+    <p class="mc-note-line mc-note-signoff reveal" style="transition-delay:3s;">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
 
-    <div class="mc-note-trust">
+    <div class="mc-note-trust reveal" style="transition-delay:4s;">
       <p id="mc-guarantee-acceso">📅 Sábado 1 de agosto · 7:00 p.m.</p>
     </div>
 
-    <button class="mc-btn" id="mc-btn-3" onclick="goToCheckout()" style="margin-top:28px;">Reservar mi lugar para el sábado.</button>
-    <p class="mc-price-note" id="mc-cta-final-note">Evento en vivo + Grabación • USD $9</p>
+    <button class="mc-btn reveal" id="mc-btn-3" onclick="goToCheckout()" style="margin-top:28px; transition-delay:4.6s;">Reservar mi lugar para el sábado.</button>
+    <p class="mc-price-note reveal" id="mc-cta-final-note" style="transition-delay:5.2s;">Evento en vivo + Grabación • USD $9</p>
   </section>
 
   <div class="mc-silence"></div>
@@ -691,16 +709,102 @@ body { font-family: var(--font-body); color: var(--text-light); }
   </footer>
 </div>
 
-<!-- ══════════════════ FECHA FLOTANTE — siempre visible ══════════════════ -->
+<!-- ══════════════════ FECHA FLOTANTE — barra superior pequeña, siempre visible ══════════════════ -->
 <a href="#" id="mc-float-date" onclick="goToCheckout(); return false;">
-  <span class="mc-float-live"><span class="mc-float-live-dot"></span>EN VIVO</span>
-  <span class="mc-float-date-txt">Sábado 1 agosto</span>
-  <span class="mc-float-time"><span>🇨🇴 7:00 p.m.</span><span>🇲🇽 6:00 p.m.</span></span>
-  <span class="mc-float-days">Quedan: <strong id="mc-float-days-num">--</strong> días</span>
-  <span class="mc-float-cta">Reservar mi lugar</span>
+  <div class="mc-float-row1">
+    <span class="mc-float-live"><span class="mc-float-live-dot"></span>EN VIVO</span>
+    <span class="mc-float-date-txt" id="mc-float-date-txt">Sábado 1 agosto</span>
+    <span class="mc-float-time" id="mc-float-time-txt">· 7:00 p.m.</span>
+    <span class="mc-float-cta">Reservar</span>
+  </div>
+  <div class="mc-float-row2">
+    <span class="mc-float-lugar" id="mc-float-lugar-txt">(hora de Colombia)</span>
+    <span class="mc-float-days">· Quedan <strong id="mc-float-days-num">--</strong> días</span>
+  </div>
 </a>
 
 <script>
+// ── Fecha/hora del evento, auto-ajustada al huso horario de quien mira, en TODAS las secciones
+// que la mencionan (checklist de la invitación, tarjeta CTA de s9, carta de Josué y la fecha
+// flotante) — nombrando su país en vez de un genérico "(tu hora)", para que no le quede duda de
+// que ese horario ya es el suyo. Mismo mecanismo que la página de gracias: Date.getDate()/
+// getHours()/etc. siempre devuelven la hora LOCAL del dispositivo aunque el Date se haya creado
+// con offset de Colombia, así que esto ya "traduce" sola a México, USA, España, etc.
+// IMPORTANTE: corre ANTES del bloque de Evergreen de abajo — si el evento ya pasó, ese bloque
+// vuelve a sobrescribir mc-guarantee-acceso con el copy de "acceso inmediato", y esa sobrescritura
+// debe ganar siempre. ──
+function mcLocalEventInfo() {
+  var EVENTO_INICIO = new Date('2026-08-01T19:00:00-05:00'); // Sábado 1 de agosto, 7:00 p.m. Colombia
+  var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  var meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  var diaSemana = dias[EVENTO_INICIO.getDay()];
+  diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+  // El huso horario del navegador (ej. "America/Bogota") no nombra el país en español, así que se
+  // traduce con un mapa de las zonas más comunes en la audiencia hispanohablante — con fallback
+  // genérico (la ciudad del huso, sin guiones bajos) para cualquier otra zona.
+  var PAISES_POR_ZONA = {
+    'America/Bogota': 'Colombia',
+    'America/Mexico_City': 'México',
+    'America/Argentina/Buenos_Aires': 'Argentina',
+    'America/Santiago': 'Chile',
+    'America/Lima': 'Perú',
+    'America/Guayaquil': 'Ecuador',
+    'America/Caracas': 'Venezuela',
+    'America/La_Paz': 'Bolivia',
+    'America/Asuncion': 'Paraguay',
+    'America/Montevideo': 'Uruguay',
+    'America/Panama': 'Panamá',
+    'America/Costa_Rica': 'Costa Rica',
+    'America/Guatemala': 'Guatemala',
+    'America/Tegucigalpa': 'Honduras',
+    'America/Managua': 'Nicaragua',
+    'America/El_Salvador': 'El Salvador',
+    'America/Santo_Domingo': 'República Dominicana',
+    'America/Puerto_Rico': 'Puerto Rico',
+    'Europe/Madrid': 'España',
+    'America/New_York': 'Estados Unidos',
+    'America/Chicago': 'Estados Unidos',
+    'America/Denver': 'Estados Unidos',
+    'America/Los_Angeles': 'Estados Unidos'
+  };
+  var zona = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  var lugar = PAISES_POR_ZONA[zona] || zona.split('/').pop().replace(/_/g, ' ');
+  var horas = EVENTO_INICIO.getHours();
+  var ampm = horas >= 12 ? 'p.m.' : 'a.m.';
+  var horas12 = horas % 12; if (horas12 === 0) horas12 = 12;
+  var minStr = EVENTO_INICIO.getMinutes() < 10 ? '0' + EVENTO_INICIO.getMinutes() : '' + EVENTO_INICIO.getMinutes();
+  return {
+    diaSemana: diaSemana,
+    diaNum: EVENTO_INICIO.getDate(),
+    mes: meses[EVENTO_INICIO.getMonth()],
+    horaTexto: horas12 + ':' + minStr + ' ' + ampm,
+    lugar: lugar
+  };
+}
+
+(function () {
+  var info = mcLocalEventInfo();
+  var horaConLugar = info.horaTexto + (info.lugar ? ' (hora de ' + info.lugar + ')' : '');
+
+  var set = function (id, text) { var el = document.getElementById(id); if (el) el.textContent = text; };
+
+  // Checklist de la invitación (s8)
+  set('mc-agenda-date-check', '✓ ' + info.diaSemana + ' ' + info.diaNum + ' de ' + info.mes + '.');
+  set('mc-agenda-time-check', '✓ ' + horaConLugar);
+
+  // Tarjeta CTA final (s9)
+  set('mc-s9-date', info.diaSemana + ' ' + info.diaNum + ' de ' + info.mes);
+  set('mc-s9-time', '🕖 ' + horaConLugar);
+
+  // Carta de Josué
+  set('mc-guarantee-acceso', '📅 ' + info.diaSemana + ' ' + info.diaNum + ' de ' + info.mes + ' · ' + horaConLugar);
+
+  // Fecha flotante — hora y lugar van en líneas separadas (barra compacta de dos filas)
+  set('mc-float-date-txt', info.diaSemana + ' ' + info.diaNum + ' ' + info.mes);
+  set('mc-float-time-txt', '· ' + info.horaTexto);
+  set('mc-float-lugar-txt', info.lugar ? '(hora de ' + info.lugar + ')' : '');
+})();
+
 // ── Estado derivado de la fecha del evento (fuente única — ver entry-product-system/SKILL.md
 // → "Mecanismo de derivación automática por fecha"). Antes del evento: LIVE (Reserva tu lugar).
 // Después: Replay/Evergreen — el contador se oculta, el copy pasa a acceso inmediato.
@@ -830,10 +934,25 @@ function goToCheckout() {
   window.open('https://pay.hotmart.com/W106744574H', '_blank');
 }
 
+// ── Refuerzo de silencio durante la reproducción automática — el parámetro muted=true de la URL
+// a veces no aplica a tiempo, dejando pasar un instante de sonido antes de que ella dé play. Esta
+// capa usa la API oficial de Bunny (Player.js) solo para forzar el mute mientras no se ha activado
+// el sonido — no toca el flujo de unmuteVideo(), que sigue siendo el reload ya probado. ──
+var mcSoundActivated = false;
+(function () {
+  if (typeof playerjs === 'undefined') return;
+  var iframe = document.getElementById('mc-video-iframe');
+  var player = new playerjs.Player(iframe);
+  player.on('ready', function () {
+    if (!mcSoundActivated) player.mute();
+  });
+})();
+
 // Reinicia el video desde 0 con sonido (recarga el iframe con muted=false) — más confiable que
 // mandarle un comando "unmute" al reproductor, porque no depende de que Bunny lo interprete bien.
 // El click ya cuenta como gesto del usuario, así que el navegador permite el autoplay con sonido.
 function unmuteVideo() {
+  mcSoundActivated = true;
   mcSound.enable(); // arranca el fondo ambient — mismo gesto que desbloquea audio en el navegador
   var iframe = document.getElementById('mc-video-iframe');
   iframe.style.animation = 'none'; // corta mcVideoBlurClear, que lo dejaba congelado en 11px de blur
@@ -847,11 +966,42 @@ function unmuteVideo() {
   document.getElementById('mc-unmute-btn').classList.add('hide');
 
   // Al darle play: primero se borra el título, después el subtítulo — el video se queda
-  // centrado en la pantalla, no sube ni se reancla arriba.
+  // centrado en la pantalla, no sube ni se reancla arriba. En el mismo espacio que dejan libre
+  // aparece el titular "He intentado de todo..." + el contador de cuenta regresiva del video.
   document.getElementById('mc-video-kicker').classList.add('hide');
   setTimeout(function () {
     document.getElementById('mc-video-subtext').classList.add('hide');
   }, 450);
+  // El titular nuevo espera a que el subtítulo termine de borrarse del todo (450ms de arranque +
+  // 600ms de su propia transición) — antes aparecía al mismo tiempo que el subtítulo empezaba a
+  // desvanecerse y se veían encimados, como si el subtítulo se "truncara".
+  setTimeout(function () {
+    document.getElementById('mc-video-headline').classList.add('show');
+    mcStartVideoCountdown();
+  }, 1100);
+}
+
+// ── Cuenta regresiva del video (1:52 = 112s), arranca en el mismo instante en que ella le da
+// play con sonido — el video se reinicia desde 0 en ese momento, así que el contador siempre
+// coincide con lo que se está viendo. ──
+var mcVideoCountdownInterval = null;
+function mcStartVideoCountdown() {
+  var VIDEO_DURATION_SEG = 112; // 1:52 — mismo video que usa REVEAL_EN_SEG como referencia
+  var timerEl = document.getElementById('mc-video-timer');
+  if (!timerEl) return;
+  var restante = VIDEO_DURATION_SEG;
+  function render() {
+    var m = Math.floor(restante / 60);
+    var s = restante % 60;
+    timerEl.textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+  }
+  render();
+  if (mcVideoCountdownInterval) clearInterval(mcVideoCountdownInterval); // por si activa el sonido más de una vez
+  mcVideoCountdownInterval = setInterval(function () {
+    restante -= 1;
+    if (restante <= 0) { restante = 0; render(); clearInterval(mcVideoCountdownInterval); return; }
+    render();
+  }, 1000);
 }
 
 // ── Bloqueo de scroll — completamente inmóvil mientras dura el video.
@@ -873,19 +1023,30 @@ var mcUnlockScroll = (function () {
     return window.scrollY >= s5.offsetTop - 2 && window.scrollY < s6.offsetTop - 2;
   }
 
+  // Al fijar el body en position:fixed, el navegador recalcula la altura scrolleable del
+  // documento y se autocorrige el scroll — con scroll-behavior:smooth activo, esa corrección se
+  // anima y se ve como un salto hacia arriba que luego vuelve a bajar. Apagamos el scroll suave
+  // justo durante el cambio para que la corrección sea instantánea e invisible.
   function freezeBody() {
     if (bodyFrozen) return;
     savedScrollY = window.scrollY;
+    var prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
     document.body.style.position = 'fixed';
     document.body.style.top = (-savedScrollY) + 'px';
     document.body.style.left = '0';
     document.body.style.right = '0';
     document.body.style.width = '100%';
     bodyFrozen = true;
+    // setTimeout en vez de requestAnimationFrame — rAF se pausa por completo si la pestaña
+    // queda en segundo plano, dejando el scroll suave apagado para siempre.
+    setTimeout(function () { document.documentElement.style.scrollBehavior = prevBehavior; }, 0);
   }
 
   function unfreezeBody() {
     if (!bodyFrozen) return;
+    var prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
     document.body.style.position = '';
     document.body.style.top = '';
     document.body.style.left = '';
@@ -893,6 +1054,7 @@ var mcUnlockScroll = (function () {
     document.body.style.width = '';
     window.scrollTo(0, savedScrollY);
     bodyFrozen = false;
+    setTimeout(function () { document.documentElement.style.scrollBehavior = prevBehavior; }, 0);
   }
 
   // Apenas el scroll entra en la zona del video, congela el body — no espera a que termine
@@ -930,15 +1092,14 @@ var mcUnlockScroll = (function () {
   return function () { locked = false; unfreezeBody(); };
 })();
 
-// ── Reveal del bloque de evento a 8s del final — con temporizador fijo, no con mensajes del
-// reproductor (el protocolo Player.js de Bunny no estaba disparando el evento "timeupdate" de
-// forma confiable; esto no depende de que ningún mensaje cruzado funcione).
-// IMPORTANTE: REVEAL_EN_SEG está hardcodeado (112s de duración - 3s = 109s). Si se reemplaza el
-// video por uno de otra duración, hay que actualizar este número o el reveal va a aparecer en
-// el momento equivocado.
+// ── Reveal del bloque de evento a 1:44 desde que arranca a contar — con temporizador fijo, no
+// con mensajes del reproductor (el protocolo Player.js de Bunny no estaba disparando el evento
+// "timeupdate" de forma confiable; esto no depende de que ningún mensaje cruzado funcione).
+// IMPORTANTE: REVEAL_EN_SEG está hardcodeado en 104s (1:44). Si se reemplaza el video por uno de
+// otra duración, hay que actualizar este número o el reveal va a aparecer en el momento equivocado.
 (function () {
   var revealBox = document.getElementById('mc-event-reveal');
-  var REVEAL_EN_SEG = 109; // 3s antes del final (video de 112s / 1:52)
+  var REVEAL_EN_SEG = 104; // 1:44
   var DELAY_MS = REVEAL_EN_SEG * 1000;
   var fireTimeoutId = null; // se cancela y se reprograma en cada "load" — al activar el sonido,
   // el iframe se recarga (reinicia el video desde 0) y eso dispara OTRO evento "load"; si no se
@@ -1140,28 +1301,27 @@ var mcUnlockScroll = (function () {
   screens.forEach(function (s) { obs.observe(s); });
 })();
 
-// ── La carta de Josué está oculta (display:none) — nunca aparece por scroll normal, solo
-// cuando ella oprime la flecha bajo "Quiero estar en este espacio". ──
+// ── La carta de Josué aparece con scroll normal, igual que el resto de la página — cada frase
+// se revela sola y despacio (mismo mecanismo .reveal + transition-delay que el resto de los
+// slides). La flecha solo ayuda a llegar más rápido, con scroll suave. ──
 (function () {
   var arrow = document.getElementById('mc-note-arrow');
   var noteSection = document.getElementById('mc-note-section');
   if (!arrow || !noteSection) return;
   arrow.addEventListener('click', function (e) {
     e.preventDefault();
-    noteSection.classList.remove('mc-locked');
     noteSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 })();
 
-// ── La fecha flotante aparece cuando ella oprime la flecha bajo la tarjeta de agenda (s9) —
-// como si esa misma tarjeta se encogiera y quedara fija en la esquina. También aparece si
-// simplemente hace scroll hasta ahí sin tocar la flecha (el scroll es libre en toda la
-// landing, así que el clic no puede ser el único disparador o casi nadie la vería). Desde ahí
-// queda visible para siempre (nunca se vuelve a ocultar, salvo en Replay/Evergreen). ──
+// ── La fecha flotante aparece cuando ella oprime la flecha bajo la tarjeta de agenda (s9) o
+// cuando llega al siguiente slide (el del chat) — no apenas s9 asoma en pantalla, porque eso la
+// mostraba demasiado pronto, todavía con la tarjeta de precio a la vista. Desde ahí queda
+// visible para siempre (nunca se vuelve a ocultar, salvo en Replay/Evergreen). ──
 (function () {
   var s9Arrow = document.getElementById('mc-s9-continue');
   var floatDate = document.getElementById('mc-float-date');
-  var s9 = document.getElementById('s9');
+  var chatScreen = document.querySelector('.mc-chat-screen');
   if (!floatDate) return;
 
   function showFloatDate() {
@@ -1170,12 +1330,12 @@ var mcUnlockScroll = (function () {
 
   if (s9Arrow) s9Arrow.addEventListener('click', showFloatDate);
 
-  if (s9) {
+  if (chatScreen) {
     new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (e.isIntersecting) showFloatDate();
       });
-    }, { threshold: .5 }).observe(s9);
+    }, { threshold: .5 }).observe(chatScreen);
   }
 })();
 
@@ -1212,19 +1372,30 @@ var mcUnlockChatScroll = (function () {
     return y >= zoneEl.offsetTop - 2 && y < zoneEl.offsetTop + zoneEl.offsetHeight - 2;
   }
 
+  // Al fijar el body en position:fixed, el navegador recalcula la altura scrolleable del
+  // documento y se autocorrige el scroll — con scroll-behavior:smooth activo, esa corrección se
+  // anima y se ve como un salto hacia arriba que luego vuelve a bajar. Apagamos el scroll suave
+  // justo durante el cambio para que la corrección sea instantánea e invisible.
   function freezeBody() {
     if (bodyFrozen) return;
     savedScrollY = window.scrollY;
+    var prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
     document.body.style.position = 'fixed';
     document.body.style.top = (-savedScrollY) + 'px';
     document.body.style.left = '0';
     document.body.style.right = '0';
     document.body.style.width = '100%';
     bodyFrozen = true;
+    // setTimeout en vez de requestAnimationFrame — rAF se pausa por completo si la pestaña
+    // queda en segundo plano, dejando el scroll suave apagado para siempre.
+    setTimeout(function () { document.documentElement.style.scrollBehavior = prevBehavior; }, 0);
   }
 
   function unfreezeBody() {
     if (!bodyFrozen) return;
+    var prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
     document.body.style.position = '';
     document.body.style.top = '';
     document.body.style.left = '';
@@ -1232,6 +1403,7 @@ var mcUnlockChatScroll = (function () {
     document.body.style.width = '';
     window.scrollTo(0, savedScrollY);
     bodyFrozen = false;
+    setTimeout(function () { document.documentElement.style.scrollBehavior = prevBehavior; }, 0);
   }
 
   function onScroll() {

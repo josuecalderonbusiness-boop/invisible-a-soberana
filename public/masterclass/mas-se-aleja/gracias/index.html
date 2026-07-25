@@ -105,6 +105,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 @keyframes gcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
 .gc-steps-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(240,230,234,.4); margin-top: 26px; }
+.gc-steps-label.gc-steps-label--sentence { font-size: 13.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(240,230,234,.75); line-height: 1.5; }
 
 .gc-steps { width: 100%; margin-top: 12px; text-align: left; }
 .gc-step { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
@@ -112,6 +113,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .gc-step-n { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--gold-light); margin-top: 1px; }
 .gc-step-txt { font-family: var(--font-body); font-size: 13.5px; color: rgba(240,230,234,.85); line-height: 1.4; }
 .gc-step-txt strong { display: block; color: var(--gold-light); font-size: 14px; margin-bottom: 1px; }
+.gc-step-txt .gc-check-line { display: block; }
 
 .gc-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -161,11 +163,11 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <div class="gc-steps">
     <div class="gc-step">
       <div class="gc-step-n">1</div>
-      <p class="gc-step-txt"><strong>Toca el botón</strong>Se abrirá WhatsApp con un mensaje ya escrito.</p>
+      <p class="gc-step-txt" id="gc-step1-txt"><strong>Toca el botón</strong>Se abrirá WhatsApp con un mensaje ya escrito.</p>
     </div>
     <div class="gc-step">
       <div class="gc-step-n">2</div>
-      <p class="gc-step-txt"><strong>Envíalo</strong>No tienes que escribir nada más.</p>
+      <p class="gc-step-txt" id="gc-step2-txt"><strong>Envíalo</strong>No tienes que escribir nada más.</p>
     </div>
     <div class="gc-step">
       <div class="gc-step-n">3</div>
@@ -203,7 +205,10 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   var primerNombre = raw.split(' ')[0];
   primerNombre = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
   var titleEl = document.getElementById('gc-title-el');
-  if (titleEl) titleEl.textContent = 'Ya estás dentro, ' + primerNombre + '.';
+  if (titleEl) {
+    titleEl.textContent = 'Ya estás dentro, ' + primerNombre + '.';
+    titleEl.dataset.nombre = primerNombre; // el bloque LIVE→EVERGREEN lo lee para no perder la personalización
+  }
 })();
 
 // ── Fecha/hora del evento, auto-ajustada al huso horario de quien mira la página — sin listar
@@ -224,21 +229,46 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   el.textContent = diaSemana + ' ' + EVENTO_INICIO.getDate() + ' de ' + meses[EVENTO_INICIO.getMonth()] + ' · ' + horas12 + ':' + minStr + ' ' + ampm + ' (tu hora)';
 })();
 
-// ── Estado derivado de la fecha del evento — misma fuente única que la Landing
-// (ver entry-product-system/SKILL.md → "Mecanismo de derivación automática por fecha").
-// El copy por defecto es el de "evento en vivo" (pre-Sábado). Tras EVENTO_FIN pasamos a copy Replay.
+// ── Estado LIVE → EVERGREEN, derivado automáticamente de una sola fecha — mismo mecanismo que la
+// Landing y que documenta entry-product-system/SKILL.md → "Mecanismo de derivación automática por
+// fecha" (Estado = En Vivo mientras hoy < fin del evento; Estado = Evergreen/Replay después). El
+// HTML servido por defecto es el copy LIVE; este bloque sobrescribe por id cuando toca Evergreen —
+// nunca dos páginas, nunca una condición aislada de este producto.
 (function () {
   var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
-  if (Date.now() < EVENTO_FIN.getTime()) return; // evento aún no pasa — queda el copy de arriba
+  if (Date.now() < EVENTO_FIN.getTime()) return; // todavía LIVE — queda el copy de arriba
 
   var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
   var hide = function (id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; };
-  document.title = 'Tu acceso está listo — Masterclass Soberana';
-  set('gc-quote-el', 'Tu acceso a la <em>Masterclass Soberana</em> está listo.');
+
+  document.title = 'Ya puedes empezar — Masterclass Soberana';
+
+  var titleEl = document.getElementById('gc-title-el');
+  // Si el bloque de personalización de arriba ya guardó un nombre (dataset.nombre), se conserva
+  // "Ya puedes empezar, {Nombre}." en vez de perder la personalización al pasar a Evergreen.
+  if (titleEl) {
+    titleEl.textContent = titleEl.dataset.nombre ? ('Ya puedes empezar, ' + titleEl.dataset.nombre + '.') : 'Ya puedes empezar.';
+  }
+
+  set('gc-quote-el', 'Hoy no compraste otro curso. Compraste un momento para dejar de intentar más... y empezar a entender diferente.');
   hide('gc-date-el');
   hide('gc-live-el');
-  set('gc-steps-label-el', 'Para ver la clase, solo haz esto:');
-  set('gc-step3-txt', '<strong>Recibe tu acceso</strong>Te enviaremos por WhatsApp el enlace de la grabación y todo lo que necesitas.');
+  set('gc-steps-label-el', 'Tu acceso ya está disponible. Solo necesitamos enviártelo por WhatsApp para que puedas empezar cuando quieras.');
+  var stepsLabelEl = document.getElementById('gc-steps-label-el');
+  if (stepsLabelEl) stepsLabelEl.classList.add('gc-steps-label--sentence');
+  set('gc-step1-txt', '<strong>Toca el botón verde.</strong>');
+  set('gc-step2-txt', '<strong>Envía el mensaje.</strong>(No escribas nada más.)');
+  set('gc-step3-txt', '<strong>Recibe inmediatamente:</strong><span class="gc-check-line">✔ La clase completa.</span><span class="gc-check-line">✔ El material.</span><span class="gc-check-line">✔ Las instrucciones.</span>');
+
+  var btnEl = document.getElementById('gc-wa-btn');
+  if (btnEl) {
+    var svg = btnEl.querySelector('svg');
+    btnEl.textContent = 'Recibir mi acceso ahora';
+    if (svg) btnEl.insertBefore(svg, btnEl.firstChild);
+  }
+
+  var noteEl = document.querySelector('.gc-note');
+  if (noteEl) noteEl.textContent = 'En menos de un minuto tendrás todo en WhatsApp.';
 })();
 
 // ── Intro animado: check que se dibuja solo + sonido + glow, luego revela la página ──

@@ -2,7 +2,7 @@
 
 **Archivo fuente:** `public/masterclass/mas-se-aleja/gracias/index.html`
 **URL en vivo:** `josuecalendon.lat/masterclass/mas-se-aleja/gracias` *(verificar dominio real de despliegue)*
-**Última actualización de este documento:** 2026-07-25 (reflejando el estado real del código a esa fecha, commit `9f32dac`)
+**Última actualización de este documento:** 2026-07-25 (copy EVERGREEN reescrito según el patrón LIVE → EVERGREEN de `entry-product-system/SKILL.md`)
 **Estado:** APROBADA Y PUBLICADA (push a `main` el 2026-07-25)
 
 Este documento describe la página de gracias tal como existe hoy en producción: cada texto, color, fuente, tiempo de animación y regla de comportamiento. Es el equivalente de `../COPY-SPEC.md` (el de la landing) pero para esta página. Pensado para que un auditor (humano o IA) revise coherencia de copy, diseño y UX sin leer el HTML/CSS/JS directamente.
@@ -87,20 +87,30 @@ Este es el copy que ve el 100% de las visitantes hasta el **1 de agosto de 2026,
 
 ---
 
-## 3. Copy — estado Replay (después de `EVENTO_FIN`)
+## 3. Copy — estado EVERGREEN (después de `EVENTO_FIN`)
+
+**Reescrito el 2026-07-25** para implementar el patrón LIVE → EVERGREEN de `entry-product-system/SKILL.md` (ver §5.1) con copy propio, no solo "Replay" del evento en vivo — el acceso ya es inmediato, sin fecha, sin urgencia de evento.
 
 Se activa solo con JS, sobrescribiendo textos por `id` (nunca recarga la página, nunca cambia el HTML servido — es el mismo archivo para ambos estados, ver §5):
 
 | Elemento | Cambia a |
 |---|---|
-| `<title>` | "Tu acceso está listo — Masterclass Soberana" |
-| Quote | "Tu acceso a la <em>Masterclass Soberana</em> está listo." (única línea de la página con `<em>` — color `--gold-light`, no cursiva) |
-| Píldora de fecha | Oculta (`display:none`) |
+| `<title>` | "Ya puedes empezar — Masterclass Soberana" |
+| Título (`<h1>`) | "Ya puedes empezar." — o **"Ya puedes empezar, {Nombre}."** si había personalización activa (el bloque Evergreen lee `dataset.nombre`, guardado por el bloque de personalización de §4, para no perderla al cambiar de estado) |
+| Quote (frase de Josué) | "Hoy no compraste otro curso. Compraste un momento para dejar de intentar más... y empezar a entender diferente." (reemplaza "Tu lugar está reservado...") |
+| Firma | Sin cambio: "— Josué Calderón" |
+| Píldora de fecha | Oculta (`display:none`) — Evergreen nunca menciona fechas (regla `entry-product-system`: "Evergreen: atemporal por completo") |
 | Badge en vivo | Oculto (`display:none`) |
-| Label de pasos | "Para ver la clase, solo haz esto:" |
-| Paso 3 | **Recibe tu acceso** / "Te enviaremos por WhatsApp el enlace de la grabación y todo lo que necesitas." |
+| Label de pasos | Deja de ser una etiqueta corta en mayúsculas y pasa a ser la frase completa: "Tu acceso ya está disponible. Solo necesitamos enviártelo por WhatsApp para que puedas empezar cuando quieras." — gana la clase `.gc-steps-label--sentence` (quita `uppercase`/`letter-spacing`, sube el tamaño a 13.5px) porque una oración larga en mayúsculas de etiqueta se leía como si estuviera gritando |
+| Paso 1 | **Toca el botón verde.** (sin descripción secundaria — ya no hace falta explicar que "se abre WhatsApp", el tono es más directo) |
+| Paso 2 | **Envía el mensaje.** / "(No escribas nada más.)" |
+| Paso 3 | **Recibe inmediatamente:** / "✔ La clase completa." / "✔ El material." / "✔ Las instrucciones." (3 líneas apiladas con la clase `.gc-check-line`, en vez de una sola oración) |
+| Botón | "Recibir mi acceso ahora" (antes: "Recibir mi acceso por WhatsApp") |
+| Microtexto | "En menos de un minuto tendrás todo en WhatsApp." (antes: "WhatsApp se abre automáticamente · Solo toca Enviar.") |
 
-Todo lo demás (título, firma, pasos 1–2, botón, microtexto) se queda igual — la única diferencia real de fondo entre LIVE y Replay es "te vemos el sábado" vs. "ya puedes verla", igual que en la landing.
+**Mensaje pre-escrito del botón de WhatsApp: sin cambios entre LIVE y Evergreen** (`"Hola Josué, acabo de comprar la Masterclass Soberana. Quiero recibir mi acceso 🙌"`) — es intencional: es un mensaje transaccional, y `entry-product-system/SKILL.md` (§"Mensajes transaccionales — atemporales por regla") exige que no dependa de fecha ni de si el evento ya pasó.
+
+Lo único que **no** cambia entre LIVE y Evergreen: el ícono del check, el eyebrow "Compra confirmada", la firma "— Josué Calderón", el efecto de intro (§7), y el mensaje pre-escrito de WhatsApp (regla de mensajes transaccionales atemporales, arriba). Todo lo demás sí cambia — a diferencia de la primera versión de esta página (que solo cambiaba 3 líneas para un "Replay" del evento en vivo), esta reescritura del 2026-07-25 trata Evergreen como su propio estado con voz propia, no como una variante menor de LIVE.
 
 ---
 
@@ -118,7 +128,7 @@ La página lee el nombre de la compradora desde los parámetros de la URL con la
 
 ---
 
-## 5. Estado LIVE vs. Replay — derivado automáticamente por fecha
+## 5. Estado LIVE vs. Evergreen — derivado automáticamente por fecha
 
 Misma filosofía que la landing (`../COPY-SPEC.md` §6), una sola fuente de verdad en JS:
 
@@ -127,8 +137,12 @@ EVENTO_FIN = 2026-08-01T20:15:00-05:00   // fin de la última sesión (Zoom Bás
 ```
 
 A diferencia de la landing (que tiene `EVENTO_INICIO` y `EVENTO_FIN` como dos constantes separadas para dos propósitos distintos — contador y estado), esta página usa:
-- `EVENTO_FIN` para decidir LIVE vs. Replay (§3).
+- `EVENTO_FIN` para decidir LIVE vs. Evergreen (§3), exactamente el mecanismo genérico que documenta `entry-product-system/SKILL.md` → "Mecanismo de derivación automática por fecha": `hoy < fin del evento → Estado = En Vivo`, `hoy >= fin del evento → Estado = Replay/Evergreen`.
 - Una constante separada `EVENTO_INICIO = 2026-08-01T19:00:00-05:00` solo para calcular la hora mostrada en la píldora de fecha (§6) — mismo valor que usa la landing internamente, no debería divergir nunca.
+
+### 5.1 Esta página es la referencia de implementación del patrón LIVE → EVERGREEN para páginas de Gracias
+
+`entry-product-system/SKILL.md` ya documenta el mecanismo de forma genérica (Estados del producto, "Mecanismo de derivación automática por fecha", "Live y Evergreen NUNCA comparten la misma plantilla"). Esta página es, a partir del 2026-07-25, el **primer caso real construido** de ese patrón aplicado específicamente a una Página de Gracias estática (sin build system, un solo archivo HTML para los dos estados) — igual que `LANDING-TIPO-1-TEMPLATE.md` es la referencia real para landings. Cualquier producto de entrada futuro que necesite una Página de Gracias con estado LIVE/Evergreen debería copiar esta implementación (estructura de ids + bloque IIFE que sobrescribe por `id`, nunca una segunda página) en vez de rediseñarla desde cero — ver la nota correspondiente añadida en `entry-product-system/SKILL.md`.
 
 **Mientras `Date.now() < EVENTO_FIN`:** copy por defecto (§2), el que sirve el HTML tal cual.
 **Cuando `Date.now() >= EVENTO_FIN`:** el bloque JS correspondiente sobrescribe los textos (§3). No hay countdown ni fecha flotante en esta página (a diferencia de la landing) — aquí no aplica, es una página de una sola pantalla sin necesidad de urgencia adicional.

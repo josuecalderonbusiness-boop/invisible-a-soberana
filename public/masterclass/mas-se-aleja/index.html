@@ -853,39 +853,41 @@ function unmuteVideo() {
   }, 450);
 }
 
-// ── Bloqueo de scroll — no se puede avanzar más allá del video hasta que aparezca el reveal.
-// Intercepta el gesto ANTES de que mueva la página (no corrige después, que se veía como un
-// parpadeo del resto del contenido). Solo bloquea mientras s5 es la pantalla visible y "hacia
-// abajo" — subir para releer el hero sigue funcionando siempre.
+// ── Bloqueo de scroll — completamente inmóvil mientras dura el video, ni hacia abajo ni hacia
+// arriba. Intercepta el gesto ANTES de que mueva la página (no corrige después, que se veía
+// como un parpadeo del resto del contenido).
 // Salida de seguridad: se libera sola a los 100s aunque el detector del video nunca dispare
 // (nunca la deja atrapada sin salida si Bunny no responde el protocolo Player.js). ──
 var mcUnlockScroll = (function () {
+  var s5 = document.getElementById('s5');
   var s6 = document.getElementById('s6');
   var locked = true;
 
-  // Posición pura, sin IntersectionObserver — el umbral de visibilidad podía fluctuar unos
-  // instantes durante la animación del scroll-snap y desbloquear sola por error.
-  function blockedDown() { return locked && window.scrollY < s6.offsetTop - 2; }
+  // Solo bloquea mientras s5 (el video) es la pantalla activa — antes de llegar a s5 (s1-s4)
+  // y después de desbloquearse, el scroll es completamente normal.
+  function blocked() {
+    return locked && window.scrollY >= s5.offsetTop - 2 && window.scrollY < s6.offsetTop - 2;
+  }
 
   window.addEventListener('wheel', function (e) {
-    if (blockedDown() && e.deltaY > 0) e.preventDefault();
+    if (blocked()) e.preventDefault();
   }, { passive: false });
 
-  var touchStartY = 0;
-  window.addEventListener('touchstart', function (e) { touchStartY = e.touches[0].clientY; }, { passive: true });
   window.addEventListener('touchmove', function (e) {
-    if (blockedDown() && (touchStartY - e.touches[0].clientY) > 0) e.preventDefault();
+    if (blocked()) e.preventDefault();
   }, { passive: false });
 
   window.addEventListener('keydown', function (e) {
-    if (blockedDown() && ['ArrowDown', 'PageDown', ' ', 'End'].indexOf(e.key) !== -1) e.preventDefault();
+    if (blocked() && ['ArrowDown', 'PageDown', ' ', 'End', 'ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1) e.preventDefault();
   });
 
-  // Bloquea también el salto directo por los puntos de progreso (s6 en adelante) mientras está bloqueado
+  // Bloquea el salto directo por los puntos de progreso: nunca se puede saltar más allá del
+  // video mientras está bloqueado (se saltaría verlo), y tampoco se puede saltar a NINGÚN lado
+  // mientras está parada justo en el video.
   document.querySelectorAll('#mc-dots .dot').forEach(function (d) {
     var idx = parseInt(d.dataset.target.replace('s', ''), 10);
     d.addEventListener('click', function (e) {
-      if (locked && idx > 5) { e.stopImmediatePropagation(); e.preventDefault(); }
+      if (locked && (idx > 5 || blocked())) { e.stopImmediatePropagation(); e.preventDefault(); }
     }, true);
   });
 

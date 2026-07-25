@@ -1145,16 +1145,30 @@ var mcUnlockScroll = (function () {
   });
 })();
 
-// ── La fecha flotante aparece justo cuando ella oprime la flecha bajo la tarjeta de agenda
-// (s9) — como si esa misma tarjeta se encogiera y quedara fija en la esquina. Desde ahí queda
-// visible para siempre (nunca se vuelve a ocultar, salvo en Replay/Evergreen). ──
+// ── La fecha flotante aparece cuando ella oprime la flecha bajo la tarjeta de agenda (s9) —
+// como si esa misma tarjeta se encogiera y quedara fija en la esquina. También aparece si
+// simplemente hace scroll hasta ahí sin tocar la flecha (el scroll es libre en toda la
+// landing, así que el clic no puede ser el único disparador o casi nadie la vería). Desde ahí
+// queda visible para siempre (nunca se vuelve a ocultar, salvo en Replay/Evergreen). ──
 (function () {
   var s9Arrow = document.getElementById('mc-s9-continue');
   var floatDate = document.getElementById('mc-float-date');
-  if (!s9Arrow || !floatDate) return;
-  s9Arrow.addEventListener('click', function () {
+  var s9 = document.getElementById('s9');
+  if (!floatDate) return;
+
+  function showFloatDate() {
     if (Date.now() < new Date('2026-08-01T20:15:00-05:00').getTime()) floatDate.classList.add('show');
-  });
+  }
+
+  if (s9Arrow) s9Arrow.addEventListener('click', showFloatDate);
+
+  if (s9) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) showFloatDate();
+      });
+    }, { threshold: .5 }).observe(s9);
+  }
 })();
 
 // Volumen del ambient en la cola libre — baja de nuevo en la nota final de Josué
@@ -1174,6 +1188,65 @@ var mcUnlockScroll = (function () {
 // quiera, a su propio ritmo. El botón final está siempre visible, nunca la obligamos a
 // escuchar los 3 audios para poder seguir. El contenedor del chat tiene altura fija y hace
 // scroll interno solo — los mensajes viejos van subiendo y desapareciendo arriba. ──
+// ── Bloqueo de scroll del chat — igual que el video, ella debe al menos escuchar la primera
+// nota de voz antes de poder seguir bajando (o subiendo). Misma técnica de congelar el <body>
+// (ver mcUnlockScroll): interceptar wheel/touch evento por evento no alcanza contra un scroll
+// con impulso. Se libera apenas termina de escuchar la primera respuesta. ──
+var mcUnlockChatScroll = (function () {
+  var zoneEl = document.querySelector('.mc-chat-screen');
+  var locked = true;
+  var bodyFrozen = false;
+  var savedScrollY = 0;
+  if (!zoneEl) return function () {};
+
+  function inZone() {
+    var y = window.scrollY;
+    return y >= zoneEl.offsetTop - 2 && y < zoneEl.offsetTop + zoneEl.offsetHeight - 2;
+  }
+
+  function freezeBody() {
+    if (bodyFrozen) return;
+    savedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-savedScrollY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    bodyFrozen = true;
+  }
+
+  function unfreezeBody() {
+    if (!bodyFrozen) return;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedScrollY);
+    bodyFrozen = false;
+  }
+
+  function onScroll() {
+    if (!locked || bodyFrozen) return;
+    if (inZone()) freezeBody();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  window.addEventListener('wheel', function (e) {
+    if (locked && inZone()) e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('touchmove', function (e) {
+    if (locked && inZone()) e.preventDefault();
+  }, { passive: false });
+  window.addEventListener('keydown', function (e) {
+    if (locked && inZone() && ['ArrowDown', 'PageDown', ' ', 'End', 'ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1) e.preventDefault();
+  });
+
+  setTimeout(function () { locked = false; unfreezeBody(); }, 60000); // salida de seguridad
+
+  return function () { locked = false; unfreezeBody(); };
+})();
+
 (function () {
   var chatWindow = document.getElementById('mc-chat-window');
   var log = document.getElementById('mc-chat-log');
@@ -1355,10 +1428,11 @@ var mcUnlockScroll = (function () {
     for (var i = 0; i < MC_CHAT_BLOCKS.length; i++) {
       await runBlock(MC_CHAT_BLOCKS[i]);
       // El botón aparece pegado al chat apenas escucha la primera nota de voz — no antes,
-      // no hasta que termine toda la conversación.
+      // no hasta que termine toda la conversación. Y recién ahí se libera el scroll.
       if (i === 0) {
         var cta = document.getElementById('mc-chat-cta');
         if (cta) cta.classList.add('show');
+        mcUnlockChatScroll();
       }
       await wait(900);
     }

@@ -65,26 +65,57 @@ src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
 html, body { background: var(--charcoal-deep); overflow-x: hidden; }
 body { font-family: var(--font-body); color: var(--text-light); }
 
-.gc-wrap { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; max-width: 480px; margin: 0 auto; }
+.gc-wrap { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 28px 24px; max-width: 440px; margin: 0 auto; opacity: 0; transition: opacity .5s ease; }
+.gc-wrap.reveal { opacity: 1; }
 
-.gc-check { width: 64px; height: 64px; border-radius: 50%; background: rgba(184,137,42,.12); border: 1.5px solid rgba(184,137,42,.5); display: flex; align-items: center; justify-content: center; margin-bottom: 28px; animation: gcPop .6s cubic-bezier(.34,1.5,.64,1) both; }
+/* ══ INTRO ANIMADO — check que se dibuja solo, con sonido (mismo efecto que public/bienvenida) ══ */
+#gc-intro {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--charcoal-deep);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 28px; pointer-events: none;
+}
+#gc-intro.fade-out { animation: gcIntroFadeOut 1s ease forwards; }
+@keyframes gcIntroFadeOut { 0% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
+
+.gc-intro-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); opacity: 0; transition: opacity .4s ease; }
+.gc-intro-label.show { opacity: 1; animation: gcIntroPulse 1.5s ease-in-out infinite; }
+@keyframes gcIntroPulse { 0%,100% { opacity: 1; letter-spacing: 3px; } 50% { opacity: .6; letter-spacing: 4px; } }
+
+.gc-intro-check { display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .5s ease, transform 1.2s cubic-bezier(.34,1.2,.64,1); transform-origin: center; }
+.gc-intro-check.show { opacity: 1; }
+.gc-intro-check.shrink { transform: scale(.18); }
+
+#gc-intro-svg { width: min(50vw, 160px); height: min(50vw, 160px); filter: drop-shadow(0 0 24px rgba(184,137,42,.4)); transition: filter .4s ease; }
+
+.gc-check { width: 48px; height: 48px; border-radius: 50%; background: rgba(184,137,42,.12); border: 1.5px solid rgba(184,137,42,.5); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; animation: gcPop .6s cubic-bezier(.34,1.5,.64,1) both; }
 @keyframes gcPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.gc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 16px; }
-.gc-title { font-family: var(--font-display); font-size: clamp(26px, 6.5vw, 34px); font-weight: 900; line-height: 1.25; color: var(--text-light); }
+.gc-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px; }
+.gc-title { font-family: var(--font-display); font-size: clamp(24px, 6vw, 30px); font-weight: 900; line-height: 1.2; color: var(--text-light); }
 .gc-title em { font-style: italic; color: var(--gold-light); }
-.gc-sub { font-family: var(--font-elegant); font-style: italic; font-size: clamp(16px, 4vw, 19px); color: rgba(240,230,234,.75); line-height: 1.65; margin: 20px auto 0; max-width: 400px; }
 
-.gc-steps { width: 100%; margin-top: 44px; text-align: left; }
-.gc-step { display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
+.gc-quote { font-family: var(--font-body); font-size: 15px; color: rgba(240,230,234,.8); line-height: 1.55; margin: 10px auto 0; max-width: 340px; }
+.gc-sign { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: .3px; color: var(--gold-primary); margin-top: 8px; }
+
+.gc-date { display: inline-block; margin-top: 18px; padding: 8px 16px; border: 1px solid rgba(184,137,42,.4); border-radius: 999px; font-family: 'Jost', sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing: .3px; color: var(--gold-light); }
+
+.gc-live { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #6FD98C; }
+.gc-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #6FD98C; animation: gcLivePulse 1.6s ease-in-out infinite; }
+@keyframes gcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+.gc-steps-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(240,230,234,.4); margin-top: 26px; }
+
+.gc-steps { width: 100%; margin-top: 12px; text-align: left; }
+.gc-step { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
 .gc-step:last-child { border-bottom: none; }
-.gc-step-n { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 12px; font-weight: 700; color: var(--gold-light); margin-top: 1px; }
-.gc-step-txt { font-family: var(--font-body); font-size: 14px; color: rgba(240,230,234,.85); line-height: 1.55; }
-.gc-step-txt strong { color: var(--gold-light); }
+.gc-step-n { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--gold-light); margin-top: 1px; }
+.gc-step-txt { font-family: var(--font-body); font-size: 13.5px; color: rgba(240,230,234,.85); line-height: 1.4; }
+.gc-step-txt strong { display: block; color: var(--gold-light); font-size: 14px; margin-bottom: 1px; }
 
 .gc-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 18px 28px; margin-top: 40px;
+  width: 100%; padding: 16px 28px; margin-top: 24px;
   background: linear-gradient(135deg, #25D366, #1FAE54);
   color: #fff; border: none; border-radius: 12px;
   font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: .3px;
@@ -97,36 +128,48 @@ body { font-family: var(--font-body); color: var(--text-light); }
 @keyframes gcBtnPulse { 0%,100% { box-shadow: 0 8px 28px rgba(37,211,102,.35); } 50% { box-shadow: 0 10px 38px rgba(37,211,102,.55); } }
 .gc-btn svg { flex-shrink: 0; }
 
-.gc-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.35); margin-top: 14px; line-height: 1.6; }
-
-.gc-footer { margin-top: 56px; }
-.gc-footer-brand { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: rgba(237,227,206,.5); }
-.gc-footer-brand .gold { color: rgba(184,137,42,.6); font-style: italic; }
+.gc-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.35); margin-top: 12px; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-<div class="gc-wrap">
+<div id="gc-intro">
+  <div class="gc-intro-label" id="gc-intro-label">Compra confirmada</div>
+  <div class="gc-intro-check" id="gc-intro-check">
+    <svg id="gc-intro-svg" viewBox="0 0 100 100" fill="none">
+      <circle id="gc-intro-circle" cx="50" cy="50" r="45" stroke="#B8892A" stroke-width="2" stroke-dasharray="283" stroke-dashoffset="283"/>
+      <polyline id="gc-intro-poly" points="28,52 44,68 72,34" stroke="#B8892A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="80" stroke-dashoffset="80"/>
+    </svg>
+  </div>
+</div>
+
+<div class="gc-wrap" id="gc-wrap">
   <div class="gc-check">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
   </div>
 
   <div class="gc-eyebrow">Compra confirmada</div>
-  <h1 class="gc-title" id="gc-title-el">Tu acceso a la <em>Masterclass Soberana</em> está listo.</h1>
-  <p class="gc-sub" id="gc-sub-el">En menos de una hora vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.</p>
+  <h1 class="gc-title" id="gc-title-el">Ya estás dentro.</h1>
+  <p class="gc-quote" id="gc-quote-el">Tu lugar está reservado. Ahora sí. Nos vemos el sábado.</p>
+  <p class="gc-sign">— Josué Calderón</p>
+
+  <div class="gc-date" id="gc-date-el"></div>
+  <div class="gc-live" id="gc-live-el"><span class="gc-live-dot"></span>EN VIVO</div>
+
+  <p class="gc-steps-label" id="gc-steps-label-el">Para recibir tu acceso, solo haz esto:</p>
 
   <div class="gc-steps">
     <div class="gc-step">
       <div class="gc-step-n">1</div>
-      <p class="gc-step-txt"><strong>Toca el botón verde de abajo</strong> — se abre WhatsApp con un mensaje ya escrito, solo tienes que enviarlo.</p>
+      <p class="gc-step-txt"><strong>Toca el botón</strong>Se abrirá WhatsApp con un mensaje ya escrito.</p>
     </div>
     <div class="gc-step">
       <div class="gc-step-n">2</div>
-      <p class="gc-step-txt" id="gc-step2-txt">Recibes ahí mismo <strong>el acceso a la masterclass</strong> y las instrucciones para verla.</p>
+      <p class="gc-step-txt"><strong>Envíalo</strong>No tienes que escribir nada más.</p>
     </div>
     <div class="gc-step">
       <div class="gc-step-n">3</div>
-      <p class="gc-step-txt">Después de verla, seguimos la conversación por WhatsApp — sin spam, solo lo que necesitas para dar el primer cambio real.</p>
+      <p class="gc-step-txt" id="gc-step3-txt"><strong>Recibe tu acceso</strong>Te enviaremos por WhatsApp el enlace y toda la información que necesitas para el sábado.</p>
     </div>
   </div>
 
@@ -134,11 +177,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.2-1.36c1.46.8 3.1 1.22 4.84 1.22 5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm5.84 14.24c-.24.68-1.4 1.32-1.94 1.36-.5.05-1.02.25-3.4-.72-2.86-1.18-4.7-4.1-4.84-4.3-.14-.2-1.16-1.56-1.16-2.98 0-1.4.74-2.1 1-2.4.26-.28.58-.34.78-.34.2 0 .4 0 .56.01.18.02.42-.07.66.5.24.58.82 2 .9 2.14.08.14.13.3.02.5-.1.2-.16.32-.32.5-.16.18-.33.4-.47.54-.16.16-.32.33-.14.65.18.32.8 1.32 1.72 2.14 1.18 1.05 2.18 1.38 2.5 1.54.32.16.5.14.68-.08.18-.22.78-.9 1-1.22.2-.3.42-.26.7-.16.28.1 1.8.85 2.1 1.01.3.16.5.24.58.36.08.16.08.86-.16 1.54z"/></svg>
     Recibir mi acceso por WhatsApp
   </a>
-  <p class="gc-note">Se abre WhatsApp automáticamente · El mensaje ya viene escrito, solo envíalo</p>
-
-  <div class="gc-footer">
-    <div class="gc-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
-  </div>
+  <p class="gc-note">WhatsApp se abre automáticamente · Solo toca Enviar.</p>
 </div>
 
 <script>
@@ -147,17 +186,118 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   if (typeof gtag === 'function') gtag('event', 'wa_click_masterclass');
 });
 
+// ── Nombre de la compradora — viene en la URL de redirección que Hotmart arma con el nombre
+// que ella escribió en el checkout (el mismo que el webhook guarda como FIRSTNAME en Brevo,
+// ver api/hotmart-webhook.js). Se prueban varias claves porque el nombre exacto del parámetro
+// depende de cómo esté configurada la "URL de agradecimiento" en el producto de Hotmart.
+(function () {
+  var params = new URLSearchParams(location.search);
+  var keys = ['nome', 'name', 'buyer_name', 'primeiro_nome', 'first_name', 'contact_name'];
+  var raw = '';
+  for (var i = 0; i < keys.length; i++) {
+    var v = params.get(keys[i]);
+    if (v && v.trim()) { raw = v.trim(); break; }
+  }
+  if (!raw) return; // sin nombre en la URL — se queda el "Ya estás dentro." genérico
+
+  var primerNombre = raw.split(' ')[0];
+  primerNombre = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+  var titleEl = document.getElementById('gc-title-el');
+  if (titleEl) titleEl.textContent = 'Ya estás dentro, ' + primerNombre + '.';
+})();
+
+// ── Fecha/hora del evento, auto-ajustada al huso horario de quien mira la página — sin listar
+// países. Date.getDate()/getHours()/etc. siempre devuelven la hora LOCAL del dispositivo aunque el
+// Date se haya creado en hora Colombia, así que esto ya "traduce" sola a México, USA, España, etc.
+(function () {
+  var el = document.getElementById('gc-date-el');
+  if (!el) return;
+  var EVENTO_INICIO = new Date('2026-08-01T19:00:00-05:00'); // Sábado 1 de agosto, 7:00 p.m. Colombia
+  var dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var diaSemana = dias[EVENTO_INICIO.getDay()];
+  diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+  var horas   = EVENTO_INICIO.getHours();
+  var ampm    = horas >= 12 ? 'p.m.' : 'a.m.';
+  var horas12 = horas % 12; if (horas12 === 0) horas12 = 12;
+  var minStr  = EVENTO_INICIO.getMinutes() < 10 ? '0' + EVENTO_INICIO.getMinutes() : '' + EVENTO_INICIO.getMinutes();
+  el.textContent = diaSemana + ' ' + EVENTO_INICIO.getDate() + ' de ' + meses[EVENTO_INICIO.getMonth()] + ' · ' + horas12 + ':' + minStr + ' ' + ampm + ' (tu hora)';
+})();
+
 // ── Estado derivado de la fecha del evento — misma fuente única que la Landing
 // (ver entry-product-system/SKILL.md → "Mecanismo de derivación automática por fecha").
+// El copy por defecto es el de "evento en vivo" (pre-Sábado). Tras EVENTO_FIN pasamos a copy Replay.
 (function () {
   var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
-  if (Date.now() >= EVENTO_FIN.getTime()) return; // ya pasó el evento — queda el copy Replay de siempre
+  if (Date.now() < EVENTO_FIN.getTime()) return; // evento aún no pasa — queda el copy de arriba
 
   var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
-  document.title = 'Tu lugar está reservado — Masterclass Soberana';
-  set('gc-title-el', 'Tu lugar en la <em>Masterclass Soberana</em> está reservado.');
-  set('gc-sub-el', 'El sábado 1 de agosto a las 7:00 p.m. (Colombia) vas a entender por qué todo lo que has intentado hasta hoy ha seguido desgastándote — y cuál es el primer cambio que realmente empieza a transformar tu relación.');
-  set('gc-step2-txt', 'Recibes ahí mismo <strong>la confirmación de tu lugar</strong> y todo lo que necesitas saber antes del evento en vivo.');
+  var hide = function (id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; };
+  document.title = 'Tu acceso está listo — Masterclass Soberana';
+  set('gc-quote-el', 'Tu acceso a la <em>Masterclass Soberana</em> está listo.');
+  hide('gc-date-el');
+  hide('gc-live-el');
+  set('gc-steps-label-el', 'Para ver la clase, solo haz esto:');
+  set('gc-step3-txt', '<strong>Recibe tu acceso</strong>Te enviaremos por WhatsApp el enlace de la grabación y todo lo que necesitas.');
+})();
+
+// ── Intro animado: check que se dibuja solo + sonido + glow, luego revela la página ──
+// Copiado del efecto de public/bienvenida/index.html (mismo timing, misma paleta).
+(function () {
+  var introScreen = document.getElementById('gc-intro');
+  var introLabel  = document.getElementById('gc-intro-label');
+  var introBig    = document.getElementById('gc-intro-check');
+  var introSvg    = document.getElementById('gc-intro-svg');
+  var circle      = document.getElementById('gc-intro-circle');
+  var poly        = document.getElementById('gc-intro-poly');
+  var wrap        = document.getElementById('gc-wrap');
+
+  function t(fn, ms) { setTimeout(fn, ms); }
+
+  introLabel.classList.add('show');
+
+  t(function () { introBig.classList.add('show'); }, 200);
+
+  t(function () {
+    circle.style.transition = 'stroke-dashoffset 0.5s ease';
+    circle.style.strokeDashoffset = '0';
+  }, 400);
+
+  t(function () {
+    poly.style.transition = 'stroke-dashoffset 0.35s ease';
+    poly.style.strokeDashoffset = '0';
+    if (navigator.vibrate) navigator.vibrate([60, 30, 100]);
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var o1 = ctx.createOscillator(), g1 = ctx.createGain();
+      o1.connect(g1); g1.connect(ctx.destination);
+      o1.frequency.value = 600; o1.type = 'sine';
+      g1.gain.setValueAtTime(0, ctx.currentTime);
+      g1.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+      g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      o1.start(ctx.currentTime); o1.stop(ctx.currentTime + 0.18);
+      var o2 = ctx.createOscillator(), g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o2.frequency.value = 900; o2.type = 'sine';
+      g2.gain.setValueAtTime(0, ctx.currentTime + 0.1);
+      g2.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 0.11);
+      g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      o2.start(ctx.currentTime + 0.1); o2.stop(ctx.currentTime + 0.4);
+    } catch (e) {}
+    introSvg.style.filter = 'drop-shadow(0 0 60px rgba(240,200,74,1)) drop-shadow(0 0 20px rgba(184,137,42,0.9))';
+    t(function () {
+      introSvg.style.transition = 'filter 0.5s ease';
+      introSvg.style.filter = 'drop-shadow(0 0 20px rgba(184,137,42,0.5))';
+    }, 150);
+  }, 900);
+
+  t(function () { introBig.classList.add('shrink'); }, 1500);
+
+  t(function () {
+    introScreen.classList.add('fade-out');
+    t(function () { introScreen.style.display = 'none'; }, 700);
+    if (wrap) wrap.classList.add('reveal');
+  }, 2000);
 })();
 </script>
 

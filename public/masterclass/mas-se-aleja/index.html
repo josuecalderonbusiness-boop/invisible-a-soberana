@@ -153,6 +153,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
   filter: blur(22px); animation: mcVideoBlurClear 6s ease-out forwards; transition: filter .6s ease;
 }
 @keyframes mcVideoBlurClear { 0% { filter: blur(26px); } 100% { filter: blur(11px); } }
+@media (max-width: 600px) { #s5 { padding-top: 40px; } }
 
 /* ── Texto arriba del video, fuera del cuadro — aparición escalonada ── */
 .mc-video-kicker { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 12px; max-height: 40px; overflow: hidden; transition: opacity .6s ease, max-height .6s ease, margin .6s ease; }
@@ -530,7 +531,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
        pregunta — no todo el texto entrando junto) ══ -->
   <section class="screen" id="s6">
     <div class="screen-wrap">
-      <p class="mc-line reveal" style="font-size:clamp(19px,4.8vw,23px);">Solo responde esto con absoluta honestidad...</p>
+      <p class="mc-line mc-cursive reveal" style="font-size:clamp(19px,4.8vw,23px);">Solo responde esto con absoluta honestidad...</p>
       <p class="mc-video-subtext reveal" style="margin-top:24px; transition-delay:1.4s;">No tomes una decisión todavía.<br><br>Ni para entrar.<br>Ni para salir.</p>
       <p class="mc-line reveal" style="font-size:clamp(23px,6.2vw,29px); font-weight:700; margin-top:34px; color:var(--gold-light); transition-delay:3.2s;">¿Cuánto tiempo más estás dispuesta a seguir sintiéndote sola... estando en una relación?</p>
     </div>
@@ -542,7 +543,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     <div class="screen-wrap reveal">
       <p class="mc-line mc-cursive" style="font-size:clamp(18px,4.5vw,21px);">Sé que esa pregunta te incomodó.</p>
       <p class="mc-line" style="font-size:clamp(17px,4.2vw,20px); margin-top:24px;">Y quizá ahora mismo estés pensando...</p>
-      <p class="mc-line" style="font-size:clamp(18px,4.5vw,21px); margin-top:20px;">«Entonces... ¿qué hago?»</p>
+      <p class="mc-line" style="font-size:clamp(23px,6.2vw,29px); font-weight:700; color:var(--gold-light); margin-top:20px;">"Entonces... ¿qué hago?"</p>
       <p style="margin-top:20px; color:var(--gold-primary); font-size:18px; opacity:.6;">↓</p>
     </div>
     <!-- La frase va sobre la flecha, no abajo — para que sepa que al oprimirla está lo que él propone -->
@@ -977,8 +978,8 @@ var mcUnlockScroll = (function () {
 // ── Secuencia de s8 — las tres líneas se acumulan sin borrarse, recién al final se borra todo
 // junto y aparecen los checks (fecha + hora Colombia/México). Al terminar, la hoja de agenda
 // entra en fade+blur desde la derecha, y las notas aparecen palabra por palabra. Los botones
-// ("Cuéntame más", flecha bajo los checks) son el gesto recomendado, no obligatorio — la
-// secuencia siempre avanza sola si no los toca (ver waitForClickOrAuto). ──
+// ("Cuéntame más", flecha bajo los checks) son obligatorios — la secuencia solo avanza
+// cuando la usuaria los toca. El scroll queda bloqueado hasta que la agenda es visible. ──
 (function () {
   var stage = document.getElementById('mc-imagine-stage');
   var pauseGroup = document.getElementById('mc-imagine-pause-group');
@@ -1013,24 +1014,30 @@ var mcUnlockScroll = (function () {
     });
   }
 
-  // El clic es el gesto recomendado, no el único permitido — si no lo toca, avanza sola.
-  // Nunca la deja "atrapada" esperando una acción obligatoria.
-  function waitForClickOrAuto(el, autoMs) {
+  // El avance depende del clic de la usuaria — la secuencia no se mueve sola.
+  function waitForClick(el) {
     return new Promise(function (resolve) {
-      var done = false;
-      function finish() {
-        if (done) return;
-        done = true;
+      function onClick(e) {
+        e.preventDefault();
         el.removeEventListener('click', onClick);
         resolve();
       }
-      function onClick(e) { e.preventDefault(); finish(); }
       el.addEventListener('click', onClick);
-      setTimeout(finish, autoMs);
     });
   }
 
+  // Bloquea el scroll de la página mientras la usuaria no ha visto la agenda todavía.
+  function lockScroll() {
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+  }
+  function unlockScroll() {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
   async function run() {
+    lockScroll();
     pauseBig.classList.add('in');
     await wait(1700);
     pause90.classList.add('in');
@@ -1039,8 +1046,8 @@ var mcUnlockScroll = (function () {
     await wait(1600); // le da tiempo de leer la razón antes de ofrecerle continuar
     pauseContinue.classList.add('in');
 
-    // "Cuéntame más" es el gesto recomendado — si lo toca, avanza al instante; si no, sigue sola
-    await waitForClickOrAuto(pauseContinue, 3500);
+    // Avanza solo cuando la usuaria toca "Cuéntame más"
+    await waitForClick(pauseContinue);
 
     // El texto se va en fade hacia la izquierda (no solo desaparece) — responde a la dirección
     // de la flecha, que apunta a la derecha.
@@ -1065,11 +1072,12 @@ var mcUnlockScroll = (function () {
     await wait(lastCheckAt + 2000); // 2s después de que terminó de aparecer el último check
     checksContinue.classList.add('in');
 
-    // Misma regla: el clic acelera, pero la secuencia sigue sola si no lo toca
-    await waitForClickOrAuto(checksContinue, 3500);
+    // Misma regla: avanza solo cuando la usuaria toca el botón
+    await waitForClick(checksContinue);
     checksContinue.classList.remove('in');
 
     slide.classList.add('in');
+    unlockScroll(); // ya vio la agenda — libera el scroll
     await wait(900); // le da tiempo a la hoja de terminar de entrar antes de revelar las notas
     revealWords();
   }

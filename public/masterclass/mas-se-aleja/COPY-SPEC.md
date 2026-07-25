@@ -46,7 +46,7 @@ Este documento describe la landing tal como existe hoy en producción: cada text
 
 1. **s1–s4** ("Has intentado hablar.", "Has intentado esperar.", "Has intentado cambiar tú.", "Y aun así... nada cambia.") — vía la clase `.mc-letter-line`. Letras grandes (32–50px), es la "carta" de apertura.
 2. **s7, primera línea:** "Sé que esa pregunta te incomodó." — vía clase `.mc-cursive` puesta a mano.
-3. **s8:** "Solo por 90 minutos." — vía selector `#mc-pause-90` puesto a mano.
+3. **s8:** "en solo 90 minutos." — vía selector `#mc-pause-90` puesto a mano.
 4. **s5:** los puntos suspensivos "···" antes del reveal post-video (`.mc-reveal-ellipsis`) — es puntuación, no una frase.
 5. **Cierre de la página:** la cita de Josué, `"Hay relaciones que cambian cuando una mujer deja de sobrevivir… y vuelve a vivir." — Josué Calderón` (`.mc-quote-signature`).
 
@@ -71,7 +71,17 @@ animación: mcCtaPulse (pulso de sombra, 2.4s) + mcGoldShift (el gradiente "resp
 ### 1.5 Dirección de las flechas — regla narrativa
 
 - **Flechas hacia abajo** (chevron `M6 9l6 6 6-6`): el patrón por defecto, "sigue bajando".
-- **Flechas hacia la derecha** (chevron `M9 6l6 6-6 6`, rebote `mcBounceRight` horizontal): se usan específicamente para gatear contenido que la usuaria debe pedir explícitamente con un clic —no es scroll pasivo—: "Responderla" (s5), "Cuéntame más" (s8, pausa), la flecha bajo los checks (s8), y la flecha al final de la primera hoja de agenda (`#mc-agenda-continue`).
+- **Flechas hacia la derecha** (chevron `M9 6l6 6-6 6`, rebote `mcBounceRight` horizontal): se usan en momentos que se sienten como "pedir algo, no solo avanzar": "Responderla" (s5), "Cuéntame más" (s8, pausa), la flecha bajo los checks (s8), y la flecha al final de la primera hoja de agenda (`#mc-agenda-continue`). El clic en estas SIEMPRE acelera la secuencia — nunca es la única forma de avanzar (ver 1.7).
+
+### 1.7 Filosofía de navegación — guiar, no retener
+
+**Regla de marca (decisión de UX explícita, 2026-07-24):** la diferencia entre "la página me está guiando" y "la página no me deja bajar" es enorme y decisiva para que esta landing no se sienta manipulativa. Por eso:
+
+- **El scroll NUNCA está bloqueado**, salvo dos puntos justificados (ver abajo). El resto de la landing (s1–s4, s6–s9, carta, footer) permite scroll libre en ambas direcciones en todo momento.
+- **Los botones/flechas son el gesto recomendado, no el único gesto permitido.** Sirven para comunicar "hay algo más" y para acelerar momentos con secuencias temporizadas (s8) — pero si la usuaria no los toca, la secuencia avanza sola (`waitForClickOrAuto`, 3.5s). Nunca queda "atrapada" esperando una acción obligatoria.
+- **Los únicos dos bloqueos reales de toda la landing son el video (s5→s6, `mcUnlockScroll`) y el chat de WhatsApp hasta el primer audio (`mcUnlockChatScroll`, ver 3.1).** Ambos tienen la misma justificación narrativa: "quiero mostrarte/contarte algo antes de que sigas" — no es simplemente "no te dejo bajar", es contenido que debe experimentarse antes de la siguiente revelación. Bloquean **en ambas direcciones** (ni arriba ni abajo) mientras la posición está dentro de su zona (no solo un flag `locked`), con salida de seguridad automática por tiempo (100s el video, 60s el chat). Fuera de esas zonas y después de desbloquearse, el scroll es completamente normal en ambas direcciones.
+  - **Detalle técnico importante:** interceptar `wheel`/`touchmove` evento por evento con `preventDefault()` NO alcanza — un scroll con impulso (inercia de trackpad o mobile, o un gesto rápido) sigue moviéndose después de que el evento terminó, sin disparar más eventos que interceptar (confirmado con pruebas reales: el scroll atravesaba el bloqueo). La solución real es congelar el `<body>` por completo (`position:fixed` + `top` negativo igual al scroll actual) apenas la posición entra en la zona bloqueada — así no queda nada que scrollear, sin importar el impulso. Se libera restaurando `position` y haciendo `scrollTo` a la posición exacta guardada.
+- El efecto cinematográfico de "una idea a la vez" ya lo logra el `scroll-snap-type: y proximity` del contenedor — no hace falta bloquear el scroll para conseguirlo. Alguien que llega scrolleando desde Instagram no debería sentir que la página "le dice que no": eso hace que el cerebro se ponga a resolver la interfaz en vez de sentir el mensaje.
 
 ### 1.6 Efecto "reveal" (aparición al hacer scroll)
 
@@ -102,7 +112,7 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 - Igual patrón. Flecha abajo → s4.
 
 ### s4 — "EL GIRO"
-- "Y aun así..." → (delay 1s) → "**nada cambia.**" (negrita, dorado vía `<strong>`). Flecha abajo → s5.
+- "Y aun así...<br>**nada cambia.**" — un solo bloque, entra todo junto (sin delay separado; antes "nada cambia." entraba 1s después, pero si la usuaria desliza rápido sin leer se rompía la intención del mensaje). Flecha abajo → s5.
 
 ### s5 — VIDEO
 - Kicker: "ANTES DE RESERVAR TU LUGAR..." (Jost 12px, uppercase, letter-spacing 2.5px, dorado)
@@ -110,13 +120,13 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 - Video embebido (Bunny Stream, ID `d7f15362-7aa9-4010-9d5b-537c62708489`, library `711470`), **duración real: 112s (1:52)**.
   - Carga con `autoplay=true&muted=true` — arranca solo, en silencio.
   - Filtro de blur que se aclara en 6s (`mcVideoBlurClear`: 26px→11px) + capa de tinte vino que se aclara igual (`mcTintClear`: opacidad 1→.55).
-  - Botón "▶ Activa el sonido" pulsante sobre el video. Al hacer clic (`unmuteVideo()`): recarga el iframe con `muted=false` desde el segundo 0 (reinicio completo, no un "unmute" del estado actual — es más confiable que depender de que Bunny responda comandos). Quita el blur/tinte, oculta kicker y subtexto en secuencia (0ms, 450ms, 1000ms), sube y agranda el video (`shift-up`).
-- **Reveal post-video** — dispara con un temporizador fijo a **107s** (5 segundos antes de que termine el video de 112s), NO con eventos del reproductor (el protocolo Player.js de Bunny no era confiable):
-  1. Texto grande (Jost 700, dorado): "Porque hay una pregunta que yo no puedo responder por ti." (entra con blur)
-  2. delay 2.2s → puntos suspensivos "···" (cursiva, ver 1.3)
-  3. delay 3.6s → pill "Responderla ↓" (apunta a la derecha, rebote horizontal)
+  - Botón "▶ Activa el sonido" pulsante sobre el video. Al hacer clic (`unmuteVideo()`): recarga el iframe con `muted=false` desde el segundo 0 (reinicio completo, no un "unmute" del estado actual — es más confiable que depender de que Bunny responda comandos). Quita el blur/tinte, oculta kicker y subtexto en secuencia (0ms, 450ms). El video se queda centrado en la pantalla — ya no sube ni se reancla arriba (así era antes; se quitó deliberadamente).
+- **Reveal post-video** — dispara con un temporizador fijo a **109s** (3 segundos antes de que termine el video de 112s), NO con eventos del reproductor (el protocolo Player.js de Bunny no era confiable):
+  1. Texto grande (Jost 700, dorado): "... hay una pregunta que no puedo responder por ti." (entra con blur)
+  2. delay .8s → puntos suspensivos "···" (cursiva, ver 1.3)
+  3. delay 2s → pill "Responderla ↓" (apunta a la derecha, rebote horizontal) — es decir, 2 segundos después del mensaje
   4. Al hacer scroll se desbloquea el avance (antes de esto, scroll/wheel/touch/teclado hacia abajo están bloqueados — salida de seguridad automática a los 100s por si el video nunca "termina" según el temporizador).
-- Clic en "Responderla" → activa la fecha flotante (ver sección 5) y navega a s6.
+- Clic en "Responderla" → navega a s6.
 
 ### s6 — LA PREGUNTA (ritmo cinematográfico, beats separados)
 1. "Solo responde esto con absoluta honestidad..." (sans-serif, sin delay)
@@ -126,21 +136,22 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 
 ### s7 — SI ESA PREGUNTA TE INCOMODÓ
 1. "*Sé que esa pregunta te incomodó.*" — cursiva (única línea cursiva de este slide)
-2. "Y no quiero pedirte que te esfuerces más por cambiar la relación." — sans-serif
-3. "**Quiero invitarte a detenerte un momento.**" — sans-serif, negrita/dorado vía `<strong>`
+2. "Y quizá ahora mismo estés pensando..." — sans-serif
+3. "«Entonces... ¿qué hago?»" — sans-serif, cita entre comillas (su propio pensamiento interno)
+4. "↓" — pequeña pausa visual (dorado, opacidad .6) antes de la flecha
 - Flecha: la frase **"Te propongo algo"** va SOBRE la flecha (no debajo) — para que se entienda que al oprimirla está lo que él propone, no que es "seguir bajando". → s8
 
-### s8 — "HAZ UNA PAUSA..." + AGENDA (la pantalla más compleja de la landing)
+### s8 — LA PAUSA + AGENDA (la pantalla más compleja de la landing)
 
 **Etapa 1 — Acumulación (las 3 líneas se apilan, ninguna borra a la anterior):**
-1. "**Haz una pausa.**" (grande, `.mc-imagine-big`, Playfair 900, dorado)
-2. delay 1.7s → "*Solo por 90 minutos.*" (cursiva — único texto cursivo de s8)
-3. delay 1.7s → "Para volver a sentir que tu relación **SÍ** puede construirse entre dos...<br>y no únicamente sobre tus hombros." (sans-serif, "SÍ" en `<strong>` dorado)
+1. "**Por un momento, deja de intentar cambiar las cosas**" (grande, `.mc-imagine-big`, Playfair 900, dorado)
+2. delay 1.7s → "*en solo 90 minutos.*" (cursiva — único texto cursivo de s8)
+3. delay 1.7s → "Ven a mirar tu relación desde un lugar distinto.<br>Uno donde no tengas que perseguir, convencer ni cargar con todo." (sans-serif)
 4. delay 1.6s → aparece pill "**Cuéntame más**" (apunta a la derecha)
 
-**Gate #1:** la secuencia espera el clic real en "Cuéntame más" — no avanza sola.
+**"Cuéntame más" (pill grande, misma clase que "Responderla"):** el clic es el gesto recomendado — acelera la secuencia al instante. Si no lo toca, avanza sola a los 3.5s igual (`waitForClickOrAuto`). Nunca queda bloqueada esperando una acción obligatoria — decisión de UX deliberada: la navegación debe sentirse guiada, no retenida. El único bloqueo real de toda la landing es el video en s5 (justificación narrativa: "quiero mostrarte algo antes de que sigas").
 
-**Al hacer clic:** las 3 líneas + el pill se van en fade hacia la izquierda (`translateX(-40px)`, opacity→0, .9s) — responde a la dirección de la flecha, que apunta a la derecha.
+**Al continuar (clic o automático):** las 3 líneas + el pill se van en fade hacia la izquierda (`translateX(-40px)`, opacity→0, .9s) — responde a la dirección de la flecha, que apunta a la derecha.
 
 **Etapa 2 — Checks (900ms después del fade-out):**
 - Aparece "**EN VIVO**" pulsante (verde `#6FD98C`, punto pulsante) arriba de los 3 checks
@@ -148,11 +159,9 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
   1. "✓ Sábado 1 de agosto."
   2. "✓ 🇨🇴 7:00 p.m. Colombia."
   3. "✓ 🇲🇽 6:00 p.m. México."
-- 2 segundos después de que aparece el último check → aparece pill "→" (sin texto, solo flecha) bajo los checks.
+- 2 segundos después de que aparece el último check → aparece pill "→" (sin texto, solo flecha) bajo los checks. Misma regla: clic acelera, 3.5s avanza sola.
 
-**Gate #2:** la secuencia espera el clic real en esa flecha.
-
-**Al hacer clic:** entra la hoja de agenda — **fade + blur desde la derecha** (`translateX(60px)→0`, `blur(14px)→0`, opacity, 1.6s cubic-bezier), NO desliza hacia arriba (así era antes; se cambió deliberadamente).
+**Al continuar (clic o automático):** entra la hoja de agenda — **fade + blur desde la derecha** (`translateX(60px)→0`, `blur(14px)→0`, opacity, 1.6s cubic-bezier), NO desliza hacia arriba (así era antes; se cambió deliberadamente).
 
 **Tarjeta de agenda** (fondo crema, `.mc-agenda-card`):
 - Tira de días de la semana (D L M X J V S), sábado 1 resaltado en círculo dorado
@@ -191,6 +200,7 @@ Título: **"Antes de despedirme... quizá tengas estas preguntas."** (sans-serif
 - El botón de enviar solo se activa (pulsa, `pointer-events:auto`) cuando terminó de escribirse el texto — antes está deshabilitado.
 - Cada respuesta de Josué: indicador "Josué está grabando..." (micrófono pulsante) por 1.5s, luego aparece la nota de voz reproducible (nunca autoplay). Al terminar de escucharla, la burbuja se tiñe de dorado (`.heard`) para diferenciarla de las pendientes, y **recién ahí** se libera el siguiente mensaje (no antes).
 - El botón CTA ("Quiero estar en este espacio") está oculto (`max-height:0`) hasta que ella escucha la **primera** nota de voz completa — entonces aparece pegado al chat, no antes ni al final de los 3 intercambios.
+- **Bloqueo de scroll** (`mcUnlockChatScroll`, misma técnica de congelar el `<body>` que el video, ver 1.7): mientras está posicionada dentro de la pantalla del chat, el scroll queda completamente bloqueado (ninguna dirección) hasta que termina de escuchar la primera nota de voz. Así no puede saltarse el chat entero sin escuchar nada. Salida de seguridad a los 60s. Es la única otra excepción a "el scroll nunca se bloquea" además del video — misma justificación: contenido que debe experimentarse antes de seguir.
 
 **CTA del chat:**
 - Botón: "**Quiero estar en este espacio.**"
@@ -244,7 +254,7 @@ Todos los sonidos están en `/masterclass/assets/`. **Nunca suenan hasta que hay
 
 ## 5. Fecha flotante (`#mc-float-date`)
 
-Recuadro fijo, esquina inferior derecha, oculto por defecto. **Se activa con el clic en "Responderla" (s5)** y desde ahí queda visible el resto de la sesión (nunca se vuelve a ocultar, salvo en modo Evergreen).
+Recuadro fijo, esquina inferior derecha, oculto por defecto. **Se activa al llegar a s9** — por `IntersectionObserver` (basta con hacer scroll hasta ahí, sea por scroll libre o snap) o por clic en su flecha (`#mc-s9-continue`). Se necesitan ambos disparadores porque el scroll es libre en toda la landing (ver 1.7) — depender solo del clic dejaba a casi nadie viéndola. Desde que aparece queda visible el resto de la sesión (nunca se vuelve a ocultar, salvo en modo Evergreen).
 
 Contenido:
 - "● EN VIVO" (punto verde pulsante)
@@ -303,7 +313,7 @@ EVENTO_FIN    = 2026-08-01T20:15:00-05:00   // fin de la última sesión
 
 Estos son puntos que valdría la pena que el auditor revise específicamente, dado que fueron ajustados varias veces durante el desarrollo:
 
-1. ¿El video de 112s sigue siendo la duración real? Si se reemplaza, hay que actualizar `REVEAL_EN_SEG` (línea ~913, hoy en 107) o el reveal post-video aparecerá en el momento equivocado.
+1. ¿El video de 112s sigue siendo la duración real? Si se reemplaza, hay que actualizar `REVEAL_EN_SEG` (hoy en 109, 3s antes del final) o el reveal post-video aparecerá en el momento equivocado.
 2. ¿La fecha/hora del evento (1 de agosto 2026, 7pm Colombia / 6pm México) sigue vigente? Está hardcodeada en 3 lugares distintos del HTML más las 2 constantes JS — si cambia, hay que actualizar todos.
 3. ¿El tono "no dramático" del precio en s9 logra el efecto buscado, o se siente demasiado escondido comparado con los otros dos CTAs que sí lo acompañan de beneficios?
 4. Verificar que el flujo de gates manuales en s8 (Cuéntame más → checks → flecha → agenda) no se sienta como fricción excesiva versus el resto de la página, que es mayormente pasiva (scroll).

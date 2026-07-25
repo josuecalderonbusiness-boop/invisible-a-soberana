@@ -519,7 +519,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
            después la frase. El botón dice "Responderla", no "Desliza" — el clic se siente como
            responder una pregunta, no como avanzar de pantalla. -->
       <div id="mc-event-reveal">
-        <p class="mc-reveal-big">Porque hay una pregunta que yo no puedo responder por ti.</p>
+        <p class="mc-reveal-big">... hay una pregunta que no puedo responder por ti.</p>
         <p class="mc-reveal-ellipsis" style="transition-delay:.8s;">···</p>
         <a class="mc-continue mc-continue-center reveal mc-answer-btn" id="mc-reveal-continue" href="#s6" style="transition-delay:2s;"><span>Responderla ↓</span></a>
       </div>
@@ -904,6 +904,9 @@ var mcUnlockScroll = (function () {
   var revealBox = document.getElementById('mc-event-reveal');
   var REVEAL_EN_SEG = 109; // 3s antes del final (video de 112s / 1:52)
   var DELAY_MS = REVEAL_EN_SEG * 1000;
+  var fireTimeoutId = null; // se cancela y se reprograma en cada "load" — al activar el sonido,
+  // el iframe se recarga (reinicia el video desde 0) y eso dispara OTRO evento "load"; si no se
+  // cancela el timer viejo, quedaban dos corriendo en paralelo y el texto salía desincronizado.
 
   function fire() {
     mcUnlockScroll();
@@ -919,7 +922,8 @@ var mcUnlockScroll = (function () {
   // Arranca a contar en cuanto el iframe carga — el video hace autoplay (muted) al mismo tiempo,
   // así que este momento coincide con cuando realmente empieza a reproducirse.
   document.getElementById('mc-video-iframe').addEventListener('load', function () {
-    setTimeout(fire, DELAY_MS);
+    if (fireTimeoutId) clearTimeout(fireTimeoutId);
+    fireTimeoutId = setTimeout(fire, DELAY_MS);
   });
 })();
 

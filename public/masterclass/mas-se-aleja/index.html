@@ -249,9 +249,9 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-imagine-pause-group { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .mc-imagine-pause-group .mc-imagine-big, .mc-imagine-pause-group .mc-imagine-line { position: static; }
 .mc-imagine-pause-group .mc-imagine-big { font-size: clamp(30px, 8.5vw, 46px); }
-/* ── "Cuéntame más" — solo aparece cuando terminó de leer las 3 líneas, y solo con su clic
-   se revelan los checks. No es un scroll pasivo, es una pregunta que ella responde. ── */
-#mc-pause-continue { opacity: 0; margin-top: -6px; transition: opacity 1s ease; pointer-events: none; }
+/* ── "Cuéntame más" — aparece cuando terminó de leer las 3 líneas. El clic es el gesto
+   recomendado (acelera), no obligatorio — si no lo toca, los checks aparecen solos igual. ── */
+#mc-pause-continue { opacity: 0; margin-top: 10px; transition: opacity 1s ease; pointer-events: none; }
 #mc-pause-continue.in { opacity: 1; pointer-events: auto; }
 /* ── Apunta a la derecha — rebote horizontal, no vertical como el resto de las flechas ── */
 #mc-pause-continue svg, #mc-checks-continue svg, #mc-agenda-continue svg { animation: mcBounceRight 1.8s ease-in-out infinite; }
@@ -558,7 +558,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
         <p class="mc-imagine-big" id="mc-pause-big">Por un momento, deja de intentar cambiar las cosas</p>
         <p class="mc-imagine-line" id="mc-pause-90">en solo 90 minutos.</p>
         <p class="mc-imagine-line" id="mc-pause-reason">Ven a mirar tu relación desde un lugar distinto.<br>Uno donde no tengas que perseguir, convencer ni cargar con todo.</p>
-        <a class="mc-continue" id="mc-pause-continue" href="#"><span>Cuéntame más</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="mc-continue mc-answer-btn" id="mc-pause-continue" href="#"><span>Cuéntame más</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg></a>
       </div>
       <div class="mc-imagine-checklist" id="mc-imagine-checklist">
         <span class="mc-imagine-live"><span class="mc-imagine-live-dot"></span>EN VIVO</span>
@@ -939,9 +939,11 @@ var mcUnlockScroll = (function () {
   els.forEach(function (el) { obs.observe(el); });
 })();
 
-// ── Secuencia "Haz una pausa..." (s8) — las tres líneas se acumulan sin borrarse, recién al
-// final se borra todo junto y aparecen los checks (fecha + hora Colombia/México). Al terminar,
-// la hoja de agenda se desliza encima desde abajo, y las notas aparecen palabra por palabra. ──
+// ── Secuencia de s8 — las tres líneas se acumulan sin borrarse, recién al final se borra todo
+// junto y aparecen los checks (fecha + hora Colombia/México). Al terminar, la hoja de agenda
+// entra en fade+blur desde la derecha, y las notas aparecen palabra por palabra. Los botones
+// ("Cuéntame más", flecha bajo los checks) son el gesto recomendado, no obligatorio — la
+// secuencia siempre avanza sola si no los toca (ver waitForClickOrAuto). ──
 (function () {
   var stage = document.getElementById('mc-imagine-stage');
   var pauseGroup = document.getElementById('mc-imagine-pause-group');
@@ -976,6 +978,23 @@ var mcUnlockScroll = (function () {
     });
   }
 
+  // El clic es el gesto recomendado, no el único permitido — si no lo toca, avanza sola.
+  // Nunca la deja "atrapada" esperando una acción obligatoria.
+  function waitForClickOrAuto(el, autoMs) {
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        el.removeEventListener('click', onClick);
+        resolve();
+      }
+      function onClick(e) { e.preventDefault(); finish(); }
+      el.addEventListener('click', onClick);
+      setTimeout(finish, autoMs);
+    });
+  }
+
   async function run() {
     pauseBig.classList.add('in');
     await wait(1700);
@@ -985,15 +1004,8 @@ var mcUnlockScroll = (function () {
     await wait(1600); // le da tiempo de leer la razón antes de ofrecerle continuar
     pauseContinue.classList.add('in');
 
-    // No sigue sola — espera el clic real de ella en "Cuéntame más"
-    await new Promise(function (resolve) {
-      function onClick(e) {
-        e.preventDefault();
-        pauseContinue.removeEventListener('click', onClick);
-        resolve();
-      }
-      pauseContinue.addEventListener('click', onClick);
-    });
+    // "Cuéntame más" es el gesto recomendado — si lo toca, avanza al instante; si no, sigue sola
+    await waitForClickOrAuto(pauseContinue, 3500);
 
     // El texto se va en fade hacia la izquierda (no solo desaparece) — responde a la dirección
     // de la flecha, que apunta a la derecha.
@@ -1018,15 +1030,8 @@ var mcUnlockScroll = (function () {
     await wait(lastCheckAt + 2000); // 2s después de que terminó de aparecer el último check
     checksContinue.classList.add('in');
 
-    // Tampoco sigue sola acá — espera su clic en la flecha bajo los checks
-    await new Promise(function (resolve) {
-      function onClick(e) {
-        e.preventDefault();
-        checksContinue.removeEventListener('click', onClick);
-        resolve();
-      }
-      checksContinue.addEventListener('click', onClick);
-    });
+    // Misma regla: el clic acelera, pero la secuencia sigue sola si no lo toca
+    await waitForClickOrAuto(checksContinue, 3500);
     checksContinue.classList.remove('in');
 
     slide.classList.add('in');

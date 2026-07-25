@@ -853,32 +853,65 @@ function unmuteVideo() {
   }, 450);
 }
 
-// ── Bloqueo de scroll — completamente inmóvil mientras dura el video, ni hacia abajo ni hacia
-// arriba. Intercepta el gesto ANTES de que mueva la página (no corrige después, que se veía
-// como un parpadeo del resto del contenido).
+// ── Bloqueo de scroll — completamente inmóvil mientras dura el video.
+// IMPORTANTE: prevenir wheel/touchmove evento por evento NO alcanza — un scroll con impulso
+// (inercia de trackpad/mobile, o un gesto rápido) sigue moviéndose después de que el evento
+// terminó, sin disparar más eventos que interceptar, así que igual atraviesa el bloqueo. La
+// única forma confiable es congelar el <body> por completo (position:fixed) apenas entra en la
+// zona del video — así no hay nada que scrollear, sin importar cuánto impulso traiga.
 // Salida de seguridad: se libera sola a los 100s aunque el detector del video nunca dispare
 // (nunca la deja atrapada sin salida si Bunny no responde el protocolo Player.js). ──
 var mcUnlockScroll = (function () {
   var s5 = document.getElementById('s5');
   var s6 = document.getElementById('s6');
   var locked = true;
+  var bodyFrozen = false;
+  var savedScrollY = 0;
 
-  // Solo bloquea mientras s5 (el video) es la pantalla activa — antes de llegar a s5 (s1-s4)
-  // y después de desbloquearse, el scroll es completamente normal.
-  function blocked() {
-    return locked && window.scrollY >= s5.offsetTop - 2 && window.scrollY < s6.offsetTop - 2;
+  function inVideoZone() {
+    return window.scrollY >= s5.offsetTop - 2 && window.scrollY < s6.offsetTop - 2;
   }
 
+  function freezeBody() {
+    if (bodyFrozen) return;
+    savedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-savedScrollY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    bodyFrozen = true;
+  }
+
+  function unfreezeBody() {
+    if (!bodyFrozen) return;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedScrollY);
+    bodyFrozen = false;
+  }
+
+  // Apenas el scroll entra en la zona del video, congela el body — no espera a que termine
+  // el gesto, así el impulso no tiene nada que seguir moviendo.
+  function onScroll() {
+    if (!locked || bodyFrozen) return;
+    if (inVideoZone()) freezeBody();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // por si ya arranca dentro de la zona
+
+  // Primera línea de defensa — corta el gesto antes de que empiece a mover la página
   window.addEventListener('wheel', function (e) {
-    if (blocked()) e.preventDefault();
+    if (locked && inVideoZone()) e.preventDefault();
   }, { passive: false });
-
   window.addEventListener('touchmove', function (e) {
-    if (blocked()) e.preventDefault();
+    if (locked && inVideoZone()) e.preventDefault();
   }, { passive: false });
-
   window.addEventListener('keydown', function (e) {
-    if (blocked() && ['ArrowDown', 'PageDown', ' ', 'End', 'ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1) e.preventDefault();
+    if (locked && inVideoZone() && ['ArrowDown', 'PageDown', ' ', 'End', 'ArrowUp', 'PageUp', 'Home'].indexOf(e.key) !== -1) e.preventDefault();
   });
 
   // Bloquea el salto directo por los puntos de progreso: nunca se puede saltar más allá del
@@ -887,13 +920,13 @@ var mcUnlockScroll = (function () {
   document.querySelectorAll('#mc-dots .dot').forEach(function (d) {
     var idx = parseInt(d.dataset.target.replace('s', ''), 10);
     d.addEventListener('click', function (e) {
-      if (locked && (idx > 5 || blocked())) { e.stopImmediatePropagation(); e.preventDefault(); }
+      if (locked && (idx > 5 || inVideoZone() || bodyFrozen)) { e.stopImmediatePropagation(); e.preventDefault(); }
     }, true);
   });
 
-  setTimeout(function () { locked = false; }, 100000); // salida de seguridad
+  setTimeout(function () { locked = false; unfreezeBody(); }, 100000); // salida de seguridad
 
-  return function () { locked = false; };
+  return function () { locked = false; unfreezeBody(); };
 })();
 
 // ── Reveal del bloque de evento a 8s del final — con temporizador fijo, no con mensajes del

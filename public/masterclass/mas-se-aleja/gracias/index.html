@@ -211,9 +211,10 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   }
 })();
 
-// ── Fecha/hora del evento, auto-ajustada al huso horario de quien mira la página — sin listar
-// países. Date.getDate()/getHours()/etc. siempre devuelven la hora LOCAL del dispositivo aunque el
-// Date se haya creado en hora Colombia, así que esto ya "traduce" sola a México, USA, España, etc.
+// ── Fecha/hora del evento, auto-ajustada al huso horario de quien mira la página — nombrando su
+// país en vez de un genérico "(tu hora)", igual que en la Landing. Date.getDate()/getHours()/etc.
+// siempre devuelven la hora LOCAL del dispositivo aunque el Date se haya creado en hora Colombia,
+// así que esto ya "traduce" sola a México, USA, España, etc.
 (function () {
   var el = document.getElementById('gc-date-el');
   if (!el) return;
@@ -226,7 +227,39 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   var ampm    = horas >= 12 ? 'p.m.' : 'a.m.';
   var horas12 = horas % 12; if (horas12 === 0) horas12 = 12;
   var minStr  = EVENTO_INICIO.getMinutes() < 10 ? '0' + EVENTO_INICIO.getMinutes() : '' + EVENTO_INICIO.getMinutes();
-  el.textContent = diaSemana + ' ' + EVENTO_INICIO.getDate() + ' de ' + meses[EVENTO_INICIO.getMonth()] + ' · ' + horas12 + ':' + minStr + ' ' + ampm + ' (tu hora)';
+
+  // El huso horario del navegador (ej. "America/Bogota") no nombra el país en español, así que se
+  // traduce con un mapa de las zonas más comunes en la audiencia hispanohablante — con fallback
+  // genérico (la ciudad del huso, sin guiones bajos) para cualquier otra zona.
+  var PAISES_POR_ZONA = {
+    'America/Bogota': 'Colombia',
+    'America/Mexico_City': 'México',
+    'America/Argentina/Buenos_Aires': 'Argentina',
+    'America/Santiago': 'Chile',
+    'America/Lima': 'Perú',
+    'America/Guayaquil': 'Ecuador',
+    'America/Caracas': 'Venezuela',
+    'America/La_Paz': 'Bolivia',
+    'America/Asuncion': 'Paraguay',
+    'America/Montevideo': 'Uruguay',
+    'America/Panama': 'Panamá',
+    'America/Costa_Rica': 'Costa Rica',
+    'America/Guatemala': 'Guatemala',
+    'America/Tegucigalpa': 'Honduras',
+    'America/Managua': 'Nicaragua',
+    'America/El_Salvador': 'El Salvador',
+    'America/Santo_Domingo': 'República Dominicana',
+    'America/Puerto_Rico': 'Puerto Rico',
+    'Europe/Madrid': 'España',
+    'America/New_York': 'Estados Unidos',
+    'America/Chicago': 'Estados Unidos',
+    'America/Denver': 'Estados Unidos',
+    'America/Los_Angeles': 'Estados Unidos'
+  };
+  var zona = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  var lugar = PAISES_POR_ZONA[zona] || zona.split('/').pop().replace(/_/g, ' ');
+
+  el.textContent = diaSemana + ' ' + EVENTO_INICIO.getDate() + ' de ' + meses[EVENTO_INICIO.getMonth()] + ' · ' + horas12 + ':' + minStr + ' ' + ampm + (lugar ? ' (hora de ' + lugar + ')' : '');
 })();
 
 // ── Estado LIVE → EVERGREEN, derivado automáticamente de una sola fecha — mismo mecanismo que la

@@ -1,7 +1,7 @@
 # Masterclass "Más Se Aleja" — Página de Gracias — Spec de Copy, Diseño y Comportamiento
 
 **Archivo fuente:** `public/masterclass/mas-se-aleja/gracias/index.html`
-**URL en vivo:** `josuecalendon.lat/masterclass/mas-se-aleja/gracias` *(verificar dominio real de despliegue)*
+**URL en vivo:** `he-intentado-todo-porque-nada-cambia.josuecalderon.lat/gracias` (subdominio propio; la ruta anterior `josuecalderon.lat/masterclass/mas-se-aleja/gracias` fue dada de baja y redirige a home)
 **Última actualización de este documento:** 2026-07-25 (copy EVERGREEN reescrito según el patrón LIVE → EVERGREEN de `entry-product-system/SKILL.md`)
 **Estado:** APROBADA Y PUBLICADA (push a `main` el 2026-07-25)
 

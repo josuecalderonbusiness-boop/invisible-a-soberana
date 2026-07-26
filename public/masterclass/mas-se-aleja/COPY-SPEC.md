@@ -1,7 +1,7 @@
 # Masterclass "Más Se Aleja" — Spec de Copy, Diseño y Comportamiento
 
 **Archivo fuente:** `public/masterclass/mas-se-aleja/index.html`
-**URL en vivo:** `josuecalderon.lat/masterclass/mas-se-aleja`
+**URL en vivo:** `he-intentado-todo-porque-nada-cambia.josuecalderon.lat` (subdominio propio; la ruta anterior `josuecalderon.lat/masterclass/mas-se-aleja` fue dada de baja y redirige a home)
 **Última actualización de este documento:** 2026-07-24 (reflejando el estado real del código a esa fecha)
 
 Este documento describe la landing tal como existe hoy en producción: cada texto, color, fuente, tiempo de animación y regla de comportamiento. Está pensado para que un auditor (humano o IA) pueda revisar la coherencia de copy, diseño y UX sin tener que leer el HTML/CSS/JS directamente.

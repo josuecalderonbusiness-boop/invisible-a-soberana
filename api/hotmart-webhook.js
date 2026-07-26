@@ -115,7 +115,7 @@ export default async function handler(req, res) {
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
         await guardarCompraMasterclass(email, primerNombre, 'mas-se-aleja');
-        await enviarBienvenidaWhatsApp(telefonoLimpio, primerNombre, email);
+        await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
       }
 
       return res.status(200).json({
@@ -197,7 +197,7 @@ export default async function handler(req, res) {
     }
 
     if (isMasterclass && !bienvenidaYaEnviada) {
-      await enviarBienvenidaWhatsApp(
+      await programarBienvenidaMasterclass(
         telefonoLimpio || contact.attributes?.SMS || '',
         primerNombre || contact.attributes?.FIRSTNAME || '',
         email
@@ -221,54 +221,42 @@ export default async function handler(req, res) {
   }
 }
 
-// ── Bienvenida proactiva de WhatsApp (plantilla de Meta) ──────────
-// El webhook es quien decide y dispara — no depende de que la clienta llegue a la página de
-// Gracias ni escriba primero (ver entry-product-system/SKILL.md → "El Webhook como orquestador").
+// ── Bienvenida de WhatsApp — Camino B (REGLA WHATSAPP — MASTERCLASS, BUSINESS-SYSTEMS.md, sección
+// FUNNEL-SYSTEM) ───────────────────────────────────────────────────────────────────────────────
+// Ya NO se envía la plantilla de inmediato al comprar. Se programa a 60 minutos — si la compradora
+// escribe antes por su cuenta (Camino A, ver api/whatsapp.js), ese mensaje abre la ventana y cancela
+// este trigger, evitando que coexistan la plantilla y una bienvenida duplicada. Quien ejecuta el
+// trigger es api/whatsapp.js (paso 'bienvenida_masterclass') — ahí mismo decide Live/Replay según
+// la fecha del evento, misma fuente de verdad (MASTERCLASS_EVENTO_FIN) que ya vivía duplicada aquí.
 // Nombre funcional, reutilizable para cualquier producto de entrada futuro en estado Evergreen/Replay
-// (ver regla de nomenclatura en la misma Skill) — nunca renombrar por producto.
-// Estado derivado de la fecha del evento — misma fuente que public/masterclass/mas-se-aleja/*
-// y api/whatsapp.js (MASTERCLASS_EVENTO_FIN). No duplicar este valor con otro distinto. Es el FIN
-// de la última sesión de video (no el inicio) — con Zoom Básico el evento se reparte en 2 sesiones
-// consecutivas, ver Dashboard (EVENTO_SESIONES).
-const MASTERCLASS_EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00');
-function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FIN.getTime(); }
-
-async function enviarBienvenidaWhatsApp(phone, nombre, email) {
+// (ver regla de nomenclatura en entry-product-system/SKILL.md) — nunca renombrar por producto.
+async function programarBienvenidaMasterclass(phone, nombre, email) {
   if (!phone) {
-    console.log(`Sin teléfono para ${email} — no se puede enviar la bienvenida de WhatsApp`);
+    console.log(`Sin teléfono para ${email} — no se puede programar la bienvenida de WhatsApp`);
     return;
   }
-  const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
-  const number = String(phone).replace(/[^0-9]/g, '');
+  await programarTrigger(phone, 'bienvenida_masterclass', 60, nombre || ''); // producción: 60 min
+}
+
+async function programarTrigger(phone, paso, minutos, nombre) {
+  const url = process.env.SHEETS_WEBHOOK_URL;
+  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL — no se pudo programar el trigger'); return; }
+  const fechaEjecucion = new Date(Date.now() + minutos * 60 * 1000).toISOString();
   try {
-    const res = await fetch(
-      `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp', to: number, type: 'template',
-          template: {
-            name: templateName, language: { code: 'es_MX' },
-            components: [
-              { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre || 'amiga' }] },
-              { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'masterclass_entrar' }] }
-            ]
-          }
-        })
-      }
-    );
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accion: 'guardar_trigger_sheets',
+        phone, paso, nombre: nombre || '',
+        fechaEjecucion,
+        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
+      })
+    });
     const data = await res.json();
-    if (data.messages?.[0]?.id) {
-      console.log(`Plantilla ${templateName} enviada a ${number} (${email})`);
-    } else {
-      console.error(`Fallo enviando ${templateName} a ${number}:`, JSON.stringify(data));
-    }
+    console.log(`Trigger (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
   } catch (err) {
-    console.error('Error enviando bienvenida de WhatsApp:', err.message);
+    console.error('programarTrigger error:', err.message);
   }
 }
 

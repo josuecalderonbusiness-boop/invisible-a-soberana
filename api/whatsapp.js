@@ -163,21 +163,28 @@ export default async function handler(req, res) {
       const texto = (msg.text?.body || '').trim();
       const textoL = texto.toLowerCase();
 
-      // Bienvenida MASTERCLASS → distinta de la del Workshop, se revisa primero
-      // porque el mensaje prellenado de masterclass-gracias.html dice
-      // "acabo de comprar la Masterclass Soberana" y si no se separa cae en
-      // el flujo genérico de abajo (bienvenida_pacto_soberana, que es del Workshop).
-      const esBienvenidaMasterclass = textoL.includes('masterclass soberana');
-      if (esBienvenidaMasterclass) {
+      // Apertura de ventana MASTERCLASS (Camino A) — REGLA WHATSAPP — MASTERCLASS,
+      // BUSINESS-SYSTEMS.md (sección FUNNEL-SYSTEM). Su primer mensaje abre la ventana de 24h de
+      // Meta y dispara de inmediato la plantilla oficial (nunca un saludo de texto libre — eso
+      // era el "Frankenstein" de doble bienvenida que corrige esta regla). Reconoce el mensaje
+      // prellenado del botón de la página de Gracias, live o evergreen, más el texto viejo por si
+      // queda cacheado en algún link ya compartido.
+      const esAperturaMasterclass = textoL.includes('acabo de reservar mi lugar') ||
+                                     textoL.includes('acabo de entrar') ||
+                                     textoL.includes('masterclass soberana');
+      if (esAperturaMasterclass) {
         if (msgId) {
           const dup = await verificarDuplicado(msgId);
           if (dup) {
-            console.log(`Duplicado bienvenida masterclass ignorado: ${msgId}`);
+            console.log(`Duplicado apertura masterclass ignorado: ${msgId}`);
             return res.status(200).json({ ok: true });
           }
         }
         const contacto = await buscarContacto(phone);
         const nombre   = contacto?.nombre || 'amiga';
+        // Cancela el envío programado a los 60 min (Camino B, ver api/hotmart-webhook.js) — nunca
+        // deben coexistir las dos.
+        await cancelarTrigger(phone, 'bienvenida_masterclass');
         await ejecutarPaso(phone, 'bienvenida_masterclass', nombre);
         return res.status(200).json({ ok: true });
       }
@@ -282,10 +289,12 @@ async function manejarBoton(phone, btnId, btnTx) {
   const n        = nombre || '';
 
   // ── MASTERCLASS SOBERANA — botón "Entrar a mi espacio" de bienvenida_live_cs / bienvenida_replay_cs ──
-  // El payload 'masterclass_entrar' lo fija enviarBienvenidaWhatsApp (hotmart-webhook.js) al mandar
-  // la plantilla vía API — btnTx es respaldo por si algún envío no pasa por ese código.
+  // El payload 'masterclass_entrar' lo fija el paso 'bienvenida_masterclass' al mandar la plantilla
+  // (Camino A o B, ver ejecutarPaso más abajo) — btnTx es respaldo por si algún envío no pasa por
+  // ese código. Este SÍ es un texto libre legítimo (no una bienvenida duplicada): entrega el link
+  // real de Mi Espacio, algo que un botón de respuesta rápida no puede hacer por sí solo.
   if (btnId === 'masterclass_entrar' || btnTx.includes('entrar')) {
-    await ejecutarPaso(phone, 'bienvenida_masterclass', n);
+    await ejecutarPaso(phone, 'entrega_acceso_masterclass', n);
   }
 
   // ── DÍA 0 — Botones de bienvenida ───────────────────────────
@@ -605,6 +614,14 @@ async function ejecutarPaso(phone, paso, nombre) {
   // mensaje sin revisar masterclassEnVivo() primero, ver entry-product-system/SKILL.md.
 
   else if (paso === 'bienvenida_masterclass') {
+    // Camino A (ella escribe primero, ejecutado de inmediato) o Camino B (60 min sin escribir,
+    // programado desde api/hotmart-webhook.js) — REGLA WHATSAPP — MASTERCLASS, BUSINESS-SYSTEMS.md
+    // (FUNNEL-SYSTEM). Siempre la plantilla oficial de Meta, nunca texto libre — el texto libre con
+    // el link real se entrega después, cuando toca el botón (paso 'entrega_acceso_masterclass').
+    const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
+    await sendTemplateMasterclass(phone, n || 'amiga', templateName);
+  }
+  else if (paso === 'entrega_acceso_masterclass') {
     // "Mi Espacio" (public/mi-espacio) es la casa permanente del producto desde el momento de la
     // compra — biblioteca compartida entre masterclasses, ver masterclass-platform-system, Bitácora
     // "Corrección #2 de alcance" (2026-07-15). WhatsApp acompaña, nunca sustituye al Dashboard.
@@ -869,6 +886,29 @@ async function sendTemplate(to, nombre, templateName) {
       template: {
         name: templateName, language: { code: 'es_MX' },
         components: [{ type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] }]
+      }
+    })
+  });
+  const data = await res.json();
+  console.log(`Template ${templateName} → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+}
+
+// Plantilla de bienvenida MASTERCLASS (bienvenida_live_cs / bienvenida_replay_cs) — con el botón
+// de respuesta rápida "Entrar a mi espacio" (payload 'masterclass_entrar'). Antes vivía en
+// api/hotmart-webhook.js (enviarBienvenidaWhatsApp); ahora vive aquí porque la dispara tanto el
+// Camino A (ella escribe) como el Camino B (trigger de 60 min), y ambos ejecutan el mismo paso.
+async function sendTemplateMasterclass(to, nombre, templateName) {
+  const number = String(to).replace(/[^0-9]/g, '');
+  const res = await fetch(WA_BASE(), {
+    method: 'POST', headers: WA_HDR(),
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to: number, type: 'template',
+      template: {
+        name: templateName, language: { code: 'es_MX' },
+        components: [
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
+          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'masterclass_entrar' }] }
+        ]
       }
     })
   });

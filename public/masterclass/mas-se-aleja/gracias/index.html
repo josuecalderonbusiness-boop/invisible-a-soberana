@@ -176,7 +176,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     </div>
   </div>
 
-  <a class="gc-btn" id="gc-wa-btn" href="https://wa.me/573189045623?text=Hola%20Josu%C3%A9%2C%20acabo%20de%20comprar%20la%20Masterclass%20Soberana.%20Quiero%20recibir%20mi%20acceso%20%F0%9F%99%8C" target="_blank">
+  <a class="gc-btn" id="gc-wa-btn" href="#" target="_blank">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.2-1.36c1.46.8 3.1 1.22 4.84 1.22 5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm5.84 14.24c-.24.68-1.4 1.32-1.94 1.36-.5.05-1.02.25-3.4-.72-2.86-1.18-4.7-4.1-4.84-4.3-.14-.2-1.16-1.56-1.16-2.98 0-1.4.74-2.1 1-2.4.26-.28.58-.34.78-.34.2 0 .4 0 .56.01.18.02.42-.07.66.5.24.58.82 2 .9 2.14.08.14.13.3.02.5-.1.2-.16.32-.32.5-.16.18-.33.4-.47.54-.16.16-.32.33-.14.65.18.32.8 1.32 1.72 2.14 1.18 1.05 2.18 1.38 2.5 1.54.32.16.5.14.68-.08.18-.22.78-.9 1-1.22.2-.3.42-.26.7-.16.28.1 1.8.85 2.1 1.01.3.16.5.24.58.36.08.16.08.86-.16 1.54z"/></svg>
     Recibir mi acceso por WhatsApp
   </a>
@@ -184,6 +184,18 @@ body { font-family: var(--font-body); color: var(--text-light); }
 </div>
 
 <script>
+// ── Mensaje prellenado del botón — abre la ventana de 24h (Camino A, REGLA WHATSAPP —
+// MASTERCLASS, BUSINESS-SYSTEMS.md sección FUNNEL-SYSTEM). Este es el copy LIVE por defecto;
+// el bloque LIVE→EVERGREEN de más abajo lo sobrescribe con el texto evergreen cuando toca.
+// api/whatsapp.js reconoce ambas frases y dispara la plantilla oficial de inmediato.
+(function () {
+  var btnEl = document.getElementById('gc-wa-btn');
+  if (btnEl) {
+    btnEl.href = 'https://wa.me/573189045623?text=' +
+      encodeURIComponent('Hola Josué, acabo de reservar mi lugar. ¿Me compartes el acceso? 🙌');
+  }
+})();
+
 document.getElementById('gc-wa-btn').addEventListener('click', function () {
   if (typeof fbq === 'function') fbq('trackCustom', 'wa_click_masterclass');
   if (typeof gtag === 'function') gtag('event', 'wa_click_masterclass');
@@ -299,6 +311,8 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
 
   var btnEl = document.getElementById('gc-wa-btn');
   if (btnEl) {
+    btnEl.href = 'https://wa.me/573189045623?text=' +
+      encodeURIComponent('Hola Josué, acabo de entrar. ¿Me compartes el acceso? 🙌');
     var svg = btnEl.querySelector('svg');
     btnEl.textContent = 'Recibir mi acceso ahora';
     if (svg) btnEl.insertBefore(svg, btnEl.firstChild);

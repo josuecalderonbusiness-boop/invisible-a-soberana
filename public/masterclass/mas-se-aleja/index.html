@@ -999,17 +999,24 @@ function goToCheckout() {
   window.open('https://pay.hotmart.com/W106744574H?checkoutMode=10&bid=1785032514659', '_blank');
 }
 
-// ── Refuerzo de silencio durante la reproducción automática — el parámetro muted=true de la URL
-// a veces no aplica a tiempo, dejando pasar un instante de sonido antes de que ella dé play. Esta
-// capa usa la API oficial de Bunny (Player.js) solo para forzar el mute mientras no se ha activado
-// el sonido — no toca el flujo de unmuteVideo(), que sigue siendo el reload ya probado. ──
+// ── Refuerzo de silencio/sonido con la API oficial de Bunny (Player.js). El listener 'ready' se
+// registra UNA vez sobre el iframe, pero el iframe.contentWindow persiste a través del reload que
+// hace unmuteVideo() — así que este mismo listener vuelve a dispararse cuando el video recargado
+// (muted=false) manda su propio 'ready'. Bug real encontrado 2026-07-26: antes solo hacíamos
+// "no llames mute() si ya se activó el sonido", pero eso deja la decisión en manos del parámetro
+// muted=false de la URL — que algunos navegadores ignoran en el reload de un iframe cross-origin
+// (la política de autoplay-con-sonido no siempre hereda el gesto de clic del padre hacia el
+// iframe). Resultado: el video volvía a sonar muteado después de "activar el sonido". Fix: llamar
+// unmute() explícitamente en cada 'ready' post-activación, en vez de solo omitir mute(). ──
 var mcSoundActivated = false;
+var mcVideoPlayer = null;
 (function () {
   if (typeof playerjs === 'undefined') return;
   var iframe = document.getElementById('mc-video-iframe');
-  var player = new playerjs.Player(iframe);
-  player.on('ready', function () {
-    if (!mcSoundActivated) player.mute();
+  mcVideoPlayer = new playerjs.Player(iframe);
+  mcVideoPlayer.on('ready', function () {
+    if (mcSoundActivated) { mcVideoPlayer.unmute(); }
+    else { mcVideoPlayer.mute(); }
   });
 })();
 
@@ -1023,6 +1030,13 @@ function unmuteVideo() {
   iframe.style.animation = 'none'; // corta mcVideoBlurClear, que lo dejaba congelado en 11px de blur
   iframe.style.filter = 'blur(0)';
   iframe.src = 'https://iframe.mediadelivery.net/embed/711470/d7f15362-7aa9-4010-9d5b-537c62708489?autoplay=true&loop=false&muted=false&preload=true&responsive=true';
+  // Refuerzo directo, además del listener 'ready' de arriba — algunos navegadores no honran
+  // muted=false en el reload de un iframe cross-origin, así que insistimos explícitamente con la
+  // API de Bunny apenas el player esté listo (con reintento corto por si 'ready' aún no llegó).
+  if (mcVideoPlayer) {
+    mcVideoPlayer.unmute();
+    setTimeout(function () { if (mcVideoPlayer) mcVideoPlayer.unmute(); }, 400);
+  }
 
   var tint = document.getElementById('mc-video-tint');
   tint.style.animation = 'none'; // corta la animación mcTintClear, que la dejaba congelada en .55 de opacidad

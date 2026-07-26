@@ -824,7 +824,14 @@ function mcLocalEventInfo() {
   // esperar a que pase la fecha real. Nunca se activa sola: solo con el parámetro explícito.
   var previewEvergreen = /(?:^|[?&])preview=evergreen(?:&|$)/.test(location.search);
 
-  if (previewEvergreen || Date.now() >= EVENTO_FIN.getTime()) {
+  // Fuente única para CUALQUIER otro bloque de la página que necesite saber el Estado (ej. la
+  // fecha flotante más abajo) — nunca duplicar "Date.now() >= EVENTO_FIN" en un segundo lugar,
+  // porque ese segundo lugar no se entera de ?preview=evergreen (bug real encontrado 2026-07-26:
+  // la fecha flotante volvía a aparecer con texto LIVE en Evergreen porque su propio listener de
+  // scroll repetía la comparación de fecha en vez de leer este flag).
+  window.mcIsEvergreen = previewEvergreen || Date.now() >= EVENTO_FIN.getTime();
+
+  if (window.mcIsEvergreen) {
     // Evergreen — versión completa, no un simple Replay de 3 palabras cambiadas. La promesa
     // psicológica cambia de "quiero estar ahí" a "quiero ver esto ahora" (ver ENTRY-PRODUCTS/
     // 001-masterclass-soberana/02-landing/cambios landing evegreen.md — fuente de este copy).
@@ -1404,7 +1411,10 @@ var mcUnlockScroll = (function () {
   if (!floatDate) return;
 
   function showFloatDate() {
-    if (Date.now() < new Date('2026-08-01T20:15:00-05:00').getTime()) floatDate.classList.add('show');
+    // Lee el Estado desde la fuente única (window.mcIsEvergreen, ver "Estado derivado de la fecha
+    // del evento" más arriba) — nunca vuelve a comparar la fecha por su cuenta, para no ignorar
+    // ?preview=evergreen ni desincronizarse si esa fecha cambia.
+    if (!window.mcIsEvergreen) floatDate.classList.add('show');
   }
 
   if (s9Arrow) s9Arrow.addEventListener('click', showFloatDate);

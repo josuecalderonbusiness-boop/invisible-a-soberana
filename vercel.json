@@ -9,8 +9,6 @@
     { "source": "/soberana7d", "destination": "/public/soberana7d/index.html" },
     { "source": "/soberana7d/:path*", "destination": "/public/soberana7d/:path*" },
     { "source": "/instalar", "destination": "/public/instalar/index.html" },
-    { "source": "/masterclass/mas-se-aleja", "destination": "/public/masterclass/mas-se-aleja/index.html" },
-    { "source": "/masterclass/mas-se-aleja/gracias", "destination": "/public/masterclass/mas-se-aleja/gracias/index.html" },
     { "source": "/mi-espacio", "destination": "/public/mi-espacio/index.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ]

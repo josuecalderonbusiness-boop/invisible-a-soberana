@@ -300,6 +300,10 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .mc-agenda-time { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--wine-deep); text-align: center; margin-top: 4px; }
 /* ── Precio con tono natural, no dramático — no es un titular, es un dato más ── */
 .mc-agenda-price { font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 600; color: var(--wine-medium); text-align: center; margin: 16px 0 8px; }
+.mc-s9-headline { text-align: center; margin-bottom: 22px; }
+.mc-s9-headline .mc-s9-headline-big { font-family: var(--font-display); font-weight: 900; font-size: clamp(24px, 6.5vw, 32px); color: var(--gold-light); line-height: 1.25; }
+.mc-s9-headline .mc-s9-headline-line { font-family: var(--font-body); font-size: clamp(14px, 3.8vw, 16px); color: rgba(240,230,234,.85); line-height: 1.55; margin-top: 8px; }
+.mc-s9-headline .mc-s9-headline-kicker { font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-primary); margin-top: 4px; display: block; }
 .mc-agenda-checks { text-align: left; margin: 4px 0 6px; display: flex; flex-direction: column; gap: 8px; }
 .mc-agenda-checks p { font-family: 'Jost', sans-serif; font-size: 13px; color: var(--charcoal-deep); line-height: 1.5; }
 .mc-agenda-checks p span { color: var(--wine-medium); font-weight: 700; margin-right: 6px; }
@@ -622,7 +626,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <!-- ══ 9 — CTA FINAL ══ -->
   <section class="screen" id="s9">
     <div class="screen-wrap reveal reveal-side" style="max-width:420px;">
-      <div class="mc-imagine-line" id="mc-s9-evergreen-headline" style="display:none; text-align:center; margin-bottom:22px;"></div>
+      <div class="mc-s9-headline" id="mc-s9-evergreen-headline" style="display:none;"></div>
       <div class="mc-agenda-card">
         <p class="mc-agenda-date" id="mc-s9-date" style="margin-top:0;">Sábado 1 de agosto</p>
         <p class="mc-agenda-time" id="mc-s9-time">🕖 7:00 p.m.</p>
@@ -669,7 +673,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
     <div class="mc-chat-cta" id="mc-chat-cta">
       <button class="mc-btn" onclick="goToCheckout()">Quiero estar en este espacio.</button>
-      <p class="mc-price-note">$9 USD · En vivo + Grabación incluida</p>
+      <p class="mc-price-note" id="mc-chat-price-note">$9 USD · En vivo + Grabación incluida</p>
       <a class="mc-continue reveal" id="mc-note-arrow" href="#mc-note-section" style="margin-top:22px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></a>
     </div>
   </section>
@@ -678,7 +682,7 @@ body { font-family: var(--font-body); color: var(--text-light); }
     <p class="mc-note-title reveal" style="transition-delay:0s;">Antes de irte... quiero decirte algo.</p>
     <p class="mc-note-line reveal" style="transition-delay:.8s;">No sé qué está pasando hoy en tu relación.</p>
     <p class="mc-note-line reveal" style="transition-delay:1.8s;">No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada.</p>
-    <p class="mc-note-line mc-note-signoff reveal" style="transition-delay:3s;">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
+    <p class="mc-note-line mc-note-signoff reveal" id="mc-note-signoff" style="transition-delay:3s;">Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.</p>
 
     <div class="mc-note-trust reveal" style="transition-delay:4s;">
       <p id="mc-guarantee-acceso">📅 Sábado 1 de agosto · 7:00 p.m.</p>
@@ -817,16 +821,70 @@ function mcLocalEventInfo() {
   var cdBox = document.getElementById('mc-countdown-box');
 
   if (Date.now() >= EVENTO_FIN.getTime()) {
-    // Replay/Evergreen — se oculta el contador (grande y flotante) y se ajusta el copy que ya no aplica
+    // Evergreen — versión completa, no un simple Replay de 3 palabras cambiadas. La promesa
+    // psicológica cambia de "quiero estar ahí" a "quiero ver esto ahora" (ver ENTRY-PRODUCTS/
+    // 001-masterclass-soberana/02-landing/cambios landing evegreen.md — fuente de este copy).
+    // Se oculta todo lo temporal (contador, fecha flotante, checks de fecha, agenda de evento) y
+    // se reescribe s5/s8/s9/carta final/chat con voz propia de "acceso disponible ahora".
     if (cdBox) cdBox.style.display = 'none';
     var floatEl = document.getElementById('mc-float-date'); if (floatEl) floatEl.classList.remove('show');
     var set0 = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
-    set0('mc-hero-note', 'Acceso inmediato · Pago seguro con Hotmart');
+    var hide0 = function (id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; };
+
+    // S5 — intro del video: "antes de reservar" ya no aplica, no hay nada que reservar
+    set0('mc-video-kicker', 'Antes de entrar...');
+
+    // S8 — el badge "EN VIVO" y los checks de fecha desaparecen (ya no hay evento que anunciar);
+    // los checks pasan a reforzar duración + inmediatez, no fecha/hora
+    hide0('mc-imagine-live');
+    set0('mc-agenda-date-check', '✓ 90 minutos.');
+    set0('mc-agenda-time-check', '✓ Acceso inmediato.');
+
+    // S8 — la tarjeta deja de ser una agenda de evento (tira de días + fecha) y se convierte en
+    // tarjeta de acceso (encabezado + duración + los mismos 3 resultados)
+    hide0('mc-agenda-week');
+    set0('mc-agenda-date-s8', 'Tu acceso está disponible ahora.');
+    set0('mc-agenda-kicker-s8', '90 minutos para entender algo que puede cambiar la manera en que estás viviendo tu relación.');
+    var s8Note = document.getElementById('mc-s8-access-note');
+    if (s8Note) { s8Note.textContent = 'Acceso inmediato · Ve el espacio completo a tu ritmo'; s8Note.style.display = ''; }
+    var agendaContinue = document.getElementById('mc-agenda-continue');
+    if (agendaContinue) {
+      agendaContinue.classList.add('mc-answer-btn');
+      agendaContinue.innerHTML = '<span>Quiero verlo ahora</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B8892A" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+    }
+
+    // S9 — desaparece la segunda tarjeta de agenda (fecha/hora/checks de evento en vivo). En su
+    // lugar: un encabezado narrativo ("Puedes empezar ahora") + tarjeta de acceso con 3 resultados
+    // concretos, sin fecha ni urgencia temporal — mismo precio, sin descuento ni cupos falsos.
+    hide0('mc-s9-date');
+    hide0('mc-s9-time');
+    var s9Headline = document.getElementById('mc-s9-evergreen-headline');
+    if (s9Headline) {
+      s9Headline.innerHTML =
+        '<p class="mc-s9-headline-big">Puedes empezar ahora.</p>' +
+        '<p class="mc-s9-headline-line">No necesitas esperar a que él quiera cambiar.</p>' +
+        '<p class="mc-s9-headline-line">No necesitas seguir buscando otra respuesta.</p>' +
+        '<p class="mc-s9-headline-line">Puedes empezar por entender qué ha estado pasando contigo dentro de todo esto.</p>' +
+        '<span class="mc-s9-headline-kicker">Acceso inmediato</span>';
+      s9Headline.style.display = '';
+    }
+    set0('mc-s9-checks',
+      '<p><span>✔</span>Espacio completo de 90 minutos.</p>' +
+      '<p><span>✔</span>Puedes verlo ahora.</p>' +
+      '<p><span>✔</span>Acceso a la grabación.</p>'
+    );
+    set0('mc-btn-2', 'Sí. Quiero verlo ahora.');
+    set0('mc-hero-note', 'Acceso inmediato · Pago seguro');
+
+    // Chat / FAQ — precio bajo el CTA del chat (las preguntas en sí quedan sin tocar, ver nota)
+    set0('mc-chat-price-note', '$9 USD · Acceso inmediato');
+
+    // Carta final de Josué — "el sábado" desaparece sin sonar a grabación
+    set0('mc-note-signoff', 'Lo único que espero es que cuando termines este espacio, te sientas mucho más liviana de como llegaste.');
     set0('mc-guarantee-acceso', '⚡&nbsp; Acceso inmediato después del pago');
-    set0('mc-cta-final-note', 'Acceso inmediato · $9 USD');
-    // Los botones tenían texto atado a un evento con fecha fija — en Evergreen ya no aplica
-    set0('mc-btn-2', 'Sí, quiero verlo');
-    set0('mc-btn-3', 'Empezar ahora');
+    set0('mc-btn-3', 'Sí. Quiero entrar a este espacio.');
+    set0('mc-cta-final-note', 'Acceso inmediato · 90 minutos · USD $9');
+
     return;
   }
 

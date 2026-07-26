@@ -1,16 +1,6 @@
 {
   "version": 2,
   "rewrites": [
-    {
-      "source": "/",
-      "has": [{ "type": "host", "value": "he-intentado-todo-porque-nada-cambia.josuecalderon.lat" }],
-      "destination": "/public/masterclass/mas-se-aleja/index.html"
-    },
-    {
-      "source": "/gracias",
-      "has": [{ "type": "host", "value": "he-intentado-todo-porque-nada-cambia.josuecalderon.lat" }],
-      "destination": "/public/masterclass/mas-se-aleja/gracias/index.html"
-    },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/bienvenida/:path*", "destination": "/public/bienvenida/index.html" },
     { "source": "/bienvenida", "destination": "/public/bienvenida/index.html" },

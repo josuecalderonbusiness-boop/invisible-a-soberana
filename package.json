@@ -5,6 +5,7 @@
     "build": "echo ok"
   },
   "dependencies": {
+    "@vercel/functions": "^3.7.6",
     "firebase-admin": "^13.8.0",
     "googleapis": "^171.4.0"
   }

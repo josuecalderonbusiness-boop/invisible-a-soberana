@@ -236,7 +236,10 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
 // nunca dos páginas, nunca una condición aislada de este producto.
 (function () {
   var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
-  if (Date.now() < EVENTO_FIN.getTime()) return; // todavía LIVE — queda el copy de arriba
+  // Vista previa manual — agregar ?preview=evergreen a la URL fuerza este estado sin esperar a
+  // que pase la fecha real (mismo mecanismo que la landing).
+  var previewEvergreen = /(?:^|[?&])preview=evergreen(?:&|$)/.test(location.search);
+  if (!previewEvergreen && Date.now() < EVENTO_FIN.getTime()) return; // todavía LIVE — queda el copy de arriba
 
   var set = function (id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
   var hide = function (id) { var el = document.getElementById(id); if (el) el.style.display = 'none'; };

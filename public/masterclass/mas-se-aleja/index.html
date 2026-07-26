@@ -820,7 +820,11 @@ function mcLocalEventInfo() {
   var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
   var cdBox = document.getElementById('mc-countdown-box');
 
-  if (Date.now() >= EVENTO_FIN.getTime()) {
+  // Vista previa manual — agregar ?preview=evergreen a la URL fuerza el estado Evergreen sin
+  // esperar a que pase la fecha real. Nunca se activa sola: solo con el parámetro explícito.
+  var previewEvergreen = /(?:^|[?&])preview=evergreen(?:&|$)/.test(location.search);
+
+  if (previewEvergreen || Date.now() >= EVENTO_FIN.getTime()) {
     // Evergreen — versión completa, no un simple Replay de 3 palabras cambiadas. La promesa
     // psicológica cambia de "quiero estar ahí" a "quiero ver esto ahora" (ver ENTRY-PRODUCTS/
     // 001-masterclass-soberana/02-landing/cambios landing evegreen.md — fuente de este copy).

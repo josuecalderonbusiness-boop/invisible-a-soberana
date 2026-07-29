@@ -30,7 +30,20 @@ export default async function handler(req, res) {
       body?.buyer?.name ||
       body?.name || '';
 
+    // Webhook 2.0 de Hotmart envía el teléfono como checkout_phone (+ checkout_phone_code con el
+    // indicativo de país) — phone/phone_number no existen en 2.0, por eso 2/2 compras llegaron con
+    // tel vacío (FQ-1, validación end-to-end 2026-07-26). Las rutas antiguas se conservan como
+    // fallback por si algún webhook quedara en 1.0.
+    const checkoutPhoneDigits = String(body?.data?.buyer?.checkout_phone || '').replace(/[^\d]/g, '');
+    const checkoutCodeDigits  = String(body?.data?.buyer?.checkout_phone_code || '').replace(/[^\d]/g, '');
+    const telefonoCheckout = checkoutPhoneDigits
+      ? ((checkoutCodeDigits && !checkoutPhoneDigits.startsWith(checkoutCodeDigits))
+          ? checkoutCodeDigits + checkoutPhoneDigits
+          : checkoutPhoneDigits)
+      : '';
+
     const telefono =
+      telefonoCheckout ||
       body?.data?.buyer?.phone_number ||
       body?.data?.buyer?.phone ||
       body?.buyer?.phone_number ||

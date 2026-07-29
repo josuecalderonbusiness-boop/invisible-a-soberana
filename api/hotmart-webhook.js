@@ -127,7 +127,7 @@ export default async function handler(req, res) {
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
-        await guardarCompraMasterclass(email, primerNombre, 'mas-se-aleja');
+        await guardarCompraMasterclass(email, primerNombre, 'mas-se-aleja', telefonoLimpio);
         await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
       }
 
@@ -206,7 +206,7 @@ export default async function handler(req, res) {
     });
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
     if (isMasterclass) {
-      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', 'mas-se-aleja');
+      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', 'mas-se-aleja', telefonoLimpio || contact.attributes?.SMS || '');
     }
 
     if (isMasterclass && !bienvenidaYaEnviada) {
@@ -350,7 +350,7 @@ async function guardarEnFirestore(email, nombre, tipo, producto) {
 // una misma clienta acumule varias masterclasses sin que una compra borre a la anterior. El
 // Dashboard compartido ("Mi Espacio") lee de aquí — ver masterclass-platform-system, Bitácora
 // "Corrección #2 de alcance" (2026-07-15).
-async function guardarCompraMasterclass(email, nombre, producto) {
+async function guardarCompraMasterclass(email, nombre, producto, telefono) {
   try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     const { google } = await import('googleapis');
@@ -372,6 +372,9 @@ async function guardarCompraMasterclass(email, nombre, producto) {
           email: { stringValue: email },
           nombre: { stringValue: nombre },
           producto: { stringValue: producto },
+          // D-1: teléfono normalizado (FQ-1), fuente propia de Masterclass para personalizar
+          // WhatsApp sin consultar el directorio histórico de Sheets — ver api/whatsapp.js.
+          telefono: { stringValue: telefono || '' },
           activo: { booleanValue: true },
           fecha: { stringValue: new Date().toISOString() }
         }

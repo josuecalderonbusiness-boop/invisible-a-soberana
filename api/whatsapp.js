@@ -180,8 +180,12 @@ export default async function handler(req, res) {
             return res.status(200).json({ ok: true });
           }
         }
-        const contacto = await buscarContacto(phone);
-        const nombre   = contacto?.nombre || 'amiga';
+        // D-1: Masterclass identifica a su compradora en su propia fuente de verdad
+        // (masterclass_compras, Firestore) por teléfono — nunca en el directorio histórico de
+        // Sheets (buscarContacto, que sigue intacta para Código Soberana/Workshop/7D más abajo).
+        // Sin fallback "amiga": si no hay nombre, ejecutarPaso() lo recibe vacío y el mensaje
+        // funciona igual sin nombre.
+        const nombre = await buscarNombreMasterclass(phone);
         // Cancela el envío programado a los 60 min (Camino B, ver api/hotmart-webhook.js) — nunca
         // deben coexistir las dos.
         await cancelarTrigger(phone, 'bienvenida_masterclass');
@@ -294,7 +298,11 @@ async function manejarBoton(phone, btnId, btnTx) {
   // ese código. Este SÍ es un texto libre legítimo (no una bienvenida duplicada): entrega el link
   // real de Mi Espacio, algo que un botón de respuesta rápida no puede hacer por sí solo.
   if (btnId === 'masterclass_entrar' || btnTx.includes('entrar')) {
-    await ejecutarPaso(phone, 'entrega_acceso_masterclass', n);
+    // D-1: exclusivo de Masterclass — nombre desde masterclass_compras (Firestore), no desde
+    // buscarContacto()/Sheets (variable `n` de arriba, que sigue siendo la correcta para las demás
+    // ramas de esta función).
+    const nombreMasterclass = await buscarNombreMasterclass(phone);
+    await ejecutarPaso(phone, 'entrega_acceso_masterclass', nombreMasterclass);
   }
 
   // ── DÍA 0 — Botones de bienvenida ───────────────────────────
@@ -627,7 +635,9 @@ async function ejecutarPaso(phone, paso, nombre) {
     // "Corrección #2 de alcance" (2026-07-15). WhatsApp acompaña, nunca sustituye al Dashboard.
     if (masterclassEnVivo()) {
       await sendWhatsApp(phone,
-        `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
+        // D-1: nombre directo del parámetro (masterclass_compras vía buscarNombreMasterclass),
+        // sin fallback "amiga" — si no hay nombre, el saludo queda sin nombre, sin relleno.
+        `¡Hola${nombre ? ' ' + nombre : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
         `Tu lugar para la Masterclass ya quedó reservado.\n\n` +
         `Toca este link para ingresar a tu espacio privado, donde encontrarás toda la información del evento y podrás acceder el día de la transmisión en vivo:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
@@ -636,7 +646,7 @@ async function ejecutarPaso(phone, paso, nombre) {
       await programarTrigger(phone, 'recordatorio_evento_masterclass', 5, n); // PRUEBA: 5 min (producción: recordatorio real antes del evento)
     } else {
       await sendWhatsApp(phone,
-        `¡Hola${n !== 'amiga' ? ' ' + n : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
+        `¡Hola${nombre ? ' ' + nombre : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
         `Tu Masterclass ya está disponible.\n\n` +
         `Toca este link para ingresar a tu espacio privado y verla cuando quieras:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
@@ -866,6 +876,41 @@ async function buscarContacto(phone) {
     const data = await res.json();
     return data.ok ? data : null;
   } catch { return null; }
+}
+
+// D-1 (2026-07-26) — fuente de verdad EXCLUSIVA de Masterclass LIVE: masterclass_compras en
+// Firestore, nunca el directorio histórico de Sheets (buscarContacto, arriba, sigue intacta para
+// Código Soberana/Workshop/7D). Sin fallback — si no hay nombre guardado, retorna '' y el mensaje
+// debe funcionar sin nombre.
+async function buscarNombreMasterclass(phone) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const { google } = await import('googleapis');
+    const auth = new google.auth.GoogleAuth({
+      credentials: serviceAccount,
+      scopes: ['https://www.googleapis.com/auth/datastore']
+    });
+    const token = await auth.getAccessToken();
+    const url = 'https://firestore.googleapis.com/v1/projects/soberana-app/databases/(default)/documents:runQuery';
+    const body = {
+      structuredQuery: {
+        from: [{ collectionId: 'masterclass_compras' }],
+        where: { fieldFilter: { field: { fieldPath: 'telefono' }, op: 'EQUAL', value: { stringValue: phone } } },
+        limit: 1
+      }
+    };
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const rows = await res.json();
+    const doc = (Array.isArray(rows) ? rows : []).find(r => r.document);
+    return doc?.document?.fields?.nombre?.stringValue || '';
+  } catch (err) {
+    console.error('buscarNombreMasterclass error:', err.message);
+    return '';
+  }
 }
 
 // ════════════════════════════════════════════════════════════════

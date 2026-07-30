@@ -11,23 +11,26 @@
 
 <style>
 :root {
-  --wine-deep: #3D0C11; --wine-primary: #6B1A2A;
+  --wine-deep: #3D0C11; --wine-primary: #6B1A2A; --wine-soft: rgba(107,26,42,.35);
   --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
-  --charcoal-deep: #1E1218; --charcoal: #2A1C21; --charcoal-soft: #3A2830;
-  --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --charcoal-deep: #150D11; --charcoal: #1E1218; --charcoal-soft: #2A1C21; --charcoal-card: #221720;
+  --text-light: #F0E6EA; --text-muted: #C4A8B0; --text-faint: rgba(196,168,176,.6);
+  --green-live: #7FA97F;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'Inter', sans-serif;
   --font-elegant: 'Cormorant Garamond', Georgia, serif;
+  --font-eyebrow: 'Jost', sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--charcoal-deep); overflow-x: hidden; min-height: 100vh; }
+html, body { background: var(--charcoal-deep); min-height: 100vh; }
 body { font-family: var(--font-body); color: var(--text-light); }
+a { color: inherit; }
+button { font: inherit; }
 
+/* ═══════════════════ LOGIN ═══════════════════ */
 .db-wrap { min-height: 100vh; min-height: 100dvh; padding: 60px 24px; max-width: 480px; margin: 0 auto; }
-
-/* ── Login ── */
 .db-login { width: 100%; margin-top: 40px; text-align: center; }
-.db-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 18px; }
+.db-eyebrow { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 18px; }
 .db-title { font-family: var(--font-display); font-size: clamp(24px, 6vw, 30px); font-weight: 900; line-height: 1.3; }
 .db-sub { font-family: var(--font-elegant); font-style: italic; font-size: 16px; color: var(--text-muted); margin: 14px 0 32px; }
 .db-input { width: 100%; padding: 16px 18px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.3); background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 15px; margin-bottom: 14px; }
@@ -37,85 +40,300 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .db-err { display: none; margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.3); font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 .db-err a { color: var(--gold-light); }
 
-/* ── Biblioteca ── */
-.db-lib { display: none; width: 100%; }
-.db-lib-header { text-align: center; margin-bottom: 32px; }
-.db-lib-title { font-family: var(--font-display); font-size: clamp(22px, 5.5vw, 26px); font-weight: 900; }
-.db-lib-sub { font-family: 'Jost', sans-serif; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+/* ═══════════════════ SHELL ═══════════════════ */
+.ms-shell { display: none; min-height: 100vh; min-height: 100dvh; }
+.ms-shell.show { display: grid; grid-template-columns: 232px 1fr; }
 
-.db-card { border: 1.5px solid rgba(184,137,42,.25); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer; transition: border-color .2s; }
-.db-card:hover { border-color: rgba(184,137,42,.5); }
-.db-card.selected { border-color: var(--gold-primary); background: rgba(184,137,42,.05); }
-.db-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.db-card-nombre { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
-.db-card-badge { font-family: 'Jost', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 5px 10px; border-radius: 20px; flex-shrink: 0; }
-.db-card-badge.live { background: rgba(184,137,42,.15); color: var(--gold-light); }
-.db-card-badge.replay { background: rgba(255,255,255,.06); color: var(--text-muted); }
+/* ── Sidebar ── */
+.ms-sidebar { background: linear-gradient(180deg, var(--charcoal-soft), var(--charcoal-deep)); border-right: 1px solid rgba(184,137,42,.14); padding: 36px 24px; display: flex; flex-direction: column; }
+.ms-brand { text-align: center; margin-bottom: 40px; }
+.ms-brand svg { color: var(--gold-primary); margin-bottom: 10px; }
+.ms-brand-name { font-family: var(--font-display); font-size: 17px; font-weight: 900; letter-spacing: 1.5px; }
+.ms-brand-tag { font-family: var(--font-eyebrow); font-size: 9px; letter-spacing: 1.5px; color: var(--text-faint); margin-top: 8px; line-height: 1.6; }
 
-/* ── Detalle (dentro de la card seleccionada) ── */
-.db-detail { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(184,137,42,.15); text-align: center; }
-.db-badge { display: inline-flex; align-items: center; gap: 8px; font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 16px; border-radius: 30px; margin-bottom: 18px; }
+.ms-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.ms-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: default; }
+.ms-nav-item svg { flex-shrink: 0; opacity: .8; }
+.ms-nav-item.active { background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary)); color: var(--charcoal-deep); font-weight: 700; cursor: pointer; }
+.ms-nav-item.active svg { opacity: 1; }
+.ms-nav-item.soon { opacity: .45; }
+.ms-nav-item.soon .ms-soon-tag { margin-left: auto; font-family: var(--font-eyebrow); font-size: 8px; letter-spacing: .5px; text-transform: uppercase; }
+
+.ms-sidebar-footer { text-align: center; margin-top: auto; padding-top: 32px; }
+.ms-sidebar-monogram { font-family: var(--font-elegant); font-style: italic; font-size: 26px; color: var(--gold-primary); opacity: .7; margin-bottom: 12px; }
+.ms-sidebar-quote { font-family: var(--font-eyebrow); font-size: 10px; line-height: 1.9; color: var(--text-faint); }
+
+/* ── Main ── */
+.ms-main { padding: 44px 48px 64px; max-width: 1180px; }
+.ms-topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+.ms-topbar-title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 900; margin-top: 10px; }
+.ms-topbar-sub { font-family: var(--font-body); font-size: 14.5px; color: var(--text-muted); max-width: 460px; margin-top: 10px; line-height: 1.6; }
+.ms-greeting { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--gold-light); margin-bottom: 6px; }
+
+.ms-stats { display: flex; gap: 14px; flex-wrap: wrap; border: 1px solid rgba(184,137,42,.18); border-radius: 16px; padding: 20px 26px; margin-bottom: 40px; }
+.ms-stat { display: flex; align-items: center; gap: 14px; padding-right: 28px; }
+.ms-stat:not(:last-child) { border-right: 1px solid rgba(184,137,42,.15); }
+.ms-stat svg { color: var(--gold-primary); flex-shrink: 0; }
+.ms-stat-n { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold-light); line-height: 1; }
+.ms-stat-l { font-family: var(--font-eyebrow); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.ms-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+.ms-section-header h2 { font-family: var(--font-eyebrow); font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--text-light); }
+.ms-vertodas { font-family: var(--font-eyebrow); font-size: 11.5px; font-weight: 600; color: var(--gold-light); text-decoration: none; }
+.ms-vertodas:hover { text-decoration: underline; }
+
+/* ── Biblioteca grid ── */
+.ms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 18px; }
+.ms-card { border: 1.5px solid rgba(184,137,42,.22); border-radius: 16px; overflow: hidden; background: var(--charcoal-card); display: flex; flex-direction: column; transition: border-color .2s, transform .2s; }
+.ms-card:hover { border-color: rgba(184,137,42,.5); transform: translateY(-2px); }
+.ms-card.selected { border-color: var(--gold-primary); }
+
+.ms-card-cover { position: relative; aspect-ratio: 3/2.2; display: flex; align-items: flex-start; padding: 14px; background-size: cover; background-position: center; }
+.ms-card-cover.tema-rosa { background: radial-gradient(circle at 30% 20%, rgba(107,26,42,.9), var(--wine-deep) 55%, #200609 100%); }
+.ms-card-cover.tema-medianoche { background: radial-gradient(circle at 70% 15%, #2c3550, #10131f 65%); }
+.ms-card-cover.tema-montana { background: linear-gradient(160deg, #3a4b4a, #16211f 70%); }
+.ms-card-cover.tema-farol { background: radial-gradient(circle at 50% 75%, rgba(184,137,42,.35), #201209 65%); }
+.ms-card-cover.tema-joya { background: radial-gradient(circle at 60% 30%, #3a2247, #170e1f 70%); }
+.ms-card-cover.tema-default { background: linear-gradient(160deg, var(--charcoal-soft), var(--charcoal-deep)); }
+.ms-card-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(20,12,15,.55) 100%); }
+
+.ms-card-badge { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-eyebrow); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 6px 10px; border-radius: 20px; background: rgba(21,13,17,.55); backdrop-filter: blur(4px); }
+.ms-card-badge .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ms-card-badge.estado-vivo .dot { background: #E2543C; animation: dbPulse 1.4s ease infinite; }
+.ms-card-badge.estado-vivo { color: #F0A896; }
+.ms-card-badge.estado-proximo .dot { background: var(--gold-light); }
+.ms-card-badge.estado-proximo { color: var(--gold-light); }
+.ms-card-badge.estado-descanso .dot { background: var(--gold-light); }
+.ms-card-badge.estado-descanso { color: var(--gold-light); }
+.ms-card-badge.estado-replay .dot { background: var(--green-live); }
+.ms-card-badge.estado-replay { color: var(--green-live); }
+@keyframes dbPulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+.ms-card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
+.ms-card-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+.ms-card-meta { display: flex; align-items: center; gap: 6px; font-family: var(--font-eyebrow); font-size: 10.5px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5; }
+.ms-card-meta svg { flex-shrink: 0; opacity: .8; }
+.ms-card-desc { font-family: var(--font-body); font-size: 12.5px; color: var(--text-muted); line-height: 1.6; flex: 1; margin-bottom: 16px; }
+.ms-card-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(184,137,42,.4); background: transparent; color: var(--gold-light); font-family: var(--font-eyebrow); font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+.ms-card-btn:hover { background: rgba(184,137,42,.12); }
+
+/* ── Panel de detalle ── */
+.ms-detail-panel { display: none; border: 1.5px solid rgba(184,137,42,.3); border-radius: 18px; padding: 30px 32px; margin: 32px 0 40px; background: linear-gradient(165deg, rgba(184,137,42,.05), transparent 60%); }
+.ms-detail-panel.show { display: block; }
+.ms-detail-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.ms-detail-eyebrow { font-family: var(--font-eyebrow); font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 6px; }
+.ms-detail-title { font-family: var(--font-display); font-size: clamp(20px, 3vw, 25px); font-weight: 900; }
+.ms-detail-close { background: none; border: 1px solid rgba(184,137,42,.3); border-radius: 50%; width: 32px; height: 32px; color: var(--text-muted); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.ms-detail-close:hover { color: var(--gold-light); border-color: var(--gold-primary); }
+.ms-detail-body { text-align: center; }
+
+.db-badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 8px 16px; border-radius: 30px; margin-bottom: 18px; }
 .db-badge.live { background: rgba(184,137,42,.12); border: 1px solid rgba(184,137,42,.4); color: var(--gold-light); }
 .db-badge.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--gold-light); animation: dbPulse 1.4s ease infinite; }
-.db-badge.replay { background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.25); color: var(--text-muted); }
-@keyframes dbPulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
 .db-countdown { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
 .db-cd-unit { background: rgba(255,255,255,.03); border: 1px solid rgba(184,137,42,.2); border-radius: 12px; padding: 12px 8px; min-width: 54px; }
 .db-cd-n { font-family: var(--font-display); font-size: 21px; font-weight: 900; color: var(--gold-light); }
-.db-cd-l { font-family: 'Jost', sans-serif; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+.db-cd-l { font-family: var(--font-eyebrow); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
 
-.db-note { font-family: var(--font-elegant); font-style: italic; font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 340px; margin: 0 auto 22px; }
+.db-note { font-family: var(--font-elegant); font-style: italic; font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 380px; margin: 0 auto 22px; }
 
-.db-zoom-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border-radius: 12px; border: none; font-family: var(--font-body); font-weight: 700; font-size: 14px; text-decoration: none; }
+.db-zoom-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 360px; padding: 16px; border-radius: 12px; border: none; font-family: var(--font-body); font-weight: 700; font-size: 14px; text-decoration: none; margin: 0 auto; }
 .db-zoom-btn.enabled { background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); cursor: pointer; }
 .db-zoom-btn.disabled { background: rgba(255,255,255,.04); color: var(--text-muted); cursor: default; border: 1px solid rgba(184,137,42,.15); }
 
-.db-video-box { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: var(--charcoal); margin-bottom: 20px; }
+.db-video-box { position: relative; width: 100%; max-width: 640px; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: var(--charcoal); margin: 0 auto 28px; }
 .db-video-box iframe { width: 100%; height: 100%; border: none; }
 
-.db-apuntes { width: 100%; text-align: left; margin-top: 6px; }
-.db-apuntes-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px; }
-.db-apuntes textarea { width: 100%; min-height: 120px; padding: 14px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.25); background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 14px; line-height: 1.6; resize: vertical; }
-.db-apuntes-saved { font-family: 'Jost', sans-serif; font-size: 11px; color: var(--text-muted); margin-top: 8px; opacity: 0; transition: opacity .3s; }
+/* ── Cuadernillo ── */
+.ms-cuadernillo { max-width: 640px; margin: 0 auto; text-align: left; background: repeating-linear-gradient(180deg, rgba(255,255,255,.015) 0 27px, rgba(184,137,42,.07) 27px 28px); border: 1.5px solid rgba(184,137,42,.22); border-radius: 14px; padding: 26px 28px; }
+.ms-cuadernillo-eyebrow { font-family: var(--font-eyebrow); font-size: 10px; letter-spacing: 1.5px; color: var(--gold-primary); text-transform: uppercase; margin-bottom: 2px; }
+.ms-cuadernillo-title { font-family: var(--font-display); font-style: italic; font-size: 18px; margin-bottom: 18px; }
+.ms-cuadernillo textarea, .ms-cuad-textarea { width: 100%; min-height: 120px; padding: 4px; border: none; background: transparent; color: var(--text-light); font-family: var(--font-body); font-size: 14px; line-height: 26px; resize: vertical; outline: none; }
+/* reflexiones más vulnerables/extensas: un escalón intermedio antes de las "grande" */
+.ms-cuad-textarea[data-seccion="no-soltar"], .ms-cuad-textarea[data-seccion="donde-perdia"] { min-height: 150px; }
+.ms-cuad-textarea.grande { min-height: 190px; }
+.ms-cuadernillo textarea::placeholder, .ms-cuad-textarea::placeholder { color: rgba(240,230,234,.3); font-style: italic; }
+.db-apuntes-saved { display: block; font-family: var(--font-eyebrow); font-size: 11px; color: var(--gold-light); margin-top: 14px; opacity: 0; transition: opacity .3s; }
 .db-apuntes-saved.show { opacity: 1; }
 
-.db-footer { margin-top: 48px; text-align: center; }
-.db-footer-brand { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: rgba(237,227,206,.4); }
-.db-footer-brand .gold { color: rgba(184,137,42,.55); font-style: italic; }
+/* ── Motor genérico de secciones del cuadernillo (data-driven desde PRODUCTOS[].cuadernillo) ── */
+.ms-cuad-seccion { padding: 28px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
+.ms-cuad-seccion:first-child { padding-top: 0; }
+.ms-cuad-seccion.destacada { background: rgba(184,137,42,.06); border: 1px solid rgba(184,137,42,.22); border-radius: 12px; padding: 20px 22px; margin: 10px 0; }
+.ms-cuad-titulo { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--gold-light); margin-bottom: 10px; }
+.ms-cuad-texto { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+.ms-cuad-pregunta { font-family: var(--font-body); font-weight: 600; font-size: 14.5px; color: var(--text-light); line-height: 1.5; margin-bottom: 8px; }
+.ms-cuad-auxiliar { font-family: var(--font-eyebrow); font-size: 11px; color: var(--text-faint); line-height: 1.6; margin: 6px 0 12px; }
+.ms-cuad-frase { font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--gold-light); text-align: center; margin: 10px 0 16px; }
+.ms-cuad-cierre { font-family: var(--font-body); font-style: italic; font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-top: 16px; }
+.ms-cuad-completar { margin-bottom: 12px; }
+.ms-cuad-completar p { font-family: var(--font-body); font-size: 14px; color: var(--text-muted); line-height: 2.1; }
+.ms-cuad-notas { margin-top: 4px; }
+
+/* ── Sala Soberana + quote ── */
+.ms-community { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin: 8px 0 44px; }
+.ms-community-card { position: relative; overflow: hidden; border: 1.5px solid rgba(184,137,42,.25); border-radius: 18px; padding: 34px 36px; background: radial-gradient(circle at 80% 30%, rgba(184,137,42,.14), var(--wine-deep) 70%); }
+.ms-community-eyebrow { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 14px; }
+.ms-community-title { font-family: var(--font-display); font-size: clamp(20px, 2.6vw, 25px); font-weight: 700; line-height: 1.3; max-width: 320px; margin-bottom: 12px; }
+.ms-community-desc { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); max-width: 340px; line-height: 1.6; margin-bottom: 26px; }
+.ms-community-btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-family: var(--font-body); font-weight: 700; font-size: 14px; cursor: pointer; text-decoration: none; }
+.ms-community-note { font-family: var(--font-eyebrow); font-size: 10.5px; color: var(--text-faint); margin-top: 14px; }
+.ms-community-glyph { position: absolute; right: -30px; bottom: -30px; opacity: .35; color: var(--gold-primary); }
+
+.ms-quote-card { border: 1.5px solid rgba(184,137,42,.2); border-radius: 18px; padding: 34px 32px; display: flex; flex-direction: column; justify-content: space-between; background: rgba(255,255,255,.015); }
+.ms-quote-mark { font-family: var(--font-display); font-size: 40px; color: var(--gold-primary); opacity: .5; line-height: 1; margin-bottom: 6px; }
+.ms-quote-text { font-family: var(--font-body); font-size: 15px; line-height: 1.7; color: var(--text-light); }
+.ms-quote-sign { font-family: var(--font-elegant); font-style: italic; font-size: 24px; color: var(--gold-light); margin-top: 20px; text-align: right; }
+
+/* ── Fila de features ── */
+.ms-features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding-top: 24px; border-top: 1px solid rgba(184,137,42,.14); }
+.ms-feature { display: flex; align-items: center; gap: 12px; }
+.ms-feature svg { color: var(--gold-primary); flex-shrink: 0; }
+.ms-feature span { font-family: var(--font-body); font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+
+.ms-footer { text-align: center; padding: 36px 24px 48px; }
+.ms-footer-brand { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 700; letter-spacing: 2px; color: rgba(237,227,206,.5); }
+.ms-footer-note { font-family: var(--font-elegant); font-style: italic; font-size: 13.5px; color: var(--text-faint); margin-top: 6px; }
+
+/* ── Responsive ── */
+@media (max-width: 980px) {
+  .ms-shell.show { display: block; }
+  .ms-sidebar { display: flex; flex-direction: row; align-items: center; padding: 16px 20px; border-right: none; border-bottom: 1px solid rgba(184,137,42,.14); overflow-x: auto; gap: 20px; }
+  .ms-brand { text-align: left; margin-bottom: 0; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .ms-brand svg { margin-bottom: 0; }
+  .ms-brand-tag { display: none; }
+  .ms-nav { flex-direction: row; gap: 6px; }
+  .ms-nav-item span:not(.ms-soon-tag) { display: none; }
+  .ms-nav-item { padding: 10px; }
+  .ms-nav-item.soon .ms-soon-tag { display: none; }
+  .ms-sidebar-footer { display: none; }
+  .ms-main { padding: 28px 18px 48px; }
+  .ms-community { grid-template-columns: 1fr; }
+  .ms-features { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .ms-stats { flex-direction: column; }
+  .ms-stat { border-right: none !important; padding-right: 0; border-bottom: 1px solid rgba(184,137,42,.15); padding-bottom: 14px; }
+  .ms-stat:last-child { border-bottom: none; padding-bottom: 0; }
+  .ms-features { grid-template-columns: 1fr; }
+  .ms-cuadernillo { padding: 20px 16px; }
+  .ms-cuad-seccion.destacada { padding: 16px 14px; }
+}
 </style>
 </head>
 <body>
 
-<div class="db-wrap">
-
-  <!-- ══════════════════ LOGIN ══════════════════ -->
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<div class="db-wrap" id="db-wrap">
   <div class="db-login" id="db-login">
     <div class="db-eyebrow">Tu espacio</div>
     <h1 class="db-title">Código <em style="font-style:italic;color:var(--gold-light)">Soberana</em></h1>
-    <p class="db-sub">Ingresa el correo con el que compraste para entrar.</p>
+    <p class="db-sub">Ingresa el correo con el que accediste a tu experiencia.</p>
     <input class="db-input" id="db-email" type="email" placeholder="tu@correo.com" autocomplete="email">
     <button class="db-btn" id="db-login-btn" onclick="dbLogin()">Entrar a mi espacio →</button>
     <div class="db-err" id="db-err">
-      No encontramos ninguna compra activa con ese correo. Si ya compraste, escríbenos y lo activamos:
+      No encontramos tu espacio con ese correo. Si ya tienes acceso, escríbenos y te lo abrimos:
       <br><br><a id="db-err-wa" href="#" target="_blank">Escribir por WhatsApp</a>
     </div>
   </div>
-
-  <!-- ══════════════════ BIBLIOTECA ══════════════════ -->
-  <div class="db-lib" id="db-lib">
-    <div class="db-lib-header">
-      <div class="db-eyebrow">Tu espacio</div>
-      <h1 class="db-lib-title">Tus masterclasses</h1>
-      <p class="db-lib-sub" id="db-lib-count"></p>
-    </div>
-    <div id="db-cards"></div>
-  </div>
-
-  <div class="db-footer">
-    <div class="db-footer-brand"><span>Código</span> <span class="gold">Soberana</span></div>
-  </div>
 </div>
+
+<!-- ══════════════════ SHELL (biblioteca) ══════════════════ -->
+<div class="ms-shell" id="ms-shell">
+  <aside class="ms-sidebar">
+    <div class="ms-brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8l3 3 6-7 6 7 3-3-2 10H5L3 8z"/></svg>
+      <div>
+        <div class="ms-brand-name">MI ESPACIO</div>
+        <div class="ms-brand-tag">TU CAMINO. TU PODER.<br>TU TRANSFORMACIÓN.</div>
+      </div>
+    </div>
+    <nav class="ms-nav">
+      <div class="ms-nav-item active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Mis experiencias</span>
+      </div>
+      <div class="ms-nav-item soon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span>Mi Sala Soberana</span><span class="ms-soon-tag">Pronto</span>
+      </div>
+      <div class="ms-nav-item soon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Mis Apuntes</span><span class="ms-soon-tag">Pronto</span>
+      </div>
+      <div class="ms-nav-item soon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+        <span>Materiales</span><span class="ms-soon-tag">Pronto</span>
+      </div>
+      <div class="ms-nav-item soon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"/><circle cx="12" cy="17" r=".4" fill="currentColor"/></svg>
+        <span>Ayuda</span><span class="ms-soon-tag">Pronto</span>
+      </div>
+    </nav>
+    <div class="ms-sidebar-footer">
+      <div class="ms-sidebar-monogram">S</div>
+      <div class="ms-sidebar-quote">Mujeres que entienden.<br>Mujeres que transforman.<br>Mujeres que lideran.</div>
+    </div>
+  </aside>
+
+  <main class="ms-main">
+    <div class="ms-topbar">
+      <div>
+        <!-- ms-greeting: slot reservado para "Hola, [nombre]" cuando Mi Espacio reconozca a la
+             clienta por nombre. Sin perfil/auth todavía — queda vacío y oculto hasta entonces. -->
+        <div class="ms-greeting" id="ms-greeting" style="display:none"></div>
+        <div class="db-eyebrow" style="margin-bottom:0">Tu espacio</div>
+        <h1 class="ms-topbar-title">Aquí sigue tu poder</h1>
+        <p class="ms-topbar-sub">Todo lo que necesitas para seguir creciendo, recordando y transformando tu realidad.</p>
+      </div>
+      <!-- slot de eyebrow/badge disponible para más adelante si hace falta; sin copy de venta por ahora -->
+    </div>
+
+    <div class="ms-stats" id="ms-stats"></div>
+
+    <div class="ms-section-header">
+      <h2>Tus experiencias</h2>
+      <a class="ms-vertodas" id="ms-vertodas" href="#" style="display:none" onclick="msToggleVerTodas(event)">Ver mi recorrido completo →</a>
+    </div>
+    <div class="ms-grid" id="ms-grid"></div>
+
+    <div class="ms-detail-panel" id="ms-detail-panel"></div>
+
+    <div class="ms-community">
+      <div class="ms-community-card">
+        <div class="ms-community-eyebrow">Tu Sala Soberana</div>
+        <div class="ms-community-title">Tu comunidad. Tu tribu. Tu crecimiento.</div>
+        <p class="ms-community-desc">Un espacio exclusivo para mujeres que eligen avanzar en compañía y sostener su transformación.</p>
+        <a class="ms-community-btn" href="#" onclick="return false;">
+          Entrar a la Sala Soberana
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-1-.3-.1-.5-.1-.6.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.5.1-.2 0-.4 0-.5C10 9 9.4 7.6 9.1 7c-.2-.5-.4-.5-.6-.5h-.5c-.2 0-.5.1-.7.3C7 7 6.3 7.7 6.3 9.1c0 1.4 1 2.7 1.1 2.9.1.2 2 3.1 4.9 4.3 2.9 1.2 2.9.8 3.4.7.5 0 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.4z"/><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+        </a>
+        <div class="ms-community-note">Solo tú y mujeres que hablan tu idioma del poder.</div>
+        <svg class="ms-community-glyph" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.6"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/></svg>
+      </div>
+      <div class="ms-quote-card">
+        <div>
+          <div class="ms-quote-mark">"</div>
+          <p class="ms-quote-text">No estás sola. Estás construyendo la vida que alguna vez soñaste.</p>
+        </div>
+        <div class="ms-quote-sign">Josué</div>
+      </div>
+    </div>
+
+    <div class="ms-features">
+      <div class="ms-feature"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 8l3 3 6-7 6 7 3-3-2 10H5L3 8z"/></svg><span>Lo que vives aquí transforma</span></div>
+      <div class="ms-feature"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Herramientas que te acompañan</span></div>
+      <div class="ms-feature"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span>Comunidad que te impulsa</span></div>
+      <div class="ms-feature"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h12l3 6-9 12L3 9z"/></svg><span>Libertad que se construye</span></div>
+    </div>
+  </main>
+</div>
+
+<footer class="ms-footer" id="ms-footer" style="display:none">
+  <div class="ms-footer-brand">MI ESPACIO</div>
+  <div class="ms-footer-note">Gracias por seguir escribiendo tu historia aquí.</div>
+</footer>
 
 <script>
 // El acceso a Firestore vive detrás de api/mi-espacio-login.js y api/mi-espacio-apuntes.js — el
@@ -126,22 +344,138 @@ body { font-family: var(--font-body); color: var(--text-light); }
 // "Mi Espacio" soporte un producto más (ver masterclass-platform-system, Bitácora "Corrección #2 de
 // alcance", 2026-07-15). El proveedor de video sigue siendo intercambiable dentro de cada una
 // (ver entry-product-system/SKILL.md → "Sesiones de video").
+//
+// Campos por producto:
+//   nombre, promesa      → texto de la card
+//   tema                 → gradiente placeholder de portada (rosa/medianoche/montana/farol/joya/default)
+//   imagen               → URL de foto real de portada; si está presente reemplaza `tema` sin tocar CSS/HTML
+//   sesiones[]            → { inicio, fin, url, etiqueta } por cada tramo en vivo (Zoom)
+//   fechaEventoTexto      → texto humano de fecha/hora mostrado en la card y el countdown
+//   bunnyUrl              → embed del replay; null = "video pendiente" (evergreen aún no cargado)
+//   cuadernillo           → contenido del cuadernillo privado de ESTA experiencia (ver abajo).
+//     .secciones[]  → { id (único, define dónde se guarda la respuesta), titulo?, texto?, pregunta?,
+//                       auxiliar?, completar? (array de líneas "rellenar"), frase? (línea destacada),
+//                       cierre? (frase de cierre bajo la respuesta), destacada? (caja resaltada), grande? (textarea más alto) }
+//     .notas        → { titulo, placeholder } para la sección libre final.
+//     El motor (msRenderCuadernillo) es genérico: agregar/quitar/reordenar secciones, o crear un
+//     cuadernillo completamente distinto para otra experiencia, es solo editar estos datos —
+//     nunca hay que tocar el HTML/JS del motor. Cada experiencia futura trae su propio `cuadernillo`.
+// El estado (Próximamente/En vivo/En descanso/Replay) se deriva solo de `sesiones`, no se declara a mano.
 const PRODUCTOS = {
   'mas-se-aleja': {
-    nombre: 'Masterclass Soberana',
+    nombre: 'Más Se Aleja',
+    tema: 'rosa',
+    imagen: null, // PENDIENTE — cuando haya foto real, poner la URL aquí y se usa automáticamente en vez del gradiente
+    promesa: 'Recupera tu centro cuando todo parece estar alejándose de ti.',
     sesiones: [
       { inicio: new Date('2026-08-01T19:00:00-05:00'), fin: new Date('2026-08-01T19:35:00-05:00'), url: 'https://us05web.zoom.us/j/85736270769?pwd=0YoWw7WEMaLZFbHXtT3atOuhI7owwq.1', etiqueta: 'Entrar — Parte 1' },
       { inicio: new Date('2026-08-01T19:45:00-05:00'), fin: new Date('2026-08-01T20:15:00-05:00'), url: 'https://us05web.zoom.us/j/83908777239?pwd=MnMBk1jr3fQC8PUoJdyfwaaO1Dv2ra.1', etiqueta: 'Entrar — Parte 2 (preguntas)' }
     ],
     fechaEventoTexto: '📅 Sábado 1 de agosto · 🕖 7:00 p.m. Colombia (6:00 p.m. México)',
-    bunnyUrl: null // PENDIENTE — se llena cuando se sube la grabación (Fase 2.7 Integración)
+    bunnyUrl: null, // PENDIENTE — se llena cuando se sube la grabación (Fase 2.7 Integración)
+    cuadernillo: {
+      secciones: [
+        {
+          id: 'trajo',
+          titulo: 'Lo que me trajo hasta aquí',
+          pregunta: '¿Qué está pasando hoy en tu relación que te hizo decir: "necesito entender qué está pasando"?'
+        },
+        {
+          id: 'no-soltar',
+          titulo: 'La pregunta que no quiero soltar',
+          texto: 'Piensa en la última vez que sentiste distancia con tu pareja y respondiste haciendo más.',
+          pregunta: '¿Qué había exactamente debajo de esa reacción? ¿Miedo a qué?',
+          auxiliar: 'No necesitas encontrar la respuesta perfecta. Escribe lo primero que puedas reconocer.'
+        },
+        {
+          id: 'lo-que-vi',
+          titulo: 'Lo que acabo de ver',
+          pregunta: '¿Qué parte de lo que acabas de escuchar te hizo pensar: "esto explica algo que llevo mucho tiempo viviendo"?'
+        },
+        {
+          id: 'donde-perdia',
+          titulo: 'Dónde me estaba perdiendo',
+          pregunta: 'Cuando la relación no estaba bien, ¿qué cosas de ti empezabas a abandonar, cambiar o controlar para intentar que él no se alejara?',
+          auxiliar: 'Mi tranquilidad · mis límites · mis decisiones · mis necesidades · mi forma de ser · otras cosas que ahora puedo reconocer.'
+        },
+        {
+          id: 'nueva-comprension',
+          titulo: 'Mi nueva comprensión',
+          destacada: true,
+          texto: 'Ahora entiendo algo que antes no veía…',
+          completar: ['No era que me faltara ____________.', 'Estaba intentando ____________ desde ____________.'],
+          pregunta: 'Lo que hoy entiendo de otra manera sobre mi relación es:'
+        },
+        {
+          id: 'mi-pausa',
+          titulo: 'Mi pausa',
+          texto: 'La próxima vez que vuelva a aparecer esa distancia…',
+          frase: 'Antes de hacer más, voy a detenerme.',
+          pregunta: '¿Desde dónde estoy a punto de actuar: desde el miedo o desde quien soy?',
+          auxiliar: 'No tienes que resolverlo hoy. Solo aprender a reconocer desde dónde estás actuando.'
+        },
+        {
+          id: 'recordar',
+          titulo: 'Lo que quiero recordar',
+          pregunta: 'Si vuelvo a olvidar todo esto, quiero recordar…',
+          grande: true,
+          cierre: '"No era falta de amor. Era que llevaba años intentando salvar la relación desde el único lugar donde nunca tuvo control: ella misma."'
+        }
+      ],
+      notas: { titulo: 'Mis notas', placeholder: 'Escribe aquí lo que quieras conservar de esta experiencia.' }
+    }
   }
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BLOQUE TEMPORAL DE PRUEBA VISUAL — activar visitando /mi-espacio/?demo=1
+// Agrega 4 experiencias ficticias a PRODUCTOS solo cuando el parámetro está presente,
+// para ver la biblioteca con 5 cards sin tocar Firestore ni datos reales.
+// La experiencia real "mas-se-aleja" no se modifica en ningún punto de este bloque.
+// Para retirar la prueba: borrar este bloque completo + la línea marcada dentro de dbLogin().
+// ══════════════════════════════════════════════════════════════════════════════
+const MS_DEMO = new URLSearchParams(location.search).has('demo');
+const MS_DEMO_KEYS = ['demo-fuego-interior', 'demo-raices-de-poder', 'demo-mente-clara', 'demo-raiz-firme'];
+if (MS_DEMO) {
+  const now = Date.now();
+  const dia = 86400000;
+  Object.assign(PRODUCTOS, {
+    'demo-fuego-interior': {
+      nombre: 'Fuego Interior', tema: 'medianoche', imagen: null,
+      promesa: 'Enciende la parte de ti que dejaste esperando permiso.',
+      sesiones: [{ inicio: new Date(now - 5 * 60000), fin: new Date(now + 25 * 60000), url: 'https://zoom.us/demo-fuego-interior', etiqueta: 'Entrar a la sesión' }],
+      fechaEventoTexto: '🔴 En vivo ahora mismo', bunnyUrl: null
+    },
+    'demo-raices-de-poder': {
+      nombre: 'Raíces de Poder', tema: 'farol', imagen: null,
+      promesa: 'Vuelve al lugar desde el que decides, no desde el que reaccionas.',
+      sesiones: [
+        { inicio: new Date(now - 40 * 60000), fin: new Date(now - 20 * 60000), url: 'https://zoom.us/demo-raices-1', etiqueta: 'Entrar — Parte 1' },
+        { inicio: new Date(now + 20 * 60000), fin: new Date(now + 50 * 60000), url: 'https://zoom.us/demo-raices-2', etiqueta: 'Entrar — Parte 2' }
+      ],
+      fechaEventoTexto: '📅 Hoy · en un descanso entre partes', bunnyUrl: null
+    },
+    'demo-mente-clara': {
+      nombre: 'Mente Clara', tema: 'joya', imagen: null,
+      promesa: 'Silencia el ruido que no te deja escucharte.',
+      sesiones: [{ inicio: new Date(now - dia - 40 * 60000), fin: new Date(now - dia - 5 * 60000), url: '', etiqueta: '' }],
+      fechaEventoTexto: '📅 Disponible desde ayer', bunnyUrl: null
+    },
+    'demo-raiz-firme': {
+      nombre: 'Raíz Firme', tema: 'montana', imagen: null,
+      promesa: 'La base que sostiene todo lo demás que estás construyendo.',
+      sesiones: [{ inicio: new Date(now - 182 * dia), fin: new Date(now - 182 * dia + 35 * 60000), url: '', etiqueta: '' }],
+      fechaEventoTexto: '📅 Disponible desde hace 6 meses', bunnyUrl: null
+    }
+  });
+}
+// ══════════════════════════════════════════ fin bloque temporal ══════════════════════════════════════════
+
 const ENTRADA_ANTICIPADA_MS = 10 * 60000;
 
 let dbEmail = '';
 let dbCompras = [];
-let dbSeleccion = 0;
+let dbSeleccion = -1;
 
 function dbFmt(n) { return String(n).padStart(2, '0'); }
 
@@ -158,6 +492,16 @@ function dbProximaSesion(config) {
   const now = Date.now();
   return config.sesiones.find(function (s) { return s.inicio.getTime() > now; }) || null;
 }
+
+// Estado fino de una masterclass: 'vivo' | 'descanso' | 'proximo' | 'replay'
+function dbEstado(config) {
+  if (!dbEnVivo(config)) return 'replay';
+  if (dbSesionActual(config)) return 'vivo';
+  const proxima = dbProximaSesion(config);
+  if (proxima && proxima !== config.sesiones[0]) return 'descanso';
+  return 'proximo';
+}
+const ESTADO_LABEL = { vivo: 'En vivo', descanso: 'En un descanso', proximo: 'Próximamente', replay: 'En tu espacio' };
 
 async function dbLogin() {
   const email = document.getElementById('db-email').value.trim().toLowerCase();
@@ -177,6 +521,9 @@ async function dbLogin() {
     const data = await res.json();
     const compras = (data.compras || []).filter(function (c) { return PRODUCTOS[c.producto]; });
 
+    // línea del bloque temporal de prueba visual — borrar junto con el bloque de arriba
+    if (MS_DEMO) MS_DEMO_KEYS.forEach(function (k) { compras.push({ producto: k, fecha: new Date().toISOString() }); });
+
     if (!compras.length) {
       document.getElementById('db-err-wa').href =
         'https://wa.me/573189045623?text=' + encodeURIComponent('Hola Josué, no encuentro mi acceso a mi espacio. Mi correo es: ' + email);
@@ -190,7 +537,7 @@ async function dbLogin() {
     dbEmail = email;
     dbCompras = compras;
     localStorage.setItem('mi_espacio_email', email);
-    dbShowBiblioteca();
+    msShowBiblioteca();
   } catch (e) {
     console.error(e);
     btn.textContent = 'Entrar a mi espacio →';
@@ -198,86 +545,154 @@ async function dbLogin() {
   }
 }
 
-function dbShowBiblioteca() {
-  document.getElementById('db-login').style.display = 'none';
-  document.getElementById('db-lib').style.display = 'block';
-  document.getElementById('db-lib-count').textContent =
-    dbCompras.length === 1 ? '1 masterclass' : (dbCompras.length + ' masterclasses');
-  dbSeleccion = 0;
-  dbRenderCards();
+function msShowBiblioteca() {
+  document.getElementById('db-wrap').style.display = 'none';
+  document.getElementById('ms-shell').classList.add('show');
+  document.getElementById('ms-footer').style.display = 'block';
+  msRenderStats();
+  msRenderGrid();
 }
 
-function dbRenderCards() {
-  const wrap = document.getElementById('db-cards');
-  wrap.innerHTML = '';
-  dbCompras.forEach(function (compra, i) {
-    const config = PRODUCTOS[compra.producto];
-    const enVivo = dbEnVivo(config);
-    const card = document.createElement('div');
-    card.className = 'db-card' + (i === dbSeleccion ? ' selected' : '');
-    card.onclick = function () { dbSeleccion = i; dbRenderCards(); };
-    card.innerHTML =
-      '<div class="db-card-top">' +
-        '<div class="db-card-nombre">' + config.nombre + '</div>' +
-        '<div class="db-card-badge ' + (enVivo ? 'live' : 'replay') + '">' + (enVivo ? 'En vivo' : 'Replay') + '</div>' +
-      '</div>' +
-      (i === dbSeleccion ? '<div class="db-detail" id="db-detail-' + i + '"></div>' : '');
-    wrap.appendChild(card);
+// Copy de los stats, separado a propósito del cálculo de abajo — cambiar el lenguaje del
+// recorrido (tono, palabras) no debe requerir tocar la lógica que cuenta experiencias/estados.
+// { s: singular, p: plural }
+const MS_STATS_COPY = {
+  total:   { s: 'experiencia contigo',        p: 'experiencias contigo' },
+  vivas:   { s: 'te espera en vivo',          p: 'te esperan en vivo' },
+  replays: { s: 'lista cuando quieras',       p: 'listas cuando quieras' }
+};
+
+function msRenderStats() {
+  let vivas = 0, replays = 0;
+  dbCompras.forEach(function (c) {
+    const config = PRODUCTOS[c.producto];
+    if (dbEnVivo(config)) vivas++; else replays++;
   });
-  dbRenderDetail(dbSeleccion);
+  const total = dbCompras.length;
+  const stats = [
+    { n: total, l: total === 1 ? MS_STATS_COPY.total.s : MS_STATS_COPY.total.p,
+      icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
+    { n: vivas, l: vivas === 1 ? MS_STATS_COPY.vivas.s : MS_STATS_COPY.vivas.p,
+      icon: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>' },
+    { n: replays, l: replays === 1 ? MS_STATS_COPY.replays.s : MS_STATS_COPY.replays.p,
+      icon: '<circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/>' }
+  ];
+  document.getElementById('ms-stats').innerHTML = stats.map(function (s) {
+    return '<div class="ms-stat"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">' + s.icon + '</svg>' +
+      '<div><div class="ms-stat-n">' + s.n + '</div><div class="ms-stat-l">' + s.l + '</div></div></div>';
+  }).join('');
 }
 
-function dbRenderDetail(i) {
+// Umbral desde el cual la biblioteca se colapsa detrás de "Ver todas" en vez de listar todo de una.
+const MS_GRID_PREVIEW = 4;
+let msVerTodas = false;
+
+// Ventana editorial para el matiz "recién disponible" dentro del estado replay — no es un estado
+// técnico nuevo, solo decide qué copy mostrar sobre el mismo badge/meta ya existentes.
+const MS_RECIEN_MS = 7 * 86400000;
+function msEsReciente(config) {
+  return (Date.now() - dbEventoFin(config).getTime()) <= MS_RECIEN_MS;
+}
+
+function msRenderGrid() {
+  const wrap = document.getElementById('ms-grid');
+  const link = document.getElementById('ms-vertodas');
+  const hayMas = dbCompras.length > MS_GRID_PREVIEW;
+  const visibles = (hayMas && !msVerTodas) ? dbCompras.slice(0, MS_GRID_PREVIEW) : dbCompras;
+
+  link.style.display = hayMas ? 'inline' : 'none';
+  link.innerHTML = msVerTodas
+    ? '← Ver menos'
+    : 'Ver mi recorrido completo →';
+
+  wrap.innerHTML = visibles.map(function (compra, i) {
+    const config = PRODUCTOS[compra.producto];
+    const estado = dbEstado(config);
+    const tema = config.tema || 'default';
+    const coverAttr = config.imagen
+      ? ' style="background-image:url(\'' + config.imagen + '\')"'
+      : '';
+    let badgeLabel = ESTADO_LABEL[estado];
+    let metaTexto = config.fechaEventoTexto || '';
+    if (estado === 'replay') {
+      if (msEsReciente(config)) { badgeLabel = 'Recién disponible'; metaTexto = 'Ya puedes volver a vivirla'; }
+      else { metaTexto = 'Disponible en tu espacio'; }
+    }
+    return '<div class="ms-card' + (i === dbSeleccion ? ' selected' : '') + '" data-idx="' + i + '">' +
+      '<div class="ms-card-cover' + (config.imagen ? '' : ' tema-' + tema) + '"' + coverAttr + '>' +
+        '<div class="ms-card-badge estado-' + estado + '"><span class="dot"></span>' + badgeLabel + '</div>' +
+      '</div>' +
+      '<div class="ms-card-body">' +
+        '<div class="ms-card-title">' + config.nombre + '</div>' +
+        '<div class="ms-card-meta"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>' + metaTexto + '</div>' +
+        '<p class="ms-card-desc">' + (config.promesa || '') + '</p>' +
+        '<button class="ms-card-btn" onclick="msOpenDetail(' + i + ')">Entrar →</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function msToggleVerTodas(e) {
+  e.preventDefault();
+  msVerTodas = !msVerTodas;
+  msRenderGrid();
+}
+
+function msOpenDetail(i) {
+  dbSeleccion = i;
+  msRenderGrid();
+  msRenderDetail(i);
+  const panel = document.getElementById('ms-detail-panel');
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function msCloseDetail() {
+  dbSeleccion = -1;
+  clearInterval(window._dbInterval);
+  document.getElementById('ms-detail-panel').classList.remove('show');
+  msRenderGrid();
+}
+
+function msRenderDetail(i) {
   const compra = dbCompras[i];
   const config = PRODUCTOS[compra.producto];
-  const el = document.getElementById('db-detail-' + i);
-  if (!el) return;
+  const panel = document.getElementById('ms-detail-panel');
+
+  const head =
+    '<div class="ms-detail-head">' +
+      '<div><div class="ms-detail-eyebrow">Tu experiencia</div><div class="ms-detail-title">' + config.nombre + '</div></div>' +
+      '<button class="ms-detail-close" onclick="msCloseDetail()">✕</button>' +
+    '</div>';
 
   if (dbEnVivo(config)) {
-    el.innerHTML =
-      '<div class="db-badge live" id="db-live-badge">En vivo próximamente</div>' +
-      '<p style="font-family:\'Jost\',sans-serif;font-size:12px;color:var(--text-muted);margin-bottom:18px;">' + config.fechaEventoTexto + '</p>' +
-      '<div class="db-countdown" id="db-countdown">' +
-        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-d">–</div><div class="db-cd-l">Días</div></div>' +
-        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-h">–</div><div class="db-cd-l">Horas</div></div>' +
-        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-m">–</div><div class="db-cd-l">Min</div></div>' +
-        '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-s">–</div><div class="db-cd-l">Seg</div></div>' +
-      '</div>' +
-      '<p class="db-note" id="db-live-note">Tu lugar ya está reservado. Tu acceso a cada parte del evento se habilita justo aquí, cuando llegue el momento.</p>' +
-      '<a class="db-zoom-btn disabled" id="db-zoom-btn" href="#" target="_blank">Se activa el día del evento</a>';
+    panel.innerHTML = head +
+      '<div class="ms-detail-body">' +
+        '<div class="db-badge live" id="db-live-badge">Próximamente</div>' +
+        '<p style="font-family:\'Jost\',sans-serif;font-size:12px;color:var(--text-muted);margin-bottom:18px;">' + config.fechaEventoTexto + '</p>' +
+        '<div class="db-countdown" id="db-countdown">' +
+          '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-d">–</div><div class="db-cd-l">Días</div></div>' +
+          '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-h">–</div><div class="db-cd-l">Horas</div></div>' +
+          '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-m">–</div><div class="db-cd-l">Min</div></div>' +
+          '<div class="db-cd-unit"><div class="db-cd-n" id="db-cd-s">–</div><div class="db-cd-l">Seg</div></div>' +
+        '</div>' +
+        '<p class="db-note" id="db-live-note">Tu lugar ya está reservado. Tu acceso a cada parte del evento se habilita justo aquí, cuando llegue el momento.</p>' +
+        '<a class="db-zoom-btn disabled" id="db-zoom-btn" href="#" target="_blank">Se activa el día del evento</a>' +
+      '</div>';
     dbTickCountdown(config);
     clearInterval(window._dbInterval);
     window._dbInterval = setInterval(function () { dbTickCountdown(config); }, 1000);
   } else {
     clearInterval(window._dbInterval);
-    el.innerHTML =
-      '<div class="db-video-box" id="db-video-box">' +
-        (config.bunnyUrl
-          ? '<iframe src="' + config.bunnyUrl + '" allow="autoplay;fullscreen" allowfullscreen></iframe>'
-          : '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se sube la grabación del evento en vivo.</p>') +
-      '</div>' +
-      '<div class="db-apuntes">' +
-        '<div class="db-apuntes-label">Tus apuntes</div>' +
-        '<textarea id="db-apuntes-txt" placeholder="Escribe aquí lo que quieras recordar de esta clase..."></textarea>' +
-        '<div class="db-apuntes-saved" id="db-apuntes-saved">Guardado ✓</div>' +
+    panel.innerHTML = head +
+      '<div class="ms-detail-body">' +
+        '<div class="db-video-box" id="db-video-box">' +
+          (config.bunnyUrl
+            ? '<iframe src="' + config.bunnyUrl + '" allow="autoplay;fullscreen" allowfullscreen></iframe>'
+            : '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se sube la grabación del evento en vivo.</p>') +
+        '</div>' +
+        msCuadernilloHTML(config) +
       '</div>';
-    dbLoadApuntes(compra.producto);
-    document.getElementById('db-apuntes-txt').addEventListener('input', function () {
-      clearTimeout(window._dbApuntesTimer);
-      const producto = compra.producto;
-      window._dbApuntesTimer = setTimeout(async function () {
-        try {
-          await fetch('/api/mi-espacio-apuntes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: dbEmail, producto: producto, texto: document.getElementById('db-apuntes-txt').value })
-          });
-          const saved = document.getElementById('db-apuntes-saved');
-          saved.classList.add('show');
-          setTimeout(function () { saved.classList.remove('show'); }, 1500);
-        } catch (e) { console.warn('Error guardando apuntes:', e.message); }
-      }, 900);
-    });
+    msWireCuadernillo(config, compra.producto);
   }
 }
 
@@ -298,19 +713,19 @@ function dbTickCountdown(config) {
       note.textContent = 'Ya puedes entrar — toca el botón de abajo.';
     } else {
       btn.classList.remove('enabled'); btn.classList.add('disabled');
-      btn.textContent = 'El link llega en un momento';
-      note.textContent = 'Ya estamos en vivo — el link se activa aquí en cuanto esté listo.';
+      btn.textContent = 'El enlace llega en un momento';
+      note.textContent = 'Ya estamos en vivo — el enlace se activa aquí en cuanto esté listo.';
     }
     return;
   }
 
   const proxima = dbProximaSesion(config);
-  if (!proxima) { dbRenderCards(); return; } // ya pasaron todas las sesiones → Replay
+  if (!proxima) { msRenderGrid(); msRenderDetail(dbSeleccion); return; } // ya pasaron todas las sesiones → Replay
 
   document.getElementById('db-countdown').style.display = 'flex';
   btn.classList.remove('enabled'); btn.classList.add('disabled');
   const esPrimera = proxima === config.sesiones[0];
-  badge.textContent = esPrimera ? 'En vivo próximamente' : 'En un descanso';
+  badge.textContent = esPrimera ? 'Próximamente' : 'En un descanso';
   note.textContent = esPrimera
     ? 'Tu lugar ya está reservado. Tu acceso se habilita justo aquí cuando llegue el momento.'
     : 'Volvemos en un momento — la siguiente parte se habilita aquí mismo.';
@@ -323,12 +738,87 @@ function dbTickCountdown(config) {
   document.getElementById('db-cd-s').textContent = dbFmt(Math.floor((diff % 60000) / 1000));
 }
 
-async function dbLoadApuntes(producto) {
+// ── Motor genérico del cuadernillo — data-driven desde config.cuadernillo, no específico de
+// ninguna experiencia. El backend (api/mi-espacio-apuntes.js) no cambió: sigue guardando un solo
+// campo `texto` por email+producto; aquí ese texto es un JSON con { [seccionId]: respuesta, notas }.
+// Aislamiento: la key del documento en Firestore ya es `${email}__${producto}` (sin tocar), así que
+// dos experiencias del mismo email nunca comparten documento ni se pueden mezclar.
+
+function msCuadSeccionHTML(s) {
+  return '<div class="ms-cuad-seccion' + (s.destacada ? ' destacada' : '') + '">' +
+    (s.titulo ? '<div class="ms-cuad-titulo">' + s.titulo + '</div>' : '') +
+    (s.texto ? '<p class="ms-cuad-texto">' + s.texto + '</p>' : '') +
+    (s.completar ? '<div class="ms-cuad-completar">' + s.completar.map(function (l) { return '<p>' + l + '</p>'; }).join('') + '</div>' : '') +
+    (s.frase ? '<p class="ms-cuad-frase">' + s.frase + '</p>' : '') +
+    (s.pregunta ? '<div class="ms-cuad-pregunta">' + s.pregunta + '</div>' : '') +
+    (s.auxiliar ? '<p class="ms-cuad-auxiliar">' + s.auxiliar + '</p>' : '') +
+    '<textarea class="ms-cuad-textarea' + (s.grande ? ' grande' : '') + '" data-seccion="' + s.id + '" placeholder="Escribe aquí..."></textarea>' +
+    (s.cierre ? '<p class="ms-cuad-cierre">' + s.cierre + '</p>' : '') +
+  '</div>';
+}
+
+function msCuadernilloHTML(config) {
+  const cuad = config.cuadernillo || { secciones: [], notas: { titulo: 'Mis notas', placeholder: 'Escribe aquí lo que quieras conservar de esta experiencia.' } };
+  const secciones = (cuad.secciones || []).map(msCuadSeccionHTML).join('');
+  const notas = cuad.notas || { titulo: 'Mis notas', placeholder: 'Escribe aquí lo que quieras conservar de esta experiencia.' };
+  return '<div class="ms-cuadernillo">' +
+    '<div class="ms-cuadernillo-eyebrow">Tu cuadernillo</div>' +
+    '<div class="ms-cuadernillo-title">' + config.nombre + '</div>' +
+    secciones +
+    '<div class="ms-cuad-seccion ms-cuad-notas">' +
+      '<div class="ms-cuad-titulo">' + notas.titulo + '</div>' +
+      '<textarea class="ms-cuad-textarea grande" data-seccion="notas" placeholder="' + notas.placeholder + '"></textarea>' +
+    '</div>' +
+    '<div class="db-apuntes-saved" id="db-apuntes-saved">Guardado ✓</div>' +
+  '</div>';
+}
+
+function msWireCuadernillo(config, producto) {
+  const textareas = document.querySelectorAll('.ms-cuad-textarea');
+
+  msCargarRespuestas(producto, textareas);
+
+  textareas.forEach(function (ta) {
+    ta.addEventListener('input', function () {
+      clearTimeout(window._dbApuntesTimer);
+      window._dbApuntesTimer = setTimeout(function () { msGuardarRespuestas(producto, textareas); }, 900);
+    });
+  });
+}
+
+async function msCargarRespuestas(producto, textareas) {
   try {
     const res = await fetch('/api/mi-espacio-apuntes?email=' + encodeURIComponent(dbEmail) + '&producto=' + encodeURIComponent(producto));
     const data = await res.json();
-    if (data.texto) document.getElementById('db-apuntes-txt').value = data.texto;
-  } catch (e) { console.warn('No se pudieron cargar apuntes:', e.message); }
+    if (!data.texto) return;
+
+    let respuestas;
+    try {
+      const parsed = JSON.parse(data.texto);
+      respuestas = (parsed && typeof parsed === 'object') ? parsed : { notas: data.texto };
+    } catch (e) {
+      respuestas = { notas: data.texto }; // texto plano legacy (cuadernillo de una sola caja) → va a "Mis notas"
+    }
+
+    textareas.forEach(function (ta) {
+      const id = ta.getAttribute('data-seccion');
+      if (respuestas[id]) ta.value = respuestas[id];
+    });
+  } catch (e) { console.warn('No se pudieron cargar las respuestas del cuadernillo:', e.message); }
+}
+
+async function msGuardarRespuestas(producto, textareas) {
+  const respuestas = {};
+  textareas.forEach(function (ta) { respuestas[ta.getAttribute('data-seccion')] = ta.value; });
+  try {
+    await fetch('/api/mi-espacio-apuntes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: dbEmail, producto: producto, texto: JSON.stringify(respuestas) })
+    });
+    const saved = document.getElementById('db-apuntes-saved');
+    if (saved) { saved.classList.add('show'); setTimeout(function () { saved.classList.remove('show'); }, 1500); }
+  } catch (e) { console.warn('Error guardando el cuadernillo:', e.message); }
 }
 
 document.addEventListener('DOMContentLoaded', function () {

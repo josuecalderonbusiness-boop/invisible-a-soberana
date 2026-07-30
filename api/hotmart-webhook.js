@@ -1,6 +1,22 @@
 ﻿// api/hotmart-webhook.js — versión final
 // Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
 
+import { procesarEventoOrbit, reservarTareaOutbox } from './_lib/orbit-domain.js';
+
+// Envoltorio de reservarTareaOutbox: un fallo aquí (ej. Firestore no responde) nunca debe impedir
+// ni la respuesta 200 al webhook ni la comunicación legítima. Ante excepción, se asume "todavía no
+// ejecutada" (true) — el peor caso posible es un WhatsApp duplicado, nunca uno perdido, y nunca peor
+// que el comportamiento previo a que Orbit existiera (que no tenía ninguna deduplicación en la rama
+// de creación de contacto, y solo el flag de Brevo en la rama de actualización).
+async function reservarTareaOutboxSeguro(transaction, tarea) {
+  try {
+    return await reservarTareaOutbox(transaction, tarea);
+  } catch (err) {
+    console.error('reservarTareaOutbox falló (se asume no ejecutada, se procede igual):', err.message);
+    return true;
+  }
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -82,6 +98,30 @@ export default async function handler(req, res) {
     }
     console.log(`Tipo: ${tipoContacto} → Lista #${targetList}`);
 
+    // ── Orbit: identidad + Compra + Acceso ────────────────────────
+    // Aislado en su propio try/catch a propósito: un fallo aquí nunca debe impedir que el resto
+    // del webhook (Brevo/Sheets/WhatsApp/masterclass_compras/workbook_acceso) siga funcionando
+    // exactamente como hoy. Si Orbit falla, se cae a los valores que el webhook ya usaba antes de
+    // que Orbit existiera (masterclass = 'mas-se-aleja', acceso = activo) — nunca revoca por error.
+    let orbitMasterclass = isMasterclass ? 'mas-se-aleja' : null;
+    let orbitAccesoActivo = true;
+    let orbitTransaction = null;
+    if (isMasterclass) {
+      try {
+        const orbitResultado = await procesarEventoOrbit(body);
+        if (orbitResultado.ok) {
+          orbitTransaction = orbitResultado.transaction;
+          if (orbitResultado.masterclass) orbitMasterclass = orbitResultado.masterclass;
+          if (orbitResultado.accesoActivo !== null) orbitAccesoActivo = orbitResultado.accesoActivo;
+          console.log('Orbit procesado:', JSON.stringify(orbitResultado));
+        } else {
+          console.log('Orbit no procesó el evento (fallback a comportamiento previo):', orbitResultado.motivo);
+        }
+      } catch (err) {
+        console.error('Orbit error (se ignora, no bloquea el webhook):', err.message);
+      }
+    }
+
     // ── Buscar contacto en Brevo ─────────────────────────────────
     const searchRes = await fetch(
       `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
@@ -123,12 +163,14 @@ export default async function handler(req, res) {
         lista:    String(targetList),
         mensaje:  'Contacto nuevo creado desde Hotmart'
       });
-      await guardarEnFirestore(email, primerNombre, tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
+      await guardarEnFirestore(email, primerNombre, tipoContacto, isMasterclass ? orbitMasterclass : null);
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
-        await guardarCompraMasterclass(email, primerNombre, 'mas-se-aleja', telefonoLimpio);
-        await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
+        await guardarCompraMasterclass(email, primerNombre, orbitMasterclass, telefonoLimpio, orbitAccesoActivo);
+        if (await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
+          await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
+        }
       }
 
       return res.status(200).json({
@@ -204,12 +246,12 @@ export default async function handler(req, res) {
       lista:    String(targetList),
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
     });
-    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? 'mas-se-aleja' : null);
+    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? orbitMasterclass : null);
     if (isMasterclass) {
-      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', 'mas-se-aleja', telefonoLimpio || contact.attributes?.SMS || '');
+      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo);
     }
 
-    if (isMasterclass && !bienvenidaYaEnviada) {
+    if (isMasterclass && !bienvenidaYaEnviada && await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
       await programarBienvenidaMasterclass(
         telefonoLimpio || contact.attributes?.SMS || '',
         primerNombre || contact.attributes?.FIRSTNAME || '',
@@ -350,7 +392,7 @@ async function guardarEnFirestore(email, nombre, tipo, producto) {
 // una misma clienta acumule varias masterclasses sin que una compra borre a la anterior. El
 // Dashboard compartido ("Mi Espacio") lee de aquí — ver masterclass-platform-system, Bitácora
 // "Corrección #2 de alcance" (2026-07-15).
-async function guardarCompraMasterclass(email, nombre, producto, telefono) {
+async function guardarCompraMasterclass(email, nombre, producto, telefono, activo = true) {
   try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     const { google } = await import('googleapis');
@@ -375,12 +417,12 @@ async function guardarCompraMasterclass(email, nombre, producto, telefono) {
           // D-1: teléfono normalizado (FQ-1), fuente propia de Masterclass para personalizar
           // WhatsApp sin consultar el directorio histórico de Sheets — ver api/whatsapp.js.
           telefono: { stringValue: telefono || '' },
-          activo: { booleanValue: true },
+          activo: { booleanValue: activo },
           fecha: { stringValue: new Date().toISOString() }
         }
       })
     });
-    console.log('Firestore masterclass_compras actualizado:', docId);
+    console.log('Firestore masterclass_compras actualizado:', docId, '| activo:', activo);
   } catch (err) {
     console.error('Error guardando compra de masterclass:', err.message);
   }

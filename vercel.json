@@ -1,6 +1,17 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/api/mi-espacio-cuenta-crear", "destination": "/api/mi-espacio-auth?accion=cuenta-crear" },
+    { "source": "/api/mi-espacio-cuenta-solicitar", "destination": "/api/mi-espacio-auth?accion=cuenta-solicitar" },
+    { "source": "/api/mi-espacio-login", "destination": "/api/mi-espacio-auth?accion=login" },
+    { "source": "/api/mi-espacio-logout", "destination": "/api/mi-espacio-auth?accion=logout" },
+    { "source": "/api/mi-espacio-sesion", "destination": "/api/mi-espacio-auth?accion=sesion" },
+    { "source": "/api/mi-espacio-recuperar-solicitar", "destination": "/api/mi-espacio-auth?accion=recuperar-solicitar" },
+    { "source": "/api/mi-espacio-recuperar-confirmar", "destination": "/api/mi-espacio-auth?accion=recuperar-confirmar" },
+    { "source": "/api/mi-espacio-confirmar-correo", "destination": "/api/mi-espacio-auth?accion=confirmar-correo" },
+    { "source": "/api/mi-espacio-reenviar-confirmacion", "destination": "/api/mi-espacio-auth?accion=reenviar-confirmacion" },
+    { "source": "/api/v1/programa/:programa_id/resolver-edicion", "destination": "/api/v1/orbit?accion=resolver-edicion&programa_id=:programa_id" },
+    { "source": "/api/v1/edicion/:edicion_id/estado", "destination": "/api/v1/orbit?accion=estado&edicion_id=:edicion_id" },
     { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/bienvenida/:path*", "destination": "/public/bienvenida/index.html" },
     { "source": "/bienvenida", "destination": "/public/bienvenida/index.html" },

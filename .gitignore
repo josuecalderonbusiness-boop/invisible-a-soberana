@@ -76,3 +76,4 @@ test-notif.js
 .dataconnect
 
 .vercel
+.env*

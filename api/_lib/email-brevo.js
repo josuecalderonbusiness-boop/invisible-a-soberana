@@ -8,9 +8,12 @@
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 async function enviarCorreo({ destinatario, asunto, html }) {
-  const apiKey = process.env.BREVO_API_KEY;
+  // BREVO_KEY (no BREVO_API_KEY) — reutiliza la misma clave ya configurada y en uso por
+  // hotmart-webhook.js/register.js, en vez de pedir una segunda credencial para el mismo
+  // proveedor (corregido al validar el entorno real, 2026-08-02).
+  const apiKey = process.env.BREVO_KEY;
   const remitente = process.env.BREVO_SENDER_EMAIL;
-  if (!apiKey || !remitente) throw new Error('BREVO_API_KEY / BREVO_SENDER_EMAIL no configuradas');
+  if (!apiKey || !remitente) throw new Error('BREVO_KEY / BREVO_SENDER_EMAIL no configuradas');
 
   const res = await fetch(BREVO_API_URL, {
     method: 'POST',

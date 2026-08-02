@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Confirma tu correo — Mi espacio</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mi-espacio/auth.css">
+</head>
+<body>
+
+<div class="au-wrap">
+  <div class="au-card">
+    <div class="db-eyebrow">Tu espacio</div>
+    <h1 class="db-title" id="au-title">Confirmando tu correo...</h1>
+    <p class="db-sub" id="au-sub">Esto toma solo un momento.</p>
+
+    <div class="au-msg" id="au-msg" role="status"></div>
+    <a class="au-link" href="/mi-espacio/" id="au-link-espacio" style="display:none">Ir a mi espacio →</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('token');
+
+  // Mismo criterio que activar.html/recuperar.html: el token no queda visible en la URL
+  // mientras se procesa (auditoría de frontend de 3.1, 2026-08-01).
+  if (token) window.history.replaceState(null, '', window.location.pathname);
+
+  var title = document.getElementById('au-title');
+  var sub = document.getElementById('au-sub');
+  var msg = document.getElementById('au-msg');
+  var linkEspacio = document.getElementById('au-link-espacio');
+
+  function mostrarMensaje(texto, tipo) {
+    msg.textContent = texto;
+    msg.className = 'au-msg show au-' + tipo;
+  }
+
+  if (!token) {
+    title.textContent = 'Este enlace ya no es válido';
+    sub.textContent = 'Si necesitas confirmar tu correo, entra a Mi Espacio y usa la opción "Confirmar correo" desde ahí.';
+    return;
+  }
+
+  (async function () {
+    try {
+      var res = await fetch('/api/mi-espacio-confirmar-correo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token })
+      });
+      var data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        title.textContent = 'Este enlace ya no es válido';
+        sub.textContent = 'Si necesitas confirmar tu correo, entra a Mi Espacio y usa la opción "Confirmar correo" desde ahí.';
+        return;
+      }
+
+      title.textContent = 'Tu correo quedó confirmado';
+      sub.textContent = 'Gracias por confirmarlo — tu cuenta ya está protegida.';
+      linkEspacio.style.display = 'inline-block';
+      linkEspacio.focus();
+    } catch (err) {
+      title.textContent = 'No pudimos confirmar tu correo';
+      sub.textContent = 'Inténtalo nuevamente en unos minutos desde Mi Espacio.';
+    }
+  })();
+})();
+</script>
+</body>
+</html>

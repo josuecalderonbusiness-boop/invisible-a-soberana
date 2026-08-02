@@ -39,6 +39,18 @@ button { font: inherit; }
 .db-btn:disabled { opacity: .6; cursor: default; }
 .db-err { display: none; margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.3); font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 .db-err a { color: var(--gold-light); }
+.db-msg { display: none; margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.3); font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.db-msg.show { display: block; }
+.db-link { display: inline-block; margin-top: 14px; font-family: var(--font-eyebrow); font-size: 12px; color: var(--gold-light); text-decoration: none; }
+.db-link:hover { text-decoration: underline; }
+
+/* Aviso no bloqueante de correo sin confirmar — decisión de negocio 2026-08-01: nunca
+   impide el acceso al contenido, solo invita. */
+.ms-verificar-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 14px 20px; margin-bottom: 24px; border-radius: 12px; background: rgba(184,137,42,.08); border: 1px solid rgba(184,137,42,.25); }
+.ms-verificar-banner span { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.ms-verificar-banner button { flex-shrink: 0; padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(184,137,42,.4); background: transparent; color: var(--gold-light); font-family: var(--font-eyebrow); font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; cursor: pointer; }
+.ms-verificar-banner button:hover { background: rgba(184,137,42,.12); }
+.ms-verificar-banner button:disabled { opacity: .6; cursor: default; }
 
 /* ═══════════════════ SHELL ═══════════════════ */
 .ms-shell { display: none; min-height: 100vh; min-height: 100dvh; }
@@ -65,17 +77,58 @@ button { font: inherit; }
 
 /* ── Main ── */
 .ms-main { padding: 44px 48px 64px; max-width: 1180px; }
-.ms-topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
-.ms-topbar-title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 38px); font-weight: 900; margin-top: 10px; }
-.ms-topbar-sub { font-family: var(--font-body); font-size: 14.5px; color: var(--text-muted); max-width: 460px; margin-top: 10px; line-height: 1.6; }
-.ms-greeting { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--gold-light); margin-bottom: 6px; }
 
-.ms-stats { display: flex; gap: 14px; flex-wrap: wrap; border: 1px solid rgba(184,137,42,.18); border-radius: 16px; padding: 20px 26px; margin-bottom: 40px; }
-.ms-stat { display: flex; align-items: center; gap: 14px; padding-right: 28px; }
-.ms-stat:not(:last-child) { border-right: 1px solid rgba(184,137,42,.15); }
-.ms-stat svg { color: var(--gold-primary); flex-shrink: 0; }
-.ms-stat-n { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--gold-light); line-height: 1; }
-.ms-stat-l { font-family: var(--font-eyebrow); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+/* ── Hero scene (Sprint 3.1, iteración 2 — "El Estudio Dorado") ──────────────────────────────
+   Objetivo medible: ocultando todo lo que sigue (biblioteca, Sala Soberana), esta escena sola
+   debe transmitir producto premium. Hero + stats comparten una sola atmósfera, no dos bloques
+   separados — así se siente dirigida, no maquetada.
+   Regla del Oro Escaso: el dorado sigue siendo <10% de superficie, solo como luz, nunca relleno.
+   Regla del Plano Absoluto: profundidad por capas de gradiente radial, cero box-shadow. */
+.ms-hero-scene { position: relative; border-radius: 26px; padding: 72px 44px 44px; margin-bottom: 52px; overflow: hidden; isolation: isolate; }
+.ms-hero-scene::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(62% 55% at 88% -8%, rgba(212,168,67,.14), transparent 70%),
+    radial-gradient(58% 65% at -8% 20%, rgba(107,26,42,.38), transparent 72%),
+    radial-gradient(95% 75% at 50% 135%, rgba(61,12,17,.6), transparent 78%),
+    linear-gradient(165deg, var(--charcoal-soft) 0%, var(--charcoal-deep) 65%);
+}
+.ms-hero-scene::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  border: 1px solid rgba(184,137,42,.14); pointer-events: none;
+}
+
+.ms-topbar { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 48px; }
+.ms-topbar > div:first-child { max-width: 640px; }
+
+.ms-eyebrow-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.ms-eyebrow-row .db-eyebrow { margin-bottom: 0; }
+.ms-eyebrow-rule { flex: 1; max-width: 100px; height: 1px; background: linear-gradient(90deg, rgba(184,137,42,.5), transparent); }
+
+.ms-topbar-title { font-family: var(--font-display); font-size: clamp(36px, 6vw, 60px); font-weight: 900; line-height: 1.08; text-wrap: balance; }
+.ms-topbar-sub { font-family: var(--font-body); font-size: 16px; color: var(--text-muted); max-width: 460px; margin-top: 20px; line-height: 1.7; }
+.ms-greeting { font-family: var(--font-display); font-style: italic; font-size: 17px; color: var(--gold-light); margin-bottom: 10px; }
+
+.ms-hero-reveal { animation: msHeroIn .8s cubic-bezier(.16,1,.3,1) both; }
+.ms-hero-reveal.ms-delay-1 { animation-delay: .1s; }
+.ms-hero-reveal.ms-delay-2 { animation-delay: .2s; }
+@keyframes msHeroIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .ms-hero-reveal { animation: none; } }
+
+/* ── Stats — línea editorial, no tres tarjetas ── */
+.ms-stats { position: relative; display: flex; flex-wrap: wrap; gap: 40px; padding-top: 32px; border-top: 1px solid rgba(184,137,42,.16); }
+.ms-stat { display: flex; flex-direction: column; gap: 8px; }
+.ms-stat-top { display: flex; align-items: center; gap: 10px; }
+.ms-stat-icon { display: flex; align-items: center; color: rgba(184,137,42,.8); flex-shrink: 0; }
+.ms-stat-icon svg { width: 18px; height: 18px; }
+.ms-stat-n { font-family: var(--font-display); font-size: clamp(32px, 4vw, 44px); font-weight: 900; color: var(--gold-light); line-height: 1; }
+.ms-stat-l { font-family: var(--font-eyebrow); font-size: 11px; letter-spacing: .04em; color: var(--text-muted); line-height: 1.4; }
+
+@media (max-width: 640px) {
+  .ms-hero-scene { padding: 48px 24px 32px; border-radius: 20px; }
+  .ms-eyebrow-rule { display: none; }
+  .ms-stats { gap: 28px 32px; }
+}
 
 .ms-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
 .ms-section-header h2 { font-family: var(--font-eyebrow); font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--text-light); }
@@ -208,6 +261,10 @@ button { font: inherit; }
   .ms-nav-item { padding: 10px; }
   .ms-nav-item.soon .ms-soon-tag { display: none; }
   .ms-sidebar-footer { display: none; }
+  /* Cerrar sesión debe verse sin depender de que la alumna descubra el scroll horizontal
+     de este menú — se fija al borde derecho visible en vez de scrollear con el resto
+     (hallazgo de la auditoría final de 3.1, 2026-08-01: antes quedaba fuera de vista). */
+  #ms-logout-nav { position: sticky; right: 0; flex-shrink: 0; background: var(--charcoal-deep); box-shadow: -14px 0 12px -4px rgba(21,13,17,.85); }
   .ms-main { padding: 28px 18px 48px; }
   .ms-community { grid-template-columns: 1fr; }
   .ms-features { grid-template-columns: repeat(2, 1fr); }
@@ -229,13 +286,25 @@ button { font: inherit; }
   <div class="db-login" id="db-login">
     <div class="db-eyebrow">Tu espacio</div>
     <h1 class="db-title">Código <em style="font-style:italic;color:var(--gold-light)">Soberana</em></h1>
-    <p class="db-sub">Ingresa el correo con el que accediste a tu experiencia.</p>
-    <input class="db-input" id="db-email" type="email" placeholder="tu@correo.com" autocomplete="email">
-    <button class="db-btn" id="db-login-btn" onclick="dbLogin()">Entrar a mi espacio →</button>
+    <p class="db-sub" id="db-sub">Ingresa el correo con el que compraste tu experiencia.</p>
+
+    <form id="db-form-correo" onsubmit="dbEnviarCorreo(event)">
+      <input class="db-input" id="db-email" type="email" placeholder="tu@correo.com" autocomplete="email" required>
+      <button class="db-btn" id="db-btn-correo" type="submit">Continuar →</button>
+    </form>
+
+    <form id="db-form-password" onsubmit="dbEnviarPassword(event)" style="display:none">
+      <input class="db-input" id="db-password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+      <button class="db-btn" id="db-btn-password" type="submit">Ingresar a mi espacio →</button>
+      <a class="db-link" href="#" id="db-cambiar-correo" onclick="dbCambiarCorreo(event)">← Usar otro correo</a>
+      <a class="db-link" href="/mi-espacio/recuperar.html" id="db-olvidaste-link">¿Olvidaste tu contraseña?</a>
+    </form>
+
     <div class="db-err" id="db-err">
       No encontramos tu espacio con ese correo. Si ya tienes acceso, escríbenos y te lo abrimos:
-      <br><br><a id="db-err-wa" href="#" target="_blank">Escribir por WhatsApp</a>
+      <br><br><a id="db-err-wa" href="#" target="_blank">Necesito ayuda para ingresar</a>
     </div>
+    <div class="db-msg" id="db-err-login"></div>
   </div>
 </div>
 
@@ -270,6 +339,13 @@ button { font: inherit; }
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2-2.4 3.7"/><circle cx="12" cy="17" r=".4" fill="currentColor"/></svg>
         <span>Ayuda</span><span class="ms-soon-tag">Pronto</span>
       </div>
+      <!-- Vive en .ms-nav (no en .ms-sidebar-footer) a propósito: el footer se oculta por
+           completo debajo de 980px (ver media query), lo que dejaba sin forma de cerrar
+           sesión en tablet/celular — hallazgo de la prueba end-to-end de 3.1, 2026-08-01. -->
+      <div class="ms-nav-item" id="ms-logout-nav" onclick="dbLogout()" style="cursor:pointer; margin-top:auto;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Cerrar sesión</span>
+      </div>
     </nav>
     <div class="ms-sidebar-footer">
       <div class="ms-sidebar-monogram">S</div>
@@ -278,19 +354,28 @@ button { font: inherit; }
   </aside>
 
   <main class="ms-main">
-    <div class="ms-topbar">
-      <div>
-        <!-- ms-greeting: slot reservado para "Hola, [nombre]" cuando Mi Espacio reconozca a la
-             clienta por nombre. Sin perfil/auth todavía — queda vacío y oculto hasta entonces. -->
-        <div class="ms-greeting" id="ms-greeting" style="display:none"></div>
-        <div class="db-eyebrow" style="margin-bottom:0">Tu espacio</div>
-        <h1 class="ms-topbar-title">Aquí sigue tu poder</h1>
-        <p class="ms-topbar-sub">Todo lo que necesitas para seguir creciendo, recordando y transformando tu realidad.</p>
-      </div>
-      <!-- slot de eyebrow/badge disponible para más adelante si hace falta; sin copy de venta por ahora -->
+    <div class="ms-verificar-banner" id="ms-verificar-banner" style="display:none">
+      <span>Confirma tu correo para mantener tu cuenta protegida y recibir las novedades de tus programas.</span>
+      <button type="button" id="ms-verificar-btn" onclick="dbConfirmarCorreo()">Confirmar correo</button>
     </div>
+    <div class="ms-hero-scene">
+      <div class="ms-topbar">
+        <div>
+          <!-- ms-greeting: slot reservado para "Hola, [nombre]" cuando Mi Espacio reconozca a la
+               clienta por nombre. Sin perfil/auth todavía — queda vacío y oculto hasta entonces. -->
+          <div class="ms-greeting" id="ms-greeting" style="display:none"></div>
+          <div class="ms-eyebrow-row ms-hero-reveal">
+            <div class="db-eyebrow" style="margin-bottom:0">Tu espacio</div>
+            <div class="ms-eyebrow-rule"></div>
+          </div>
+          <h1 class="ms-topbar-title ms-hero-reveal ms-delay-1">Aquí sigue tu poder</h1>
+          <p class="ms-topbar-sub ms-hero-reveal ms-delay-2">Todo lo que necesitas para seguir creciendo, recordando y transformando tu realidad.</p>
+        </div>
+        <!-- slot de eyebrow/badge disponible para más adelante si hace falta; sin copy de venta por ahora -->
+      </div>
 
-    <div class="ms-stats" id="ms-stats"></div>
+      <div class="ms-stats" id="ms-stats"></div>
+    </div>
 
     <div class="ms-section-header">
       <h2>Tus experiencias</h2>
@@ -432,7 +517,7 @@ const PRODUCTOS = {
 // Agrega 4 experiencias ficticias a PRODUCTOS solo cuando el parámetro está presente,
 // para ver la biblioteca con 5 cards sin tocar Firestore ni datos reales.
 // La experiencia real "mas-se-aleja" no se modifica en ningún punto de este bloque.
-// Para retirar la prueba: borrar este bloque completo + la línea marcada dentro de dbLogin().
+// Para retirar la prueba: borrar este bloque completo + la línea marcada dentro de dbPrepararCompras().
 // ══════════════════════════════════════════════════════════════════════════════
 const MS_DEMO = new URLSearchParams(location.search).has('demo');
 const MS_DEMO_KEYS = ['demo-fuego-interior', 'demo-raices-de-poder', 'demo-mente-clara', 'demo-raiz-firme'];
@@ -503,46 +588,196 @@ function dbEstado(config) {
 }
 const ESTADO_LABEL = { vivo: 'En vivo', descanso: 'En un descanso', proximo: 'Próximamente', replay: 'En tu espacio' };
 
-async function dbLogin() {
+let dbEmailPendiente = '';
+let dbModoPassword = 'login'; // 'login' | 'crear' — decide a qué endpoint llama dbEnviarPassword()
+
+// Prepara la lista de compras para mostrar la biblioteca: filtra por catálogo conocido,
+// agrega las de demo si corresponde, y ordena de más reciente a más antigua. Extraído para
+// no repetirlo entre el flujo de login y la verificación de sesión al cargar la página
+// (conexión de index.html al backend nuevo, 2026-08-01).
+function dbPrepararCompras(comprasCrudas) {
+  const compras = (comprasCrudas || []).filter(function (c) { return PRODUCTOS[c.producto]; });
+  // línea del bloque temporal de prueba visual — borrar junto con el bloque de arriba
+  if (MS_DEMO) MS_DEMO_KEYS.forEach(function (k) { compras.push({ producto: k, fecha: new Date().toISOString() }); });
+  compras.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); }); // más reciente primero
+  return compras;
+}
+
+function dbLimpiarMensajes() {
+  var err = document.getElementById('db-err');
+  var errLogin = document.getElementById('db-err-login');
+  err.style.display = 'none';
+  errLogin.classList.remove('show');
+}
+
+// Aplica el modo del formulario de contraseña (crear cuenta vs. iniciar sesión): texto,
+// botón, autocomplete y visibilidad de "¿Olvidaste tu contraseña?" (no aplica en modo
+// crear, todavía no existe una contraseña que olvidar) — auditoría final de 3.1, 2026-08-01.
+function dbAplicarModoPassword(modo) {
+  dbModoPassword = modo;
+  const esCreacion = modo === 'crear';
+  document.getElementById('db-sub').textContent = esCreacion
+    ? 'Crea una contraseña para entrar a tu espacio.'
+    : 'Ingresa tu contraseña para continuar.';
+  document.getElementById('db-btn-password').textContent = esCreacion ? 'Crear mi cuenta →' : 'Ingresar a mi espacio →';
+  document.getElementById('db-password').autocomplete = esCreacion ? 'new-password' : 'current-password';
+  document.getElementById('db-olvidaste-link').style.display = esCreacion ? 'none' : 'inline-block';
+}
+
+// Permite volver a escribir el correo sin recargar la página (auditoría final de 3.1,
+// 2026-08-01 — antes era un callejón sin salida si se equivocaba de correo).
+function dbCambiarCorreo(ev) {
+  ev.preventDefault();
+  document.getElementById('db-form-password').style.display = 'none';
+  document.getElementById('db-form-correo').style.display = 'block';
+  document.getElementById('db-password').value = '';
+  document.getElementById('db-email').value = '';
+  document.getElementById('db-sub').textContent = 'Ingresa el correo con el que compraste tu experiencia.';
+  dbLimpiarMensajes();
+  document.getElementById('db-email').focus();
+}
+
+// Paso 1: la alumna escribe su correo. Orbit (hoy: verificación provisional) decide si
+// tiene Derecho vigente y si ya existe cuenta — Mi Espacio nunca lo infiere por su cuenta.
+async function dbEnviarCorreo(ev) {
+  ev.preventDefault();
   const email = document.getElementById('db-email').value.trim().toLowerCase();
-  const btn = document.getElementById('db-login-btn');
-  const err = document.getElementById('db-err');
-  err.classList.remove('show'); err.style.display = 'none';
+  const btn = document.getElementById('db-btn-correo');
+  dbLimpiarMensajes();
   if (!email || !email.includes('@')) return;
 
   btn.textContent = 'Verificando...';
   btn.disabled = true;
   try {
-    const res = await fetch('/api/mi-espacio-login', {
+    const res = await fetch('/api/mi-espacio-cuenta-solicitar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
+      body: JSON.stringify({ correo: email })
     });
     const data = await res.json();
-    const compras = (data.compras || []).filter(function (c) { return PRODUCTOS[c.producto]; });
 
-    // línea del bloque temporal de prueba visual — borrar junto con el bloque de arriba
-    if (MS_DEMO) MS_DEMO_KEYS.forEach(function (k) { compras.push({ producto: k, fecha: new Date().toISOString() }); });
-
-    if (!compras.length) {
+    if (!data.ok) {
       document.getElementById('db-err-wa').href =
         'https://wa.me/573189045623?text=' + encodeURIComponent('Hola Josué, no encuentro mi acceso a mi espacio. Mi correo es: ' + email);
-      err.style.display = 'block';
-      btn.textContent = 'Entrar a mi espacio →';
+      document.getElementById('db-err').style.display = 'block';
+      btn.textContent = 'Continuar →';
       btn.disabled = false;
       return;
     }
 
-    compras.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); }); // más reciente primero
-    dbEmail = email;
-    dbCompras = compras;
-    localStorage.setItem('mi_espacio_email', email);
+    dbEmailPendiente = email;
+    document.getElementById('db-form-correo').style.display = 'none';
+    document.getElementById('db-form-password').style.display = 'block';
+    // accion === 'iniciar_sesion' → ya existe cuenta; accion === 'crear_cuenta' → hay
+    // Derecho y todavía no existe cuenta, se muestra el formulario de contraseña de
+    // inmediato, sin pasar por el correo primero (decisión de negocio 2026-08-01: no
+    // romper el impulso de compra).
+    dbAplicarModoPassword(data.accion === 'iniciar_sesion' ? 'login' : 'crear');
+    document.getElementById('db-password').focus();
+    btn.textContent = 'Continuar →';
+    btn.disabled = false;
+  } catch (e) {
+    console.error(e);
+    btn.textContent = 'Continuar →';
+    btn.disabled = false;
+  }
+}
+
+// Paso 2: correo + contraseña. Orbit vuelve a confirmar el Derecho en este mismo instante
+// (nunca se reutiliza lo que respondió en el paso 1 como verdad permanente).
+// Según dbModoPassword: 'login' entra con una cuenta ya existente; 'crear' crea la cuenta
+// de inmediato con esta contraseña (decisión de negocio 2026-08-01 — ver
+// api/mi-espacio-cuenta-crear.js).
+async function dbEnviarPassword(ev) {
+  ev.preventDefault();
+  const password = document.getElementById('db-password').value;
+  const btn = document.getElementById('db-btn-password');
+  const errLogin = document.getElementById('db-err-login');
+  const esCreacion = dbModoPassword === 'crear';
+  const endpoint = esCreacion ? '/api/mi-espacio-cuenta-crear' : '/api/mi-espacio-login';
+  // Fallback específico por modo — antes mostraba siempre "Correo o contraseña
+  // incorrectos", que no aplica al crear cuenta (auditoría final de 3.1, 2026-08-01).
+  const errorGenerico = esCreacion ? 'No se pudo crear la cuenta.' : 'Correo o contraseña incorrectos.';
+  errLogin.classList.remove('show');
+  if (!password) return;
+  if (esCreacion && password.length < 8) {
+    errLogin.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+    errLogin.classList.add('show');
+    return;
+  }
+
+  btn.textContent = esCreacion ? 'Creando tu cuenta...' : 'Ingresando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ correo: dbEmailPendiente, password: password })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      if (esCreacion && res.status === 409) {
+        // La cuenta ya existía (condición de carrera, ej. doble pestaña) — se pasa a modo
+        // "iniciar sesión" sin recargar la página, conservando el correo ya escrito
+        // (auditoría final de 3.1, 2026-08-01: antes quedaba atascada sin salida).
+        dbAplicarModoPassword('login');
+        document.getElementById('db-password').value = '';
+        errLogin.textContent = 'Esa cuenta ya existe — ingresa con tu contraseña.';
+        errLogin.classList.add('show');
+        btn.disabled = false;
+        document.getElementById('db-password').focus();
+        return;
+      }
+      errLogin.textContent = data.error || errorGenerico;
+      errLogin.classList.add('show');
+      btn.textContent = esCreacion ? 'Crear mi cuenta →' : 'Ingresar a mi espacio →';
+      btn.disabled = false;
+      return;
+    }
+
+    dbEmail = data.correo;
+    dbMostrarBannerVerificacion(data.emailVerified);
+    dbCompras = dbPrepararCompras(data.compras);
     msShowBiblioteca();
   } catch (e) {
     console.error(e);
-    btn.textContent = 'Entrar a mi espacio →';
+    errLogin.textContent = 'No pudimos conectarnos en este momento. Inténtalo nuevamente en unos minutos.';
+    errLogin.classList.add('show');
+    btn.textContent = esCreacion ? 'Crear mi cuenta →' : 'Ingresar a mi espacio →';
     btn.disabled = false;
   }
+}
+
+// Aviso no bloqueante de correo sin confirmar — nunca oculta ni restringe contenido, solo
+// invita (decisión de negocio 2026-08-01).
+function dbMostrarBannerVerificacion(emailVerified) {
+  document.getElementById('ms-verificar-banner').style.display = emailVerified ? 'none' : 'flex';
+}
+
+async function dbConfirmarCorreo() {
+  const btn = document.getElementById('ms-verificar-btn');
+  const textoOriginal = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  try {
+    await fetch('/api/mi-espacio-reenviar-confirmacion', { method: 'POST', credentials: 'include' });
+    btn.textContent = 'Revisa tu correo';
+  } catch (e) {
+    console.warn('Error reenviando confirmación:', e.message);
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
+  }
+}
+
+async function dbLogout() {
+  try {
+    await fetch('/api/mi-espacio-logout', { method: 'POST', credentials: 'include' });
+  } catch (e) {
+    console.warn('Error cerrando sesión:', e.message);
+  }
+  window.location.reload();
 }
 
 function msShowBiblioteca() {
@@ -578,8 +813,10 @@ function msRenderStats() {
       icon: '<circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/>' }
   ];
   document.getElementById('ms-stats').innerHTML = stats.map(function (s) {
-    return '<div class="ms-stat"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">' + s.icon + '</svg>' +
-      '<div><div class="ms-stat-n">' + s.n + '</div><div class="ms-stat-l">' + s.l + '</div></div></div>';
+    return '<div class="ms-stat">' +
+      '<div class="ms-stat-top"><span class="ms-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + s.icon + '</svg></span>' +
+      '<span class="ms-stat-n">' + s.n + '</span></div>' +
+      '<div class="ms-stat-l">' + s.l + '</div></div>';
   }).join('');
 }
 
@@ -821,9 +1058,23 @@ async function msGuardarRespuestas(producto, textareas) {
   } catch (e) { console.warn('Error guardando el cuadernillo:', e.message); }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const saved = localStorage.getItem('mi_espacio_email');
-  if (saved) { document.getElementById('db-email').value = saved; dbLogin(); }
+// Verifica si ya hay una sesión de dispositivo vigente (cookie HttpOnly) — reemplaza el
+// auto-login viejo por localStorage (guardaba el correo en texto plano, sin ninguna prueba
+// de identidad). "Mantener sesión": si la cookie sigue vigente, entra directo a la
+// biblioteca sin volver a pedir nada (conexión de index.html al backend nuevo, 2026-08-01).
+document.addEventListener('DOMContentLoaded', async function () {
+  try {
+    const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+    const data = await res.json();
+    if (data.autenticado) {
+      dbEmail = data.correo;
+      dbMostrarBannerVerificacion(data.emailVerified);
+      dbCompras = dbPrepararCompras(data.compras);
+      msShowBiblioteca();
+    }
+  } catch (e) {
+    console.warn('No se pudo verificar la sesión:', e.message);
+  }
 });
 </script>
 

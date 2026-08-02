@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Recuperar acceso — Mi espacio</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/mi-espacio/auth.css">
+</head>
+<body>
+
+<div class="au-wrap">
+  <div class="au-card">
+    <div class="db-eyebrow">Tu espacio</div>
+    <h1 class="db-title" id="au-title">Recuperar tu acceso</h1>
+    <p class="db-sub" id="au-sub">Escribe el correo con el que creaste tu cuenta y te enviaremos un enlace para recuperar tu acceso.</p>
+
+    <!-- Paso 1: sin token — pedir correo -->
+    <form id="au-form-solicitar" novalidate>
+      <div class="au-field">
+        <label class="au-label" for="au-correo">Tu correo</label>
+        <input class="db-input" id="au-correo" name="correo" type="email" autocomplete="email" placeholder="tu@correo.com" required>
+      </div>
+      <button class="db-btn" id="au-btn-solicitar" type="submit">Enviar enlace →</button>
+    </form>
+
+    <!-- Paso 2: con token — nueva contraseña -->
+    <form id="au-form-confirmar" novalidate style="display:none">
+      <div class="au-field">
+        <label class="au-label" for="au-password">Contraseña nueva</label>
+        <input class="db-input" id="au-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="au-hint">Mínimo 8 caracteres.</div>
+      </div>
+      <div class="au-field">
+        <label class="au-label" for="au-password-confirm">Confirma tu contraseña</label>
+        <input class="db-input" id="au-password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <button class="db-btn" id="au-btn-confirmar" type="submit">Guardar contraseña →</button>
+    </form>
+
+    <div class="au-msg" id="au-msg" role="status"></div>
+    <a class="au-link" href="/mi-espacio/" id="au-link-espacio" style="display:none">Ingresar a mi espacio →</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('token');
+
+  // Igual que en confirmar.html: el token se retira de la URL visible de inmediato, queda
+  // solo en esta variable de JS para la petición (auditoría de frontend de 3.1, 2026-08-01).
+  if (token) window.history.replaceState(null, '', window.location.pathname);
+
+  var msg = document.getElementById('au-msg');
+  var title = document.getElementById('au-title');
+  var sub = document.getElementById('au-sub');
+  var linkEspacio = document.getElementById('au-link-espacio');
+  var formSolicitar = document.getElementById('au-form-solicitar');
+  var formConfirmar = document.getElementById('au-form-confirmar');
+
+  function mostrarMensaje(texto, tipo) {
+    msg.textContent = texto;
+    msg.className = 'au-msg show au-' + tipo;
+  }
+
+  if (token) {
+    // Paso 2: definir contraseña nueva. El subtítulo del paso 1 no aplica acá — se
+    // actualiza también (hallazgo de la auditoría de frontend de 3.1, 2026-08-01: quedaba
+    // el texto de "escribí tu correo" mientras ya se mostraba el formulario de contraseña).
+    sub.textContent = 'Elige tu nueva contraseña para volver a ingresar a tu espacio.';
+    formSolicitar.style.display = 'none';
+    formConfirmar.style.display = 'block';
+    document.getElementById('au-password').focus();
+
+    formConfirmar.addEventListener('submit', async function (ev) {
+      ev.preventDefault();
+      msg.className = 'au-msg';
+
+      var password = document.getElementById('au-password').value;
+      var confirmacion = document.getElementById('au-password-confirm').value;
+      var btn = document.getElementById('au-btn-confirmar');
+
+      if (password.length < 8) {
+        mostrarMensaje('La contraseña debe tener al menos 8 caracteres.', 'error');
+        return;
+      }
+      if (password !== confirmacion) {
+        mostrarMensaje('Las contraseñas no coinciden.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        var res = await fetch('/api/mi-espacio-recuperar-confirmar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ token: token, password: password })
+        });
+        var data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          mostrarMensaje(data.error || 'No se pudo actualizar la contraseña. Vuelve a intentarlo.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Guardar contraseña →';
+          return;
+        }
+
+        formConfirmar.style.display = 'none';
+        title.textContent = 'Tu contraseña quedó lista';
+        sub.textContent = 'Tu espacio ya te está esperando.';
+        linkEspacio.style.display = 'inline-block';
+        linkEspacio.focus();
+      } catch (err) {
+        mostrarMensaje('No pudimos conectarnos en este momento. Inténtalo nuevamente en unos minutos.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Guardar contraseña →';
+      }
+    });
+    return;
+  }
+
+  // Paso 1: pedir el correo.
+  document.getElementById('au-correo').focus();
+
+  formSolicitar.addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    msg.className = 'au-msg';
+
+    var correo = document.getElementById('au-correo').value.trim().toLowerCase();
+    var btn = document.getElementById('au-btn-solicitar');
+    if (!correo || correo.indexOf('@') === -1) {
+      mostrarMensaje('Escribe un correo válido.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+      var res = await fetch('/api/mi-espacio-recuperar-solicitar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: correo })
+      });
+      var data = await res.json();
+
+      // La respuesta siempre es genérica por diseño (protección anti-enumeración) —
+      // se muestra igual exista o no la cuenta.
+      formSolicitar.style.display = 'none';
+      title.textContent = 'Revisa tu correo';
+      mostrarMensaje(data.mensaje || 'Si ese correo tiene una cuenta con nosotras, te enviamos un enlace para volver a entrar. Revisa también la carpeta de spam, por si acaso.', 'ok');
+    } catch (err) {
+      mostrarMensaje('No pudimos conectarnos en este momento. Inténtalo nuevamente en unos minutos.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Enviar enlace →';
+    }
+  });
+})();
+</script>
+</body>
+</html>

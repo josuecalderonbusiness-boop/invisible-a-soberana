@@ -1,8 +1,27 @@
-// api/mi-espacio-login.js — busca las masterclasses activas de un correo en Firestore.
-// El cliente (public/mi-espacio) no puede consultar Firestore directamente: las reglas de
-// seguridad no cubren colecciones nuevas como masterclass_compras. Este endpoint usa la misma
-// cuenta de servicio que ya usa api/hotmart-webhook.js para escribir, evitando depender de que
-// alguien configure reglas de seguridad nuevas en la consola de Firebase.
+// api/mi-espacio-login.js — login de Mi Espacio (Fase 3, subfase 3.1).
+//
+// Correo + contraseña, verificados contra la Cuenta; en cada login se re-verifica el
+// Derecho (hoy: verificación provisional, ver _lib/derecho-provisional.js — en 3.2 pasa a
+// ser la llamada real a Orbit) — Mi Espacio nunca persiste esa autorización como verdad
+// propia, la vuelve a preguntar en cada inicio de sesión nuevo.
+
+import { obtenerCuenta, normalizarCorreo } from './_lib/cuenta.js';
+import { hashPassword, verifyPassword } from './_lib/auth-password.js';
+import { obtenerComprasVigentes } from './_lib/derecho-provisional.js';
+import { crearToken, cookieDeSesion } from './_lib/auth-session.js';
+import { puedenIntentarTodas, registrarIntento, registrarExito } from './_lib/rate-limit.js';
+import { ipDelRequest } from './_lib/request-ip.js';
+
+const ERROR_GENERICO = 'Correo o contraseña incorrectos.';
+
+// Hash señuelo con costo idéntico a un hash real (mismo scrypt) — se compara contra esto
+// cuando la cuenta no existe, para que el tiempo de respuesta sea igual al de una cuenta
+// real con contraseña incorrecta. Corrige el timing side-channel encontrado en la
+// auditoría de 3.1 (2026-08-01, hallazgo crítico #1): antes, con "cuenta && ... && verifyPassword(...)",
+// el corto-circuito evitaba ejecutar scrypt cuando la cuenta no existía, y esa diferencia de
+// tiempo delataba si un correo tenía cuenta — exactamente la enumeración que el diseño entero
+// se propuso evitar con mensajes genéricos.
+const HASH_SEÑUELO = hashPassword('valor-fijo-nunca-usado-como-contraseña-real');
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,54 +30,50 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const email = (req.body?.email || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) return res.status(400).json({ error: 'email inválido' });
+  const correo = normalizarCorreo(req.body?.correo);
+  const password = req.body?.password || '';
+  if (!correo || !password) return res.status(400).json({ error: ERROR_GENERICO });
+
+  const ip = ipDelRequest(req);
+  if (!(await puedenIntentarTodas([['ip', ip], ['correo', correo]]))) {
+    return res.status(429).json({ error: 'Demasiados intentos. Inténtalo nuevamente en unos minutos.' });
+  }
 
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    const { google } = await import('googleapis');
-    const auth = new google.auth.GoogleAuth({
-      credentials: serviceAccount,
-      scopes: ['https://www.googleapis.com/auth/datastore']
-    });
-    const token = await auth.getAccessToken();
+    const cuenta = await obtenerCuenta(correo);
+    const cuentaLista = cuenta && cuenta.estado === 'activa';
+    // Se ejecuta siempre, exista o no la cuenta — mismo costo de cómputo en ambos casos.
+    const passwordCorrecta = verifyPassword(password, cuentaLista ? cuenta.passwordHash : HASH_SEÑUELO);
+    const passwordOk = cuentaLista && passwordCorrecta;
 
-    const url = 'https://firestore.googleapis.com/v1/projects/soberana-app/databases/(default)/documents:runQuery';
-    const body = {
-      structuredQuery: {
-        from: [{ collectionId: 'masterclass_compras' }],
-        where: {
-          compositeFilter: {
-            op: 'AND',
-            filters: [
-              { fieldFilter: { field: { fieldPath: 'email' }, op: 'EQUAL', value: { stringValue: email } } },
-              { fieldFilter: { field: { fieldPath: 'activo' }, op: 'EQUAL', value: { booleanValue: true } } }
-            ]
-          }
-        }
-      }
-    };
-    const fsRes = await fetch(url, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const rows = await fsRes.json();
+    if (!passwordOk) {
+      await registrarIntento('ip', ip);
+      await registrarIntento('correo', correo);
+      return res.status(401).json({ error: ERROR_GENERICO });
+    }
 
-    const compras = (Array.isArray(rows) ? rows : [])
-      .filter(r => r.document)
-      .map(r => {
-        const f = r.document.fields || {};
-        return {
-          producto: f.producto?.stringValue || '',
-          nombre: f.nombre?.stringValue || '',
-          fecha: f.fecha?.stringValue || ''
-        };
-      });
+    // Una sola consulta cubre "¿hay Derecho?" y "¿qué compras mostrar en la biblioteca?" —
+    // antes eran dos llamadas separadas (tieneDerechoVigente + una consulta aparte desde
+    // index.html); se unificaron al conectar index.html al backend nuevo, 2026-08-01.
+    const compras = await obtenerComprasVigentes(correo);
+    if (compras.length === 0) {
+      // Cuenta y contraseña correctas, pero sin Derecho vigente (ej. reembolso) — mismo
+      // mensaje genérico, nunca se distingue de una contraseña incorrecta. Se cuenta contra
+      // IP y correo por igual (decisión explícita, auditoría de 3.1: consistencia con el
+      // resto de fallos de este endpoint, en vez de tratamiento especial para este caso).
+      await registrarIntento('ip', ip);
+      await registrarIntento('correo', correo);
+      return res.status(401).json({ error: ERROR_GENERICO });
+    }
 
-    return res.status(200).json({ ok: true, compras });
+    await registrarExito('ip', ip);
+    await registrarExito('correo', correo);
+
+    const sesion = crearToken(correo, cuenta.sessionVersion || 0);
+    res.setHeader('Set-Cookie', cookieDeSesion(sesion));
+    return res.status(200).json({ ok: true, correo, compras, emailVerified: !!cuenta.emailVerified });
   } catch (err) {
     console.error('mi-espacio-login error:', err.message);
-    return res.status(200).json({ ok: false, compras: [] });
+    return res.status(500).json({ error: 'No se pudo iniciar sesión.' });
   }
 }

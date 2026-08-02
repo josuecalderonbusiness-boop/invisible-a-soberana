@@ -13,7 +13,7 @@
 
 import { obtenerCuenta, crearCuenta, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword } from './_lib/auth-password.js';
-import { tieneDerechoVigente, obtenerComprasVigentes } from './_lib/derecho-provisional.js';
+import { obtenerComprasVigentes } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo } from './_lib/email-brevo.js';
@@ -49,8 +49,12 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: 'Esa cuenta ya existe. Inicia sesión con tu contraseña.' });
     }
 
-    const hayDerecho = await tieneDerechoVigente(correo);
-    if (!hayDerecho) {
+    // Una sola llamada a Orbit cubre "¿hay Derecho?" y "qué compras devolver al crear la
+    // sesión" — antes eran dos llamadas separadas (tieneDerechoVigente + obtenerComprasVigentes),
+    // que con el cliente real duplicaban la latencia de red en cada alta de cuenta (hallazgo
+    // de la auditoría final de 3.2, 2026-08-02; mismo patrón ya aplicado en mi-espacio-login.js).
+    const compras = await obtenerComprasVigentes(correo);
+    if (compras.length === 0) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
       return res.status(403).json({ error: 'No encontramos una compra asociada a ese correo.' });
@@ -79,7 +83,6 @@ export default async function handler(req, res) {
     await registrarExito('ip', ip);
     await registrarExito('correo', correo);
 
-    const compras = await obtenerComprasVigentes(correo);
     const sesion = crearTokenSesion(correo, 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
     return res.status(200).json({ ok: true, correo, compras });

@@ -1,13 +1,13 @@
 // api/mi-espacio-login.js — login de Mi Espacio (Fase 3, subfase 3.1).
 //
 // Correo + contraseña, verificados contra la Cuenta; en cada login se re-verifica el
-// Derecho (hoy: verificación provisional, ver _lib/derecho-provisional.js — en 3.2 pasa a
-// ser la llamada real a Orbit) — Mi Espacio nunca persiste esa autorización como verdad
-// propia, la vuelve a preguntar en cada inicio de sesión nuevo.
+// Derecho contra Orbit (ver _lib/orbit-perfil-acceso.js, Fase 3.2) — Mi Espacio nunca
+// persiste esa autorización como verdad propia, la vuelve a preguntar en cada inicio de
+// sesión nuevo.
 
 import { obtenerCuenta, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes } from './_lib/derecho-provisional.js';
+import { obtenerComprasVigentes } from './_lib/orbit-perfil-acceso.js';
 import { crearToken, cookieDeSesion } from './_lib/auth-session.js';
 import { puedenIntentarTodas, registrarIntento, registrarExito } from './_lib/rate-limit.js';
 import { ipDelRequest } from './_lib/request-ip.js';

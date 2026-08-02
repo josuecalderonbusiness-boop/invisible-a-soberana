@@ -358,6 +358,10 @@ button { font: inherit; }
       <span>Confirma tu correo para mantener tu cuenta protegida y recibir las novedades de tus programas.</span>
       <button type="button" id="ms-verificar-btn" onclick="dbConfirmarCorreo()">Confirmar correo</button>
     </div>
+    <div class="ms-verificar-banner" id="ms-verificacion-pendiente-banner" style="display:none">
+      <span>No pudimos confirmar tus programas en este momento. Tu sesión sigue activa.</span>
+      <button type="button" onclick="window.location.reload()">Reintentar</button>
+    </div>
     <div class="ms-hero-scene">
       <div class="ms-topbar">
         <div>
@@ -591,15 +595,19 @@ const ESTADO_LABEL = { vivo: 'En vivo', descanso: 'En un descanso', proximo: 'Pr
 let dbEmailPendiente = '';
 let dbModoPassword = 'login'; // 'login' | 'crear' — decide a qué endpoint llama dbEnviarPassword()
 
-// Prepara la lista de compras para mostrar la biblioteca: filtra por catálogo conocido,
-// agrega las de demo si corresponde, y ordena de más reciente a más antigua. Extraído para
-// no repetirlo entre el flujo de login y la verificación de sesión al cargar la página
-// (conexión de index.html al backend nuevo, 2026-08-01).
+// Prepara la lista de compras para mostrar la biblioteca: filtra por catálogo conocido y
+// agrega las de demo si corresponde. Extraído para no repetirlo entre el flujo de login y
+// la verificación de sesión al cargar la página (conexión de index.html al backend nuevo,
+// 2026-08-01).
+//
+// Ya NO ordena por fecha (Fase 3.2, 2026-08-02): el contrato de "perfil de acceso" de Orbit
+// solo expone programaId+derecho, nunca fecha de compra — decisión YAGNI explícita, hoy
+// existe un solo Programa y ordenar no aporta nada. Se retoma en Fase 4 (multiproducto) si
+// hace falta, ampliando el contrato en ese momento, no antes.
 function dbPrepararCompras(comprasCrudas) {
   const compras = (comprasCrudas || []).filter(function (c) { return PRODUCTOS[c.producto]; });
   // línea del bloque temporal de prueba visual — borrar junto con el bloque de arriba
-  if (MS_DEMO) MS_DEMO_KEYS.forEach(function (k) { compras.push({ producto: k, fecha: new Date().toISOString() }); });
-  compras.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); }); // más reciente primero
+  if (MS_DEMO) MS_DEMO_KEYS.forEach(function (k) { compras.push({ producto: k }); });
   return compras;
 }
 
@@ -1069,6 +1077,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (data.autenticado) {
       dbEmail = data.correo;
       dbMostrarBannerVerificacion(data.emailVerified);
+      // Orbit no respondió a tiempo (data.verificacionPendiente) — la sesión sigue siendo
+      // válida (ya la confirmó el backend), solo no sabemos qué programas mostrar todavía.
+      // Nunca se interpreta como "sin programas" ni se cierra la sesión (Fase 3.2).
+      document.getElementById('ms-verificacion-pendiente-banner').style.display = data.verificacionPendiente ? 'flex' : 'none';
       dbCompras = dbPrepararCompras(data.compras);
       msShowBiblioteca();
     }

@@ -1,15 +1,15 @@
 // api/mi-espacio-cuenta-solicitar.js — primer paso del login: la alumna escribe su correo.
 //
 // Regla de negocio permanente (2026-08-01): Orbit siempre confirma el Derecho antes de
-// mostrar cualquier formulario. Secuencia: (1) verificar Derecho (hoy: provisional, ver
-// _lib/derecho-provisional.js) → (2) si no hay Derecho, terminar sin crear cuenta →
+// mostrar cualquier formulario. Secuencia: (1) verificar Derecho contra Orbit (ver
+// _lib/orbit-perfil-acceso.js, Fase 3.2) → (2) si no hay Derecho, terminar sin crear cuenta →
 // (3) si hay Derecho y no existe cuenta, indicar al frontend que muestre el formulario de
 // creación de contraseña de inmediato (decisión de negocio 2026-08-01: prioriza no romper
 // el impulso de compra — ver mi-espacio-cuenta-crear.js, donde se crea la cuenta en sí).
 // Motivo del mensaje genérico: nunca revelar si un correo existe en otra parte del sistema
 // (protección contra enumeración de usuarios).
 
-import { tieneDerechoVigente } from './_lib/derecho-provisional.js';
+import { tieneDerechoVigente } from './_lib/orbit-perfil-acceso.js';
 import { obtenerCuenta, normalizarCorreo } from './_lib/cuenta.js';
 import { puedenIntentarTodas, registrarIntento, registrarExito } from './_lib/rate-limit.js';
 import { ipDelRequest } from './_lib/request-ip.js';

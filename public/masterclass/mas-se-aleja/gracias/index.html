@@ -231,7 +231,7 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
 (function () {
   var el = document.getElementById('gc-date-el');
   if (!el) return;
-  var EVENTO_INICIO = new Date('2026-08-01T19:00:00-05:00'); // Sábado 1 de agosto, 7:00 p.m. Colombia
+  var EVENTO_INICIO = new Date('2026-08-22T19:00:00-05:00'); // Sábado 22 de agosto, 7:00 p.m. Colombia
   var dias  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
   var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var diaSemana = dias[EVENTO_INICIO.getDay()];
@@ -281,7 +281,7 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
 // HTML servido por defecto es el copy LIVE; este bloque sobrescribe por id cuando toca Evergreen —
 // nunca dos páginas, nunca una condición aislada de este producto.
 (function () {
-  var EVENTO_FIN = new Date('2026-08-01T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
+  var EVENTO_FIN = new Date('2026-08-22T20:15:00-05:00'); // fin de la última sesión (Zoom Básico, 2 sesiones)
   // Vista previa manual — agregar ?preview=evergreen a la URL fuerza este estado sin esperar a
   // que pase la fecha real (mismo mecanismo que la landing).
   var previewEvergreen = /(?:^|[?&])preview=evergreen(?:&|$)/.test(location.search);

@@ -64,7 +64,7 @@ hover: translateY(-2px)
 
 ## 2. Estructura y copy — estado por defecto (evento aún no pasa)
 
-Este es el copy que ve el 100% de las visitantes hasta el **1 de agosto de 2026, 8:15 p.m. hora Colombia** (`EVENTO_FIN`, ver §5).
+Este es el copy que ve el 100% de las visitantes hasta el **22 de agosto de 2026, 8:15 p.m. hora Colombia** (`EVENTO_FIN`, ver §5).
 
 | Elemento | Copy exacto |
 |---|---|
@@ -73,7 +73,7 @@ Este es el copy que ve el 100% de las visitantes hasta el **1 de agosto de 2026,
 | Título (`<h1>`) | "Ya estás dentro." — o **"Ya estás dentro, {Nombre}."** si Hotmart pasó un nombre (ver §4) |
 | Quote | "Tu lugar está reservado. Ahora sí. Nos vemos el sábado." |
 | Firma | "— Josué Calderón" |
-| Píldora de fecha | Calculada en JS, auto-ajustada al huso del visitante (ver §6) — texto base: "Sábado 1 de agosto · 7:00 p.m. (tu hora)" para quien esté en huso Colombia |
+| Píldora de fecha | Calculada en JS, auto-ajustada al huso del visitante (ver §6) — texto base: "Sábado 22 de agosto · 7:00 p.m. (tu hora)" para quien esté en huso Colombia |
 | Badge en vivo | "● EN VIVO" (punto verde `#6FD98C` pulsante) |
 | Label de pasos | "Para recibir tu acceso, solo haz esto:" |
 | Paso 1 | **Toca el botón** / "Se abrirá WhatsApp con un mensaje ya escrito." |
@@ -133,12 +133,12 @@ La página lee el nombre de la compradora desde los parámetros de la URL con la
 Misma filosofía que la landing (`../COPY-SPEC.md` §6), una sola fuente de verdad en JS:
 
 ```js
-EVENTO_FIN = 2026-08-01T20:15:00-05:00   // fin de la última sesión (Zoom Básico, 2 sesiones)
+EVENTO_FIN = 2026-08-22T20:15:00-05:00   // fin de la última sesión (Zoom Básico, 2 sesiones)
 ```
 
 A diferencia de la landing (que tiene `EVENTO_INICIO` y `EVENTO_FIN` como dos constantes separadas para dos propósitos distintos — contador y estado), esta página usa:
 - `EVENTO_FIN` para decidir LIVE vs. Evergreen (§3), exactamente el mecanismo genérico que documenta `entry-product-system/SKILL.md` → "Mecanismo de derivación automática por fecha": `hoy < fin del evento → Estado = En Vivo`, `hoy >= fin del evento → Estado = Replay/Evergreen`.
-- Una constante separada `EVENTO_INICIO = 2026-08-01T19:00:00-05:00` solo para calcular la hora mostrada en la píldora de fecha (§6) — mismo valor que usa la landing internamente, no debería divergir nunca.
+- Una constante separada `EVENTO_INICIO = 2026-08-22T19:00:00-05:00` solo para calcular la hora mostrada en la píldora de fecha (§6) — mismo valor que usa la landing internamente, no debería divergir nunca.
 
 ### 5.1 Esta página es la referencia de implementación del patrón LIVE → EVERGREEN para páginas de Gracias
 
@@ -153,11 +153,11 @@ A diferencia de la landing (que tiene `EVENTO_INICIO` y `EVENTO_FIN` como dos co
 
 **Decisión de diseño (2026-07-25):** en vez de listar "🇨🇴 7pm Colombia / 🇲🇽 6pm México / hora USA..." como hace la landing en s8 (ver `../COPY-SPEC.md` §2, s8 Etapa 2), esta página calcula y muestra la hora **ya convertida al huso horario de quien la está viendo**, sin necesidad de listar ningún país.
 
-**Cómo funciona técnicamente:** se crea el objeto `Date` del inicio del evento en hora Colombia (`new Date('2026-08-01T19:00:00-05:00')`). Los métodos nativos `.getDay()`, `.getDate()`, `.getMonth()`, `.getHours()`, `.getMinutes()` de JavaScript **siempre devuelven el valor en la zona horaria local del dispositivo/navegador que ejecuta el código**, sin importar en qué huso se construyó el `Date` — el objeto internamente es un instante absoluto (timestamp UTC), y esos métodos son los que hacen la conversión. Por eso no hace falta detectar el país ni usar `Intl`/geolocalización: el propio navegador de la visitante ya sabe en qué huso horario está configurado su sistema, y estos métodos heredan esa configuración automáticamente.
+**Cómo funciona técnicamente:** se crea el objeto `Date` del inicio del evento en hora Colombia (`new Date('2026-08-22T19:00:00-05:00')`). Los métodos nativos `.getDay()`, `.getDate()`, `.getMonth()`, `.getHours()`, `.getMinutes()` de JavaScript **siempre devuelven el valor en la zona horaria local del dispositivo/navegador que ejecuta el código**, sin importar en qué huso se construyó el `Date` — el objeto internamente es un instante absoluto (timestamp UTC), y esos métodos son los que hacen la conversión. Por eso no hace falta detectar el país ni usar `Intl`/geolocalización: el propio navegador de la visitante ya sabe en qué huso horario está configurado su sistema, y estos métodos heredan esa configuración automáticamente.
 
-**Formato de salida:** `{Día de la semana} {día} de {mes} · {hora}:{minutos} {a.m./p.m.} (tu hora)` — ejemplo real verificado en huso `America/Bogota`: *"Sábado 1 de agosto · 7:00 p.m. (tu hora)"*. Los nombres de día/mes están en arrays hardcodeados en español (no dependen de `Intl.DateTimeFormat`, que podía devolver formatos con comas/mayúsculas inconsistentes entre navegadores).
+**Formato de salida:** `{Día de la semana} {día} de {mes} · {hora}:{minutos} {a.m./p.m.} (tu hora)` — ejemplo real verificado en huso `America/Bogota`: *"Sábado 22 de agosto · 7:00 p.m. (tu hora)"*. Los nombres de día/mes están en arrays hardcodeados en español (no dependen de `Intl.DateTimeFormat`, que podía devolver formatos con comas/mayúsculas inconsistentes entre navegadores).
 
-**Caso límite a vigilar:** si el huso horario de la visitante hace que el evento caiga en un día de calendario distinto (ej. husos muy adelantados de Colombia, como Europa o Asia, donde localmente ya sería domingo de madrugada), el nombre del día **sí cambia correctamente** porque `getDay()` se recalcula en la zona local — el auditor debería probar con `Intl.DateTimeFormat().resolvedOptions().timeZone` forzado a un huso como `Europe/Madrid` para confirmar que el texto sigue leyéndose natural (ej. "Domingo 2 de agosto · 2:00 a.m. (tu hora)" en vez de romperse).
+**Caso límite a vigilar:** si el huso horario de la visitante hace que el evento caiga en un día de calendario distinto (ej. husos muy adelantados de Colombia, como Europa o Asia, donde localmente ya sería domingo de madrugada), el nombre del día **sí cambia correctamente** porque `getDay()` se recalcula en la zona local — el auditor debería probar con `Intl.DateTimeFormat().resolvedOptions().timeZone` forzado a un huso como `Europe/Madrid` para confirmar que el texto sigue leyéndose natural (ej. "Domingo 23 de agosto · 2:00 a.m. (tu hora)" en vez de romperse).
 
 ---
 

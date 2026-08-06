@@ -38,7 +38,17 @@ async function fsGet(token, coleccion, docId) {
   const res = await fetch(`${FIRESTORE_BASE}/${coleccion}/${encodeURIComponent(docId)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    // DIAGNOSTICO TEMPORAL (2026-08-06): fsGet convertia cualquier fallo (401
+    // credenciales, 403 permisos, 404 real, 500...) en el mismo `null`,
+    // indistinguible desde afuera. Se agrega este log para ver la causa real
+    // detras de "Edicion no encontrada" en produccion — retirar una vez
+    // diagnosticado.
+    let cuerpo = null;
+    try { cuerpo = await res.text(); } catch { /* sin cuerpo legible */ }
+    console.error('programa.fsGet_fallo', { coleccion, docId, status: res.status, statusText: res.statusText, cuerpo });
+    return null;
+  }
   const data = await res.json();
   return data.fields ? fromFirestoreFields(data.fields) : null;
 }

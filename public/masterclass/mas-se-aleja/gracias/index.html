@@ -105,17 +105,6 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .gc-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #6FD98C; animation: gcLivePulse 1.6s ease-in-out infinite; }
 @keyframes gcLivePulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
-.gc-steps-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(240,230,234,.4); margin-top: 26px; }
-.gc-steps-label.gc-steps-label--sentence { font-size: 13.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(240,230,234,.75); line-height: 1.5; }
-
-.gc-steps { width: 100%; margin-top: 12px; text-align: left; }
-.gc-step { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(184,137,42,.12); }
-.gc-step:last-child { border-bottom: none; }
-.gc-step-n { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--gold-light); margin-top: 1px; }
-.gc-step-txt { font-family: var(--font-body); font-size: 13.5px; color: rgba(240,230,234,.85); line-height: 1.4; }
-.gc-step-txt strong { display: block; color: var(--gold-light); font-size: 14px; margin-bottom: 1px; }
-.gc-step-txt .gc-check-line { display: block; }
-
 .gc-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 16px 28px; margin-top: 24px;
@@ -132,6 +121,25 @@ body { font-family: var(--font-body); color: var(--text-light); }
 .gc-btn svg { flex-shrink: 0; }
 
 .gc-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.35); margin-top: 12px; line-height: 1.5; }
+
+/* ══ Bloques 2-5 (Página de Orientación, PAGINA-ORIENTACION-SPEC.md) ══ */
+.gc-video-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(240,230,234,.4); margin: 26px 0 10px; }
+.gc-video { width: 100%; margin-top: 4px; }
+.gc-video video { width: 100%; border-radius: 12px; display: block; }
+
+.gc-block { width: 100%; text-align: left; margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(184,137,42,.14); }
+.gc-block-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--gold-light); margin-bottom: 10px; }
+
+.gc-checklist { list-style: none; }
+.gc-checklist li { font-family: var(--font-body); font-size: 13.5px; line-height: 1.6; color: rgba(240,230,234,.85); padding-left: 22px; position: relative; margin-bottom: 6px; }
+.gc-checklist li::before { content: '✔'; position: absolute; left: 0; color: var(--gold-primary); font-size: 12px; }
+.gc-checklist--plain li::before { content: '·'; font-size: 16px; top: -2px; }
+
+.gc-note-inline { font-family: 'Jost', sans-serif; font-size: 12px; line-height: 1.6; color: rgba(240,230,234,.45); margin-top: 12px; }
+
+.gc-btn--gold { background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); box-shadow: 0 8px 28px rgba(184,137,42,.3); animation: none; }
+.gc-btn--gold:hover { transform: translateY(-2px); }
+.gc-btn--wa { background: rgba(255,255,255,.06); border: 1px solid rgba(240,230,234,.2); box-shadow: none; animation: none; margin-top: 12px; color: var(--text-light); }
 </style>
 </head>
 <body>
@@ -153,52 +161,73 @@ body { font-family: var(--font-body); color: var(--text-light); }
 
   <div class="gc-eyebrow">Compra confirmada</div>
   <h1 class="gc-title" id="gc-title-el">Ya estás dentro.</h1>
-  <p class="gc-quote" id="gc-quote-el">Tu lugar está reservado. Ahora sí. Nos vemos el sábado.</p>
+  <p class="gc-quote" id="gc-quote-el">Tu compra quedó confirmada — bienvenida a tu experiencia.</p>
   <p class="gc-sign">— Josué Calderón</p>
 
   <div class="gc-date" id="gc-date-el"></div>
   <div class="gc-live" id="gc-live-el"><span class="gc-live-dot"></span>EN VIVO</div>
 
-  <p class="gc-steps-label" id="gc-steps-label-el">Para recibir tu acceso, solo haz esto:</p>
-
-  <div class="gc-steps">
-    <div class="gc-step">
-      <div class="gc-step-n">1</div>
-      <p class="gc-step-txt" id="gc-step1-txt"><strong>Toca el botón</strong>Se abrirá WhatsApp con un mensaje ya escrito.</p>
-    </div>
-    <div class="gc-step">
-      <div class="gc-step-n">2</div>
-      <p class="gc-step-txt" id="gc-step2-txt"><strong>Envíalo</strong>No tienes que escribir nada más.</p>
-    </div>
-    <div class="gc-step">
-      <div class="gc-step-n">3</div>
-      <p class="gc-step-txt" id="gc-step3-txt"><strong>Recibe tu acceso</strong>Te enviaremos por WhatsApp el enlace y toda la información que necesitas para el sábado.</p>
-    </div>
+  <!-- BLOQUE 2 — video opcional (PAGINA-ORIENTACION-SPEC.md): oculto hasta que exista el video real.
+       Para activarlo: quitar display:none y poner la URL real en gc-video-src. -->
+  <div class="gc-video" id="gc-video-block" style="display:none">
+    <p class="gc-video-label">Un mensaje breve para ti</p>
+    <video id="gc-video-el" controls playsinline></video>
   </div>
 
-  <a class="gc-btn" id="gc-wa-btn" href="#" target="_blank">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.2-1.36c1.46.8 3.1 1.22 4.84 1.22 5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm5.84 14.24c-.24.68-1.4 1.32-1.94 1.36-.5.05-1.02.25-3.4-.72-2.86-1.18-4.7-4.1-4.84-4.3-.14-.2-1.16-1.56-1.16-2.98 0-1.4.74-2.1 1-2.4.26-.28.58-.34.78-.34.2 0 .4 0 .56.01.18.02.42-.07.66.5.24.58.82 2 .9 2.14.08.14.13.3.02.5-.1.2-.16.32-.32.5-.16.18-.33.4-.47.54-.16.16-.32.33-.14.65.18.32.8 1.32 1.72 2.14 1.18 1.05 2.18 1.38 2.5 1.54.32.16.5.14.68-.08.18-.22.78-.9 1-1.22.2-.3.42-.26.7-.16.28.1 1.8.85 2.1 1.01.3.16.5.24.58.36.08.16.08.86-.16 1.54z"/></svg>
-    Recibir mi acceso por WhatsApp
-  </a>
-  <p class="gc-note">WhatsApp se abre automáticamente · Solo toca Enviar.</p>
+  <!-- BLOQUE 3 — qué va a pasar ahora -->
+  <div class="gc-block">
+    <p class="gc-block-title">¿Qué va a pasar ahora?</p>
+    <ul class="gc-checklist">
+      <li>Tu acceso llegará automáticamente a tu WhatsApp.</li>
+      <li>Desde ese mensaje podrás entrar a Mi Espacio.</li>
+      <li>Allí encontrarás todo lo que necesitas para vivir tu experiencia.</li>
+    </ul>
+    <p class="gc-note-inline">Si por alguna razón el mensaje no llega, también encontrarás la información en tu producto de Hotmart.</p>
+  </div>
+
+  <!-- BLOQUE 4 — mientras esperas (solo tiene sentido antes del evento; se oculta en Evergreen) -->
+  <div class="gc-block" id="gc-block4">
+    <p class="gc-block-title">Mientras tanto…</p>
+    <ul class="gc-checklist gc-checklist--plain">
+      <li>Busca un lugar tranquilo.</li>
+      <li>Ten una libreta cerca.</li>
+      <li>Reserva ese espacio para ti.</li>
+    </ul>
+  </div>
+
+  <!-- BLOQUE 5 — verificación / contingencia -->
+  <div class="gc-block">
+    <p class="gc-block-title">¿Necesitas ayuda para continuar?</p>
+    <a class="gc-btn gc-btn--gold" id="gc-btn-recibido" href="https://invisible-a-soberana.josuecalderon.lat/mi-espacio">
+      ✅ Ya recibí mi acceso
+    </a>
+    <a class="gc-btn gc-btn--wa" id="gc-btn-ayuda" href="#" target="_blank">
+      💛 Necesito ayuda
+    </a>
+  </div>
 </div>
 
 <script>
-// ── Mensaje prellenado del botón — abre la ventana de 24h (Camino A, REGLA WHATSAPP —
-// MASTERCLASS, BUSINESS-SYSTEMS.md sección FUNNEL-SYSTEM). Este es el copy LIVE por defecto;
-// el bloque LIVE→EVERGREEN de más abajo lo sobrescribe con el texto evergreen cuando toca.
-// api/whatsapp.js reconoce ambas frases y dispara la plantilla oficial de inmediato.
+// ── Botón "💛 Necesito ayuda" — mensaje fijo, distinto a propósito del texto viejo de Camino A
+// ("...acabo de reservar mi lugar..."), para que api/whatsapp.js lo reconozca como el trigger de
+// contingencia de NO-RECIBI-MI-ACCESO-SPEC.md (Escenarios A-E), no como una apertura de bienvenida
+// (el webhook ya dispara la bienvenida siempre e inmediato, sin depender de esta página).
 (function () {
-  var btnEl = document.getElementById('gc-wa-btn');
+  var btnEl = document.getElementById('gc-btn-ayuda');
   if (btnEl) {
     btnEl.href = 'https://wa.me/573189045623?text=' +
-      encodeURIComponent('Hola Josué, acabo de reservar mi lugar. ¿Me compartes el acceso? 🙌');
+      encodeURIComponent('Hola, acabo de comprar mi experiencia y no he recibido el acceso por WhatsApp. ¿Me ayudas?');
   }
 })();
 
-document.getElementById('gc-wa-btn').addEventListener('click', function () {
+document.getElementById('gc-btn-ayuda').addEventListener('click', function () {
   if (typeof fbq === 'function') fbq('trackCustom', 'wa_click_masterclass');
   if (typeof gtag === 'function') gtag('event', 'wa_click_masterclass');
+});
+
+document.getElementById('gc-btn-recibido').addEventListener('click', function () {
+  if (typeof fbq === 'function') fbq('trackCustom', 'mi_espacio_click_masterclass');
+  if (typeof gtag === 'function') gtag('event', 'mi_espacio_click_masterclass');
 });
 
 // ── Nombre de la compradora — viene en la URL de redirección que Hotmart arma con el nombre
@@ -302,24 +331,12 @@ document.getElementById('gc-wa-btn').addEventListener('click', function () {
   set('gc-quote-el', 'Hoy no compraste otro curso. Compraste un momento para dejar de intentar más... y empezar a entender diferente.');
   hide('gc-date-el');
   hide('gc-live-el');
-  set('gc-steps-label-el', 'Tu acceso ya está disponible. Solo necesitamos enviártelo por WhatsApp para que puedas empezar cuando quieras.');
-  var stepsLabelEl = document.getElementById('gc-steps-label-el');
-  if (stepsLabelEl) stepsLabelEl.classList.add('gc-steps-label--sentence');
-  set('gc-step1-txt', '<strong>Toca el botón verde.</strong>');
-  set('gc-step2-txt', '<strong>Envía el mensaje.</strong>(No escribas nada más.)');
-  set('gc-step3-txt', '<strong>Recibe inmediatamente:</strong><span class="gc-check-line">✔ La clase completa.</span><span class="gc-check-line">✔ El material.</span><span class="gc-check-line">✔ Las instrucciones.</span>');
 
-  var btnEl = document.getElementById('gc-wa-btn');
-  if (btnEl) {
-    btnEl.href = 'https://wa.me/573189045623?text=' +
-      encodeURIComponent('Hola Josué, acabo de entrar. ¿Me compartes el acceso? 🙌');
-    var svg = btnEl.querySelector('svg');
-    btnEl.textContent = 'Recibir mi acceso ahora';
-    if (svg) btnEl.insertBefore(svg, btnEl.firstChild);
-  }
-
-  var noteEl = document.querySelector('.gc-note');
-  if (noteEl) noteEl.textContent = 'En menos de un minuto tendrás todo en WhatsApp.';
+  // Bloque 4 ("Mientras tanto... reserva ese espacio") solo tiene sentido esperando un evento
+  // futuro — en Evergreen/Replay no hay nada que esperar, así que se oculta en vez de inventar
+  // un copy nuevo sin aprobar (PAGINA-ORIENTACION-SPEC.md no define una variante Evergreen de
+  // este bloque). Bloques 1, 3 y 5 se quedan igual — su texto ya es válido en cualquier estado.
+  hide('gc-block4');
 })();
 
 // ── Intro animado: check que se dibuja solo + sonido + glow, luego revela la página ──

@@ -638,7 +638,7 @@ async function ejecutarPaso(phone, paso, nombre) {
         // D-1: nombre directo del parámetro (masterclass_compras vía buscarNombreMasterclass),
         // sin fallback "amiga" — si no hay nombre, el saludo queda sin nombre, sin relleno.
         `¡Hola${nombre ? ' ' + nombre : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
-        `Tu lugar para la Masterclass ya quedó reservado.\n\n` +
+        `Tu lugar para tu experiencia ya quedó reservado.\n\n` +
         `Toca este link para ingresar a tu espacio privado, donde encontrarás toda la información del evento y podrás acceder el día de la transmisión en vivo:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
         `Nos vemos el sábado 22 de agosto, 7:00 p.m. (Colombia).`
@@ -647,7 +647,7 @@ async function ejecutarPaso(phone, paso, nombre) {
     } else {
       await sendWhatsApp(phone,
         `¡Hola${nombre ? ' ' + nombre : ''}! 💛 Qué alegría tenerte aquí.\n\n` +
-        `Tu Masterclass ya está disponible.\n\n` +
+        `Tu experiencia ya está disponible.\n\n` +
         `Toca este link para ingresar a tu espacio privado y verla cuando quieras:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
         `Cuando la veas, escríbeme: *Ya la vi* 👇`
@@ -663,7 +663,7 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
   else if (paso === 'recordatorio_replay_masterclass') {
     await sendWhatsApp(phone,
-      `¿Alcanzaste a ver la masterclass? Si no has podido, no pasa nada — aquí está tu espacio de nuevo:\n\n` +
+      `¿Alcanzaste a ver tu experiencia? Si no has podido, no pasa nada — aquí está tu espacio de nuevo:\n\n` +
       `${MASTERCLASS_DASHBOARD_URL}\n\n` +
       `Cuando la veas, escríbeme: *Ya la vi*`
     );
@@ -671,7 +671,7 @@ async function ejecutarPaso(phone, paso, nombre) {
   else if (paso === 'puente_workshop') {
     // Se dispara manualmente (o desde Apps Script) cuando ella confirma "Ya la vi"
     await sendWhatsApp(phone,
-      `Ya identificaste el patrón — eso es lo que te dio la masterclass.\n\n` +
+      `Ya identificaste el patrón — eso es lo que te dio esta experiencia.\n\n` +
       `Lo que todavía no tienes es el cómo. Eso es exactamente lo que hace el Workshop Código Soberana: te da los 3 protocolos para empezar a cambiar ese patrón esta semana, no algún día.\n\n` +
       `https://pay.hotmart.com/U104868259N?checkoutMode=10&bid=1782363245752`
     );

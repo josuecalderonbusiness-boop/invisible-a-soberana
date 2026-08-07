@@ -2,6 +2,19 @@
 // Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
 
 import { procesarEventoOrbit, reservarTareaOutbox } from './_lib/orbit-domain.js';
+import { enviarCorreoInmediatoMasterclass } from './_lib/correo1-masterclass.js';
+
+// Aislado en su propio try/catch, igual que el bloque de Orbit — un fallo del Correo 1 nunca debe
+// impedir que el resto del webhook (Brevo/Sheets/WhatsApp/masterclass_compras) siga funcionando.
+async function enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefonoLimpio) {
+  try {
+    await enviarCorreoInmediatoMasterclass({
+      email, nombre: primerNombre, producto: orbitMasterclass, telefono: telefonoLimpio
+    });
+  } catch (err) {
+    console.error('Correo 1 (transaccional) error inesperado, no bloquea el webhook:', err.message);
+  }
+}
 
 // Envoltorio de reservarTareaOutbox: un fallo aquí (ej. Firestore no responde) nunca debe impedir
 // ni la respuesta 200 al webhook ni la comunicación legítima. Ante excepción, se asume "todavía no
@@ -171,6 +184,7 @@ export default async function handler(req, res) {
         if (await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
           await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
         }
+        await enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefonoLimpio);
       }
 
       return res.status(200).json({
@@ -249,6 +263,9 @@ export default async function handler(req, res) {
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? orbitMasterclass : null);
     if (isMasterclass) {
       await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo);
+      // Idempotencia propia (correo1_estado en masterclass_compras) — seguro llamarlo aunque este
+      // webhook sea "Compra completa" repitiendo lo que "Compra aprobada" ya disparó.
+      await enviarCorreo1Seguro(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '');
     }
 
     if (isMasterclass && !bienvenidaYaEnviada && await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {

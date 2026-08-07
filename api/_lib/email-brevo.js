@@ -49,4 +49,34 @@ async function enviarRecuperacion(destinatario, enlace) {
   });
 }
 
-export { enviarConfirmacionCorreo, enviarRecuperacion };
+// Correo 1 (transaccional inmediato) de EMAIL-COMMUNICATION-SYSTEM, primera instancia en
+// 001-masterclass-soberana — ver BREVO-AUTOMATIZACIONES-SPEC.md. Plantilla "Simple": texto,
+// mínimo HTML, prioriza entregabilidad e inmediatez sobre estética. Sigue REGLA-COPY-EXPERIENCIA.md
+// (nunca "Masterclass" en el texto visible). El enlace de recuperación es el Nivel 3 de
+// RECUPERACION-DE-ACCESO-SYSTEM.md — ver correo1-masterclass.js para el token que lo protege.
+async function enviarBienvenidaMasterclass(destinatario, nombre, urlMiEspacio, urlRecuperacion) {
+  const saludo = nombre ? `Hola ${nombre} 💛` : 'Hola 💛';
+  await enviarCorreo({
+    destinatario,
+    asunto: 'Tu lugar en tu Experiencia Soberana ya quedó reservado 💛',
+    html: `
+<div style="font-family: Georgia, 'Times New Roman', serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #2b2320;">
+  <p style="font-size: 16px; margin: 0 0 16px;">${saludo}</p>
+  <p style="font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+    Ya estás dentro. Tu lugar quedó confirmado — bienvenida a tu experiencia.
+  </p>
+  <div style="text-align: center; margin: 0 0 28px;">
+    <a href="${urlMiEspacio}" style="display: inline-block; background: #b8892a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: bold; padding: 14px 32px; border-radius: 8px;">
+      Entrar a Mi Espacio
+    </a>
+  </div>
+  <p style="font-size: 13px; line-height: 1.6; color: #8a7d72; border-top: 1px solid #e8e1d8; padding-top: 20px; margin: 0;">
+    ¿No recibiste nuestro mensaje por WhatsApp? Es posible que el número haya quedado mal escrito
+    o que haya ocurrido un problema con la entrega.
+    <a href="${urlRecuperacion}" style="color: #b8892a;">Haz clic aquí para confirmar tu número de WhatsApp.</a>
+  </p>
+</div>`
+  });
+}
+
+export { enviarConfirmacionCorreo, enviarRecuperacion, enviarBienvenidaMasterclass };

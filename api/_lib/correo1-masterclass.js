@@ -18,7 +18,10 @@ import { enviarBienvenidaMasterclass } from './email-brevo.js';
 import { crearToken } from './auth-token.js';
 
 const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/mi-espacio';
-const RECUPERACION_BASE_URL = 'https://invisible-a-soberana.josuecalderon.lat/masterclass/mas-se-aleja/recuperar-acceso.html';
+// El dominio principal apaga /masterclass/mas-se-aleja/* por middleware.js (redirige a "/" hasta
+// que se decida reabrir esa ruta ahi) — este enlace tiene que usar el dominio alterno donde esa
+// ruta si esta activa, o el boton de recuperacion del Correo 1 nunca carga la pagina real.
+const RECUPERACION_BASE_URL = 'https://he-intentado-todo-porque-nada-cambia.josuecalderon.lat/masterclass/mas-se-aleja/recuperar-acceso.html';
 const TIPO_TOKEN_RECUPERACION = 'recuperacion_acceso_masterclass';
 const HORAS_VALIDEZ_TOKEN = 168; // 7 días — no decidido en NO-RECIBI-MI-ACCESO-SPEC.md, criterio propio
 

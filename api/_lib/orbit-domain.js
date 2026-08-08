@@ -193,7 +193,7 @@ async function procesarEventoOrbit(rawBody) {
   if (!masterclass) {
     // product.id sin mapear: el hecho histórico ya quedó guardado arriba (Compra + evento crudo).
     // No se crea Acceso — nada que Mi Espacio necesite resolver — pero nada se pierde tampoco.
-    return { ok: true, masterclass: null, transaction: evento.transaction, duplicado, accesoActivo: null };
+    return { ok: true, masterclass: null, transaction: evento.transaction, duplicado, accesoActivo: null, estado: evento.status };
   }
 
   // 4) Acceso — agregado único por Persona + Masterclass, sostenido por N compras (contrato aprobado).
@@ -229,7 +229,7 @@ async function procesarEventoOrbit(rawBody) {
     compras_historicas: comprasHistoricas
   });
 
-  return { ok: true, masterclass, transaction: evento.transaction, duplicado, accesoActivo: accesoActivoFinal };
+  return { ok: true, masterclass, transaction: evento.transaction, duplicado, accesoActivo: accesoActivoFinal, estado: estadoVigente };
 }
 
 // ── Outbox — guardia de idempotencia para no duplicar WhatsApp/Brevo/Sheets ────────────────────
@@ -250,4 +250,4 @@ async function reservarTareaOutbox(transaction, tarea) {
   return true;
 }
 
-export { procesarEventoOrbit, reservarTareaOutbox, resolverMasterclass, MASTERCLASS_MAP };
+export { procesarEventoOrbit, reservarTareaOutbox, resolverMasterclass, MASTERCLASS_MAP, ESTADOS_ACTIVOS, ESTADOS_REVOCADOS };

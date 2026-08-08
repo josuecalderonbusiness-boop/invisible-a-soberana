@@ -1,3 +1,5 @@
+import { resolverContingenciaAcceso, registrarResultadoBienvenidaPorTelefono } from './_lib/recuperacion-acceso.js';
+
 // api/whatsapp.js — Arquitectura híbrida v4
 // Botones: procesados directamente en Vercel (inmediato)
 // Textos libres: guardados en Sheets para Apps Script
@@ -190,6 +192,45 @@ export default async function handler(req, res) {
         // deben coexistir las dos.
         await cancelarTrigger(phone, 'bienvenida_masterclass');
         await ejecutarPaso(phone, 'bienvenida_masterclass', nombre);
+        return res.status(200).json({ ok: true });
+      }
+
+      // "💛 Necesito ayuda" (Página de Orientación, botón de contingencia) — NO-RECIBI-MI-ACCESO-SPEC.md.
+      // Va ANTES de esBienvenida a propósito: el texto de este botón contiene "acabo de comprar",
+      // que esBienvenida (más abajo) también reconoce — sin este orden, el mensaje caería en el
+      // flujo de bienvenida del Workshop en vez de en el motor de recuperación de acceso.
+      const esContingenciaMasterclass = textoL.includes('no he recibido el acceso por whatsapp');
+      if (esContingenciaMasterclass) {
+        if (msgId) {
+          const dup = await verificarDuplicado(msgId);
+          if (dup) {
+            console.log(`Duplicado contingencia masterclass ignorado: ${msgId}`);
+            return res.status(200).json({ ok: true });
+          }
+        }
+
+        // Paso 1 — acuse inmediato, siempre, antes de decidir el escenario (NO-RECIBI-MI-ACCESO-SPEC.md).
+        await sendWhatsApp(phone, 'Recibí tu mensaje 💛 Dame un momento, ya reviso tu acceso.');
+
+        const resultado = await resolverContingenciaAcceso({ telefono: phone, origen: 'whatsapp' });
+
+        if (resultado.escalar) {
+          await sendWhatsApp(phone, 'Ya voy a revisar tu caso personalmente y te escribo apenas lo tenga listo 💛');
+          await guardarEnSheets({
+            msgId, phone, tipo: 'text', texto,
+            btnId: 'NECESITA_REVISION',
+            btnTx: `Escenario ${resultado.escenario} — recuperación de acceso`,
+            timestamp: new Date().toISOString()
+          });
+          console.log(`Contingencia masterclass escalada (Escenario ${resultado.escenario}):`, phone);
+          return res.status(200).json({ ok: true });
+        }
+
+        // Escenarios B/C/D — reenvío automático de la misma plantilla que ya corresponde por fecha.
+        const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
+        const aceptado = await sendTemplateMasterclass(phone, resultado.compra.nombre || 'amiga', templateName);
+        await registrarResultadoBienvenidaPorTelefono(phone, aceptado);
+        console.log(`Contingencia masterclass reenviada (Escenario ${resultado.escenario}):`, phone, aceptado ? '✓' : 'ERROR');
         return res.status(200).json({ ok: true });
       }
 
@@ -627,7 +668,15 @@ async function ejecutarPaso(phone, paso, nombre) {
     // (FUNNEL-SYSTEM). Siempre la plantilla oficial de Meta, nunca texto libre — el texto libre con
     // el link real se entrega después, cuando toca el botón (paso 'entrega_acceso_masterclass').
     const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
-    await sendTemplateMasterclass(phone, n || 'amiga', templateName);
+    const aceptado = await sendTemplateMasterclass(phone, n || 'amiga', templateName);
+    // Nivel 1 de verificación (NO-RECIBI-MI-ACCESO-SPEC.md) — sin esto, resolverContingenciaAcceso()
+    // nunca puede distinguir Escenario B/C/D. Aislado: un fallo aquí nunca debe impedir que la
+    // bienvenida ya enviada cuente como entregada para la alumna.
+    try {
+      await registrarResultadoBienvenidaPorTelefono(phone, aceptado);
+    } catch (err) {
+      console.error('Registro Nivel 1 (bienvenida) falló, no bloquea el envío ya hecho:', err.message);
+    }
   }
   else if (paso === 'entrega_acceso_masterclass') {
     // "Mi Espacio" (public/mi-espacio) es la casa permanente del producto desde el momento de la
@@ -942,6 +991,8 @@ async function sendTemplate(to, nombre, templateName) {
 // de respuesta rápida "Entrar a mi espacio" (payload 'masterclass_entrar'). Antes vivía en
 // api/hotmart-webhook.js (enviarBienvenidaWhatsApp); ahora vive aquí porque la dispara tanto el
 // Camino A (ella escribe) como el Camino B (trigger de 60 min), y ambos ejecutan el mismo paso.
+// Devuelve si Meta aceptó el envío (Nivel 1 de verificación, BREVO-AUTOMATIZACIONES-SPEC.md /
+// NO-RECIBI-MI-ACCESO-SPEC.md) — el caller decide qué hacer con el resultado (registrarlo, o no).
 async function sendTemplateMasterclass(to, nombre, templateName) {
   const number = String(to).replace(/[^0-9]/g, '');
   const res = await fetch(WA_BASE(), {
@@ -958,7 +1009,9 @@ async function sendTemplateMasterclass(to, nombre, templateName) {
     })
   });
   const data = await res.json();
-  console.log(`Template ${templateName} → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
+  const aceptado = !!data.messages?.[0]?.id;
+  console.log(`Template ${templateName} → ${number}: ${aceptado ? '✓' : JSON.stringify(data)}`);
+  return aceptado;
 }
 
 async function sendTemplateDia2(to, nombre) {
@@ -1236,3 +1289,5 @@ async function notificarSoporte(phone, correoCliente, nombre) {
     console.error('notificarSoporte error:', err.message);
   }
 }
+
+export { masterclassEnVivo, sendTemplateMasterclass, guardarEnSheets, cancelarTrigger };

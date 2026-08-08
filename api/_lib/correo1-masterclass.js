@@ -6,29 +6,26 @@
 // "Compra completa" para la misma compra — este módulo nunca reenvía si ya hay un envío ACEPTADO
 // registrado para ese compra_id, mismo principio que ya usa BIENVENIDA_WA_ENVIADA para WhatsApp.
 //
-// Token de recuperación (Nivel 3 de RECUPERACION-DE-ACCESO-SYSTEM.md): aleatorio, único por compra,
-// nunca el correo en texto plano en la URL — validado en la página de recuperación (pendiente de
-// construir por separado, no en este módulo).
-
-import { randomBytes } from 'node:crypto';
-import { fsGet, fsSet, fsUpdate } from './firestore-rest.js';
+// Token de recuperación (Nivel 3 de RECUPERACION-DE-ACCESO-SYSTEM.md): reutiliza la infraestructura
+// de tokens ya existente (api/_lib/auth-token.js — hash sha256 guardado, nunca el token en texto
+// plano, expiración real, un solo uso) en vez de una colección propia — corregido 2026-08-07 tras
+// la auditoría del punto #3 (recuperar-acceso.html), que encontró esta duplicación innecesaria en
+// la primera versión de este archivo. El "correo" que auth-token.js guarda es, en este caso, el
+// compra_id (email__producto) — mismo campo genérico, uso distinto, documentado aquí para que no
+// se confunda con un correo real en este contexto puntual.
+import { fsGet, fsUpdate, fsSet } from './firestore-rest.js';
 import { enviarBienvenidaMasterclass } from './email-brevo.js';
+import { crearToken } from './auth-token.js';
 
 const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/mi-espacio';
 const RECUPERACION_BASE_URL = 'https://invisible-a-soberana.josuecalderon.lat/masterclass/mas-se-aleja/recuperar-acceso.html';
-
-function generarToken() {
-  return randomBytes(24).toString('base64url');
-}
+const TIPO_TOKEN_RECUPERACION = 'recuperacion_acceso_masterclass';
+const HORAS_VALIDEZ_TOKEN = 168; // 7 días — no decidido en NO-RECIBI-MI-ACCESO-SPEC.md, criterio propio
 
 async function crearTokenRecuperacion(compraId) {
-  const token = generarToken();
-  await fsSet('recuperacion_tokens', token, {
-    compra_id: compraId,
-    usado: false,
-    creado_en: new Date().toISOString()
-  }, { exigirNoExiste: true });
-  return token;
+  // crearToken tiene su propio cooldown de 60s contra doble-envío casi simultáneo — heredado
+  // gratis de auth-token.js, no había que reimplementarlo.
+  return crearToken(compraId, TIPO_TOKEN_RECUPERACION, HORAS_VALIDEZ_TOKEN);
 }
 
 // Único punto de entrada. Se llama en paralelo al trigger de WhatsApp, nunca lo bloquea ni depende
@@ -43,6 +40,14 @@ async function enviarCorreoInmediatoMasterclass({ email, nombre, producto, telef
   }
 
   const token = await crearTokenRecuperacion(compraId);
+  if (!token) {
+    // Cooldown de crearToken (60s) — un token ya se emitió hace muy poco para esta compra (ej.
+    // segundo webhook de Hotmart, "Compra completa" detrás de "Compra aprobada", con el primer
+    // intento de envío todavía fallando). No se manda un enlace roto ("?t=null") — se deja para
+    // el próximo intento real en vez de construir un mecanismo de reintento aparte para este caso raro.
+    console.log('Correo 1: token de recuperación en cooldown, se omite este intento:', compraId);
+    return { ok: false, error: 'token_en_cooldown' };
+  }
   const urlRecuperacion = `${RECUPERACION_BASE_URL}?t=${token}`;
 
   const intentar = () => enviarBienvenidaMasterclass(email, nombre, MASTERCLASS_DASHBOARD_URL, urlRecuperacion);

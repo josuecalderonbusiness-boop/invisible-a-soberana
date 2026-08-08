@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Recuperar mi acceso — Experiencia Soberana</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
+  --charcoal-deep: #1E1218; --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--charcoal-deep); }
+body { font-family: var(--font-body); color: var(--text-light); min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 28px 24px; }
+.ra-card { max-width: 400px; width: 100%; text-align: center; }
+.ra-eyebrow { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 10px; }
+.ra-title { font-family: var(--font-display); font-size: 24px; font-weight: 900; line-height: 1.3; margin-bottom: 14px; }
+.ra-text { font-size: 14px; line-height: 1.6; color: rgba(240,230,234,.8); margin-bottom: 22px; }
+.ra-email { display: inline-block; font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 600; color: var(--gold-light); background: rgba(184,137,42,.1); border: 1px solid rgba(184,137,42,.4); border-radius: 999px; padding: 8px 16px; margin-bottom: 22px; }
+.ra-input { width: 100%; padding: 14px 16px; margin-bottom: 14px; border-radius: 10px; border: 1px solid rgba(184,137,42,.35); background: rgba(255,255,255,.04); color: var(--text-light); font-family: var(--font-body); font-size: 15px; }
+.ra-input::placeholder { color: rgba(240,230,234,.35); }
+.ra-btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 16px 28px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: #fff; font-family: var(--font-body); font-size: 15px; font-weight: 700; cursor: pointer; }
+.ra-btn:disabled { opacity: .6; cursor: default; }
+.ra-note { font-family: 'Jost', sans-serif; font-size: 11px; color: rgba(240,230,234,.35); margin-top: 14px; line-height: 1.5; }
+.ra-hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="ra-card">
+  <div class="ra-eyebrow">Recuperar acceso</div>
+
+  <div id="ra-loading">
+    <p class="ra-text">Un momento…</p>
+  </div>
+
+  <div id="ra-error" class="ra-hidden">
+    <h1 class="ra-title">Este enlace ya no está disponible.</h1>
+    <p class="ra-text">Escríbenos y te ayudamos: <a href="https://wa.me/573189045623?text=Hola%2C%20mi%20enlace%20de%20recuperaci%C3%B3n%20ya%20no%20funciona." style="color: var(--gold-light);">contactar por WhatsApp</a></p>
+  </div>
+
+  <div id="ra-form" class="ra-hidden">
+    <h1 class="ra-title">Confirma tu número de WhatsApp</h1>
+    <p class="ra-text">¿Eres tú?</p>
+    <div class="ra-email" id="ra-email-el"></div>
+    <p class="ra-text">Escribe tu número de WhatsApp correcto (con indicativo de país) y te reenviamos tu acceso.</p>
+    <input class="ra-input" id="ra-telefono" type="tel" inputmode="tel" placeholder="Ej. 573001234567" autocomplete="tel">
+    <button class="ra-btn" id="ra-submit">Guardar y reenviar mi acceso</button>
+  </div>
+
+  <div id="ra-exito" class="ra-hidden">
+    <h1 class="ra-title">¡Listo!</h1>
+    <p class="ra-text" id="ra-exito-msg"></p>
+  </div>
+
+  <p class="ra-note">Experiencia Soberana</p>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var token = params.get('t');
+
+  var elLoading = document.getElementById('ra-loading');
+  var elError   = document.getElementById('ra-error');
+  var elForm    = document.getElementById('ra-form');
+  var elExito   = document.getElementById('ra-exito');
+
+  function mostrar(el) {
+    [elLoading, elError, elForm, elExito].forEach(function (e) { e.classList.add('ra-hidden'); });
+    el.classList.remove('ra-hidden');
+  }
+
+  if (!token) { mostrar(elError); return; }
+
+  fetch('/api/recuperar-acceso?accion=validar&t=' + encodeURIComponent(token))
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      if (!res.ok || !res.data.ok) { mostrar(elError); return; }
+      document.getElementById('ra-email-el').textContent = res.data.email;
+      mostrar(elForm);
+    })
+    .catch(function () { mostrar(elError); });
+
+  document.getElementById('ra-submit').addEventListener('click', function () {
+    var telefono = document.getElementById('ra-telefono').value.trim();
+    if (!telefono) return;
+
+    var btn = document.getElementById('ra-submit');
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+
+    fetch('/api/recuperar-acceso?accion=guardar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ t: token, telefono: telefono })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.data.ok) {
+          btn.disabled = false;
+          btn.textContent = 'Guardar y reenviar mi acceso';
+          alert(res.data.error || 'Ocurrió un problema. Intenta de nuevo.');
+          return;
+        }
+        document.getElementById('ra-exito-msg').textContent = res.data.mensaje;
+        mostrar(elExito);
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Guardar y reenviar mi acceso';
+        alert('Ocurrió un problema. Intenta de nuevo.');
+      });
+  });
+})();
+</script>
+
+</body>
+</html>

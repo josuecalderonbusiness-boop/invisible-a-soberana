@@ -60,4 +60,16 @@ async function consumirToken(token, tipoEsperado) {
   return { correo: doc.correo };
 }
 
-export { crearToken, consumirToken };
+// Misma validación que consumirToken (existe / tipo correcto / no expiró) pero SIN borrar el
+// token — para flujos que necesitan mostrar algo (ej. el correo asociado) antes de que la persona
+// complete la acción real. El único uso real del token sigue siendo consumirToken.
+async function peekToken(token, tipoEsperado) {
+  const hash = hashToken(token);
+  const doc = await fsGet(COLECCION, hash);
+  if (!doc) return null;
+  if (doc.tipo !== tipoEsperado) return null;
+  if (Date.now() > doc.expiraEn) return null;
+  return { correo: doc.correo };
+}
+
+export { crearToken, consumirToken, peekToken };

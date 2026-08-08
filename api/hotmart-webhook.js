@@ -1,8 +1,39 @@
 ﻿// api/hotmart-webhook.js — versión final
 // Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
 
-import { procesarEventoOrbit, reservarTareaOutbox } from './_lib/orbit-domain.js';
+import { procesarEventoOrbit, reservarTareaOutbox, ESTADOS_ACTIVOS, ESTADOS_REVOCADOS } from './_lib/orbit-domain.js';
 import { enviarCorreoInmediatoMasterclass } from './_lib/correo1-masterclass.js';
+import { masterclassEnVivo, sendTemplateMasterclass, cancelarTrigger } from './whatsapp.js';
+import { fsUpdate } from './_lib/firestore-rest.js';
+import { registrarResultadoBienvenidaPorTelefono } from './_lib/recuperacion-acceso.js';
+
+// Refund Management System (REFUND-MANAGEMENT-SYSTEM.md) — Comunicación, no Acceso (eso sigue
+// siendo de Orbit V2, sin tocar). Mismos 2 grupos ya aprobados: revocación total (ESTADOS_REVOCADOS,
+// reutilizado de orbit-domain.js, no una segunda lista) y pausa preventiva (PROTEST) — ambos
+// reciben exactamente la misma acción de comunicación, solo cambia el motivo guardado.
+async function suspenderComunicacionSiAplica(docId, estado, telefono) {
+  const suspende = ESTADOS_REVOCADOS.includes(estado) || estado === 'PROTEST';
+  if (!suspende) return;
+
+  try {
+    await fsUpdate('masterclass_compras', docId, {
+      comunicacion_suspendida: true,
+      comunicacion_suspendida_motivo: estado,
+      comunicacion_suspendida_fecha: new Date().toISOString()
+    });
+    if (telefono) {
+      await Promise.all([
+        cancelarTrigger(telefono, 'recordatorio_evento_masterclass'),
+        cancelarTrigger(telefono, 'recordatorio_replay_masterclass'),
+        cancelarTrigger(telefono, 'puente_workshop'),
+        cancelarTrigger(telefono, 'seguimiento_masterclass')
+      ]);
+    }
+    console.log(`Comunicación suspendida (${estado}):`, docId);
+  } catch (err) {
+    console.error('suspenderComunicacionSiAplica error (no bloquea el webhook):', docId, err.message);
+  }
+}
 
 // Aislado en su propio try/catch, igual que el bloque de Orbit — un fallo del Correo 1 nunca debe
 // impedir que el resto del webhook (Brevo/Sheets/WhatsApp/masterclass_compras) siga funcionando.
@@ -13,6 +44,43 @@ async function enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefo
     });
   } catch (err) {
     console.error('Correo 1 (transaccional) error inesperado, no bloquea el webhook:', err.message);
+  }
+}
+
+// 🔧 CORREGIDO 2026-08-07 — Camino B pasa de "programar a 60 minutos" a "enviar de inmediato".
+// Reemplaza únicamente el momento del envío — reutiliza sendTemplateMasterclass/masterclassEnVivo
+// tal cual (api/whatsapp.js) y registrarResultadoBienvenidaPorTelefono (Nivel 1, ya existente para
+// el flujo de Recuperación de Acceso) para dejar el mismo dato que ese motor ya consulta. No toca
+// Camino A, no toca programarTrigger/cancelarTrigger (siguen usándose para los recordatorios
+// posteriores), no reorganiza nada más de este archivo.
+async function enviarBienvenidaWhatsAppInmediata(telefono, nombre, email) {
+  if (!telefono) {
+    console.log(`Sin teléfono para ${email} — no se puede enviar la bienvenida de WhatsApp`);
+    return false;
+  }
+  try {
+    const templateName = masterclassEnVivo() ? 'bienvenida_live_cs' : 'bienvenida_replay_cs';
+    const aceptado = await sendTemplateMasterclass(telefono, nombre || 'amiga', templateName);
+    await registrarResultadoBienvenidaPorTelefono(telefono, aceptado);
+    return aceptado;
+  } catch (err) {
+    console.error('Bienvenida WhatsApp inmediata: error inesperado:', email, err.message);
+    return false;
+  }
+}
+
+// Marca BIENVENIDA_WA_ENVIADA en Brevo SOLO después de que Meta aceptó el envío (pedido explícito,
+// 2026-08-07) — antes se marcaba de forma optimista al programar el trigger de 60 min, lo cual ya
+// no aplica porque ahora el resultado real se conoce en el mismo request.
+async function marcarBienvenidaEnviadaBrevo(email, BREVO_KEY) {
+  try {
+    await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'api-key': BREVO_KEY },
+      body: JSON.stringify({ attributes: { BIENVENIDA_WA_ENVIADA: true } })
+    });
+  } catch (err) {
+    console.error('marcarBienvenidaEnviadaBrevo error (no bloquea, la bienvenida ya se envió):', email, err.message);
   }
 }
 
@@ -118,6 +186,7 @@ export default async function handler(req, res) {
     // que Orbit existiera (masterclass = 'mas-se-aleja', acceso = activo) — nunca revoca por error.
     let orbitMasterclass = isMasterclass ? 'mas-se-aleja' : null;
     let orbitAccesoActivo = true;
+    let orbitEstado = null; // null = Orbit no pudo determinarlo (ver comunicacionAutorizada abajo)
     let orbitTransaction = null;
     if (isMasterclass) {
       try {
@@ -126,6 +195,7 @@ export default async function handler(req, res) {
           orbitTransaction = orbitResultado.transaction;
           if (orbitResultado.masterclass) orbitMasterclass = orbitResultado.masterclass;
           if (orbitResultado.accesoActivo !== null) orbitAccesoActivo = orbitResultado.accesoActivo;
+          orbitEstado = orbitResultado.estado || null;
           console.log('Orbit procesado:', JSON.stringify(orbitResultado));
         } else {
           console.log('Orbit no procesó el evento (fallback a comportamiento previo):', orbitResultado.motivo);
@@ -134,6 +204,22 @@ export default async function handler(req, res) {
         console.error('Orbit error (se ignora, no bloquea el webhook):', err.message);
       }
     }
+
+    // 🔴 BUG CORREGIDO 2026-08-07 — "comunicación prematura ante eventos de pago no confirmado":
+    // antes de este cambio, la bienvenida de WhatsApp y el Correo 1 se disparaban para CUALQUIER
+    // evento del producto (BILLET_PRINTED, DELAYED, etc.), sin verificar el estado real de la
+    // compra — solo el Acceso (orbitAccesoActivo) se calculaba correctamente. Regla definitiva:
+    // "Solo ESTADOS_ACTIVOS puede disparar comunicaciones de bienvenida" — misma fuente de verdad
+    // que ya usa Orbit para el Acceso, no una segunda lista. Si Orbit no pudo determinar el estado
+    // (orbitEstado === null, ej. error de Orbit), se falla ABIERTO — mismo criterio ya establecido
+    // para orbitAccesoActivo arriba ("nunca revoca por error", no se penaliza a una compradora real
+    // por un fallo de infraestructura de Orbit).
+    const comunicacionAutorizada = orbitEstado === null || ESTADOS_ACTIVOS.includes(orbitEstado);
+
+    // Refund Management System (REFUND-MANAGEMENT-SYSTEM.md) — reutiliza ESTADOS_REVOCADOS de
+    // orbit-domain.js, no una segunda clasificación. PROTEST recibe la misma acción de comunicación
+    // que una revocación total (pausa, no revoca Acceso — eso sigue siendo de Orbit V2, sin tocar).
+    const suspenderComunicacion = isMasterclass && (ESTADOS_REVOCADOS.includes(orbitEstado) || orbitEstado === 'PROTEST');
 
     // ── Buscar contacto en Brevo ─────────────────────────────────
     const searchRes = await fetch(
@@ -153,7 +239,8 @@ export default async function handler(req, res) {
             FIRSTNAME:     primerNombre,
             SMS:           telefonoLimpio,
             HOTMART_PHONE: telefonoLimpio,
-            ...(isMasterclass ? { PRODUCTO: 'masterclass' } : {})
+            ...(isMasterclass ? { PRODUCTO: 'masterclass' } : {}),
+            ...(suspenderComunicacion ? { COMUNICACION_SUSPENDIDA: true } : {})
           },
           listIds: [targetList],
           updateEnabled: true
@@ -181,10 +268,16 @@ export default async function handler(req, res) {
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
         await guardarCompraMasterclass(email, primerNombre, orbitMasterclass, telefonoLimpio, orbitAccesoActivo);
-        if (await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
-          await programarBienvenidaMasterclass(telefonoLimpio, primerNombre, email);
+        await suspenderComunicacionSiAplica(`${email}__${orbitMasterclass}`, orbitEstado, telefonoLimpio);
+        if (comunicacionAutorizada) {
+          if (await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
+            const aceptado = await enviarBienvenidaWhatsAppInmediata(telefonoLimpio, primerNombre, email);
+            if (aceptado) await marcarBienvenidaEnviadaBrevo(email, BREVO_KEY);
+          }
+          await enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefonoLimpio);
+        } else {
+          console.log('Comunicación NO autorizada (estado no aprobado):', email, orbitEstado);
         }
-        await enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefonoLimpio);
       }
 
       return res.status(200).json({
@@ -231,13 +324,17 @@ export default async function handler(req, res) {
     if (isMasterclass) {
       updateBody.attributes.PRODUCTO = 'masterclass';
     }
+    if (suspenderComunicacion) {
+      updateBody.attributes.COMUNICACION_SUSPENDIDA = true;
+    }
 
     // Solo enviar la bienvenida de WhatsApp si nunca se le ha enviado antes a este contacto —
     // evita duplicados si por alguna razón el webhook se dispara más de una vez para la misma compra.
     const bienvenidaYaEnviada = contact.attributes?.BIENVENIDA_WA_ENVIADA === true;
-    if (isMasterclass && !bienvenidaYaEnviada) {
-      updateBody.attributes.BIENVENIDA_WA_ENVIADA = true;
-    }
+    // 🔧 CORREGIDO 2026-08-07: ya no se marca aquí de forma optimista (antes se hacía al mismo
+    // tiempo que se programaba el trigger de 60 min). Ahora el envío es inmediato y en el mismo
+    // request, así que el flag se marca más abajo, solo si Meta de verdad aceptó el envío
+    // (marcarBienvenidaEnviadaBrevo) — nunca antes de saber el resultado real.
 
     const updateRes = await fetch(
       `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
@@ -263,18 +360,24 @@ export default async function handler(req, res) {
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? orbitMasterclass : null);
     if (isMasterclass) {
       await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo);
-      // Idempotencia propia (correo1_estado en masterclass_compras) — seguro llamarlo aunque este
-      // webhook sea "Compra completa" repitiendo lo que "Compra aprobada" ya disparó.
-      await enviarCorreo1Seguro(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '');
+      await suspenderComunicacionSiAplica(`${email}__${orbitMasterclass}`, orbitEstado, telefonoLimpio || contact.attributes?.SMS || '');
+      if (comunicacionAutorizada) {
+        // Idempotencia propia (correo1_estado en masterclass_compras) — seguro llamarlo aunque este
+        // webhook sea "Compra completa" repitiendo lo que "Compra aprobada" ya disparó.
+        await enviarCorreo1Seguro(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '');
+      } else {
+        console.log('Comunicación NO autorizada (estado no aprobado):', email, orbitEstado);
+      }
     }
 
-    if (isMasterclass && !bienvenidaYaEnviada && await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
-      await programarBienvenidaMasterclass(
+    if (isMasterclass && comunicacionAutorizada && !bienvenidaYaEnviada && await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
+      const aceptado = await enviarBienvenidaWhatsAppInmediata(
         telefonoLimpio || contact.attributes?.SMS || '',
         primerNombre || contact.attributes?.FIRSTNAME || '',
         email
       );
-    } else if (isMasterclass) {
+      if (aceptado) await marcarBienvenidaEnviadaBrevo(email, BREVO_KEY);
+    } else if (isMasterclass && bienvenidaYaEnviada) {
       console.log(`Bienvenida ya se había enviado antes a ${email} — no se repite`);
     }
 

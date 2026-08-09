@@ -238,7 +238,10 @@ export default async function handler(req, res) {
             FIRSTNAME:     primerNombre,
             SMS:           telefonoLimpio,
             HOTMART_PHONE: telefonoLimpio,
-            ...(isMasterclass ? { PRODUCTO: 'masterclass' } : {}),
+            // PRODUCTO guarda el programa_id real (identidad permanente de la masterclass,
+            // catalogo masterclass_catalogo/{programa_id}), no la palabra generica "masterclass"
+            // — necesario para poder distinguir entre masterclasses distintas en el futuro.
+            ...(isMasterclass ? { PRODUCTO: orbitMasterclass } : {}),
             ...(suspenderComunicacion ? { COMUNICACION_SUSPENDIDA: true } : {})
           },
           listIds: [targetList],
@@ -321,7 +324,8 @@ export default async function handler(req, res) {
     }
 
     if (isMasterclass) {
-      updateBody.attributes.PRODUCTO = 'masterclass';
+      // Mismo criterio que en la creacion de contacto: PRODUCTO = programa_id real.
+      updateBody.attributes.PRODUCTO = orbitMasterclass;
     }
     if (suspenderComunicacion) {
       updateBody.attributes.COMUNICACION_SUSPENDIDA = true;

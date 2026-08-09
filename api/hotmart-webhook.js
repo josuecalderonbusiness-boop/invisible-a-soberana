@@ -161,22 +161,21 @@ export default async function handler(req, res) {
     const BREVO_KEY             = process.env.BREVO_KEY;
     const SOBERANA_7D_PRODUCT_ID = '7386435';
     const MASTERCLASS_PRODUCT_ID = '8128025';
-    // PENDIENTE: crear la lista "COMPRADORA_MASTERCLASS" en Brevo y reemplazar este valor.
-    // Mientras sea null, las compradoras de la masterclass caen en la lista del Workshop (11)
-    // pero quedan marcadas con el atributo PRODUCTO='masterclass' para no perder el dato.
-    const MASTERCLASS_LIST_ID   = null;
+    // Lista propia de Brevo para Masterclass (creada a mano por Josué 2026-08-08, ver
+    // BUSINESS-SYSTEMS.md "CRM RESET") — corrige la contaminacion real encontrada en produccion:
+    // el fallback anterior (lista 11, "Compradoras Codigo Soberana") hacia que una compra de
+    // Masterclass disparara la automatizacion COMPRADORAS-CODIGO SOBERANA (trigger "contacto
+    // anadido a lista #11"). Lista 11 vuelve a ser exclusiva de Codigo Soberana.
+    const MASTERCLASS_LIST_ID   = 19;
 
     const isCompra7D            = String(productId) === SOBERANA_7D_PRODUCT_ID;
     const isMasterclass         = String(productId) === MASTERCLASS_PRODUCT_ID;
-    const targetList            = isCompra7D ? 14 : (isMasterclass && MASTERCLASS_LIST_ID ? MASTERCLASS_LIST_ID : 11);
+    const targetList            = isCompra7D ? 14 : (isMasterclass ? MASTERCLASS_LIST_ID : 11);
     const tipoContacto          = isCompra7D ? '7d' : (isMasterclass ? 'masterclass' : 'workshop');
     const perfilContacto        = isCompra7D ? 'COMPRADORA_7D' : (isMasterclass ? 'COMPRADORA_MASTERCLASS' : 'COMPRADORA_WORKSHOP');
     const primerNombre          = nombre.split(' ')[0] || '';
     const telefonoLimpio        = limpiarTelefono(telefono);
 
-    if (isMasterclass && !MASTERCLASS_LIST_ID) {
-      console.log('⚠️  Masterclass sin lista Brevo propia todavía — usando lista 11 (Workshop) con atributo PRODUCTO=masterclass');
-    }
     console.log(`Tipo: ${tipoContacto} → Lista #${targetList}`);
 
     // ── Orbit: identidad + Compra + Acceso ────────────────────────

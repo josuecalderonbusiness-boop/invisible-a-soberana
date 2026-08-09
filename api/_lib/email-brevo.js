@@ -69,12 +69,16 @@ async function enviarBienvenidaMasterclass(destinatario, nombre, urlMiEspacio, u
     <a href="${urlMiEspacio}" style="display: inline-block; background: #b8892a; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: bold; padding: 14px 32px; border-radius: 8px;">
       Entrar a Mi Espacio
     </a>
+    <p style="font-size: 13px; margin: 14px 0 0;">
+      <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Experiencia+Soberana&dates=20260823T000000Z/20260823T011500Z&details=Tu+experiencia+ya+est%C3%A1+reservada.+Accede+desde+tu+Espacio.&location=https://invisible-a-soberana.josuecalderon.lat/mi-espacio" style="color:#b8892a;text-decoration:none;">📅 Agregar el sábado 22 de agosto a mi calendario</a>
+    </p>
   </div>
   <p style="font-size: 13px; line-height: 1.6; color: #8a7d72; border-top: 1px solid #e8e1d8; padding-top: 20px; margin: 0;">
     ¿No recibiste nuestro mensaje por WhatsApp? Es posible que el número haya quedado mal escrito
     o que haya ocurrido un problema con la entrega.
     <a href="${urlRecuperacion}" style="color: #b8892a;">Haz clic aquí para confirmar tu número de WhatsApp.</a>
   </p>
+  <p style="text-align:center;font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:10px;color:#a89a8c;margin:24px 0 0;">Invisible a Soberana<sup style="font-size:8px;">™</sup></p>
 </div>`
   });
 }

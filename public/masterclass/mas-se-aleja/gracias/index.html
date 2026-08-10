@@ -125,7 +125,24 @@ body { font-family: var(--font-body); color: var(--text-light); }
 /* ══ Bloques 2-5 (Página de Orientación, PAGINA-ORIENTACION-SPEC.md) ══ */
 .gc-video-label { font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(240,230,234,.4); margin: 26px 0 10px; }
 .gc-video { width: 100%; margin-top: 4px; }
-.gc-video video { width: 100%; border-radius: 12px; display: block; }
+.gc-video-box { aspect-ratio: 16/9; width: 100%; border-radius: 12px; overflow: hidden; position: relative; display: none; }
+.gc-video-box iframe { border: none; position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* ── Disparador del video (reemplaza al label estático mientras no se ha activado) ── */
+.gc-video-trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: 1px solid rgba(184,137,42,.35); border-radius: 999px;
+  padding: 10px 20px; margin: 26px 0 4px;
+  font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--gold-light); cursor: pointer; transition: background .2s, transform .2s;
+}
+.gc-video-trigger:hover { background: rgba(184,137,42,.1); transform: translateY(-1px); }
+.gc-video-trigger-play { font-size: 10px; }
+
+/* ── Bloques 3-5, ocultos hasta que el video termina — mismo mecanismo de max-height/opacity
+   ya usado en la landing (mc-video-kicker/subtext) para animaciones de aparición sin saltos. ── */
+.gc-post-video { max-height: 0; opacity: 0; overflow: hidden; transition: opacity 1.4s ease, max-height 1.4s ease; }
+.gc-post-video.show { max-height: 2400px; opacity: 1; }
 
 .gc-block { width: 100%; text-align: left; margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(184,137,42,.14); }
 .gc-block-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--gold-light); margin-bottom: 10px; }
@@ -167,47 +184,115 @@ body { font-family: var(--font-body); color: var(--text-light); }
   <div class="gc-date" id="gc-date-el"></div>
   <div class="gc-live" id="gc-live-el"><span class="gc-live-dot"></span>EN VIVO</div>
 
-  <!-- BLOQUE 2 — video opcional (PAGINA-ORIENTACION-SPEC.md): oculto hasta que exista el video real.
-       Para activarlo: quitar display:none y poner la URL real en gc-video-src. -->
-  <div class="gc-video" id="gc-video-block" style="display:none">
-    <p class="gc-video-label">Un mensaje breve para ti</p>
-    <video id="gc-video-el" controls playsinline></video>
+  <!-- BLOQUE 2 — Video Universal de Bienvenida y Orientación
+       (VIDEO-BIENVENIDA-ORIENTACION-SYSTEM.md). Alojado en Bunny Stream, librería 711470 (misma
+       librería del video de la landing) — pieza reutilizable, nunca menciona fecha/estado, por eso
+       sigue siendo válida sin cambios cuando esta página pase a Evergreen. -->
+  <div class="gc-video" id="gc-video-block">
+    <button class="gc-video-trigger" id="gc-video-trigger" type="button">
+      <span class="gc-video-trigger-play">▶</span> Un mensaje breve para ti
+    </button>
+    <p class="gc-video-label" id="gc-video-label" style="display:none">Un mensaje breve para ti</p>
+    <div class="gc-video-box" id="gc-video-box">
+      <iframe
+        id="gc-video-iframe"
+        src="https://iframe.mediadelivery.net/embed/711470/c20dfc36-f8bb-484e-92fb-fe73638b715d?autoplay=false&loop=false&muted=false&preload=true&responsive=true"
+        loading="lazy"
+        allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
+        allowfullscreen="true">
+      </iframe>
+    </div>
   </div>
 
-  <!-- BLOQUE 3 — qué va a pasar ahora -->
-  <div class="gc-block">
-    <p class="gc-block-title">¿Qué va a pasar ahora?</p>
-    <ul class="gc-checklist">
-      <li>Tu acceso llegará automáticamente a tu WhatsApp.</li>
-      <li>Desde ese mensaje podrás entrar a Mi Espacio.</li>
-      <li>Allí encontrarás todo lo que necesitas para vivir tu experiencia.</li>
-    </ul>
-    <p class="gc-note-inline">Si por alguna razón el mensaje no llega, también encontrarás la información en tu producto de Hotmart.</p>
-  </div>
+  <div class="gc-post-video" id="gc-post-video">
+    <!-- BLOQUE 3 — qué va a pasar ahora -->
+    <div class="gc-block">
+      <p class="gc-block-title">¿Qué va a pasar ahora?</p>
+      <ul class="gc-checklist">
+        <li>Tu acceso llegará automáticamente a tu WhatsApp.</li>
+        <li>Desde ese mensaje podrás entrar a Mi Espacio.</li>
+        <li>Allí encontrarás todo lo que necesitas para vivir tu experiencia.</li>
+      </ul>
+      <p class="gc-note-inline">Si por alguna razón el mensaje no llega, también encontrarás la información en tu producto de Hotmart.</p>
+    </div>
 
-  <!-- BLOQUE 4 — mientras esperas (solo tiene sentido antes del evento; se oculta en Evergreen) -->
-  <div class="gc-block" id="gc-block4">
-    <p class="gc-block-title">Mientras tanto…</p>
-    <ul class="gc-checklist gc-checklist--plain">
-      <li>Busca un lugar tranquilo.</li>
-      <li>Ten una libreta cerca.</li>
-      <li>Reserva ese espacio para ti.</li>
-    </ul>
-  </div>
+    <!-- BLOQUE 4 — mientras esperas (solo tiene sentido antes del evento; se oculta en Evergreen) -->
+    <div class="gc-block" id="gc-block4">
+      <p class="gc-block-title">Mientras tanto…</p>
+      <ul class="gc-checklist gc-checklist--plain">
+        <li>Busca un lugar tranquilo.</li>
+        <li>Ten una libreta cerca.</li>
+        <li>Reserva ese espacio para ti.</li>
+      </ul>
+    </div>
 
-  <!-- BLOQUE 5 — verificación / contingencia -->
-  <div class="gc-block">
-    <p class="gc-block-title">¿Necesitas ayuda para continuar?</p>
-    <a class="gc-btn gc-btn--gold" id="gc-btn-recibido" href="https://invisible-a-soberana.josuecalderon.lat/mi-espacio">
-      ✅ Ya recibí mi acceso
-    </a>
-    <a class="gc-btn gc-btn--wa" id="gc-btn-ayuda" href="#" target="_blank">
-      💛 Necesito ayuda
-    </a>
+    <!-- BLOQUE 5 — verificación / contingencia -->
+    <div class="gc-block">
+      <p class="gc-block-title">¿Necesitas ayuda para continuar?</p>
+      <a class="gc-btn gc-btn--gold" id="gc-btn-recibido" href="https://invisible-a-soberana.josuecalderon.lat/mi-espacio">
+        ✅ Ya recibí mi acceso
+      </a>
+      <a class="gc-btn gc-btn--wa" id="gc-btn-ayuda" href="#" target="_blank">
+        💛 Necesito ayuda
+      </a>
+    </div>
   </div>
 </div>
 
+<script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
+
 <script>
+// ── Disparador del Video Universal de Bienvenida y Orientación (VIDEO-BIENVENIDA-ORIENTACION-
+// SYSTEM.md). Antes del clic, solo se ve Bloque 1 (confirmación) + el botón "Un mensaje breve para
+// ti" — Bloques 3-5 quedan ocultos (.gc-post-video). Un solo gesto del usuario hace 3 cosas a la vez
+// (mismo gesto = permiso del navegador para reproducir audio): reproduce el video con sonido,
+// arranca el fondo ambient, y arma el listener que revela el resto de la página cuando el video
+// termina. Fondo ambient: mismo archivo y volumen que la landing (index.html, mcSound.startAmbient).
+(function () {
+  var triggerBtn = document.getElementById('gc-video-trigger');
+  var labelStatic = document.getElementById('gc-video-label');
+  var videoBox = document.getElementById('gc-video-box');
+  var iframe = document.getElementById('gc-video-iframe');
+  var postVideo = document.getElementById('gc-post-video');
+  if (!triggerBtn || !iframe || !postVideo) return;
+
+  function startAmbient() {
+    var ambient = new Audio('/masterclass/assets/psyai-spa-relaxation-background-soft-ambient-instrument-484999.mp3');
+    ambient.loop = true;
+    ambient.volume = 0.09; // sube dentro del mismo rango que ya usa la landing (0.05-0.09 según pantalla)
+    ambient.play().catch(function () {});
+  }
+
+  function revealRest() {
+    if (postVideo.classList.contains('show')) return; // no revelar dos veces (ended + fallback)
+    postVideo.classList.add('show');
+  }
+
+  triggerBtn.addEventListener('click', function () {
+    // Reemplaza el botón por el label estático — ya no hace falta invitar a hacer clic.
+    triggerBtn.style.display = 'none';
+    if (labelStatic) labelStatic.style.display = 'block';
+    videoBox.style.display = 'block';
+
+    // Recarga el iframe con autoplay+sonido — mismo mecanismo que ya usa la landing
+    // (index.html, mcRestartVideoWithSound) para forzar muted=false dentro del gesto del usuario.
+    iframe.src = 'https://iframe.mediadelivery.net/embed/711470/c20dfc36-f8bb-484e-92fb-fe73638b715d?autoplay=true&loop=false&muted=false&preload=true&responsive=true';
+
+    startAmbient(); // mismo gesto de clic — el navegador ya lo autoriza
+
+    try {
+      var player = new playerjs.Player(iframe);
+      player.on('ready', function () { player.play(); });
+      player.on('ended', revealRest);
+    } catch (e) {}
+
+    // Red de seguridad: si el evento 'ended' de playerjs no llega (iframe cross-origin, red lenta,
+    // etc.), el resto de la página igual se revela — nunca debe quedar atrapada sin ver Bloques 3-5.
+    // El video dura 30-60s (VIDEO-BIENVENIDA-ORIENTACION-SYSTEM.md §6); 75s da margen real.
+    setTimeout(revealRest, 75000);
+  });
+})();
+
 // ── Botón "💛 Necesito ayuda" — mensaje fijo, distinto a propósito del texto viejo de Camino A
 // ("...acabo de reservar mi lugar..."), para que api/whatsapp.js lo reconozca como el trigger de
 // contingencia de NO-RECIBI-MI-ACCESO-SPEC.md (Escenarios A-E), no como una apertura de bienvenida

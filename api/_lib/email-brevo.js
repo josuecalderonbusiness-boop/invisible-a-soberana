@@ -70,7 +70,7 @@ async function enviarBienvenidaMasterclass(destinatario, nombre, urlMiEspacio, u
       Entrar a Mi Espacio
     </a>
     <p style="font-size: 13px; margin: 14px 0 0;">
-      <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Experiencia+Soberana&dates=20260823T000000Z/20260823T011500Z&details=Tu+experiencia+ya+est%C3%A1+reservada.+Accede+desde+tu+Espacio.&location=https://invisible-a-soberana.josuecalderon.lat/mi-espacio" style="color:#b8892a;text-decoration:none;">📅 Agregar el sábado 22 de agosto a mi calendario</a>
+      <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Experiencia+Soberana&dates=20260830T000000Z/20260830T011500Z&details=Tu+experiencia+ya+est%C3%A1+reservada.+Accede+desde+tu+Espacio.&location=https://invisible-a-soberana.josuecalderon.lat/mi-espacio" style="color:#b8892a;text-decoration:none;">📅 Agregar el sábado 29 de agosto a mi calendario</a>
     </p>
   </div>
   <p style="font-size: 13px; line-height: 1.6; color: #8a7d72; border-top: 1px solid #e8e1d8; padding-top: 20px; margin: 0;">

@@ -20,7 +20,7 @@ async function main() {
     programa_id: PROGRAMA_ID,
     nombre_comercial: 'He intentado de todo... ¿por qué nada cambia?',
     hotmart_product_id: '8128025',
-    fecha_evento: '2026-08-22T19:00:00-05:00',
+    fecha_evento: '2026-08-29T19:00:00-05:00',
     lista_brevo_id: 19,
     estado: 'LIVE',
     creado_en: new Date().toISOString()

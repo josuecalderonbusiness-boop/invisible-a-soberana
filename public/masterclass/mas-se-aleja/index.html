@@ -44,6 +44,34 @@ src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
   gtag('config', 'G-60269X4BEN');
 </script>
 
+<!-- Ads & Attribution — Fase 1 (ver PLAN-FASE-1-ADS-ATTRIBUTION.md, BUSINESS-SYSTEMS/
+     001-masterclass-soberana). Captura first-touch POR SESIÓN (no histórico — sección 0a del plan) de
+     UTMs/fbclid al aterrizar. _fbc/_fbp se leen aparte, en goToCheckout(), porque el Pixel de Meta las
+     genera de forma asíncrona y podrían no existir todavía en este punto de la carga. Esta captura solo
+     guarda localmente — el envío a Hotmart ocurre en goToCheckout(), más abajo. -->
+<script>
+(function () {
+  try {
+    if (sessionStorage.getItem('mc_attribution')) return; // first-touch por sesión — no se sobreescribe
+    var params = new URLSearchParams(location.search);
+    var attribution = {
+      utm_source:   params.get('utm_source')   || '',
+      utm_medium:   params.get('utm_medium')   || '',
+      utm_campaign: params.get('utm_campaign') || '',
+      utm_content:  params.get('utm_content')  || '',
+      utm_term:     params.get('utm_term')     || '',
+      fbclid:       params.get('fbclid')       || '',
+      captured_at:  new Date().toISOString()
+    };
+    sessionStorage.setItem('mc_attribution', JSON.stringify(attribution));
+  } catch (err) {
+    // sessionStorage puede fallar en modo incógnito estricto o navegadores in-app — nunca debe
+    // romper la carga de la página por esto.
+    console.warn('Captura de atribución omitida:', err.message);
+  }
+})();
+</script>
+
 <style>
 :root {
   --wine-deep: #3D0C11;
@@ -1008,10 +1036,51 @@ var mcSound = (function () {
   document.addEventListener('touchstart', unlockOnce, true);
 })();
 
+// Ads & Attribution — Fase 1. Lee la atribución guardada al aterrizar (sessionStorage['mc_attribution'])
+// más las cookies _fbc/_fbp (leídas aquí, no al cargar, porque el Pixel las genera async) y las agrega
+// al link de Hotmart. NO asume todavía qué campo de Hotmart las devuelve en el webhook — eso se
+// confirma primero con una compra real (PLAN-FASE-1-ADS-ATTRIBUTION.md §2) antes de escribir el código
+// que las lee del lado del servidor. Esta función solo envía, nunca lee de vuelta.
 function goToCheckout() {
-  if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { value: 9.00, currency: 'USD' });
+  var checkoutEventId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+  if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { value: 9.00, currency: 'USD' }, { eventID: checkoutEventId });
   if (typeof gtag === 'function') gtag('event', 'begin_checkout', { value: 9.00, currency: 'USD', items: [{ item_name: 'Masterclass Soberana - Mas Se Aleja' }] });
-  window.open('https://pay.hotmart.com/W106744574H?checkoutMode=10&bid=1785032514659', '_blank');
+
+  var checkoutUrl = 'https://pay.hotmart.com/W106744574H?checkoutMode=10&bid=1785032514659';
+  try {
+    function readCookie(name) {
+      var match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : '';
+    }
+    var stored = sessionStorage.getItem('mc_attribution');
+    var attribution = stored ? JSON.parse(stored) : {};
+    var fbc = readCookie('_fbc') || (attribution.fbclid ? ('fb.1.' + Date.now() + '.' + attribution.fbclid) : '');
+    var fbp = readCookie('_fbp') || '';
+
+    var extra = new URLSearchParams();
+    if (attribution.utm_source)   extra.set('utm_source', attribution.utm_source);
+    if (attribution.utm_medium)   extra.set('utm_medium', attribution.utm_medium);
+    if (attribution.utm_campaign) extra.set('utm_campaign', attribution.utm_campaign);
+    if (attribution.fbclid)       extra.set('fbclid', attribution.fbclid);
+    if (fbc)                      extra.set('fbc', fbc);
+    if (fbp)                      extra.set('fbp', fbp);
+    // sck: parámetro de tracking documentado por Hotmart ("Sales Click Key") — se envía un identificador
+    // corto y legible del canal/campaña. Si Hotmart lo devuelve en el webhook y bajo qué nombre exacto
+    // es justamente lo que la compra de prueba real (§2 del plan) va a confirmar.
+    var canal = (attribution.utm_source || 'directo').replace(/[^a-z0-9_-]/gi, '').slice(0, 20);
+    var campana = (attribution.utm_campaign || 'na').replace(/[^a-z0-9_-]/gi, '').slice(0, 20);
+    extra.set('sck', canal + '_' + campana);
+    extra.set('checkout_event_id', checkoutEventId);
+
+    var extraStr = extra.toString();
+    if (extraStr) checkoutUrl += '&' + extraStr;
+  } catch (err) {
+    // Un fallo aquí nunca debe impedir que el checkout abra — el link base sin atribución sigue
+    // funcionando exactamente igual que hoy.
+    console.warn('No se pudo enriquecer el link de checkout con atribución:', err.message);
+  }
+
+  window.open(checkoutUrl, '_blank');
 }
 
 // ── Refuerzo de silencio/sonido con la API oficial de Bunny (Player.js). El listener 'ready' se

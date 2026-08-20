@@ -115,6 +115,11 @@ export default async function handler(req, res) {
   try {
     const body = req.body;
     console.log('Hotmart webhook received:', JSON.stringify(body).substring(0, 600));
+    // 🔧 TEMPORAL — Fase 1 Ads & Attribution (PLAN-FASE-1-ADS-ATTRIBUTION.md §2.2). Log sin truncar,
+    // solo para la compra de prueba real que confirma dónde devuelve Hotmart sck/transaction/price.
+    // Quitar este log en cuanto el payload real quede confirmado y documentado — no es logging
+    // permanente, no se usa para ninguna extracción todavía.
+    console.log('Hotmart webhook FULL payload (temporal, Fase 1 §2.2):', JSON.stringify(body));
 
     // ── Extraer datos del comprador ──────────────────────────────
     const email  =

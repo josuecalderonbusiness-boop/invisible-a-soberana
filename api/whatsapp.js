@@ -987,10 +987,14 @@ async function sendTemplate(to, nombre, templateName) {
   console.log(`Template ${templateName} → ${number}: ${data.messages?.[0]?.id ? '✓' : JSON.stringify(data)}`);
 }
 
-// Plantilla de bienvenida MASTERCLASS (bienvenida_live_cs / bienvenida_replay_cs) — con el botón
-// de respuesta rápida "Entrar a mi espacio" (payload 'masterclass_entrar'). Antes vivía en
-// api/hotmart-webhook.js (enviarBienvenidaWhatsApp); ahora vive aquí porque la dispara tanto el
-// Camino A (ella escribe) como el Camino B (trigger de 60 min), y ambos ejecutan el mismo paso.
+// Plantilla de bienvenida MASTERCLASS (bienvenida_live_cs / bienvenida_replay_cs) — botón de
+// Meta URL fija "Entrar a mi espacio" directo a Mi Espacio (Bug #14, EDGE-CASES-LANZAMIENTO.md
+// #14: el botón era quick_reply/payload 'masterclass_entrar', Meta lo cambió a URL fija sin
+// avisar por código — un botón URL fija no lleva parámetros en el envío, mandarlos causaba el
+// error 132018). manejarBoton()/masterclass_entrar quedan sin borrar pero ya no se disparan desde
+// aquí — decisión explícita de no reconstruir esa cadena todavía (ver checkpoint arquitectónico
+// Bug #14, 2026-08-20: recordatorio_replay_masterclass y la invitación a Sala Soberana quedan
+// pendientes de una revisión aparte, no de este fix).
 // Devuelve si Meta aceptó el envío (Nivel 1 de verificación, BREVO-AUTOMATIZACIONES-SPEC.md /
 // NO-RECIBI-MI-ACCESO-SPEC.md) — el caller decide qué hacer con el resultado (registrarlo, o no).
 async function sendTemplateMasterclass(to, nombre, templateName) {
@@ -1002,8 +1006,7 @@ async function sendTemplateMasterclass(to, nombre, templateName) {
       template: {
         name: templateName, language: { code: 'es_MX' },
         components: [
-          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] },
-          { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'masterclass_entrar' }] }
+          { type: 'body', parameters: [{ type: 'text', parameter_name: 'firstname', text: nombre }] }
         ]
       }
     })

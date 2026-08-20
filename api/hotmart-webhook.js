@@ -6,6 +6,7 @@ import { enviarCorreoInmediatoMasterclass } from './_lib/correo1-masterclass.js'
 import { masterclassEnVivo, sendTemplateMasterclass, cancelarTrigger } from './whatsapp.js';
 import { fsUpdate } from './_lib/firestore-rest.js';
 import { registrarResultadoBienvenidaPorTelefono } from './_lib/recuperacion-acceso.js';
+import crypto from 'node:crypto';
 
 // Refund Management System (REFUND-MANAGEMENT-SYSTEM.md) — Comunicación, no Acceso (eso sigue
 // siendo de Orbit V2, sin tocar). Mismos 2 grupos ya aprobados: revocación total (ESTADOS_REVOCADOS,
@@ -98,6 +99,53 @@ async function reservarTareaOutboxSeguro(transaction, tarea) {
   }
 }
 
+// Ads & Attribution — Fase 1 (PLAN-FASE-1-ADS-ATTRIBUTION.md §3.4). Único punto que manda el evento
+// Purchase server-side a Meta CAPI para el Pixel Maestro. Aislado en su propio try/catch, mismo
+// patrón que enviarCorreo1Seguro/enviarBienvenidaWhatsAppInmediata — un fallo de Meta nunca debe
+// bloquear Brevo/Sheets/Firestore/WhatsApp, que son la parte crítica del negocio.
+const META_PIXEL_ID = '1209108340676480'; // Pixel Maestro — el único oficial (ceo-system §10)
+async function enviarPurchaseCAPISeguro({ email, telefono, transactionId, montoValue, montoCurrency, trackingOrigen }) {
+  // Regla 4 de las correcciones de Josué (PLAN-FASE-1-ADS-ATTRIBUTION.md §0a): nunca fabricar ni
+  // enviar un event_id vacío/falso — ausencia detectable, nunca señal falsa.
+  if (!transactionId) {
+    console.error('CAPI Purchase omitido — transactionId real ausente:', email);
+    return;
+  }
+  const TOKEN = process.env.META_CAPI_ACCESS_TOKEN;
+  if (!TOKEN) {
+    console.log('META_CAPI_ACCESS_TOKEN no configurado — CAPI omitido');
+    return;
+  }
+  try {
+    const hash = (v) => crypto.createHash('sha256').update(String(v).trim().toLowerCase()).digest('hex');
+    const userData = { em: [hash(email)] };
+    if (telefono) userData.ph = [hash(telefono.replace(/[^\d]/g, ''))];
+
+    const res = await fetch(`https://graph.facebook.com/v20.0/${META_PIXEL_ID}/events?access_token=${TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: [{
+          event_name: 'Purchase',
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: transactionId, // mismo ID que usará el Pixel client-side en Gracias — dedup real
+          action_source: 'website',
+          user_data: userData,
+          custom_data: {
+            currency: montoCurrency || 'USD',
+            value: (montoValue !== undefined && montoValue !== null) ? montoValue : 9.00,
+            ...(trackingOrigen ? { content_name: trackingOrigen } : {})
+          }
+        }]
+      })
+    });
+    const resultado = await res.json().catch(() => ({}));
+    console.log('CAPI Purchase enviado:', transactionId, res.ok ? 'OK' : JSON.stringify(resultado));
+  } catch (err) {
+    console.error('CAPI Purchase error (no bloquea el webhook):', email, err.message);
+  }
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -115,11 +163,6 @@ export default async function handler(req, res) {
   try {
     const body = req.body;
     console.log('Hotmart webhook received:', JSON.stringify(body).substring(0, 600));
-    // 🔧 TEMPORAL — Fase 1 Ads & Attribution (PLAN-FASE-1-ADS-ATTRIBUTION.md §2.2). Log sin truncar,
-    // solo para la compra de prueba real que confirma dónde devuelve Hotmart sck/transaction/price.
-    // Quitar este log en cuanto el payload real quede confirmado y documentado — no es logging
-    // permanente, no se usa para ninguna extracción todavía.
-    console.log('Hotmart webhook FULL payload (temporal, Fase 1 §2.2):', JSON.stringify(body));
 
     // ── Extraer datos del comprador ──────────────────────────────
     const email  =
@@ -155,6 +198,14 @@ export default async function handler(req, res) {
     const productId =
       body?.data?.product?.id ||
       body?.product?.id || null;
+
+    // Ads & Attribution — Fase 1 (PLAN-FASE-1-ADS-ATTRIBUTION.md §3.1-3.2). Campos confirmados con
+    // una compra real de prueba el 2026-08-20 (ver EDGE-CASES-LANZAMIENTO.md/logs de Vercel) — ya no
+    // son supuestos. `sck` es el parámetro que goToCheckout() arma en la landing (canal_campaña).
+    const trackingOrigen  = body?.data?.purchase?.origin?.sck || null;
+    const transactionId   = body?.data?.purchase?.transaction || null;
+    const montoValue      = body?.data?.purchase?.price?.value ?? null;
+    const montoCurrency   = body?.data?.purchase?.price?.currency_value || null;
 
     if (!email) {
       console.log('No email found in payload');
@@ -247,6 +298,7 @@ export default async function handler(req, res) {
             // catalogo masterclass_catalogo/{programa_id}), no la palabra generica "masterclass"
             // — necesario para poder distinguir entre masterclasses distintas en el futuro.
             ...(isMasterclass ? { PRODUCTO: orbitMasterclass } : {}),
+            ...(trackingOrigen ? { ORIGEN_CAMPANA: trackingOrigen } : {}),
             ...(suspenderComunicacion ? { COMUNICACION_SUSPENDIDA: true } : {})
           },
           listIds: [targetList],
@@ -268,13 +320,16 @@ export default async function handler(req, res) {
         whatsapp: telefonoLimpio,
         perfil:   perfilContacto,
         lista:    String(targetList),
-        mensaje:  'Contacto nuevo creado desde Hotmart'
+        mensaje:  'Contacto nuevo creado desde Hotmart',
+        origen:   trackingOrigen || ''
       });
       await guardarEnFirestore(email, primerNombre, tipoContacto, isMasterclass ? orbitMasterclass : null);
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
-        await guardarCompraMasterclass(email, primerNombre, orbitMasterclass, telefonoLimpio, orbitAccesoActivo);
+        await guardarCompraMasterclass(email, primerNombre, orbitMasterclass, telefonoLimpio, orbitAccesoActivo, {
+          origen: trackingOrigen, transactionId, montoValue, montoCurrency
+        });
         await suspenderComunicacionSiAplica(`${email}__${orbitMasterclass}`, orbitEstado, telefonoLimpio);
         if (comunicacionAutorizada) {
           if (await reservarTareaOutboxSeguro(orbitTransaction, 'bienvenida_whatsapp')) {
@@ -282,6 +337,7 @@ export default async function handler(req, res) {
             if (aceptado) await marcarBienvenidaEnviadaBrevo(email, BREVO_KEY);
           }
           await enviarCorreo1Seguro(email, primerNombre, orbitMasterclass, telefonoLimpio);
+          await enviarPurchaseCAPISeguro({ email, telefono: telefonoLimpio, transactionId, montoValue, montoCurrency, trackingOrigen });
         } else {
           console.log('Comunicación NO autorizada (estado no aprobado):', email, orbitEstado);
         }
@@ -332,6 +388,9 @@ export default async function handler(req, res) {
       // Mismo criterio que en la creacion de contacto: PRODUCTO = programa_id real.
       updateBody.attributes.PRODUCTO = orbitMasterclass;
     }
+    if (trackingOrigen) {
+      updateBody.attributes.ORIGEN_CAMPANA = trackingOrigen;
+    }
     if (suspenderComunicacion) {
       updateBody.attributes.COMUNICACION_SUSPENDIDA = true;
     }
@@ -363,16 +422,23 @@ export default async function handler(req, res) {
       whatsapp: telefonoLimpio || contact.attributes?.SMS || '',
       perfil:   perfilContacto,
       lista:    String(targetList),
-      mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`
+      mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`,
+      origen:   trackingOrigen || ''
     });
     await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? orbitMasterclass : null);
     if (isMasterclass) {
-      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo);
+      await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo, {
+        origen: trackingOrigen, transactionId, montoValue, montoCurrency
+      });
       await suspenderComunicacionSiAplica(`${email}__${orbitMasterclass}`, orbitEstado, telefonoLimpio || contact.attributes?.SMS || '');
       if (comunicacionAutorizada) {
         // Idempotencia propia (correo1_estado en masterclass_compras) — seguro llamarlo aunque este
         // webhook sea "Compra completa" repitiendo lo que "Compra aprobada" ya disparó.
         await enviarCorreo1Seguro(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '');
+        await enviarPurchaseCAPISeguro({
+          email, telefono: telefonoLimpio || contact.attributes?.SMS || '',
+          transactionId, montoValue, montoCurrency, trackingOrigen
+        });
       } else {
         console.log('Comunicación NO autorizada (estado no aprobado):', email, orbitEstado);
       }
@@ -520,7 +586,9 @@ async function guardarEnFirestore(email, nombre, tipo, producto) {
 // una misma clienta acumule varias masterclasses sin que una compra borre a la anterior. El
 // Dashboard compartido ("Mi Espacio") lee de aquí — ver masterclass-platform-system, Bitácora
 // "Corrección #2 de alcance" (2026-07-15).
-async function guardarCompraMasterclass(email, nombre, producto, telefono, activo = true) {
+// meta (Ads & Attribution, Fase 1): { origen, transactionId, montoValue, montoCurrency } — opcional,
+// se agregan como campos extra sin tocar la estructura ya probada del resto del documento.
+async function guardarCompraMasterclass(email, nombre, producto, telefono, activo = true, meta = {}) {
   try {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     const { google } = await import('googleapis');
@@ -546,7 +614,12 @@ async function guardarCompraMasterclass(email, nombre, producto, telefono, activ
           // WhatsApp sin consultar el directorio histórico de Sheets — ver api/whatsapp.js.
           telefono: { stringValue: telefono || '' },
           activo: { booleanValue: activo },
-          fecha: { stringValue: new Date().toISOString() }
+          fecha: { stringValue: new Date().toISOString() },
+          ...(meta.origen ? { origen_campana: { stringValue: meta.origen } } : {}),
+          ...(meta.transactionId ? { transaction_id: { stringValue: meta.transactionId } } : {}),
+          ...(meta.montoValue !== undefined && meta.montoValue !== null
+            ? { monto: { doubleValue: meta.montoValue }, monto_moneda: { stringValue: meta.montoCurrency || '' } }
+            : {})
         }
       })
     });

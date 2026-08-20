@@ -39,15 +39,29 @@ src="https://www.facebook.com/tr?id=1209108340676480&ev=PageView&noscript=1"
 
 <script>
 // Evento de conversión — protegido con sessionStorage para no duplicar si recarga la página.
+// Ads & Attribution — Fase 1 (PLAN-FASE-1-ADS-ATTRIBUTION.md §5.1-5.2). El transaction_id fabricado
+// ('mc-mas-se-aleja-' + Date.now()) se retiró — nunca reconciliaba con Hotmart ni con el event_id
+// real que el webhook manda por CAPI (api/hotmart-webhook.js). Campo real confirmado con una compra
+// de prueba (2026-08-20): Hotmart redirige aquí con ?transaction=<ID real> — mismo ID que llega al
+// webhook, así que usarlo como event_id aquí deduplica correctamente contra el Purchase de CAPI.
 (function () {
   if (sessionStorage.getItem('mc_purchase_fired')) return;
-  fbq('track', 'Purchase', { value: 9.00, currency: 'USD' });
-  gtag('event', 'purchase', {
+  var transactionId = new URLSearchParams(location.search).get('transaction') || '';
+  var purchaseData = { value: 9.00, currency: 'USD' };
+  var gtagData = {
     value: 9.00,
     currency: 'USD',
-    transaction_id: 'mc-mas-se-aleja-' + Date.now(),
     items: [{ item_name: 'Masterclass Soberana - Mas Se Aleja', price: 9.00 }]
-  });
+  };
+  // Sin ID real, se sigue disparando el Purchase (no se rompe el tracking existente) pero sin
+  // event_id — mejor una señal sin deduplicar que una fabricada que parece correcta.
+  if (transactionId) {
+    gtagData.transaction_id = transactionId;
+    fbq('track', 'Purchase', purchaseData, { eventID: transactionId });
+  } else {
+    fbq('track', 'Purchase', purchaseData);
+  }
+  gtag('event', 'purchase', gtagData);
   sessionStorage.setItem('mc_purchase_fired', '1');
 })();
 </script>
@@ -320,7 +334,9 @@ document.getElementById('gc-btn-recibido').addEventListener('click', function ()
 // depende de cómo esté configurada la "URL de agradecimiento" en el producto de Hotmart.
 (function () {
   var params = new URLSearchParams(location.search);
-  var keys = ['nome', 'name', 'buyer_name', 'primeiro_nome', 'first_name', 'contact_name'];
+  // 'c_name' confirmado con una compra real de prueba (2026-08-20, ver PLAN-FASE-1-ADS-ATTRIBUTION.md)
+  // — va primero porque es el campo real verificado; el resto queda como respaldo sin confirmar.
+  var keys = ['c_name', 'nome', 'name', 'buyer_name', 'primeiro_nome', 'first_name', 'contact_name'];
   var raw = '';
   for (var i = 0; i < keys.length; i++) {
     var v = params.get(keys[i]);

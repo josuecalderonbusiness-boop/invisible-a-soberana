@@ -40,13 +40,13 @@ const campanas = [
   {
     tag: 'masterclass-correo2',
     name: 'MASTERCLASS — Correo 2 (T-7d) — mas-se-aleja',
-    subject: 'Guarda la fecha: sábado 29 de agosto, 7:00pm 💛',
+    subject: 'Guarda la fecha: sábado 5 de septiembre, 7:00pm 💛',
     segmentId: 6,
     htmlContent: htmlBranded(
       [
         'Hola {{contact.FIRSTNAME}} 💛',
         'Ya diste un paso que muchas mujeres nunca se atreven a dar: te detuviste a preguntar por qué, después de intentarlo todo, nada cambia.',
-        'El sábado 29 de agosto a las 7:00pm (hora Colombia) vamos a hablar de eso — no de otra técnica más, sino de por qué mientras más te esfuerzas por salvar tu relación, más te vas perdiendo tú.',
+        'El sábado 5 de septiembre a las 7:00pm (hora Colombia) vamos a hablar de eso — no de otra técnica más, sino de por qué mientras más te esfuerzas por salvar tu relación, más te vas perdiendo tú.',
         'Tu lugar ya está reservado. Guarda la fecha.'
       ],
       [
@@ -60,7 +60,7 @@ const campanas = [
   {
     tag: 'masterclass-correo3',
     name: 'MASTERCLASS — Correo 3 (T-24h) — mas-se-aleja',
-    subject: 'Mañana es el día 💛 (sábado 29, 7:00pm)',
+    subject: 'Mañana es el día 💛 (sábado 5, 7:00pm)',
     segmentId: 7,
     htmlContent: htmlBranded(
       [

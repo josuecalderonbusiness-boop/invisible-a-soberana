@@ -156,7 +156,7 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 **Etapa 2 — Checks (900ms después del fade-out):**
 - Aparece "**EN VIVO**" pulsante (verde `#6FD98C`, punto pulsante) arriba de los 3 checks
 - Los 3 checks entran desde la derecha en fade, uno cada 750ms:
-  1. "✓ Sábado 29 de agosto."
+  1. "✓ Sábado 5 de septiembre."
   2. "✓ 🇨🇴 7:00 p.m. Colombia."
   3. "✓ 🇲🇽 6:00 p.m. México."
 - 2 segundos después de que aparece el último check → aparece pill "→" (sin texto, solo flecha) bajo los checks. Misma regla: clic acelera, 3.5s avanza sola.
@@ -164,8 +164,8 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 **Al continuar (clic o automático):** entra la hoja de agenda — **fade + blur desde la derecha** (`translateX(60px)→0`, `blur(14px)→0`, opacity, 1.6s cubic-bezier), NO desliza hacia arriba (así era antes; se cambió deliberadamente).
 
 **Tarjeta de agenda** (fondo crema, `.mc-agenda-card`):
-- Tira de días de la semana (D L M X J V S), sábado 29 resaltado en círculo dorado
-- "Sábado — 29 de agosto de 2026"
+- Tira de días de la semana (D L M X J V S), sábado 5 resaltado en círculo dorado
+- "Sábado — 5 de septiembre de 2026"
 - Kicker: "Cuando termine este espacio vas a..."
 - 3 notas (aparecen palabra por palabra, 150ms/palabra, 350ms extra entre notas, arrancan 900ms después de que la hoja termina de entrar):
   1. "Dejar de sentir que eres la única que sostiene la relación."
@@ -176,9 +176,9 @@ Contenedor `#mc-scroll` con `scroll-snap-type: y proximity`. Cada `.screen` es `
 ### s9 — SEGUNDA TARJETA DE AGENDA (CTA con contador)
 Entra con **`.reveal-side`** (fade+blur desde la derecha, no el reveal genérico hacia arriba) — se siente como "la hoja siguiente".
 
-- "Sábado 29 de agosto" · "🕖 7:00 p.m."
+- "Sábado 5 de septiembre" · "🕖 7:00 p.m."
 - Checks: "✔ En vivo." / "✔ Grabación incluida."
-- Contador regresivo (días/hrs/min) hasta el 29 de agosto 7:00pm COT
+- Contador regresivo (días/hrs/min) hasta el 5 de septiembre 7:00pm COT
 - **"$9 USD"** — precio en tono natural, deliberadamente pequeño y NO en la fuente dramática (Jost 600 15px, no Playfair Display) — "la idea es que no sea dramático decir el precio, que suene natural"
 - Botón: **"Sí, quiero estar ahí"**
 - Nota: "Tu lugar queda reservado · Pago seguro con Hotmart"
@@ -216,7 +216,7 @@ Contenido (centrado, pantalla propia):
 - "No sé qué está pasando hoy en tu relación."
 - "No sé si vienes de una discusión...<br>si hace días no hablan...<br>o si simplemente estás cansada."
 - "**Lo único que espero... es que el sábado salgas de este espacio sintiéndote mucho más liviana de como llegaste.**" (negrita/dorado, `.mc-note-signoff`)
-- "📅 Sábado 29 de agosto · 7:00 p.m."
+- "📅 Sábado 5 de septiembre · 7:00 p.m."
 - Botón: "**Reservar mi lugar para el sábado.**"
 - Nota: "**Evento en vivo + Grabación • USD $9**"
 
@@ -258,7 +258,7 @@ Recuadro fijo, esquina inferior derecha, oculto por defecto. **Se activa al lleg
 
 Contenido:
 - "● EN VIVO" (punto verde pulsante)
-- "Sábado 29 agosto"
+- "Sábado 5 septiembre"
 - "🇨🇴 7:00 p.m." / "🇲🇽 6:00 p.m."
 - "Quedan: **XX** días" (contador dinámico)
 - Botoncito dorado pulsante: "**Reservar mi lugar**"
@@ -271,8 +271,8 @@ Fondo: degradado casi negro (`rgba(20,7,9,.97)→rgba(10,4,5,.98)`), más oscuro
 
 Fuente única de verdad: dos fechas hardcodeadas en JS.
 ```js
-EVENTO_INICIO = 2026-08-29T19:00:00-05:00   // arranca el evento
-EVENTO_FIN    = 2026-08-29T20:15:00-05:00   // fin de la última sesión
+EVENTO_INICIO = 2026-09-05T19:00:00-05:00   // arranca el evento
+EVENTO_FIN    = 2026-09-05T20:15:00-05:00   // fin de la última sesión
 ```
 
 **Mientras `Date.now() < EVENTO_FIN`:** modo LIVE. Contador visible y activo (se actualiza cada 30s), fecha flotante puede activarse, copy orientado a "reserva tu lugar".
@@ -314,6 +314,6 @@ EVENTO_FIN    = 2026-08-29T20:15:00-05:00   // fin de la última sesión
 Estos son puntos que valdría la pena que el auditor revise específicamente, dado que fueron ajustados varias veces durante el desarrollo:
 
 1. ¿El video de 112s sigue siendo la duración real? Si se reemplaza, hay que actualizar `REVEAL_EN_SEG` (hoy en 109, 3s antes del final) o el reveal post-video aparecerá en el momento equivocado.
-2. ¿La fecha/hora del evento (29 de agosto 2026, 7pm Colombia / 6pm México) sigue vigente? Está hardcodeada en 3 lugares distintos del HTML más las 2 constantes JS — si cambia, hay que actualizar todos.
+2. ¿La fecha/hora del evento (5 de septiembre 2026, 7pm Colombia / 6pm México) sigue vigente? Está hardcodeada en 3 lugares distintos del HTML más las 2 constantes JS — si cambia, hay que actualizar todos.
 3. ¿El tono "no dramático" del precio en s9 logra el efecto buscado, o se siente demasiado escondido comparado con los otros dos CTAs que sí lo acompañan de beneficios?
 4. Verificar que el flujo de gates manuales en s8 (Cuéntame más → checks → flecha → agenda) no se sienta como fricción excesiva versus el resto de la página, que es mayormente pasiva (scroll).

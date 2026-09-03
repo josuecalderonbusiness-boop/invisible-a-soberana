@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -53,10 +53,14 @@ async function crearCuentaAccion(req, res) {
     }
 
     const compras = await obtenerComprasVigentes(correo);
-    if (compras.length === 0) {
+    const hayDerecho = compras.length > 0;
+    // Puerta 2 (Clase Gratuita), seccion 7 del diseño: entra con Derecho O
+    // con Registro activo a una Convocatoria — no se exige haber comprado.
+    const hayRegistroActivo = hayDerecho ? false : await tieneRegistroActivo(correo);
+    if (!hayDerecho && !hayRegistroActivo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
-      return res.status(403).json({ error: 'No encontramos una compra asociada a ese correo.' });
+      return res.status(403).json({ error: 'No encontramos una compra ni un registro a clase gratuita asociados a ese correo.' });
     }
 
     const passwordHash = hashPassword(password);
@@ -108,10 +112,14 @@ async function solicitarCuentaAccion(req, res) {
       return res.status(200).json({ ok: true, accion: 'iniciar_sesion' });
     }
 
-    if (!hayDerecho) {
+    // Puerta 2 (Clase Gratuita), seccion 7 del diseño: Derecho O Registro
+    // activo — solo se consulta el Registro si ya se sabe que no hay Derecho
+    // (evita una segunda llamada innecesaria cuando la primera ya alcanza).
+    const hayRegistroActivo = hayDerecho ? false : await tieneRegistroActivo(correo);
+    if (!hayDerecho && !hayRegistroActivo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
-      return res.status(200).json({ ok: false, error: 'No encontramos una compra asociada a ese correo.' });
+      return res.status(200).json({ ok: false, error: 'No encontramos una compra ni un registro a clase gratuita asociados a ese correo.' });
     }
 
     await registrarExito('ip', ip);
@@ -147,7 +155,11 @@ async function loginAccion(req, res) {
     }
 
     const compras = await obtenerComprasVigentes(correo);
-    if (compras.length === 0) {
+    const hayDerecho = compras.length > 0;
+    // Puerta 2 (Clase Gratuita), seccion 7 del diseño: entra con Derecho O
+    // con Registro activo a una Convocatoria.
+    const hayRegistroActivo = hayDerecho ? false : await tieneRegistroActivo(correo);
+    if (!hayDerecho && !hayRegistroActivo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
       return res.status(401).json({ error: ERROR_GENERICO_LOGIN });

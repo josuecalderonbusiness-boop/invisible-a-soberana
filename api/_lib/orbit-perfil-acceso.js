@@ -11,6 +11,14 @@
 // El contrato solo expone `programaId` + `derecho` (nunca fecha de compra —
 // decisión YAGNI 2026-08-02: hoy existe un solo Programa, ordenar por fecha no
 // aporta nada; se amplía el contrato si llega a hacer falta en Fase 4).
+//
+// Puerta 2 (Clase Gratuita) — Slice 3 (ver
+// C:\BUSINESS-SYSTEMS\PUERTA-2-CLASE-GRATUITA-DISENO-FINAL.md, secciones 4 y
+// 7, diseño cerrado 2026-09-02): el mismo perfil de acceso ahora trae, en
+// paralelo a `programas`, una lista `registros` — Registros ACTIVOS a una
+// Convocatoria de clase gratuita (entidad nueva y propia, nunca un Programa
+// ni un Derecho). Se consume la misma respuesta, sin llamada de red nueva —
+// mismo patron exacto que tieneDerechoVigente/obtenerComprasVigentes.
 
 const ORBIT_BASE_URL = process.env.ORBIT_BASE_URL || 'https://orbit-mc-six.vercel.app';
 const MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET;
@@ -63,4 +71,20 @@ async function obtenerComprasVigentes(correo) {
     .map((p) => ({ producto: p.programaId }));
 }
 
-export { tieneDerechoVigente, obtenerComprasVigentes };
+// Espejo de tieneDerechoVigente, para la segunda fuente de acceso a Mi
+// Espacio (seccion 7 del diseño): Registro activo, no Derecho.
+async function tieneRegistroActivo(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return (perfil.registros || []).length > 0;
+}
+
+// Espejo de obtenerComprasVigentes. Se conserva la forma minima que ya
+// devuelve Orbit (convocatoriaId + fechaHora) — no se inventan campos que
+// Mi Espacio todavia no necesita (la tarjeta visual de clase gratuita es un
+// slice futuro, Slice 4).
+async function obtenerRegistrosActivos(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.registros || [];
+}
+
+export { tieneDerechoVigente, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos };

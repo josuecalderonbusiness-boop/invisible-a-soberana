@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -92,4 +92,23 @@ test('tieneDerechoVigenteA: false si el programaId pedido existe pero no está v
 test('tieneDerechoVigenteA: false sin programas en absoluto', async (t) => {
   mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
   assert.equal(await tieneDerechoVigenteA('nadie@correo.com', 'codigo-soberana'), false);
+});
+
+// ── obtenerExperienciaGratuitaActiva (Puerta 2, Slice 5) — unico contrato
+// de la experiencia gratuita activa, reemplaza el candidato descartado de
+// extender registros[] (P4, eliminado). Espejo del patron ya usado arriba. ──
+
+test('obtenerExperienciaGratuitaActiva: null cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), null);
+});
+
+test('obtenerExperienciaGratuitaActiva: devuelve el objeto tal como lo manda Orbit, sin transformarlo', async (t) => {
+  const experiencia = {
+    convocatoriaId: 'c1', fechaHora: '2026-09-10T18:00:00.000Z',
+    duracionEstimada: 5400, ventanaReplayHoras: 72, fase: 'en_vivo',
+    enlaceEnVivo: 'https://zoom.us/j/en-vivo', enlaceReplay: null,
+  };
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: experiencia });
+  assert.deepEqual(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), experiencia);
 });

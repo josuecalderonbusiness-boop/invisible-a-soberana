@@ -96,6 +96,18 @@ async function obtenerProximaConvocatoriaDisponible(correo) {
   return perfil.proximaConvocatoriaDisponible || null;
 }
 
+// Puerta 2 — Slice 5: experienciaGratuitaActiva es el UNICO contrato de la
+// experiencia gratuita activa (reemplaza por completo a
+// obtenerRegistrosActivos para este proposito — ver contrato final cerrado
+// en PUERTA-2-MI-ESPACIO-EXPERIENCIA-CLASE-GRATUITA.md, seccion 8).
+// { convocatoriaId, fechaHora, duracionEstimada, ventanaReplayHoras, fase,
+// enlaceEnVivo, enlaceReplay } | null — fase en {espera,en_vivo,replay},
+// nunca 'vencido' (esa es la ausencia del campo, null).
+async function obtenerExperienciaGratuitaActiva(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.experienciaGratuitaActiva || null;
+}
+
 // Puerta 2 — Slice 4, pieza P6: reserva el lugar de una Persona ya
 // autenticada en la proxima Convocatoria abierta. NUNCA se le pasa un
 // correo que venga del cliente/navegador — el unico llamador valido es la
@@ -143,5 +155,6 @@ export {
   tieneRegistroActivo,
   obtenerRegistrosActivos,
   obtenerProximaConvocatoriaDisponible,
+  obtenerExperienciaGratuitaActiva,
   crearRegistroAutenticado,
 };

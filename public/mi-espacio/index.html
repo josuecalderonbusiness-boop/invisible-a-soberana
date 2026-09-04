@@ -130,6 +130,25 @@ button { font: inherit; }
   .ms-stats { gap: 28px 32px; }
 }
 
+/* ── Shell minimo (Puerta 2, Slice 4) — tarjeta de invitacion a la proxima
+   Convocatoria + bienvenida "nunca vacio". Ver
+   C:\BUSINESS-SYSTEMS\PUERTA-2-MI-ESPACIO-EXPERIENCIA-CLASE-GRATUITA.md,
+   Addendum 2 (shell minimo): urgencia antes que permanencia — esta tarjeta
+   es hoy la unica pieza de "urgencia/oportunidad" que existe (Pista A);
+   experienciaGratuitaActiva (tarjeta de los 4 estados) es Pista B, todavia
+   no construida — no se anticipa aqui. ── */
+.ms-invite-card { position: relative; border: 1.5px solid rgba(184,137,42,.35); border-radius: 18px; padding: 30px 32px; margin-bottom: 40px; background: linear-gradient(165deg, rgba(184,137,42,.09), transparent 65%); }
+.ms-invite-eyebrow { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 10px; }
+.ms-invite-title { font-family: var(--font-display); font-size: clamp(20px, 3vw, 26px); font-weight: 800; margin-bottom: 8px; }
+.ms-invite-sub { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; }
+.ms-invite-btn { padding: 14px 26px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-family: var(--font-body); font-weight: 700; font-size: 14px; }
+.ms-invite-btn:disabled { opacity: .6; cursor: default; }
+.ms-invite-msg { margin-top: 14px; font-family: var(--font-body); font-size: 13px; color: var(--text-muted); }
+
+.ms-bienvenida-vacio { border: 1.5px solid rgba(184,137,42,.2); border-radius: 18px; padding: 40px 36px; margin-bottom: 40px; text-align: center; background: rgba(255,255,255,.015); }
+.ms-bienvenida-title { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--gold-light); margin-bottom: 10px; }
+.ms-bienvenida-text { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
 .ms-section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
 .ms-section-header h2 { font-family: var(--font-eyebrow); font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--text-light); }
 .ms-vertodas { font-family: var(--font-eyebrow); font-size: 11.5px; font-weight: 600; color: var(--gold-light); text-decoration: none; }
@@ -381,7 +400,20 @@ button { font: inherit; }
       <div class="ms-stats" id="ms-stats"></div>
     </div>
 
-    <div class="ms-section-header">
+    <div class="ms-invite-card" id="ms-invite-card" style="display:none">
+      <div class="ms-invite-eyebrow">Nueva oportunidad</div>
+      <div class="ms-invite-title">Hay una nueva clase disponible</div>
+      <p class="ms-invite-sub" id="ms-invite-fecha"></p>
+      <button class="ms-invite-btn" id="ms-invite-btn" onclick="msReservarConvocatoria()">Reservar mi lugar →</button>
+      <p class="ms-invite-msg" id="ms-invite-msg" style="display:none"></p>
+    </div>
+
+    <div class="ms-bienvenida-vacio" id="ms-bienvenida-vacio" style="display:none">
+      <div class="ms-bienvenida-title">Bienvenida a tu espacio</div>
+      <p class="ms-bienvenida-text">Todavía no tienes ninguna experiencia activa en este momento. En cuanto haya una nueva clase disponible, la verás aquí.</p>
+    </div>
+
+    <div class="ms-section-header" id="ms-experiencias-header" style="display:none">
       <h2>Tus experiencias</h2>
       <a class="ms-vertodas" id="ms-vertodas" href="#" style="display:none" onclick="msToggleVerTodas(event)">Ver mi recorrido completo →</a>
     </div>
@@ -565,6 +597,7 @@ const ENTRADA_ANTICIPADA_MS = 10 * 60000;
 let dbEmail = '';
 let dbCompras = [];
 let dbSeleccion = -1;
+let dbProximaConvocatoria = null; // Puerta 2, Slice 4 — { id, fechaHora } | null
 
 function dbFmt(n) { return String(n).padStart(2, '0'); }
 
@@ -748,6 +781,7 @@ async function dbEnviarPassword(ev) {
     dbEmail = data.correo;
     dbMostrarBannerVerificacion(data.emailVerified);
     dbCompras = dbPrepararCompras(data.compras);
+    dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
     msShowBiblioteca();
   } catch (e) {
     console.error(e);
@@ -794,6 +828,72 @@ function msShowBiblioteca() {
   document.getElementById('ms-footer').style.display = 'block';
   msRenderStats();
   msRenderGrid();
+  msRenderShellPrioridad();
+}
+
+// Puerta 2, Slice 4 — shell minimo (Addendum 2 del documento de experiencia):
+// orden de prioridad "urgencia antes que permanencia". Hoy solo existen dos
+// de las tres capas: la invitacion a proximaConvocatoriaDisponible (tier 2)
+// y lo permanente ya comprado (tier 3, la biblioteca de siempre) — la
+// tarjeta de experienciaGratuitaActiva (tier 1) es Pista B, todavia no
+// construida, no se anticipa aqui. Regla "nunca vacio": si no hay ni
+// compras ni proxima convocatoria, se muestra la bienvenida por defecto.
+function msRenderShellPrioridad() {
+  const hayCompras = dbCompras.length > 0;
+  const hayProxima = !!dbProximaConvocatoria;
+
+  document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';
+  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima) ? 'block' : 'none';
+
+  if (hayProxima) {
+    document.getElementById('ms-invite-card').style.display = 'block';
+    document.getElementById('ms-invite-fecha').textContent = msFormatFechaConvocatoria(dbProximaConvocatoria.fechaHora);
+    document.getElementById('ms-invite-btn').style.display = 'inline-block';
+    document.getElementById('ms-invite-btn').disabled = false;
+    document.getElementById('ms-invite-btn').textContent = 'Reservar mi lugar →';
+    document.getElementById('ms-invite-msg').style.display = 'none';
+  } else {
+    document.getElementById('ms-invite-card').style.display = 'none';
+  }
+}
+
+function msFormatFechaConvocatoria(fechaHoraISO) {
+  try {
+    const fecha = new Date(fechaHoraISO);
+    return 'Próxima clase: ' + fecha.toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+  } catch (e) {
+    return 'Hay una nueva clase abierta para reservar.';
+  }
+}
+
+// P6: reserva el lugar en la proxima Convocatoria abierta. Identidad
+// exclusivamente desde la cookie de sesion (credentials:'include') — este
+// formulario nunca envia el correo, ver mi-espacio-auth.js/convocatoria-reservar.
+async function msReservarConvocatoria() {
+  const btn = document.getElementById('ms-invite-btn');
+  const msg = document.getElementById('ms-invite-msg');
+  btn.disabled = true;
+  btn.textContent = 'Reservando...';
+  try {
+    const res = await fetch('/api/mi-espacio-convocatoria-reservar', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      msg.textContent = data.error || 'No se pudo completar la reserva. Inténtalo nuevamente.';
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Reservar mi lugar →';
+      return;
+    }
+    btn.style.display = 'none';
+    msg.textContent = 'Tu lugar quedó reservado. Te esperamos ahí.';
+    msg.style.display = 'block';
+  } catch (e) {
+    console.error(e);
+    msg.textContent = 'No pudimos conectarnos en este momento. Inténtalo nuevamente en unos minutos.';
+    msg.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Reservar mi lugar →';
+  }
 }
 
 // Copy de los stats, separado a propósito del cálculo de abajo — cambiar el lenguaje del
@@ -1082,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       // Nunca se interpreta como "sin programas" ni se cierra la sesión (Fase 3.2).
       document.getElementById('ms-verificacion-pendiente-banner').style.display = data.verificacionPendiente ? 'flex' : 'none';
       dbCompras = dbPrepararCompras(data.compras);
+      dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
       msShowBiblioteca();
     }
   } catch (e) {

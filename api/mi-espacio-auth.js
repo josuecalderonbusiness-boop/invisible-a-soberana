@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -154,23 +154,28 @@ async function loginAccion(req, res) {
       return res.status(401).json({ error: ERROR_GENERICO_LOGIN });
     }
 
-    const compras = await obtenerComprasVigentes(correo);
-    const hayDerecho = compras.length > 0;
-    // Puerta 2 (Clase Gratuita), seccion 7 del diseño: entra con Derecho O
-    // con Registro activo a una Convocatoria.
-    const hayRegistroActivo = hayDerecho ? false : await tieneRegistroActivo(correo);
-    if (!hayDerecho && !hayRegistroActivo) {
-      await registrarIntento('ip', ip);
-      await registrarIntento('correo', correo);
-      return res.status(401).json({ error: ERROR_GENERICO_LOGIN });
-    }
+    // Puerta 2 — Addendum "Mi Espacio persistente" (2026-09-03, congelado en
+    // PUERTA-2-MI-ESPACIO-EXPERIENCIA-CLASE-GRATUITA.md, seccion 1): la
+    // elegibilidad (Derecho O Registro activo) es un criterio de ENTRADA —
+    // se exige solo para crear una cuenta (crearCuentaAccion,
+    // solicitarCuentaAccion), nunca para iniciar sesion en una cuenta que ya
+    // existe. Contraseña correcta + cuenta activa ya es suficiente para
+    // entrar. `compras` se sigue consultando porque la respuesta la sigue
+    // necesitando para mostrar informacion, no como condicion de acceso.
+    // proximaConvocatoriaDisponible viaja en la misma tanda de llamadas
+    // (Slice 4, P7) para que el shell sepa de inmediato si mostrar la
+    // tarjeta de invitacion, sin esperar a la siguiente carga de pagina.
+    const [compras, proximaConvocatoriaDisponible] = await Promise.all([
+      obtenerComprasVigentes(correo),
+      obtenerProximaConvocatoriaDisponible(correo),
+    ]);
 
     await registrarExito('ip', ip);
     await registrarExito('correo', correo);
 
     const sesion = crearTokenSesion(correo, cuenta.sessionVersion || 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras, emailVerified: !!cuenta.emailVerified });
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, emailVerified: !!cuenta.emailVerified });
   } catch (err) {
     console.error('mi-espacio-auth/login error:', err.message);
     return res.status(500).json({ error: 'No se pudo iniciar sesión.' });
@@ -196,11 +201,17 @@ async function sesionAccion(req, res) {
     if (!vigente) return res.status(200).json({ autenticado: false });
 
     try {
-      const compras = await obtenerComprasVigentes(datos.correo);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, emailVerified: !!cuenta.emailVerified });
+      // Puerta 2 — Slice 4: proximaConvocatoriaDisponible viaja en la misma
+      // respuesta que ya consulta compras (sin llamada de red extra), para
+      // que el shell de Mi Espacio sepa si mostrar la tarjeta de invitacion.
+      const [compras, proximaConvocatoriaDisponible] = await Promise.all([
+        obtenerComprasVigentes(datos.correo),
+        obtenerProximaConvocatoriaDisponible(datos.correo),
+      ]);
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, emailVerified: !!cuenta.emailVerified });
     } catch (err) {
       console.error('mi-espacio-auth/sesion: Orbit no respondió, sesión sigue siendo válida:', err.message);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
     }
   } catch (err) {
     console.error('mi-espacio-auth/sesion error:', err.message);
@@ -288,6 +299,37 @@ async function confirmarCorreoAccion(req, res) {
   }
 }
 
+// Puerta 2 — Slice 4, pieza P6: reservar el lugar en la proxima
+// Convocatoria abierta, desde dentro de Mi Espacio ya autenticado.
+//
+// Frontera de identidad (auditoria 2026-09-04, congelada en
+// PUERTA-2-CODIGO-SOBERANA-MAPA-DE-SLICES.md, addendum de auditoria Pista
+// A): el correo se obtiene EXCLUSIVAMENTE de la cookie de sesion verificada
+// — nunca de req.body. El navegador nunca envia ni puede elegir el correo
+// que se registra. Mismo patron de verificacion que sesionAccion.
+async function convocatoriaReservarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  try {
+    const cuenta = await obtenerCuenta(datos.correo);
+    const vigente = cuenta && cuenta.estado === 'activa' && (cuenta.sessionVersion || 0) === datos.sessionVersion;
+    if (!vigente) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+    const resultado = await crearRegistroAutenticado(datos.correo);
+    return res.status(200).json({ ok: true, convocatoria: resultado.convocatoria });
+  } catch (err) {
+    if (err.motivo === 'sin_convocatoria_abierta') {
+      return res.status(409).json({ error: 'No hay ninguna clase gratuita abierta en este momento.' });
+    }
+    console.error('mi-espacio-auth/convocatoria-reservar error:', err.message);
+    return res.status(500).json({ error: 'No se pudo completar la reserva.' });
+  }
+}
+
 async function reenviarConfirmacionAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -324,6 +366,7 @@ const ACCIONES = {
   'recuperar-confirmar': recuperarConfirmarAccion,
   'confirmar-correo': confirmarCorreoAccion,
   'reenviar-confirmacion': reenviarConfirmacionAccion,
+  'convocatoria-reservar': convocatoriaReservarAccion,
 };
 
 export default async function handler(req, res) {

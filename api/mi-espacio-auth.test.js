@@ -14,7 +14,15 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import handler from './mi-espacio-auth.js';
+
+// El modulo (via auth-session.js) lee MI_ESPACIO_SESSION_SECRET de
+// process.env en su ambito de carga (top-level const) — mismo gotcha ya
+// documentado en api/_lib/orbit-perfil-acceso.test.js: con `import`
+// estatico los imports se resuelven antes de que corra cualquier linea de
+// este archivo, asi que fijar la env var despues llega tarde. Se fija
+// primero y se carga el modulo con `import()` dinamico.
+process.env.MI_ESPACIO_SESSION_SECRET = process.env.MI_ESPACIO_SESSION_SECRET || 'shh-test-session-secret';
+const { default: handler } = await import('./mi-espacio-auth.js');
 
 function mockRes() {
   const res = { statusCode: null, body: null, headers: {} };
@@ -65,4 +73,46 @@ test('login: 400 si falta correo o password (nunca llega a tocar Firestore/Orbit
   const res = mockRes();
   await handler({ method: 'POST', query: { accion: 'login' }, body: { correo: '' } }, res);
   assert.equal(res.statusCode, 400);
+});
+
+// ── Puerta 2 — Slice 4, pieza P6: convocatoria-reservar ──
+// Mismo gap documentado arriba (sin mock.module estable para Firestore/Orbit
+// en esta version de Node): el camino feliz (cookie valida -> obtenerCuenta
+// -> crearRegistroAutenticado -> Orbit) no se puede ejercitar aqui sin
+// tocar servicios reales. Lo que SI es verificable sin mocks, y es
+// exactamente la frontera de seguridad auditada antes de implementar esta
+// pieza (ver PUERTA-2-CODIGO-SOBERANA-MAPA-DE-SLICES.md, addendum de
+// auditoria Pista A): la funcion nunca lee `req.body` para decidir la
+// identidad — solo `leerCookie(req)`. Sin cookie valida, se rechaza antes
+// de tocar Firestore/Orbit, sin importar que traiga el body.
+test('convocatoria-reservar: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'convocatoria-reservar' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('convocatoria-reservar: 401 sin cookie de sesion, y el correo del body (aunque sea distinto/hostil) no tiene ningun efecto', async () => {
+  const res = mockRes();
+  // Sin header Cookie -> leerCookie(req) no encuentra nada -> verificarToken
+  // falla -> 401, ANTES de leer req.body.correo para nada. Simula
+  // explicitamente un intento de mandar una identidad distinta desde el
+  // cliente, para confirmar que el codigo ni siquiera la mira.
+  await handler({
+    method: 'POST',
+    query: { accion: 'convocatoria-reservar' },
+    headers: {},
+    body: { correo: 'atacante@evil.com' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+});
+
+test('convocatoria-reservar: 401 con una cookie de sesion invalida/corrupta, sin importar el body', async () => {
+  const res = mockRes();
+  await handler({
+    method: 'POST',
+    query: { accion: 'convocatoria-reservar' },
+    headers: { cookie: 'mi_espacio_sesion=token-corrupto-no-es-un-jwt-valido' },
+    body: { correo: 'atacante@evil.com' },
+  }, res);
+  assert.equal(res.statusCode, 401);
 });

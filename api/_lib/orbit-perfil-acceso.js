@@ -87,4 +87,61 @@ async function obtenerRegistrosActivos(correo) {
   return perfil.registros || [];
 }
 
-export { tieneDerechoVigente, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos };
+// Puerta 2 — Slice 4 ("Mi Espacio persistente"): proximaConvocatoriaDisponible
+// es un dato GENERICO (igual para cualquier correo), no una propiedad de la
+// Persona — pero viaja en la misma respuesta de perfil-acceso para evitar
+// una segunda llamada de red (mismo patron que el resto de este archivo).
+async function obtenerProximaConvocatoriaDisponible(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.proximaConvocatoriaDisponible || null;
+}
+
+// Puerta 2 — Slice 4, pieza P6: reserva el lugar de una Persona ya
+// autenticada en la proxima Convocatoria abierta. NUNCA se le pasa un
+// correo que venga del cliente/navegador — el unico llamador valido es la
+// accion "convocatoria-reservar" de mi-espacio-auth.js, que primero verifica
+// la cookie de sesion (leerCookie/verificarToken) y solo entonces llama
+// aqui con el correo ya confiable de esa sesion. Llama a un endpoint
+// distinto del que usa consultarPerfilAcceso (registro-autenticado, no
+// perfil-acceso) pero con el mismo secreto y el mismo patron de
+// autenticacion servidor-a-servidor.
+async function crearRegistroAutenticado(correo) {
+  if (!MI_ESPACIO_ORBIT_SECRET) {
+    throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/registro-autenticado`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      body: JSON.stringify({ correo }),
+      signal: controller.signal
+    });
+    const cuerpo = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(cuerpo.error || `Orbit respondió ${res.status} al reservar la Convocatoria`);
+      err.motivo = res.status === 409 ? 'sin_convocatoria_abierta' : `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return cuerpo;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export {
+  tieneDerechoVigente,
+  obtenerComprasVigentes,
+  tieneRegistroActivo,
+  obtenerRegistrosActivos,
+  obtenerProximaConvocatoriaDisponible,
+  crearRegistroAutenticado,
+};

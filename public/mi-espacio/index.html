@@ -419,6 +419,26 @@ button { font: inherit; }
       <a class="ms-invite-btn" id="ms-clase-calendario" href="#" target="_blank" style="display:none;text-decoration:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Añadir a mi calendario</a>
     </div>
 
+    <!-- Puerta 2, Slice 6 — tarjeta de codigoSoberana (tier 1, Bootcamp
+         activo). Hermana de ms-clase-card, nunca la reemplaza — ambas
+         conviven si ambas existen (principio acumulativo). Solo visible si
+         fase ∈ {espera,dia1,dia2,dia3}; post_bootcamp y {cohorteId:null,
+         fase:null} no generan esta tarjeta — ver Addendum 5. -->
+    <div class="ms-invite-card" id="ms-cs-card" style="display:none">
+      <div class="ms-invite-eyebrow" id="ms-cs-eyebrow">Tu Bootcamp Código Soberana</div>
+      <div class="ms-invite-title" id="ms-cs-title"></div>
+      <p class="ms-invite-sub" id="ms-cs-sub"></p>
+      <div class="db-countdown" id="ms-cs-countdown" style="display:none">
+        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-d">–</div><div class="db-cd-l">Días</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-h">–</div><div class="db-cd-l">Horas</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-m">–</div><div class="db-cd-l">Min</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-s">–</div><div class="db-cd-l">Seg</div></div>
+      </div>
+      <div class="db-video-box" id="ms-cs-video" style="display:none"></div>
+      <a class="ms-invite-btn" id="ms-cs-btn" href="#" target="_blank" style="display:none;text-decoration:none;text-align:center"></a>
+      <div id="ms-cs-replays" style="display:none;margin-top:14px"></div>
+    </div>
+
     <div class="ms-invite-card" id="ms-invite-card" style="display:none">
       <div class="ms-invite-eyebrow">Nueva oportunidad</div>
       <div class="ms-invite-title">Hay una nueva clase disponible</div>
@@ -564,6 +584,19 @@ const PRODUCTOS = {
       ],
       notas: { titulo: 'Mis notas', placeholder: 'Escribe aquí lo que quieras conservar de esta experiencia.' }
     }
+  },
+  // Puerta 2, Slice 6 — Derecho permanente (Addendum 5 del diseño de
+  // integración). `permanente: true` la saca del camino de dbEstado()/
+  // sesiones (diseñado para una masterclass de fecha única, incompatible
+  // con un programa recurrente cuyos enlaces viven en Orbit/Cohorte).
+  // Sin `sesiones`, sin cuadernillo — deliberadamente pasiva hasta que
+  // P20-P22 resuelva la integración real con /workbook.
+  'codigo-soberana': {
+    nombre: 'Código Soberana',
+    tema: 'farol',
+    imagen: null,
+    permanente: true,
+    promesa: 'Tu programa completo — la fase activa del Bootcamp, si tienes una, vive arriba en tu espacio.'
   }
 };
 
@@ -618,6 +651,7 @@ let dbCompras = [];
 let dbSeleccion = -1;
 let dbProximaConvocatoria = null; // Puerta 2, Slice 4 — { id, fechaHora } | null
 let dbExperienciaGratuita = null; // Puerta 2, Slice 5 — experienciaGratuitaActiva | null
+let dbCodigoSoberana = null; // Puerta 2, Slice 6 — codigoSoberana | null. Solo informa la fase del Bootcamp — NUNCA la fuente del Derecho (eso es dbCompras, via programas[]).
 
 function dbFmt(n) { return String(n).padStart(2, '0'); }
 
@@ -803,6 +837,7 @@ async function dbEnviarPassword(ev) {
     dbCompras = dbPrepararCompras(data.compras);
     dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
     dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
+    dbCodigoSoberana = data.codigoSoberana || null;
     msShowBiblioteca();
   } catch (e) {
     console.error(e);
@@ -860,15 +895,19 @@ function msShowBiblioteca() {
 // sustitutivo). Regla "nunca vacio": si no hay compras, ni proxima
 // convocatoria, ni experiencia activa, se muestra la bienvenida por
 // defecto.
+const MS_CS_FASES_BOOTCAMP = ['espera', 'dia1', 'dia2', 'dia3']; // post_bootcamp y {cohorteId:null,fase:null} no generan tarjeta tier 1
+
 function msRenderShellPrioridad() {
   const hayCompras = dbCompras.length > 0;
   const hayProxima = !!dbProximaConvocatoria;
   const hayExperienciaActiva = !!dbExperienciaGratuita;
+  const hayBootcampActivo = !!dbCodigoSoberana && MS_CS_FASES_BOOTCAMP.includes(dbCodigoSoberana.fase);
 
   document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';
-  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima && !hayExperienciaActiva) ? 'block' : 'none';
+  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima && !hayExperienciaActiva && !hayBootcampActivo) ? 'block' : 'none';
 
   msRenderClaseGratuita();
+  msRenderCodigoSoberana();
 
   if (hayProxima) {
     document.getElementById('ms-invite-card').style.display = 'block';
@@ -958,6 +997,87 @@ function msTickClaseGratuita() {
   }
 }
 
+// ── Puerta 2, Slice 6 — tarjeta de codigoSoberana (tier 1). Hermana de
+// msRenderClaseGratuita/msTickClaseGratuita, mismo patrón — pero fase ∈
+// {espera,dia1,dia2,dia3} únicamente (post_bootcamp y {cohorteId:null,
+// fase:null} no llegan aquí, filtrado en msRenderShellPrioridad). ──
+function msRenderCodigoSoberana() {
+  clearInterval(window._msCsInterval);
+  const card = document.getElementById('ms-cs-card');
+  const activo = !!dbCodigoSoberana && MS_CS_FASES_BOOTCAMP.includes(dbCodigoSoberana.fase);
+  if (!activo) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  msTickCodigoSoberana();
+  window._msCsInterval = setInterval(msTickCodigoSoberana, 1000);
+}
+
+function msTickCodigoSoberana() {
+  const cs = dbCodigoSoberana;
+  if (!cs) return;
+  const eyebrow = document.getElementById('ms-cs-eyebrow');
+  const title = document.getElementById('ms-cs-title');
+  const sub = document.getElementById('ms-cs-sub');
+  const countdown = document.getElementById('ms-cs-countdown');
+  const video = document.getElementById('ms-cs-video');
+  const btn = document.getElementById('ms-cs-btn');
+  const replaysWrap = document.getElementById('ms-cs-replays');
+
+  countdown.style.display = 'flex';
+  dbFmtCountdown('ms-cs-cd', new Date(cs.fechaLimiteFase).getTime() - Date.now());
+
+  if (cs.fase === 'espera') {
+    eyebrow.textContent = 'Tu Bootcamp Código Soberana';
+    title.textContent = 'Comienza pronto';
+    sub.textContent = 'Tu cupo ya está confirmado. Te avisamos aquí mismo cuando empiece el Día 1.';
+    video.style.display = 'none';
+    btn.style.display = 'none';
+    replaysWrap.style.display = 'none';
+    return;
+  }
+
+  // fase ∈ {dia1,dia2,dia3}
+  const numeroDia = Number(cs.fase.replace('dia', ''));
+  eyebrow.textContent = 'Bootcamp Código Soberana — Día ' + numeroDia;
+  title.textContent = 'Tu sesión de hoy';
+
+  // Honestidad: nunca se elige entre en vivo/replay por adivinanza — si hay
+  // enlace en vivo se ofrece entrar, si no lo hay pero sí hay replay del
+  // mismo día se ofrece revivirlo, y si ninguno existe todavía se dice así.
+  if (cs.sesionActual.enlaceEnVivo) {
+    sub.textContent = 'Entra cuando quieras — Mi Espacio se queda de fondo como tu base.';
+    video.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.href = cs.sesionActual.enlaceEnVivo;
+    btn.textContent = 'Entrar a la sesión en vivo →';
+  } else if (cs.sesionActual.enlaceReplay) {
+    sub.textContent = 'La sesión en vivo ya terminó — puedes revivirla aquí.';
+    btn.style.display = 'none';
+    video.style.display = 'block';
+    video.innerHTML = '<iframe src="' + cs.sesionActual.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>';
+  } else {
+    sub.textContent = 'El enlace de hoy se activa aquí apenas esté listo.';
+    video.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.removeAttribute('href');
+    btn.textContent = 'El enlace llega en un momento';
+  }
+
+  const replays = cs.replaysDisponibles || [];
+  if (replays.length) {
+    replaysWrap.style.display = 'block';
+    replaysWrap.innerHTML =
+      '<div style="font-family:\'Jost\',sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Replays de días anteriores</div>' +
+      replays.map(function (r) {
+        return r.enlaceReplay
+          ? '<a href="' + r.enlaceReplay + '" target="_blank" style="display:inline-block;margin:0 8px 8px 0;padding:6px 14px;border:1px solid rgba(184,137,42,.4);border-radius:20px;color:var(--gold-light);text-decoration:none;font-family:\'Jost\',sans-serif;font-size:12px;">Día ' + r.dia + ' →</a>'
+          : '<span style="display:inline-block;margin:0 8px 8px 0;padding:6px 14px;border:1px solid rgba(255,255,255,.15);border-radius:20px;color:var(--text-muted);font-family:\'Jost\',sans-serif;font-size:12px;">Día ' + r.dia + ' — pendiente</span>';
+      }).join('');
+  } else {
+    replaysWrap.style.display = 'none';
+  }
+}
+
 // Espejo minimo de dbTickCountdown (usada para el countdown de un Programa
 // comprado) — mismos 4 campos (d/h/m/s), prefijo de ids parametrizado para
 // no duplicar la logica de formateo.
@@ -1036,6 +1156,10 @@ function msRenderStats() {
   let vivas = 0, replays = 0;
   dbCompras.forEach(function (c) {
     const config = PRODUCTOS[c.producto];
+    // Un Derecho permanente (sin sesiones de fecha fija) no tiene un estado
+    // "en vivo" que calcular — cuenta como parte de la biblioteca, igual que
+    // un replay ya disponible (Puerta 2, Slice 6).
+    if (config.permanente) { replays++; return; }
     if (dbEnVivo(config)) vivas++; else replays++;
   });
   const total = dbCompras.length;
@@ -1079,11 +1203,28 @@ function msRenderGrid() {
 
   wrap.innerHTML = visibles.map(function (compra, i) {
     const config = PRODUCTOS[compra.producto];
-    const estado = dbEstado(config);
     const tema = config.tema || 'default';
     const coverAttr = config.imagen
       ? ' style="background-image:url(\'' + config.imagen + '\')"'
       : '';
+
+    // Puerta 2, Slice 6 — un Derecho permanente (ej. Código Soberana) no
+    // tiene sesiones de fecha fija: nada de dbEstado()/ESTADO_LABEL, que
+    // fueron diseñados para una masterclass de una sola ocurrencia.
+    if (config.permanente) {
+      return '<div class="ms-card' + (i === dbSeleccion ? ' selected' : '') + '" data-idx="' + i + '">' +
+        '<div class="ms-card-cover' + (config.imagen ? '' : ' tema-' + tema) + '"' + coverAttr + '>' +
+          '<div class="ms-card-badge estado-replay"><span class="dot"></span>Programa adquirido</div>' +
+        '</div>' +
+        '<div class="ms-card-body">' +
+          '<div class="ms-card-title">' + config.nombre + '</div>' +
+          '<p class="ms-card-desc">' + (config.promesa || '') + '</p>' +
+          '<button class="ms-card-btn" onclick="msOpenDetail(' + i + ')">Ver detalle →</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    const estado = dbEstado(config);
     let badgeLabel = ESTADO_LABEL[estado];
     let metaTexto = config.fechaEventoTexto || '';
     if (estado === 'replay') {
@@ -1135,6 +1276,22 @@ function msRenderDetail(i) {
       '<div><div class="ms-detail-eyebrow">Tu experiencia</div><div class="ms-detail-title">' + config.nombre + '</div></div>' +
       '<button class="ms-detail-close" onclick="msCloseDetail()">✕</button>' +
     '</div>';
+
+  // Puerta 2, Slice 6 — Derecho permanente: panel mínimo, sin countdown, sin
+  // video, sin botón de acceso. La fase real del Bootcamp (si la hay) ya se
+  // muestra arriba en la tarjeta tier 1 (msRenderCodigoSoberana) — este panel
+  // solo confirma el Derecho. Nada de /workbook todavía (P20-P22).
+  if (config.permanente) {
+    clearInterval(window._dbInterval);
+    panel.innerHTML = head +
+      '<div class="ms-detail-body">' +
+        '<div class="db-badge live">Programa adquirido</div>' +
+        '<p style="font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);margin-top:14px;">' +
+          'Tu acceso a ' + config.nombre + ' está activo. La fase actual de tu Bootcamp, si tienes una en curso, se muestra arriba en tu espacio.' +
+        '</p>' +
+      '</div>';
+    return;
+  }
 
   if (dbEnVivo(config)) {
     panel.innerHTML = head +
@@ -1311,6 +1468,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       dbCompras = dbPrepararCompras(data.compras);
       dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
       dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
+      dbCodigoSoberana = data.codigoSoberana || null;
       msShowBiblioteca();
     }
   } catch (e) {

@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -165,10 +165,11 @@ async function loginAccion(req, res) {
     // proximaConvocatoriaDisponible viaja en la misma tanda de llamadas
     // (Slice 4, P7) para que el shell sepa de inmediato si mostrar la
     // tarjeta de invitacion, sin esperar a la siguiente carga de pagina.
-    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, codigoSoberana] = await Promise.all([
       obtenerComprasVigentes(correo),
       obtenerProximaConvocatoriaDisponible(correo),
       obtenerExperienciaGratuitaActiva(correo),
+      obtenerCodigoSoberana(correo),
     ]);
 
     await registrarExito('ip', ip);
@@ -176,7 +177,7 @@ async function loginAccion(req, res) {
 
     const sesion = crearTokenSesion(correo, cuenta.sessionVersion || 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, emailVerified: !!cuenta.emailVerified });
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, codigoSoberana, emailVerified: !!cuenta.emailVerified });
   } catch (err) {
     console.error('mi-espacio-auth/login error:', err.message);
     return res.status(500).json({ error: 'No se pudo iniciar sesión.' });
@@ -206,15 +207,16 @@ async function sesionAccion(req, res) {
       // experienciaGratuitaActiva viajan en la misma respuesta que ya
       // consulta compras (sin llamada de red extra), para que el shell de
       // Mi Espacio sepa que tarjetas mostrar sin esperar otra carga.
-      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, codigoSoberana] = await Promise.all([
         obtenerComprasVigentes(datos.correo),
         obtenerProximaConvocatoriaDisponible(datos.correo),
         obtenerExperienciaGratuitaActiva(datos.correo),
+        obtenerCodigoSoberana(datos.correo),
       ]);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, emailVerified: !!cuenta.emailVerified });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, codigoSoberana, emailVerified: !!cuenta.emailVerified });
     } catch (err) {
       console.error('mi-espacio-auth/sesion: Orbit no respondió, sesión sigue siendo válida:', err.message);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, codigoSoberana: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
     }
   } catch (err) {
     console.error('mi-espacio-auth/sesion error:', err.message);

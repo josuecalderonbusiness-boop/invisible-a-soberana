@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -86,4 +86,31 @@ test('obtenerExperienciaGratuitaActiva: devuelve el objeto tal como lo manda Orb
   };
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: experiencia });
   assert.deepEqual(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), experiencia);
+});
+
+// ── obtenerCodigoSoberana (Puerta 2, Slice 6) — espejo del patron de
+// obtenerExperienciaGratuitaActiva. NUNCA es la fuente del Derecho (eso
+// sigue siendo obtenerComprasVigentes/programas[]) — solo informa la fase
+// operativa del Bootcamp, cuando existe. ──
+
+test('obtenerCodigoSoberana: null cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerCodigoSoberana('alumna@correo.com'), null);
+});
+
+test('obtenerCodigoSoberana: null explicito de Orbit se conserva tal cual (Derecho sin Cohorte identificable)', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], codigoSoberana: null });
+  assert.equal(await obtenerCodigoSoberana('alumna@correo.com'), null);
+});
+
+test('obtenerCodigoSoberana: devuelve el objeto tal como lo manda Orbit, sin transformarlo', async (t) => {
+  const codigoSoberana = {
+    cohorteId: 'b2222222-2222-2222-2222-222222222222',
+    fase: 'dia2',
+    fechaLimiteFase: '2026-10-05T18:00:00.000Z',
+    sesionActual: { dia: 2, enlaceEnVivo: 'https://zoom.us/j/dia2', enlaceReplay: null },
+    replaysDisponibles: [{ dia: 1, enlaceReplay: 'https://bunny.example/dia1' }],
+  };
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], codigoSoberana });
+  assert.deepEqual(await obtenerCodigoSoberana('alumna@correo.com'), codigoSoberana);
 });

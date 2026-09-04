@@ -108,6 +108,18 @@ async function obtenerExperienciaGratuitaActiva(correo) {
   return perfil.experienciaGratuitaActiva || null;
 }
 
+// Puerta 2 — Slice 6 (tarjeta visual de Código Soberana): espejo de
+// obtenerExperienciaGratuitaActiva. NO es la fuente del Derecho (eso sigue
+// siendo obtenerComprasVigentes/programas[]) — solo informa la fase
+// operativa del Bootcamp. Puede ser null (sin Derecho), {cohorteId:null,
+// fase:null} (Derecho sin Cohorte identificable) o el contrato completo
+// con fase/fechaLimiteFase/sesionActual/replaysDisponibles — ver
+// Addendum 3/5 en CODIGO-SOBERANA-INTEGRACION-MI-ESPACIO-DISENO.md.
+async function obtenerCodigoSoberana(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.codigoSoberana || null;
+}
+
 // Puerta 2 — Slice 4, pieza P6: reserva el lugar de una Persona ya
 // autenticada en la proxima Convocatoria abierta. NUNCA se le pasa un
 // correo que venga del cliente/navegador — el unico llamador valido es la
@@ -156,5 +168,6 @@ export {
   obtenerRegistrosActivos,
   obtenerProximaConvocatoriaDisponible,
   obtenerExperienciaGratuitaActiva,
+  obtenerCodigoSoberana,
   crearRegistroAutenticado,
 };

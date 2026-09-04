@@ -50,7 +50,7 @@ const AUDIO_DIA6         = '4265678347083267';
 // Fin de la última sesión de video del evento (no el inicio) — con Zoom Básico el evento se
 // reparte en 2 sesiones consecutivas (ver Dashboard, EVENTO_SESIONES); el producto sigue siendo
 // "En Vivo" hasta que termina la última. Mantener este valor igual a EVENTO_FIN del Dashboard.
-const MASTERCLASS_EVENTO_FIN = new Date('2026-09-05T20:15:00-05:00');
+const MASTERCLASS_EVENTO_FIN = new Date('2026-09-12T20:15:00-05:00');
 const MASTERCLASS_DASHBOARD_URL = 'https://invisible-a-soberana.josuecalderon.lat/mi-espacio';
 function masterclassEnVivo() { return Date.now() < MASTERCLASS_EVENTO_FIN.getTime(); }
 
@@ -690,7 +690,7 @@ async function ejecutarPaso(phone, paso, nombre) {
         `Tu lugar para tu experiencia ya quedó reservado.\n\n` +
         `Toca este link para ingresar a tu espacio privado, donde encontrarás toda la información del evento y podrás acceder el día de la transmisión en vivo:\n\n` +
         `${MASTERCLASS_DASHBOARD_URL}\n\n` +
-        `Nos vemos el sábado 5 de septiembre, 7:00 p.m. (Colombia).`
+        `Nos vemos el sábado 12 de septiembre, 7:00 p.m. (Colombia).`
       );
       await programarTrigger(phone, 'recordatorio_evento_masterclass', 5, n); // PRUEBA: 5 min (producción: recordatorio real antes del evento)
     } else {
@@ -706,7 +706,7 @@ async function ejecutarPaso(phone, paso, nombre) {
   }
   else if (paso === 'recordatorio_evento_masterclass') {
     await sendWhatsApp(phone,
-      `¿Ya guardaste la fecha? 💛 Nos vemos el sábado 5 de septiembre a las 7:00 p.m. (Colombia).\n\n` +
+      `¿Ya guardaste la fecha? 💛 Nos vemos el sábado 12 de septiembre a las 7:00 p.m. (Colombia).\n\n` +
       `Aquí tienes tu espacio de nuevo:\n\n${MASTERCLASS_DASHBOARD_URL}`
     );
   }

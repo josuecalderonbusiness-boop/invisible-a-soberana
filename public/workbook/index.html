@@ -4829,9 +4829,6 @@
         <div class="nov-section" style="margin-top:6px">
           <div class="nov-section-title">Comunidad Soberana</div>
           <div class="nov-feed" id="nov-feed"></div>
-          <div style="text-align:center;padding:10px 0 0">
-            <span style="font-size:10px;color:rgba(196,160,178,0.22);letter-spacing:.04em">// TODO: conectar a Google Sheets</span>
-          </div>
         </div>
 
         <!-- Block 3: Lecturas -->
@@ -6837,9 +6834,40 @@ async function doLogin() {
   btn.disabled = true;
 
   try {
-    // PASO 1 — Verificar si tiene acceso
-    const docAcceso = await db.collection('workbook_acceso').doc(email).get();
-    if (!docAcceso.exists || docAcceso.data().activo !== true) {
+    // PASO 1 — Verificar si tiene acceso. Puerta 2, Slice 8: ya NO se
+    // consulta Firestore (workbook_acceso quedó inerte, sin distinguir
+    // producto) — se pregunta en vivo contra el Derecho real de Orbit.
+    // Tres resultados posibles, nunca confundidos entre sí:
+    //   activo:true  -> entra
+    //   activo:false -> acceso denegado (mismo mensaje que siempre)
+    //   503          -> no se pudo verificar (nunca se interpreta como
+    //                   denegado, ni se inventa acceso)
+    let accesoActivo = false;
+    let verificacionFallo = false;
+    try {
+      const resAcceso = await fetch('/api/workbook-acceso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: email })
+      });
+      if (resAcceso.status === 503) {
+        verificacionFallo = true;
+      } else {
+        const dataAcceso = await resAcceso.json();
+        accesoActivo = dataAcceso.activo === true;
+      }
+    } catch (e) {
+      verificacionFallo = true;
+    }
+
+    if (verificacionFallo) {
+      btn.textContent = 'Comenzar mi Workbook →';
+      btn.disabled = false;
+      showVerificacionFallida(email);
+      return;
+    }
+
+    if (!accesoActivo) {
       btn.textContent = 'Comenzar mi Workbook →';
       btn.disabled = false;
       showAccesoDenegado(email);
@@ -6919,6 +6947,28 @@ function showAccesoDenegado(email) {
       <button onclick="document.getElementById('modal-overlay').classList.remove('open')" 
         style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
         Intentar con otro correo
+      </button>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// Puerta 2, Slice 8 — distinto a "acceso no autorizado": aquí no sabemos si
+// tiene o no tiene Derecho, solo que no pudimos preguntarle a Orbit a
+// tiempo. Nunca se muestra como un rechazo — nunca se inventa una respuesta
+// que no tenemos.
+function showVerificacionFallida(email) {
+  const modal = document.getElementById('modal-content');
+  modal.innerHTML = `
+    <div style="text-align:center;padding:10px 0 20px">
+      <div style="font-size:48px;margin-bottom:16px">⏳</div>
+      <div class="modal-title" style="text-align:center">No pudimos verificar tu acceso</div>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:24px">
+        Hubo un problema al confirmar tu acceso en este momento. Intenta nuevamente en unos minutos — tu correo <strong>${email}</strong> no fue rechazado, solo no pudimos comprobarlo todavía.
+      </p>
+      <button onclick="document.getElementById('modal-overlay').classList.remove('open')"
+        style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
+        Entendido, lo intento de nuevo
       </button>
     </div>
   `;
@@ -13769,12 +13819,21 @@ function resetAll() {
 }
 
 // ═══════════════════════════════════════════
-// SINCRONIZACIÓN GOOGLE SHEETS
+// SINCRONIZACIÓN DE PROGRESO (Firestore)
 // ═══════════════════════════════════════════
+// SHEETS_URL sigue viva — la usa la verificación de acceso 7D más arriba
+// (doLogin/initApp), no se toca en este slice de limpieza.
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwr3Dtcs7ewrB8PGsdE0JRO7Ianw6FxFdN1KN12WQ_PGrzSseg98aUn0rr7T85uKs1K/exec';
 
 // FIREBASE — db ya inicializado arriba
 
+// Puerta 2, Slice 9 — corregido: antes de este fix, un fragmento roto
+// (isRepeat/ex/bodyHtml, ajeno a esta función, pegado por error entre el
+// payload y el try) lanzaba ReferenceError en cuanto había respuestas reales
+// que sincronizar — nunca se llegaba a escribir en Firestore. Se retira
+// también la construcción de un payload para Sheets que nunca se enviaba
+// (código muerto de la integración vieja). Verificado con una prueba real
+// antes y después del fix, no solo leyendo el código.
 async function syncToSheets(secId) {
   const sec = SECTIONS.find(s => s.id === secId);
   if (!sec || !state.user) return;
@@ -13797,17 +13856,6 @@ async function syncToSheets(secId) {
     .filter(Boolean);
 
   if (respuestas.length === 0) return;
-
-  const payload = {
-    nombre: state.user.name,
-    email: state.user.email,
-    respuestas
-  };const activeQuestion = isRepeat ? ex.repeatQuestion : ex.question;
-    const activeBody = isRepeat ? ex.repeatBody : ex.body;
-    if (isRepeat) {
-      bodyHtml = bodyHtml.replace(ex.question, activeQuestion);
-      bodyHtml = bodyHtml.replace(ex.body, activeBody);
-    }
 
   try {
     const email = state.user.email;

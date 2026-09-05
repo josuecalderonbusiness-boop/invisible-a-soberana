@@ -4829,9 +4829,6 @@
         <div class="nov-section" style="margin-top:6px">
           <div class="nov-section-title">Comunidad Soberana</div>
           <div class="nov-feed" id="nov-feed"></div>
-          <div style="text-align:center;padding:10px 0 0">
-            <span style="font-size:10px;color:rgba(196,160,178,0.22);letter-spacing:.04em">// TODO: conectar a Google Sheets</span>
-          </div>
         </div>
 
         <!-- Block 3: Lecturas -->
@@ -13822,12 +13819,21 @@ function resetAll() {
 }
 
 // ═══════════════════════════════════════════
-// SINCRONIZACIÓN GOOGLE SHEETS
+// SINCRONIZACIÓN DE PROGRESO (Firestore)
 // ═══════════════════════════════════════════
+// SHEETS_URL sigue viva — la usa la verificación de acceso 7D más arriba
+// (doLogin/initApp), no se toca en este slice de limpieza.
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwr3Dtcs7ewrB8PGsdE0JRO7Ianw6FxFdN1KN12WQ_PGrzSseg98aUn0rr7T85uKs1K/exec';
 
 // FIREBASE — db ya inicializado arriba
 
+// Puerta 2, Slice 9 — corregido: antes de este fix, un fragmento roto
+// (isRepeat/ex/bodyHtml, ajeno a esta función, pegado por error entre el
+// payload y el try) lanzaba ReferenceError en cuanto había respuestas reales
+// que sincronizar — nunca se llegaba a escribir en Firestore. Se retira
+// también la construcción de un payload para Sheets que nunca se enviaba
+// (código muerto de la integración vieja). Verificado con una prueba real
+// antes y después del fix, no solo leyendo el código.
 async function syncToSheets(secId) {
   const sec = SECTIONS.find(s => s.id === secId);
   if (!sec || !state.user) return;
@@ -13850,17 +13856,6 @@ async function syncToSheets(secId) {
     .filter(Boolean);
 
   if (respuestas.length === 0) return;
-
-  const payload = {
-    nombre: state.user.name,
-    email: state.user.email,
-    respuestas
-  };const activeQuestion = isRepeat ? ex.repeatQuestion : ex.question;
-    const activeBody = isRepeat ? ex.repeatBody : ex.body;
-    if (isRepeat) {
-      bodyHtml = bodyHtml.replace(ex.question, activeQuestion);
-      bodyHtml = bodyHtml.replace(ex.body, activeBody);
-    }
 
   try {
     const email = state.user.email;

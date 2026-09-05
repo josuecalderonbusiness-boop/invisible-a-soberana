@@ -112,30 +112,9 @@ body{margin:0;padding:0;background:#0F0A0B;font-family:Georgia,serif;}
     try { emailData = await emailRes.json(); } catch(_) {}
     console.log('Brevo email response:', JSON.stringify(emailData));
 
-    // 4. Guardar en Sheets
-    try {
-      const SHEETS_URL = process.env.SHEETS_WEBHOOK_URL;
-      if (SHEETS_URL) {
-        const ahoraCol = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
-        await fetch(SHEETS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            accion: 'nuevo_lead',
-            fecha: ahoraCol,
-            nombre: firstName,
-            email,
-            whatsapp: whatsapp || '',
-            perfil: profile || '',
-            lista: String(listId),
-            mensaje: 'Lead desde quiz'
-          })
-        });
-        console.log('Sheets lead guardado:', email);
-      }
-    } catch (sheetsErr) {
-      console.error('Sheets error (non-fatal):', sheetsErr.message);
-    }
+    // Puerta 2, Slice 9 — se retiró aquí el registro duplicado del lead en
+    // Google Sheets: Brevo (arriba) ya guarda contacto, lista y perfil.
+    // Ningún consumidor activo leía esta fila de vuelta.
 
     return res.status(200).json({ success: true, profile, messageId: emailData.messageId });
 

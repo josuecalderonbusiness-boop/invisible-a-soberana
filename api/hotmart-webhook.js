@@ -1,5 +1,7 @@
 ﻿// api/hotmart-webhook.js — versión final
-// Mantiene toda la lógica original de listas + agrega teléfono a Brevo + guarda en Sheets
+// Mantiene toda la lógica original de listas + agrega teléfono a Brevo
+// (Puerta 2, Slice 9: se retiró la escritura a Google Sheets — duplicada de
+// Brevo/masterclass_compras, sin ningún consumidor activo)
 
 import { procesarEventoOrbit, reservarTareaOutbox, ESTADOS_ACTIVOS, ESTADOS_REVOCADOS } from './_lib/orbit-domain.js';
 import { enviarCorreoInmediatoMasterclass } from './_lib/correo1-masterclass.js';
@@ -313,16 +315,10 @@ export default async function handler(req, res) {
         console.log('Brevo contact creation OK:', createRes.status);
       }
 
-      await guardarEnSheets({
-        fecha:    now(),
-        nombre:   primerNombre,
-        email:    email,
-        whatsapp: telefonoLimpio,
-        perfil:   perfilContacto,
-        lista:    String(targetList),
-        mensaje:  'Contacto nuevo creado desde Hotmart',
-        origen:   trackingOrigen || ''
-      });
+      // Puerta 2, Slice 9 — se retiró aquí guardarEnSheets(): registraba esta
+      // misma compra en la Sheet legacy, duplicado de lo que Brevo (arriba) y
+      // masterclass_compras (Firestore, abajo) ya guardan. Confirmado que
+      // ningún flujo activo consulta esa Sheet de vuelta.
       // Puerta 2, Slice 8 — se retiró aquí guardarEnFirestore()/workbook_acceso: el
       // acceso al Workbook ya no lo decide este webhook (otorgaba sin distinguir
       // producto). /workbook ahora pregunta en vivo contra el Derecho real de Orbit
@@ -417,17 +413,7 @@ export default async function handler(req, res) {
 
     console.log('Brevo update status:', updateRes.status);
 
-    // Guardar en Sheets
-    await guardarEnSheets({
-      fecha:    now(),
-      nombre:   primerNombre || contact.attributes?.FIRSTNAME || '',
-      email:    email,
-      whatsapp: telefonoLimpio || contact.attributes?.SMS || '',
-      perfil:   perfilContacto,
-      lista:    String(targetList),
-      mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`,
-      origen:   trackingOrigen || ''
-    });
+    // Puerta 2, Slice 9 — ídem: sin guardarEnSheets() aquí (ver nota arriba).
     // Puerta 2, Slice 8 — ídem: sin guardarEnFirestore()/workbook_acceso aquí.
     if (isMasterclass) {
       await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo, {
@@ -473,44 +459,13 @@ export default async function handler(req, res) {
   }
 }
 
-// ── Bienvenida de WhatsApp — Camino B (REGLA WHATSAPP — MASTERCLASS, BUSINESS-SYSTEMS.md, sección
-// FUNNEL-SYSTEM) ───────────────────────────────────────────────────────────────────────────────
-// Ya NO se envía la plantilla de inmediato al comprar. Se programa a 60 minutos — si la compradora
-// escribe antes por su cuenta (Camino A, ver api/whatsapp.js), ese mensaje abre la ventana y cancela
-// este trigger, evitando que coexistan la plantilla y una bienvenida duplicada. Quien ejecuta el
-// trigger es api/whatsapp.js (paso 'bienvenida_masterclass') — ahí mismo decide Live/Replay según
-// la fecha del evento, misma fuente de verdad (MASTERCLASS_EVENTO_FIN) que ya vivía duplicada aquí.
-// Nombre funcional, reutilizable para cualquier producto de entrada futuro en estado Evergreen/Replay
-// (ver regla de nomenclatura en entry-product-system/SKILL.md) — nunca renombrar por producto.
-async function programarBienvenidaMasterclass(phone, nombre, email) {
-  if (!phone) {
-    console.log(`Sin teléfono para ${email} — no se puede programar la bienvenida de WhatsApp`);
-    return;
-  }
-  await programarTrigger(phone, 'bienvenida_masterclass', 60, nombre || ''); // producción: 60 min
-}
-
-async function programarTrigger(phone, paso, minutos, nombre) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL — no se pudo programar el trigger'); return; }
-  const fechaEjecucion = new Date(Date.now() + minutos * 60 * 1000).toISOString();
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accion: 'guardar_trigger_sheets',
-        phone, paso, nombre: nombre || '',
-        fechaEjecucion,
-        webhook: 'https://invisible-a-soberana.josuecalderon.lat/api/whatsapp'
-      })
-    });
-    const data = await res.json();
-    console.log(`Trigger (${paso} en ${minutos}min):`, data.ok ? 'OK' : JSON.stringify(data));
-  } catch (err) {
-    console.error('programarTrigger error:', err.message);
-  }
-}
+// Puerta 2, Slice 9 — retiradas programarBienvenidaMasterclass()/
+// programarTrigger() (Camino B, "programar a 60 minutos"): confirmado por
+// búsqueda global que ninguna de las dos tenía invocador — el Camino B fue
+// reemplazado por el envío inmediato (enviarBienvenidaWhatsAppInmediata,
+// 2026-08-07) y quedaron huérfanas junto con su propia copia de
+// SHEETS_WEBHOOK_URL. cancelarTrigger (importado de whatsapp.js arriba)
+// sigue activo — es una función distinta, no se toca.
 
 // ── Limpiar y normalizar teléfono ────────────────────────────────
 function limpiarTelefono(tel) {
@@ -527,24 +482,6 @@ function limpiarTelefono(tel) {
     }
   }
   return limpio;
-}
-
-// ── Guardar en Google Sheets ─────────────────────────────────────
-async function guardarEnSheets(data) {
-  const url = process.env.SHEETS_WEBHOOK_URL;
-  if (!url) { console.log('Sin SHEETS_WEBHOOK_URL'); return false; }
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    console.log('Sheets:', res.ok ? 'OK' : res.status);
-    return res.ok;
-  } catch (err) {
-    console.error('guardarEnSheets:', err.message);
-    return false;
-  }
 }
 
 // ── Biblioteca de masterclasses compradas — un documento POR COMPRA, no por email ─────────

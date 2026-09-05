@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -113,4 +113,29 @@ test('obtenerCodigoSoberana: devuelve el objeto tal como lo manda Orbit, sin tra
   };
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], codigoSoberana });
   assert.deepEqual(await obtenerCodigoSoberana('alumna@correo.com'), codigoSoberana);
+});
+
+// ── tieneDerechoVigenteA (Puerta 2, Slice 8) — espejo acotado a un
+// programaId específico, usado por workbook-acceso para que /workbook
+// pregunte en vivo por el Derecho a codigo-soberana, en vez de leer
+// Firestore workbook_acceso. ──
+
+test('tieneDerechoVigenteA: true si el programaId pedido está vigente', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], registros: [] });
+  assert.equal(await tieneDerechoVigenteA('alumna@correo.com', 'codigo-soberana'), true);
+});
+
+test('tieneDerechoVigenteA: false si tiene otro Derecho vigente pero no el programaId pedido (la masterclass no abre el Workbook)', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [{ programaId: 'mas-se-aleja', derecho: 'vigente' }], registros: [] });
+  assert.equal(await tieneDerechoVigenteA('alumna@correo.com', 'codigo-soberana'), false);
+});
+
+test('tieneDerechoVigenteA: false si el programaId pedido existe pero no está vigente (revocado)', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [{ programaId: 'codigo-soberana', derecho: 'revocado' }], registros: [] });
+  assert.equal(await tieneDerechoVigenteA('alumna@correo.com', 'codigo-soberana'), false);
+});
+
+test('tieneDerechoVigenteA: false sin programas en absoluto', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await tieneDerechoVigenteA('nadie@correo.com', 'codigo-soberana'), false);
 });

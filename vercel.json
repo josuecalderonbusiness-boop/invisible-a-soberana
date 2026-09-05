@@ -11,6 +11,7 @@
     { "source": "/api/mi-espacio-confirmar-correo", "destination": "/api/mi-espacio-auth?accion=confirmar-correo" },
     { "source": "/api/mi-espacio-reenviar-confirmacion", "destination": "/api/mi-espacio-auth?accion=reenviar-confirmacion" },
     { "source": "/api/mi-espacio-convocatoria-reservar", "destination": "/api/mi-espacio-auth?accion=convocatoria-reservar" },
+    { "source": "/api/workbook-acceso", "destination": "/api/mi-espacio-auth?accion=workbook-acceso" },
     { "source": "/api/v1/programa/:programa_id/resolver-edicion", "destination": "/api/v1/orbit?accion=resolver-edicion&programa_id=:programa_id" },
     { "source": "/api/v1/edicion/:edicion_id/estado", "destination": "/api/v1/orbit?accion=estado&edicion_id=:edicion_id" },
     { "source": "/api/:path*", "destination": "/api/:path*" },

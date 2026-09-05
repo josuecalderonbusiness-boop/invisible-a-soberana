@@ -60,6 +60,16 @@ async function tieneDerechoVigente(correo) {
   return (perfil.programas || []).some((p) => p.derecho === 'vigente');
 }
 
+// Puerta 2 — Slice 8 (workbook-acceso): espejo de tieneDerechoVigente pero
+// acotado a un programaId específico — usado para que /workbook autorice
+// contra el Derecho real de Orbit ('codigo-soberana'), en vez de contra
+// Firestore workbook_acceso. No es un endpoint nuevo en Orbit: el contrato
+// de perfil-acceso ya expone programaId+derecho, esto solo filtra.
+async function tieneDerechoVigenteA(correo, programaId) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return (perfil.programas || []).some((p) => p.programaId === programaId && p.derecho === 'vigente');
+}
+
 // Nombre de la función y forma de retorno ({ producto }) se conservan iguales a
 // derecho-provisional.js por compatibilidad con los callers existentes — el
 // nombre visual del Programa lo resuelve cada caller desde su propio catálogo
@@ -163,6 +173,7 @@ async function crearRegistroAutenticado(correo) {
 
 export {
   tieneDerechoVigente,
+  tieneDerechoVigenteA,
   obtenerComprasVigentes,
   tieneRegistroActivo,
   obtenerRegistrosActivos,

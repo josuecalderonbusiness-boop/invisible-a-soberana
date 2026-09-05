@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, obtenerCodigoSoberana, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -361,6 +361,62 @@ async function reenviarConfirmacionAccion(req, res) {
   }
 }
 
+// Puerta 2 — Slice 8: /workbook deja de leer Firestore workbook_acceso para
+// decidir el login — pregunta aquí, en vivo, contra el Derecho real de
+// Orbit. Ver PUERTA-2-CODIGO-SOBERANA-MAPA-DE-SLICES.md, "Corrección de
+// arquitectura — Orbit como única fuente del Derecho a Workbook".
+//
+// Contrato deliberadamente mínimo: solo `{activo}` cuando la consulta se
+// resolvió (200), y un 503 `{error:'no_disponible'}` cuando Orbit no
+// respondió — nunca se confunde un fallo de infraestructura con un
+// `activo:false` real (decisión explícita de la usuaria).
+//
+// Rate limiting — el riesgo de este endpoint es enumeración (barrer
+// correos para descubrir quién tiene acceso), no fuerza bruta de
+// contraseña, así que la semántica de "intento" es distinta a login:
+//   - activo:false (respuesta concluyente, posible barrido) -> registrarIntento
+//   - correo invalido (ni se consulta a Orbit) -> registrarIntento
+//   - activo:true -> registrarExito (necesario de verdad, no un reset
+//     cosmético: puedeIntentar() bloquea solo mirando bloqueadoHasta, sin
+//     importar si la consulta actual sería exitosa — sin este reset, una
+//     alumna que fue rechazada varias veces antes de comprar quedaría
+//     bloqueada 15 minutos incluso ya con Derecho vigente real)
+//   - 503 (falla nuestra o de Orbit) -> no se registra nada, nunca se le
+//     cobra a la alumna un problema de infraestructura
+const PROGRAMA_CODIGO_SOBERANA = 'codigo-soberana';
+
+async function workbookAccesoAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const ip = ipDelRequest(req);
+  const correo = normalizarCorreo(req.body?.correo);
+
+  if (!correo || !correo.includes('@')) {
+    await registrarIntento('ip', ip);
+    await registrarIntento('correo', correo);
+    return res.status(200).json({ activo: false });
+  }
+
+  if (!(await puedenIntentarTodas([['ip', ip], ['correo', correo]]))) {
+    return res.status(200).json({ activo: false });
+  }
+
+  try {
+    const activo = await tieneDerechoVigenteA(correo, PROGRAMA_CODIGO_SOBERANA);
+    if (activo) {
+      await registrarExito('ip', ip);
+      await registrarExito('correo', correo);
+    } else {
+      await registrarIntento('ip', ip);
+      await registrarIntento('correo', correo);
+    }
+    return res.status(200).json({ activo });
+  } catch (err) {
+    console.error('mi-espacio-auth/workbook-acceso: Orbit no respondió:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
 const ACCIONES = {
   'cuenta-crear': crearCuentaAccion,
   'cuenta-solicitar': solicitarCuentaAccion,
@@ -372,6 +428,7 @@ const ACCIONES = {
   'confirmar-correo': confirmarCorreoAccion,
   'reenviar-confirmacion': reenviarConfirmacionAccion,
   'convocatoria-reservar': convocatoriaReservarAccion,
+  'workbook-acceso': workbookAccesoAccion,
 };
 
 export default async function handler(req, res) {

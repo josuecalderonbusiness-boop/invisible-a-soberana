@@ -75,6 +75,19 @@ test('login: 400 si falta correo o password (nunca llega a tocar Firestore/Orbit
   assert.equal(res.statusCode, 400);
 });
 
+// ── Puerta 2 — Slice 8: workbook-acceso. Igual que el resto del archivo,
+// solo se prueba aquí la frontera que no toca Firestore/Orbit (405) — el
+// camino real (correo inválido/rate-limit/consulta a Orbit) necesita
+// Firestore real y Orbit real, cubierto por separado en
+// orbit-perfil-acceso.test.js (tieneDerechoVigenteA) y verificado en
+// navegador contra datos simulados, mismo gap ya documentado arriba. ──
+
+test('workbook-acceso: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'workbook-acceso' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
 // ── Puerta 2 — Slice 4, pieza P6: convocatoria-reservar ──
 // Mismo gap documentado arriba (sin mock.module estable para Firestore/Orbit
 // en esta version de Node): el camino feliz (cookie valida -> obtenerCuenta

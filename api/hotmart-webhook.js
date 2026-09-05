@@ -323,7 +323,10 @@ export default async function handler(req, res) {
         mensaje:  'Contacto nuevo creado desde Hotmart',
         origen:   trackingOrigen || ''
       });
-      await guardarEnFirestore(email, primerNombre, tipoContacto, isMasterclass ? orbitMasterclass : null);
+      // Puerta 2, Slice 8 — se retiró aquí guardarEnFirestore()/workbook_acceso: el
+      // acceso al Workbook ya no lo decide este webhook (otorgaba sin distinguir
+      // producto). /workbook ahora pregunta en vivo contra el Derecho real de Orbit
+      // (api/mi-espacio-auth.js?accion=workbook-acceso) — ver el mapa de slices.
 
       // Contacto recién creado → nunca se le pudo haber enviado la bienvenida antes.
       if (isMasterclass) {
@@ -425,7 +428,7 @@ export default async function handler(req, res) {
       mensaje:  `Listas removidas: ${listsToRemove.join(',') || 'ninguna'}`,
       origen:   trackingOrigen || ''
     });
-    await guardarEnFirestore(email, primerNombre || contact.attributes?.FIRSTNAME || '', tipoContacto, isMasterclass ? orbitMasterclass : null);
+    // Puerta 2, Slice 8 — ídem: sin guardarEnFirestore()/workbook_acceso aquí.
     if (isMasterclass) {
       await guardarCompraMasterclass(email, primerNombre || contact.attributes?.FIRSTNAME || '', orbitMasterclass, telefonoLimpio || contact.attributes?.SMS || '', orbitAccesoActivo, {
         origen: trackingOrigen, transactionId, montoValue, montoCurrency
@@ -541,43 +544,6 @@ async function guardarEnSheets(data) {
   } catch (err) {
     console.error('guardarEnSheets:', err.message);
     return false;
-  }
-}
-
-// ── Fecha Colombia ───────────────────────────────────────────────
-// producto: slug del Entry Product (ej. 'mas-se-aleja') — solo aplica cuando tipo === 'masterclass'.
-// Nota: un mismo email compra una sola masterclass hoy; si en el futuro una compradora acumula
-// varias, este doc-por-email deja de alcanzar y hace falta una subcolección por producto — no se
-// construye antes de que un caso real lo necesite.
-async function guardarEnFirestore(email, nombre, tipo, producto) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    const { google } = await import('googleapis');
-    const auth = new google.auth.GoogleAuth({
-      credentials: serviceAccount,
-      scopes: ['https://www.googleapis.com/auth/datastore']
-    });
-    const token = await auth.getAccessToken();
-    const url = `https://firestore.googleapis.com/v1/projects/soberana-app/databases/(default)/documents/workbook_acceso/${encodeURIComponent(email)}`;
-    await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        fields: {
-          nombre: { stringValue: nombre },
-          activo: { booleanValue: true },
-          tipo: { stringValue: tipo },
-          ...(producto ? { producto: { stringValue: producto } } : {}),
-          fecha: { stringValue: new Date().toISOString() }
-        }
-      })
-    });
-    console.log('Firestore workbook_acceso actualizado:', email);
-  } catch(err) {
-    console.error('Error Firestore:', err.message);
   }
 }
 

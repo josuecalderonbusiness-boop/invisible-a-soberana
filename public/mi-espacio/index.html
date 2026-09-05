@@ -296,6 +296,56 @@ button { font: inherit; }
   .ms-cuadernillo { padding: 20px 16px; }
   .ms-cuad-seccion.destacada { padding: 16px 14px; }
 }
+
+/* ══════════════════ Puerta 2, Slice 7 — Home de Código Soberana ══════════════════
+   Para quien tiene Derecho vigente, Código Soberana es la experiencia principal —
+   Mi Espacio (.ms-shell) pasa a ser la biblioteca secundaria, alcanzable con
+   #ms-volver-cs / csIrABiblioteca(). Nunca se fusiona con /workbook — el botón
+   final solo enlaza a esa PWA independiente. */
+.ms-volver-cs { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--gold-light); background: var(--wine-soft); border: 1px solid rgba(184,137,42,.35); border-radius: 20px; padding: 8px 18px; cursor: pointer; white-space: nowrap; }
+.ms-volver-cs:hover { background: rgba(107,26,42,.5); }
+
+.cs-home { display: none; min-height: 100vh; min-height: 100dvh; background: var(--charcoal-deep); padding: 48px 24px 64px; }
+.cs-home.show { display: block; }
+.cs-home-inner { max-width: 620px; margin: 0 auto; }
+.cs-volver { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--text-muted); background: transparent; border: 1px solid rgba(196,168,176,.25); border-radius: 20px; padding: 7px 16px; cursor: pointer; margin-bottom: 28px; }
+.cs-volver:hover { color: var(--gold-light); border-color: rgba(184,137,42,.4); }
+.cs-eyebrow { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 8px; }
+.cs-title { font-family: var(--font-display); font-size: 34px; color: var(--text-light); margin-bottom: 36px; }
+
+.cs-dias { position: relative; padding-left: 34px; margin-bottom: 32px; }
+.cs-dia { position: relative; padding-bottom: 28px; }
+.cs-dia:last-child { padding-bottom: 0; }
+.cs-dia::before { content: ''; position: absolute; left: -34px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(196,168,176,.35); background: var(--charcoal-deep); }
+.cs-dia::after { content: ''; position: absolute; left: -28px; top: 20px; width: 2px; height: calc(100% - 6px); background: rgba(196,168,176,.2); }
+.cs-dia:last-child::after { display: none; }
+.cs-dia-label { font-family: var(--font-eyebrow); font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.cs-dia.pendiente .cs-dia-label { color: var(--text-faint); }
+.cs-dia.activo::before { border-color: var(--gold-light); background: var(--gold-light); box-shadow: 0 0 0 4px rgba(232,200,112,.2); }
+.cs-dia.activo .cs-dia-label { color: var(--gold-light); font-weight: 700; }
+.cs-dia.done::before { border-color: var(--gold-primary); background: var(--gold-primary); }
+.cs-dia.done .cs-dia-label { color: var(--text-light); }
+.cs-dia.done::after, .cs-dia.activo::after { background: var(--gold-deep); }
+
+.cs-sesion { background: var(--charcoal-card); border: 1px solid rgba(184,137,42,.2); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
+.cs-sesion-eyebrow { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 6px; }
+.cs-sesion-title { font-family: var(--font-display); font-size: 20px; color: var(--text-light); margin-bottom: 8px; }
+.cs-sesion-sub { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px; }
+
+.cs-recorrido { position: relative; background: var(--charcoal-card); border: 1px solid rgba(184,137,42,.15); border-radius: 16px; padding: 24px; overflow: hidden; }
+.cs-recorrido-eyebrow { font-family: var(--font-eyebrow); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
+.cs-recorrido-item { font-family: var(--font-body); font-size: 14px; color: var(--text-light); padding: 9px 0; border-bottom: 1px solid rgba(196,168,176,.1); }
+.cs-recorrido-item:last-child { border-bottom: none; }
+.cs-recorrido-glass { position: absolute; inset: 0; background: rgba(21,13,17,.85); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: opacity 1.2s ease; pointer-events: none; }
+
+.cs-final { text-align: center; margin-top: 28px; }
+.cs-final-title { font-family: var(--font-display); font-size: 22px; color: var(--gold-light); margin-bottom: 18px; }
+.cs-final-btn { display: inline-block; font-family: var(--font-eyebrow); font-size: 14px; font-weight: 700; letter-spacing: .04em; color: var(--charcoal-deep); background: linear-gradient(135deg, var(--gold-light), var(--gold-primary)); border-radius: 24px; padding: 14px 32px; text-decoration: none; }
+
+@media (max-width: 520px) {
+  .cs-home { padding: 32px 16px 48px; }
+  .cs-title { font-size: 28px; }
+}
 </style>
 </head>
 <body>
@@ -394,7 +444,10 @@ button { font: inherit; }
           <h1 class="ms-topbar-title ms-hero-reveal ms-delay-1">Aquí sigue tu poder</h1>
           <p class="ms-topbar-sub ms-hero-reveal ms-delay-2">Todo lo que necesitas para seguir creciendo, recordando y transformando tu realidad.</p>
         </div>
-        <!-- slot de eyebrow/badge disponible para más adelante si hace falta; sin copy de venta por ahora -->
+        <!-- Puerta 2, Slice 7 — visible solo si hay Derecho vigente a Código
+             Soberana: Mi Espacio es su biblioteca secundaria, este botón la
+             regresa a su home principal. -->
+        <button type="button" class="ms-volver-cs" id="ms-volver-cs" style="display:none" onclick="csIrAHome()">Código Soberana →</button>
       </div>
 
       <div class="ms-stats" id="ms-stats"></div>
@@ -417,26 +470,6 @@ button { font: inherit; }
       <div class="db-video-box" id="ms-clase-video" style="display:none"></div>
       <a class="ms-invite-btn" id="ms-clase-btn" href="#" target="_blank" style="display:none;text-decoration:none;text-align:center"></a>
       <a class="ms-invite-btn" id="ms-clase-calendario" href="#" target="_blank" style="display:none;text-decoration:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Añadir a mi calendario</a>
-    </div>
-
-    <!-- Puerta 2, Slice 6 — tarjeta de codigoSoberana (tier 1, Bootcamp
-         activo). Hermana de ms-clase-card, nunca la reemplaza — ambas
-         conviven si ambas existen (principio acumulativo). Solo visible si
-         fase ∈ {espera,dia1,dia2,dia3}; post_bootcamp y {cohorteId:null,
-         fase:null} no generan esta tarjeta — ver Addendum 5. -->
-    <div class="ms-invite-card" id="ms-cs-card" style="display:none">
-      <div class="ms-invite-eyebrow" id="ms-cs-eyebrow">Tu Bootcamp Código Soberana</div>
-      <div class="ms-invite-title" id="ms-cs-title"></div>
-      <p class="ms-invite-sub" id="ms-cs-sub"></p>
-      <div class="db-countdown" id="ms-cs-countdown" style="display:none">
-        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-d">–</div><div class="db-cd-l">Días</div></div>
-        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-h">–</div><div class="db-cd-l">Horas</div></div>
-        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-m">–</div><div class="db-cd-l">Min</div></div>
-        <div class="db-cd-unit"><div class="db-cd-n" id="ms-cs-cd-s">–</div><div class="db-cd-l">Seg</div></div>
-      </div>
-      <div class="db-video-box" id="ms-cs-video" style="display:none"></div>
-      <a class="ms-invite-btn" id="ms-cs-btn" href="#" target="_blank" style="display:none;text-decoration:none;text-align:center"></a>
-      <div id="ms-cs-replays" style="display:none;margin-top:14px"></div>
     </div>
 
     <div class="ms-invite-card" id="ms-invite-card" style="display:none">
@@ -488,6 +521,49 @@ button { font: inherit; }
       <div class="ms-feature"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h12l3 6-9 12L3 9z"/></svg><span>Libertad que se construye</span></div>
     </div>
   </main>
+</div>
+
+<!-- ══════════════════ HOME DE CÓDIGO SOBERANA (Puerta 2, Slice 7) ══════════════════
+     Para quien tiene Derecho vigente, esta es su experiencia principal — Mi Espacio
+     (arriba) pasa a ser su biblioteca secundaria. No fusiona /workbook: el botón
+     final del recorrido solo enlaza a esa PWA independiente. -->
+<div class="cs-home" id="cs-home">
+  <div class="cs-home-inner">
+    <button type="button" class="cs-volver" onclick="csIrABiblioteca()">← Mi Espacio</button>
+    <div class="cs-eyebrow">Tu experiencia principal</div>
+    <h1 class="cs-title">Código Soberana</h1>
+
+    <div class="cs-dias" id="cs-dias"></div>
+
+    <div class="cs-sesion" id="cs-sesion" style="display:none">
+      <div class="cs-sesion-eyebrow" id="cs-sesion-eyebrow"></div>
+      <div class="cs-sesion-title" id="cs-sesion-title"></div>
+      <p class="cs-sesion-sub" id="cs-sesion-sub"></p>
+      <div class="db-countdown" id="cs-cd" style="display:none">
+        <div class="db-cd-unit"><div class="db-cd-n" id="cs-cd-d">–</div><div class="db-cd-l">Días</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="cs-cd-h">–</div><div class="db-cd-l">Horas</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="cs-cd-m">–</div><div class="db-cd-l">Min</div></div>
+        <div class="db-cd-unit"><div class="db-cd-n" id="cs-cd-s">–</div><div class="db-cd-l">Seg</div></div>
+      </div>
+      <div class="db-video-box" id="cs-video" style="display:none"></div>
+      <a class="ms-invite-btn" id="cs-btn" href="#" target="_blank" style="display:none;text-decoration:none;text-align:center"></a>
+      <div id="cs-replays" style="display:none;margin-top:14px"></div>
+    </div>
+
+    <div class="cs-recorrido" id="cs-recorrido">
+      <div class="cs-recorrido-eyebrow">Tu recorrido</div>
+      <div class="cs-recorrido-item">Protocolo Emocional</div>
+      <div class="cs-recorrido-item">Protocolo Relacional</div>
+      <div class="cs-recorrido-item">Integración práctica</div>
+      <div class="cs-recorrido-item">Cierre</div>
+      <div class="cs-recorrido-glass" id="cs-recorrido-glass"></div>
+    </div>
+
+    <div class="cs-final" id="cs-final" style="display:none">
+      <div class="cs-final-title">Aquí empieza tu recorrido</div>
+      <a class="cs-final-btn" href="/workbook/" target="_blank">Comenzar mi recorrido →</a>
+    </div>
+  </div>
 </div>
 
 <footer class="ms-footer" id="ms-footer" style="display:none">
@@ -584,20 +660,12 @@ const PRODUCTOS = {
       ],
       notas: { titulo: 'Mis notas', placeholder: 'Escribe aquí lo que quieras conservar de esta experiencia.' }
     }
-  },
-  // Puerta 2, Slice 6 — Derecho permanente (Addendum 5 del diseño de
-  // integración). `permanente: true` la saca del camino de dbEstado()/
-  // sesiones (diseñado para una masterclass de fecha única, incompatible
-  // con un programa recurrente cuyos enlaces viven en Orbit/Cohorte).
-  // Sin `sesiones`, sin cuadernillo — deliberadamente pasiva hasta que
-  // P20-P22 resuelva la integración real con /workbook.
-  'codigo-soberana': {
-    nombre: 'Código Soberana',
-    tema: 'farol',
-    imagen: null,
-    permanente: true,
-    promesa: 'Tu programa completo — la fase activa del Bootcamp, si tienes una, vive arriba en tu espacio.'
   }
+  // Puerta 2, Slice 7 — Código Soberana ya NO vive en este catálogo: para
+  // quien tiene Derecho vigente, Código Soberana es su experiencia PRINCIPAL
+  // (ver #cs-home / csIrAHome), no una tarjeta más de la biblioteca — nunca
+  // vuelve a aparecer aquí, evita la redundancia (decisión explícita de la
+  // usuaria, 2026-09-04).
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -880,11 +948,11 @@ async function dbLogout() {
 
 function msShowBiblioteca() {
   document.getElementById('db-wrap').style.display = 'none';
-  document.getElementById('ms-shell').classList.add('show');
-  document.getElementById('ms-footer').style.display = 'block';
   msRenderStats();
   msRenderGrid();
   msRenderShellPrioridad();
+  msVista = msDecidirVistaInicial();
+  msAplicarVista();
 }
 
 // Puerta 2, Slice 4/5 — shell minimo (Addendum 2 del documento de
@@ -895,19 +963,15 @@ function msShowBiblioteca() {
 // sustitutivo). Regla "nunca vacio": si no hay compras, ni proxima
 // convocatoria, ni experiencia activa, se muestra la bienvenida por
 // defecto.
-const MS_CS_FASES_BOOTCAMP = ['espera', 'dia1', 'dia2', 'dia3']; // post_bootcamp y {cohorteId:null,fase:null} no generan tarjeta tier 1
-
 function msRenderShellPrioridad() {
   const hayCompras = dbCompras.length > 0;
   const hayProxima = !!dbProximaConvocatoria;
   const hayExperienciaActiva = !!dbExperienciaGratuita;
-  const hayBootcampActivo = !!dbCodigoSoberana && MS_CS_FASES_BOOTCAMP.includes(dbCodigoSoberana.fase);
 
   document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';
-  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima && !hayExperienciaActiva && !hayBootcampActivo) ? 'block' : 'none';
+  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima && !hayExperienciaActiva) ? 'block' : 'none';
 
   msRenderClaseGratuita();
-  msRenderCodigoSoberana();
 
   if (hayProxima) {
     document.getElementById('ms-invite-card').style.display = 'block';
@@ -997,48 +1061,109 @@ function msTickClaseGratuita() {
   }
 }
 
-// ── Puerta 2, Slice 6 — tarjeta de codigoSoberana (tier 1). Hermana de
-// msRenderClaseGratuita/msTickClaseGratuita, mismo patrón — pero fase ∈
-// {espera,dia1,dia2,dia3} únicamente (post_bootcamp y {cohorteId:null,
-// fase:null} no llegan aquí, filtrado en msRenderShellPrioridad). ──
-function msRenderCodigoSoberana() {
-  clearInterval(window._msCsInterval);
-  const card = document.getElementById('ms-cs-card');
-  const activo = !!dbCodigoSoberana && MS_CS_FASES_BOOTCAMP.includes(dbCodigoSoberana.fase);
-  if (!activo) { card.style.display = 'none'; return; }
+// ══════════════════════════════════════════════════════════════════════════════
+// Puerta 2, Slice 7 — Home de Código Soberana + router de vista.
+//
+// Corrección de rumbo (2026-09-04): Código Soberana deja de ser una tarjeta
+// dentro de Mi Espacio — para quien tiene Derecho vigente, es su experiencia
+// PRINCIPAL. Mi Espacio (.ms-shell) pasa a ser la biblioteca secundaria.
+//
+// El router usa `dbCodigoSoberana !== null` como condición de Derecho — es
+// exactamente equivalente a "programas[] tiene codigo-soberana vigente"
+// (resolverCodigoSoberana en Orbit solo devuelve algo distinto de null
+// cuando el Derecho ya existe; ver perfil-acceso.js), así que no hace falta
+// consultar programas[] por separado — el contrato ya lo garantiza.
+// ══════════════════════════════════════════════════════════════════════════════
+let msVista = 'mi-espacio'; // 'mi-espacio' | 'codigo-soberana'
 
-  card.style.display = 'block';
-  msTickCodigoSoberana();
-  window._msCsInterval = setInterval(msTickCodigoSoberana, 1000);
+function msDecidirVistaInicial() {
+  return dbCodigoSoberana !== null ? 'codigo-soberana' : 'mi-espacio';
 }
 
-function msTickCodigoSoberana() {
+function msAplicarVista() {
+  document.getElementById('ms-volver-cs').style.display = (dbCodigoSoberana !== null) ? 'inline-block' : 'none';
+  if (msVista === 'codigo-soberana') {
+    document.getElementById('ms-shell').classList.remove('show');
+    document.getElementById('ms-footer').style.display = 'none';
+    document.getElementById('cs-home').classList.add('show');
+    csRenderHome();
+  } else {
+    clearInterval(window._csInterval);
+    document.getElementById('cs-home').classList.remove('show');
+    document.getElementById('ms-shell').classList.add('show');
+    document.getElementById('ms-footer').style.display = 'block';
+  }
+}
+
+function csIrABiblioteca() { msVista = 'mi-espacio'; msAplicarVista(); }
+function csIrAHome() { msVista = 'codigo-soberana'; msAplicarVista(); }
+
+function csRenderHome() {
+  clearInterval(window._csInterval);
   const cs = dbCodigoSoberana;
-  if (!cs) return;
-  const eyebrow = document.getElementById('ms-cs-eyebrow');
-  const title = document.getElementById('ms-cs-title');
-  const sub = document.getElementById('ms-cs-sub');
-  const countdown = document.getElementById('ms-cs-countdown');
-  const video = document.getElementById('ms-cs-video');
-  const btn = document.getElementById('ms-cs-btn');
-  const replaysWrap = document.getElementById('ms-cs-replays');
+  if (cs === null) return; // no debería llamarse sin Derecho — msAplicarVista ya lo filtra
 
-  countdown.style.display = 'flex';
-  dbFmtCountdown('ms-cs-cd', new Date(cs.fechaLimiteFase).getTime() - Date.now());
+  csRenderDias(cs.fase);
+  csRenderGlass(cs.fase);
 
-  if (cs.fase === 'espera') {
-    eyebrow.textContent = 'Tu Bootcamp Código Soberana';
-    title.textContent = 'Comienza pronto';
-    sub.textContent = 'Tu cupo ya está confirmado. Te avisamos aquí mismo cuando empiece el Día 1.';
-    video.style.display = 'none';
-    btn.style.display = 'none';
-    replaysWrap.style.display = 'none';
+  const sesion = document.getElementById('cs-sesion');
+  const final = document.getElementById('cs-final');
+
+  if (cs.fase === null) {
+    // Derecho vigente, Cohorte aún no identificable (sck ausente/inválido) —
+    // estado honesto, sin inventar fase ni progreso.
+    sesion.style.display = 'none';
+    final.style.display = 'none';
     return;
   }
 
-  // fase ∈ {dia1,dia2,dia3}
+  if (cs.fase === 'post_bootcamp') {
+    sesion.style.display = 'none';
+    final.style.display = 'block';
+    return;
+  }
+
+  final.style.display = 'none';
+  sesion.style.display = 'block';
+  csTickSesion();
+  window._csInterval = setInterval(csTickSesion, 1000);
+}
+
+function csRenderDias(fase) {
+  const numeroActual = (fase === 'post_bootcamp') ? 4 : (fase === 'espera' || fase === null) ? 0 : Number(String(fase).replace('dia', ''));
+  document.getElementById('cs-dias').innerHTML = [1, 2, 3].map(function (n) {
+    const clase = numeroActual > n ? 'done' : (numeroActual === n ? 'activo' : 'pendiente');
+    return '<div class="cs-dia ' + clase + '"><div class="cs-dia-label">Día ' + n + '</div></div>';
+  }).join('');
+}
+
+// Opacidad del glass según fase — puramente visual, atada a la fase COMÚN de
+// la Cohorte, nunca a progreso individual real de /workbook (decisión
+// explícita de la usuaria: no sincronizar con la PWA en esta versión).
+const CS_GLASS_OPACIDAD = { espera: .92, dia1: .7, dia2: .4, dia3: .15, post_bootcamp: 0 };
+function csRenderGlass(fase) {
+  const glass = document.getElementById('cs-recorrido-glass');
+  const opacidad = (fase === null) ? .92 : (CS_GLASS_OPACIDAD[fase] !== undefined ? CS_GLASS_OPACIDAD[fase] : .92);
+  glass.style.opacity = opacidad;
+  glass.style.pointerEvents = opacidad === 0 ? 'none' : 'auto';
+}
+
+function csTickSesion() {
+  const cs = dbCodigoSoberana;
+  if (!cs || !cs.sesionActual) return;
+  const eyebrow = document.getElementById('cs-sesion-eyebrow');
+  const title = document.getElementById('cs-sesion-title');
+  const sub = document.getElementById('cs-sesion-sub');
+  const countdown = document.getElementById('cs-cd');
+  const video = document.getElementById('cs-video');
+  const btn = document.getElementById('cs-btn');
+  const replaysWrap = document.getElementById('cs-replays');
+
+  countdown.style.display = 'flex';
+  dbFmtCountdown('cs-cd', new Date(cs.fechaLimiteFase).getTime() - Date.now());
+
   const numeroDia = Number(cs.fase.replace('dia', ''));
-  eyebrow.textContent = 'Bootcamp Código Soberana — Día ' + numeroDia;
+  eyebrow.textContent = 'Día ' + numeroDia;
   title.textContent = 'Tu sesión de hoy';
 
   // Honestidad: nunca se elige entre en vivo/replay por adivinanza — si hay
@@ -1156,10 +1281,6 @@ function msRenderStats() {
   let vivas = 0, replays = 0;
   dbCompras.forEach(function (c) {
     const config = PRODUCTOS[c.producto];
-    // Un Derecho permanente (sin sesiones de fecha fija) no tiene un estado
-    // "en vivo" que calcular — cuenta como parte de la biblioteca, igual que
-    // un replay ya disponible (Puerta 2, Slice 6).
-    if (config.permanente) { replays++; return; }
     if (dbEnVivo(config)) vivas++; else replays++;
   });
   const total = dbCompras.length;
@@ -1207,22 +1328,6 @@ function msRenderGrid() {
     const coverAttr = config.imagen
       ? ' style="background-image:url(\'' + config.imagen + '\')"'
       : '';
-
-    // Puerta 2, Slice 6 — un Derecho permanente (ej. Código Soberana) no
-    // tiene sesiones de fecha fija: nada de dbEstado()/ESTADO_LABEL, que
-    // fueron diseñados para una masterclass de una sola ocurrencia.
-    if (config.permanente) {
-      return '<div class="ms-card' + (i === dbSeleccion ? ' selected' : '') + '" data-idx="' + i + '">' +
-        '<div class="ms-card-cover' + (config.imagen ? '' : ' tema-' + tema) + '"' + coverAttr + '>' +
-          '<div class="ms-card-badge estado-replay"><span class="dot"></span>Programa adquirido</div>' +
-        '</div>' +
-        '<div class="ms-card-body">' +
-          '<div class="ms-card-title">' + config.nombre + '</div>' +
-          '<p class="ms-card-desc">' + (config.promesa || '') + '</p>' +
-          '<button class="ms-card-btn" onclick="msOpenDetail(' + i + ')">Ver detalle →</button>' +
-        '</div>' +
-      '</div>';
-    }
 
     const estado = dbEstado(config);
     let badgeLabel = ESTADO_LABEL[estado];
@@ -1276,22 +1381,6 @@ function msRenderDetail(i) {
       '<div><div class="ms-detail-eyebrow">Tu experiencia</div><div class="ms-detail-title">' + config.nombre + '</div></div>' +
       '<button class="ms-detail-close" onclick="msCloseDetail()">✕</button>' +
     '</div>';
-
-  // Puerta 2, Slice 6 — Derecho permanente: panel mínimo, sin countdown, sin
-  // video, sin botón de acceso. La fase real del Bootcamp (si la hay) ya se
-  // muestra arriba en la tarjeta tier 1 (msRenderCodigoSoberana) — este panel
-  // solo confirma el Derecho. Nada de /workbook todavía (P20-P22).
-  if (config.permanente) {
-    clearInterval(window._dbInterval);
-    panel.innerHTML = head +
-      '<div class="ms-detail-body">' +
-        '<div class="db-badge live">Programa adquirido</div>' +
-        '<p style="font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);margin-top:14px;">' +
-          'Tu acceso a ' + config.nombre + ' está activo. La fase actual de tu Bootcamp, si tienes una en curso, se muestra arriba en tu espacio.' +
-        '</p>' +
-      '</div>';
-    return;
-  }
 
   if (dbEnVivo(config)) {
     panel.innerHTML = head +

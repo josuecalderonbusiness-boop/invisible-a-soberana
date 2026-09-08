@@ -228,15 +228,15 @@ footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
           <label for="campoNombre">Tu nombre</label>
           <input type="text" id="campoNombre" name="nombre" autocomplete="name">
         </div>
+        <div class="campo" id="campoTelWrap">
+          <label for="campoTel">Tu WhatsApp</label>
+          <input type="tel" id="campoTel" name="telefono" autocomplete="tel" placeholder="+57 300 000 0000" required>
+          <span class="campo-error">Escribe un número de WhatsApp válido (10 a 15 dígitos).</span>
+        </div>
         <div class="campo" id="campoEmailWrap">
           <label for="campoEmail">Tu correo</label>
-          <input type="email" id="campoEmail" name="email" autocomplete="email">
-          <span class="campo-error">Escribe un correo válido, o déjalo vacío y usa tu WhatsApp.</span>
-        </div>
-        <div class="campo" id="campoTelWrap">
-          <label for="campoTel">Tu WhatsApp (opcional si dejas el correo)</label>
-          <input type="tel" id="campoTel" name="telefono" autocomplete="tel" placeholder="+57 300 000 0000">
-          <span class="campo-error">Escribe un número válido (10 a 15 dígitos), o déjalo vacío y usa tu correo.</span>
+          <input type="email" id="campoEmail" name="email" autocomplete="email" required>
+          <span class="campo-error">Escribe un correo válido.</span>
         </div>
         <button type="submit" class="btn-registro" id="btnRegistro">Quiero reservar mi lugar →</button>
         <div class="form-msg" id="formMsg"></div>
@@ -413,12 +413,23 @@ document.getElementById('regForm').addEventListener('submit', async function (ev
   var email = normalizarEmailCliente(emailRaw);
   var telefono = normalizarTelefonoCliente(telRaw);
 
-  if (!email && !telefono) {
-    if (emailRaw) emailWrap.classList.add('error');
-    if (telRaw) telWrap.classList.add('error');
-    if (!emailRaw && !telRaw) emailWrap.classList.add('error');
+  if (!telefono && !email) {
+    telWrap.classList.add('error');
+    emailWrap.classList.add('error');
     msg.className = 'form-msg err show';
-    msg.textContent = 'Necesitamos al menos tu correo o tu WhatsApp para reservarte el lugar.';
+    msg.textContent = 'Necesitamos tu WhatsApp y tu correo para reservarte el lugar.';
+    return;
+  }
+  if (!telefono) {
+    telWrap.classList.add('error');
+    msg.className = 'form-msg err show';
+    msg.textContent = 'Escribe un número de WhatsApp válido para reservarte el lugar.';
+    return;
+  }
+  if (!email) {
+    emailWrap.classList.add('error');
+    msg.className = 'form-msg err show';
+    msg.textContent = 'Escribe un correo válido para reservarte el lugar.';
     return;
   }
 

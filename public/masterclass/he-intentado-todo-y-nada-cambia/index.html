@@ -388,12 +388,14 @@ document.getElementById('unmuteBtn').addEventListener('click', function () {
   if (vslPlayer) { vslPlayer.unmute(); setTimeout(function () { if (vslPlayer) vslPlayer.unmute(); }, 400); }
 });
 
-// ── Registro — único mecanismo, POST directo a Orbit (orbit-mc), endpoint publico
-// ya en produccion. Cross-origin real (esta landing vive en invisible-a-soberana,
-// el endpoint vive en orbit-mc) — el backend ya responde con
-// Access-Control-Allow-Origin: * (verificado en produccion), asi que el fetch
-// directo funciona sin proxy.
-var ORBIT_REGISTRO_URL = 'https://orbit-mc-six.vercel.app/api/registro';
+// ── Registro — Puerta 2, Slice 2: same-origin, vía invisible-a-soberana
+// (/api/mi-espacio-registro-gratuito), que reenvía server-to-server al
+// mismo endpoint público de Orbit (orbit-mc) que se llamaba antes
+// directo desde el navegador. Mismo body, mismo contrato de respuesta —
+// solo cambia quién hace la llamada. Prepara el lugar donde un slice
+// futuro podrá emitir la sesión temporal de la clase en la misma
+// respuesta, sin tocar este archivo otra vez.
+var ORBIT_REGISTRO_URL = '/api/mi-espacio-registro-gratuito';
 
 function normalizarEmailCliente(v) { v = (v || '').trim().toLowerCase(); return v.includes('@') ? v : null; }
 function normalizarTelefonoCliente(v) { var d = (v || '').replace(/[^0-9]/g, ''); return (d.length >= 10 && d.length <= 15) ? d : null; }

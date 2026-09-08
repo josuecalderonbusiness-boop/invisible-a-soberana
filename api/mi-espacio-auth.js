@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -136,6 +136,56 @@ async function solicitarCuentaAccion(req, res) {
   } catch (err) {
     console.error('mi-espacio-auth/cuenta-solicitar error:', err.message);
     return res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
+  }
+}
+
+// Puerta 2 — Slice 2 ("Simplificación del registro gratuito"): proxy
+// same-origin de /api/registro. Mismas validaciones que ya aplica la
+// landing del lado cliente (Slice 1: WhatsApp y correo obligatorios) —
+// aquí se repiten porque el cliente nunca es la fuente de verdad. No hay
+// sesión, no hay cookie, no hay cambio de contrato con Orbit: se reenvía
+// el mismo body y se devuelve el mismo status/cuerpo que Orbit responde,
+// para que la landing siga funcionando exactamente igual sin tocar su
+// lógica de éxito/error.
+function normalizarEmailRegistro(v) {
+  const email = String(v || '').trim().toLowerCase();
+  return email.includes('@') ? email : null;
+}
+
+function normalizarTelefonoRegistro(v) {
+  const digitos = String(v || '').replace(/[^0-9]/g, '');
+  return (digitos.length >= 10 && digitos.length <= 15) ? digitos : null;
+}
+
+async function registroGratuitoAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const email = normalizarEmailRegistro(req.body?.email);
+  const telefono = normalizarTelefonoRegistro(req.body?.telefono);
+  const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
+  const origen = typeof req.body?.origen === 'string' ? req.body.origen.trim() : '';
+
+  if (!email || !telefono) {
+    return res.status(400).json({ error: 'Necesitamos tu WhatsApp y tu correo para reservarte el lugar.' });
+  }
+
+  const ip = ipDelRequest(req);
+  if (!(await puedeIntentar('ip-registro-gratuito', ip))) {
+    return res.status(429).json({ error: 'Demasiados intentos. Inténtalo nuevamente en unos minutos.' });
+  }
+
+  try {
+    const { status, cuerpo } = await registrarClaseGratuita({ email, telefono, nombre, origen });
+    if (status === 200 && cuerpo && cuerpo.ok) {
+      await registrarExito('ip-registro-gratuito', ip);
+    } else {
+      await registrarIntento('ip-registro-gratuito', ip);
+    }
+    return res.status(status).json(cuerpo);
+  } catch (err) {
+    console.error('mi-espacio-auth/registro-gratuito error:', err.message);
+    await registrarIntento('ip-registro-gratuito', ip);
+    return res.status(502).json({ error: 'No pudimos completar tu registro en este momento. Inténtalo de nuevo en unos minutos.' });
   }
 }
 
@@ -427,6 +477,7 @@ async function workbookAccesoAccion(req, res) {
 const ACCIONES = {
   'cuenta-crear': crearCuentaAccion,
   'cuenta-solicitar': solicitarCuentaAccion,
+  'registro-gratuito': registroGratuitoAccion,
   login: loginAccion,
   logout: logoutAccion,
   sesion: sesionAccion,

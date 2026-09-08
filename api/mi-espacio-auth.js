@@ -85,7 +85,16 @@ async function crearCuentaAccion(req, res) {
 
     const sesion = crearTokenSesion(correo, 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras });
+    // Puerta 2 — mismo dato que ya viaja en loginAccion (P7): sin esto, una mujer que
+    // entra por primera vez con solo Registro gratuito crea su cuenta y cae en el
+    // estado vacío del dashboard, porque el frontend lee estos campos de la respuesta
+    // de la acción que se acaba de ejecutar (crear cuenta o login), no de una carga
+    // aparte (bug real encontrado 2026-09-08 en prueba end-to-end).
+    const [proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+      obtenerProximaConvocatoriaDisponible(correo),
+      obtenerExperienciaGratuitaActiva(correo),
+    ]);
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva });
   } catch (err) {
     console.error('mi-espacio-auth/cuenta-crear error:', err.message);
     return res.status(500).json({ error: 'No se pudo crear la cuenta.' });

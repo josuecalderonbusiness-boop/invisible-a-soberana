@@ -304,8 +304,8 @@ button { font: inherit; }
 <div class="db-wrap" id="db-wrap">
   <div class="db-login" id="db-login">
     <div class="db-eyebrow">Tu espacio</div>
-    <h1 class="db-title">Código <em style="font-style:italic;color:var(--gold-light)">Soberana</em></h1>
-    <p class="db-sub" id="db-sub">Ingresa el correo con el que compraste tu experiencia.</p>
+    <h1 class="db-title">Mi <em style="font-style:italic;color:var(--gold-light)">Espacio</em></h1>
+    <p class="db-sub" id="db-sub">Ingresa tu correo para entrar a tu espacio.</p>
 
     <form id="db-form-correo" onsubmit="dbEnviarCorreo(event)">
       <input class="db-input" id="db-email" type="email" placeholder="tu@correo.com" autocomplete="email" required>
@@ -693,7 +693,7 @@ function dbCambiarCorreo(ev) {
   document.getElementById('db-form-correo').style.display = 'block';
   document.getElementById('db-password').value = '';
   document.getElementById('db-email').value = '';
-  document.getElementById('db-sub').textContent = 'Ingresa el correo con el que compraste tu experiencia.';
+  document.getElementById('db-sub').textContent = 'Ingresa tu correo para entrar a tu espacio.';
   dbLimpiarMensajes();
   document.getElementById('db-email').focus();
 }

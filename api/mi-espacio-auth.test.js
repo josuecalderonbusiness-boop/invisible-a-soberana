@@ -63,6 +63,35 @@ test('cuenta-solicitar: 400 si el correo no es valido (nunca llega a tocar Fires
   assert.equal(res.statusCode, 400);
 });
 
+// ── Puerta 2 — Slice 2: registro-gratuito. Igual que el resto del
+// archivo, solo se prueba aquí la frontera que no toca Firestore/Orbit
+// (405 y las validaciones de formato) — el camino feliz (llamada real a
+// Orbit) está cubierto por mock de fetch en orbit-perfil-acceso.test.js. ──
+
+test('registro-gratuito: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'registro-gratuito' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('registro-gratuito: 400 si faltan ambos campos', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: {} }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('registro-gratuito: 400 si el WhatsApp es invalido, aunque el correo sea valido', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: { email: 'alumna@correo.com', telefono: '123' } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('registro-gratuito: 400 si el correo es invalido, aunque el WhatsApp sea valido', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: { email: 'no-es-un-correo', telefono: '3001234567' } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
 test('login: 405 si el metodo no es POST', async () => {
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'login' }, body: {} }, res);

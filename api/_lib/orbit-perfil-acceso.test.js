@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, registrarClaseGratuita } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -111,4 +111,39 @@ test('obtenerExperienciaGratuitaActiva: devuelve el objeto tal como lo manda Orb
   };
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: experiencia });
   assert.deepEqual(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), experiencia);
+});
+
+// ── registrarClaseGratuita (Puerta 2, Slice 2) — proxy same-origin de
+// /api/registro. A diferencia de todo lo anterior en este archivo, este
+// endpoint de Orbit es PUBLICO — la prueba clave es que NO lleva
+// x-mi-espacio-secret, y que el status/cuerpo de Orbit viajan sin cambios
+// (pass-through), para no romper el contrato que ya consume la landing. ──
+
+test('registrarClaseGratuita: llama a /api/registro (no /api/v1/*) sin el header de secreto', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    status: 200,
+    json: async () => ({ ok: true, mensaje: 'Tu registro fue recibido correctamente.', convocatoria: { fecha_hora: '2026-09-27T00:00:00.000Z', ventana_replay_horas: 72 } }),
+  }));
+  await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
+
+  assert.equal(fetchMock.mock.calls.length, 1);
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, 'https://orbit-mc-six.vercel.app/api/registro');
+  assert.equal(opciones.method, 'POST');
+  assert.equal('x-mi-espacio-secret' in opciones.headers, false);
+  assert.deepEqual(JSON.parse(opciones.body), { email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
+});
+
+test('registrarClaseGratuita: pass-through exacto de una respuesta exitosa de Orbit', async (t) => {
+  const cuerpoOrbit = { ok: true, mensaje: 'Tu registro fue recibido correctamente.', convocatoria: { fecha_hora: '2026-09-27T00:00:00.000Z', ventana_replay_horas: 72 } };
+  t.mock.method(global, 'fetch', async () => ({ status: 200, json: async () => cuerpoOrbit }));
+  const resultado = await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
+  assert.deepEqual(resultado, { status: 200, cuerpo: cuerpoOrbit });
+});
+
+test('registrarClaseGratuita: pass-through exacto de un error de Orbit (sin convocatoria abierta)', async (t) => {
+  const cuerpoOrbit = { ok: false, error: 'No hay ninguna clase gratuita abierta en este momento.' };
+  t.mock.method(global, 'fetch', async () => ({ status: 409, json: async () => cuerpoOrbit }));
+  const resultado = await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
+  assert.deepEqual(resultado, { status: 409, cuerpo: cuerpoOrbit });
 });

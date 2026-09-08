@@ -159,6 +159,39 @@ async function crearRegistroAutenticado(correo) {
   }
 }
 
+// Puerta 2 — Slice 2: proxy same-origin de /api/registro (pre-sesión, sin
+// correo/identidad conocida todavía). A diferencia del resto de este
+// archivo, este endpoint de Orbit es PUBLICO — no lleva
+// x-mi-espacio-secret porque hoy lo llama directamente el navegador desde
+// la landing (verificado: la landing no manda ningun secreto). Mover la
+// llamada al servidor no cambia esa realidad, solo prepara el lugar donde
+// Slice 3 podra emitir la cookie temporal en la misma respuesta. No se
+// reescribe el contrato de Orbit — mismo body, mismo shape de respuesta,
+// pass-through de status.
+async function registrarClaseGratuita({ email, telefono, nombre, origen }) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, telefono, nombre, origen }),
+      signal: controller.signal
+    });
+    const cuerpo = await res.json().catch(() => ({}));
+    return { status: res.status, cuerpo };
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export {
   tieneDerechoVigente,
   tieneDerechoVigenteA,
@@ -168,4 +201,5 @@ export {
   obtenerProximaConvocatoriaDisponible,
   obtenerExperienciaGratuitaActiva,
   crearRegistroAutenticado,
+  registrarClaseGratuita,
 };

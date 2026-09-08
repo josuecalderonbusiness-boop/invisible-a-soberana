@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu lugar está reservado</title>
+<meta name="robots" content="noindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Jost:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --wine-deep: #3D0C11;
+  --gold-primary: #B8892A;
+  --gold-medium: #D4A843;
+  --gold-light: #E8C870;
+  --charcoal-deep: #221214;
+  --charcoal-soft: #3A2830;
+  --text-light: #F0E6EA;
+  --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'Jost', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--charcoal-deep); color: var(--text-light); font-family: var(--font-body);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+  text-align: center;
+}
+.card {
+  max-width: 480px; width: 100%; background: var(--charcoal-soft);
+  border: 1px solid rgba(184,137,42,.3); border-radius: 18px; padding: 44px 32px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+}
+.check {
+  width: 56px; height: 56px; border-radius: 50%; background: rgba(184,137,42,.15);
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 22px;
+  border: 1px solid rgba(184,137,42,.4);
+}
+.check svg { width: 26px; height: 26px; }
+h1 {
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(24px, 6vw, 30px);
+  margin-bottom: 10px; color: var(--text-light);
+}
+h1 em { color: var(--gold-light); font-style: italic; }
+.sub { color: var(--text-muted); font-size: 15.5px; margin-bottom: 28px; }
+.detalle {
+  background: var(--charcoal-deep); border-radius: 12px; padding: 20px; margin-bottom: 28px;
+  border: 1px solid rgba(184,137,42,.15);
+}
+.detalle p { font-family: var(--font-label); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 6px; }
+.detalle .fecha { font-family: var(--font-display); font-size: 19px; color: var(--text-light); margin-bottom: 4px; }
+.detalle .replay { font-size: 13.5px; color: var(--text-muted); margin-top: 10px; }
+.btn {
+  display: inline-block; font-family: var(--font-label); font-weight: 700; font-size: 15px;
+  color: var(--charcoal-deep); background: linear-gradient(135deg, var(--gold-medium), var(--gold-primary));
+  border: none; border-radius: 10px; padding: 16px 30px; text-decoration: none; width: 100%;
+}
+.nota { margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+.nota a { color: var(--gold-light); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="check">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+  </div>
+  <h1 id="tituloConNombre">Tu lugar está <em>reservado</em>.</h1>
+  <p class="sub">Guarda esta fecha — te esperamos ahí.</p>
+
+  <div class="detalle">
+    <p>Fecha de la clase</p>
+    <div class="fecha" id="fechaClase">Cargando...</div>
+    <p class="replay" id="replayInfo"></p>
+  </div>
+
+  <a href="/mi-espacio" class="btn">Entrar a Mi Espacio →</a>
+  <p class="nota">Ahí vas a poder ver tu clase, el enlace en vivo cuando esté disponible, y el replay después. <a href="/">Volver al inicio</a></p>
+</div>
+
+<script>
+// Lee la confirmación real dejada por el formulario de la landing (sessionStorage,
+// misma pestaña/sesión) — nunca depende de parámetros de URL de Hotmart, que este
+// flujo no tiene. Si alguien llega aquí directo (sin pasar por el formulario), se
+// muestra un estado honesto genérico, nunca datos inventados.
+(function () {
+  var datos = null;
+  try { datos = JSON.parse(sessionStorage.getItem('puerta2_confirmacion') || 'null'); } catch (e) {}
+
+  var fechaEl = document.getElementById('fechaClase');
+  var replayEl = document.getElementById('replayInfo');
+  var tituloEl = document.getElementById('tituloConNombre');
+
+  if (datos && datos.fechaHora) {
+    var d = new Date(datos.fechaHora);
+    var texto = d.toLocaleString('es-CO', {
+      weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+    });
+    fechaEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+    if (datos.ventanaReplayHoras) {
+      replayEl.textContent = 'Si no puedes conectarte en vivo, tienes ' + datos.ventanaReplayHoras + ' horas de replay después de la clase.';
+    }
+    if (datos.nombre) {
+      tituloEl.innerHTML = 'Listo, ' + datos.nombre.split(' ')[0] + '. Tu lugar está <em>reservado</em>.';
+    }
+  } else {
+    // Estado honesto sin datos de sesión — no inventa fecha ni nombre.
+    fechaEl.textContent = 'Revisa tu correo o WhatsApp para la confirmación.';
+  }
+})();
+</script>
+
+</body>
+</html>

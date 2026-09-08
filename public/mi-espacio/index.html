@@ -857,12 +857,21 @@ function msShowBiblioteca() {
 // antes que permanencia", pero las señales son INDEPENDIENTES — si tier 1
 // (experienciaGratuitaActiva) y tier 2 (proximaConvocatoriaDisponible)
 // existen a la vez, ambas se muestran (principio acumulativo, no
-// sustitutivo). Regla "nunca vacio": si no hay compras, ni proxima
-// convocatoria, ni experiencia activa, se muestra la bienvenida por
-// defecto.
+// sustitutivo) — SALVO que sean la misma Convocatoria (mismo id): en ese
+// caso mostrar la invitacion generica ademas de la tarjeta de "tu proxima
+// clase" es pura redundancia visual (verificado en navegador,
+// 2026-09-07 — dos tarjetas repitiendo la misma fecha para la misma
+// persona). Tier 2 solo se muestra cuando es una Convocatoria DISTINTA de
+// aquella a la que la persona ya esta registrada; si es la misma, la
+// cuenta ya la tarjeta de tier 1, y tier 2 sigue disponible para el caso
+// real que le da sentido (una Convocatoria futura distinta ya agendada).
+// Regla "nunca vacio": si no hay compras, ni proxima convocatoria, ni
+// experiencia activa, se muestra la bienvenida por defecto.
 function msRenderShellPrioridad() {
   const hayCompras = dbCompras.length > 0;
-  const hayProxima = !!dbProximaConvocatoria;
+  const esLaMismaConvocatoria = !!(dbProximaConvocatoria && dbExperienciaGratuita &&
+    dbProximaConvocatoria.id === dbExperienciaGratuita.convocatoriaId);
+  const hayProxima = !!dbProximaConvocatoria && !esLaMismaConvocatoria;
   const hayExperienciaActiva = !!dbExperienciaGratuita;
 
   document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';

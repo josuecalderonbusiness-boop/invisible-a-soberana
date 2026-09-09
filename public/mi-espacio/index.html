@@ -475,6 +475,7 @@ button { font: inherit; }
   <div class="ms-footer-note">Gracias por seguir escribiendo tu historia aquí.</div>
 </footer>
 
+<script src="/mi-espacio/experiencia-gratuita.js"></script>
 <script>
 // El acceso a Firestore vive detrás de api/mi-espacio-login.js y api/mi-espacio-apuntes.js — el
 // cliente nunca habla directo con Firestore (las reglas de seguridad no cubren estas colecciones
@@ -618,8 +619,6 @@ let dbCompras = [];
 let dbSeleccion = -1;
 let dbProximaConvocatoria = null; // Puerta 2, Slice 4 — { id, fechaHora } | null
 let dbExperienciaGratuita = null; // Puerta 2, Slice 5 — experienciaGratuitaActiva | null
-
-function dbFmt(n) { return String(n).padStart(2, '0'); }
 
 function dbEventoFin(config) { return config.sesiones[config.sesiones.length - 1].fin; }
 function dbEnVivo(config) { return Date.now() < dbEventoFin(config).getTime(); }
@@ -891,107 +890,11 @@ function msRenderShellPrioridad() {
   }
 }
 
-// ── Puerta 2, Slice 5 — tarjeta de experienciaGratuitaActiva (tier 1). ──
-// fase en {'espera','en_vivo','replay'} — 'vencido' no existe como valor,
-// es la ausencia del campo (dbExperienciaGratuita === null), ya cubierta
-// por la regla "nunca vacio" / la invitacion a proxima Convocatoria.
-function msFinClaseMs(exp) { return new Date(exp.fechaHora).getTime() + exp.duracionEstimada * 1000; }
-function msFinReplayMs(exp) { return msFinClaseMs(exp) + exp.ventanaReplayHoras * 3600000; }
-
-function msRenderClaseGratuita() {
-  clearInterval(window._msClaseInterval);
-  const card = document.getElementById('ms-clase-card');
-  if (!dbExperienciaGratuita) { card.style.display = 'none'; return; }
-
-  card.style.display = 'block';
-  msTickClaseGratuita();
-  window._msClaseInterval = setInterval(msTickClaseGratuita, 1000);
-}
-
-function msTickClaseGratuita() {
-  const exp = dbExperienciaGratuita;
-  if (!exp) return;
-  const eyebrow = document.getElementById('ms-clase-eyebrow');
-  const title = document.getElementById('ms-clase-title');
-  const sub = document.getElementById('ms-clase-sub');
-  const countdown = document.getElementById('ms-clase-countdown');
-  const video = document.getElementById('ms-clase-video');
-  const btn = document.getElementById('ms-clase-btn');
-  const cal = document.getElementById('ms-clase-calendario');
-
-  const fechaTexto = new Date(exp.fechaHora).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
-
-  if (exp.fase === 'espera') {
-    eyebrow.textContent = 'Tu próxima clase';
-    title.textContent = fechaTexto;
-    sub.textContent = 'Tu lugar ya está reservado. Te avisamos aquí mismo cuando empiece.';
-    countdown.style.display = 'flex';
-    dbFmtCountdown('ms-clase-cd', new Date(exp.fechaHora).getTime() - Date.now());
-    video.style.display = 'none';
-    btn.style.display = 'none';
-    cal.style.display = 'inline-block';
-    cal.href = msLinkCalendario(exp);
-  } else if (exp.fase === 'en_vivo') {
-    eyebrow.textContent = '🔴 En vivo ahora';
-    title.textContent = 'Tu clase está en curso';
-    sub.textContent = 'Entra cuando quieras — Mi Espacio se queda de fondo como tu base.';
-    countdown.style.display = 'none';
-    video.style.display = 'none';
-    cal.style.display = 'none';
-    if (exp.enlaceEnVivo) {
-      btn.style.display = 'inline-block';
-      btn.href = exp.enlaceEnVivo;
-      btn.textContent = 'Entrar a la clase →';
-    } else {
-      btn.style.display = 'inline-block';
-      btn.removeAttribute('href');
-      btn.textContent = 'El enlace llega en un momento';
-    }
-  } else { // 'replay'
-    eyebrow.textContent = 'Disponible en tu espacio';
-    title.textContent = 'Revive tu clase';
-    countdown.style.display = 'flex';
-    dbFmtCountdown('ms-clase-cd', msFinReplayMs(exp) - Date.now());
-    cal.style.display = 'none';
-    if (exp.enlaceReplay) {
-      sub.textContent = 'Disponible por tiempo limitado.';
-      btn.style.display = 'none';
-      video.style.display = 'block';
-      video.innerHTML = '<iframe src="' + exp.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>';
-    } else {
-      sub.textContent = 'El video se activa aquí apenas esté listo.';
-      video.style.display = 'block';
-      video.innerHTML = '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
-      btn.style.display = 'none';
-    }
-  }
-}
-
-// Espejo minimo de dbTickCountdown (usada para el countdown de un Programa
-// comprado) — mismos 4 campos (d/h/m/s), prefijo de ids parametrizado para
-// no duplicar la logica de formateo.
-function dbFmtCountdown(prefijo, diffMs) {
-  const diff = Math.max(0, diffMs);
-  document.getElementById(prefijo + '-d').textContent = dbFmt(Math.floor(diff / 86400000));
-  document.getElementById(prefijo + '-h').textContent = dbFmt(Math.floor((diff % 86400000) / 3600000));
-  document.getElementById(prefijo + '-m').textContent = dbFmt(Math.floor((diff % 3600000) / 60000));
-  document.getElementById(prefijo + '-s').textContent = dbFmt(Math.floor((diff % 60000) / 1000));
-}
-
-// "Añadir al calendario" (Estado 1, seccion 4 del documento de
-// experiencia) — enlace de Google Calendar, sin dependencias nuevas.
-function msLinkCalendario(exp) {
-  const inicio = new Date(exp.fechaHora);
-  const fin = new Date(msFinClaseMs(exp));
-  const fmt = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: 'Mi clase gratuita — Código Soberana',
-    dates: fmt(inicio) + '/' + fmt(fin),
-    details: 'Tu clase reservada dentro de Mi Espacio.',
-  });
-  return 'https://www.google.com/calendar/render?' + params.toString();
-}
+// Puerta 2, Slice 4 — dbFmt, dbFmtCountdown, msFinClaseMs, msFinReplayMs,
+// msRenderClaseGratuita, msTickClaseGratuita y msLinkCalendario se
+// extrajeron a experiencia-gratuita.js (cargado como <script> antes de este
+// bloque) — misma lógica exacta, ahora compartida con la sala aislada de
+// public/clase-gratuita/index.html. No se cambió ningún comportamiento acá.
 
 function msFormatFechaConvocatoria(fechaHoraISO) {
   try {

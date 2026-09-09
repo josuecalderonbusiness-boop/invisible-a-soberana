@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -184,13 +184,14 @@ async function registroGratuitoAccion(req, res) {
       // El body publico de /api/registro no trae convocatoriaId — se pide
       // aparte a experienciaGratuitaActiva (misma fuente que ya usa el
       // resto de Mi Espacio) para anclar la cookie a la convocatoria real,
-      // con su fecha y ventana de replay verdaderas. Si esa consulta falla
-      // o todavia no ve el registro (posible carrera/latencia entre las
-      // dos llamadas a Orbit), la cookie simplemente no se emite — el
+      // con su fecha y ventana de replay verdaderas. Usa la variante con
+      // reintento (hallazgo real 2026-09-09): la lectura puede llegar antes
+      // de que Orbit refleje el registro que acaba de escribir. Si las 3
+      // lecturas fallan igual, la cookie simplemente no se emite — el
       // registro ya fue exitoso para la landing de cualquier forma, esto
       // es una mejora aditiva, nunca una condicion de exito.
       try {
-        const experiencia = await obtenerExperienciaGratuitaActiva(email);
+        const experiencia = await obtenerExperienciaGratuitaActivaConReintento(email);
         const resultado = construirCookieSiCorresponde(email, experiencia);
         if (resultado) res.setHeader('Set-Cookie', resultado.cookie);
       } catch (err) {

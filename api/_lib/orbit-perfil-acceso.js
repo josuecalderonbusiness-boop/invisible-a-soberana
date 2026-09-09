@@ -118,6 +118,33 @@ async function obtenerExperienciaGratuitaActiva(correo) {
   return perfil.experienciaGratuitaActiva || null;
 }
 
+// Puerta 2 — hallazgo real 2026-09-09 (prueba end-to-end en Preview): justo
+// después de que Orbit acepta un registro nuevo (escritura en /api/registro,
+// público), preguntar de inmediato por experienciaGratuitaActiva (lectura en
+// /api/v1/perfil-acceso) puede llegar antes de que Orbit termine de reflejar
+// internamente ese registro — la respuesta viene vacía aunque el registro sí
+// se haya aceptado. Reintento pequeño y acotado, nunca infinito: como mucho
+// 3 lecturas con una espera breve entre cada una, se detiene apenas obtiene
+// una experiencia utilizable (con convocatoriaId y fechaHora). Si las 3
+// fallan, devuelve null — el llamador (registroGratuitoAccion) ya sabe tratar
+// null como "no se pudo emitir la cookie esta vez", nunca como una falla del
+// registro en sí.
+const REGISTRO_REINTENTOS = 3;
+const REGISTRO_ESPERA_MS = 300;
+
+function esperar(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function obtenerExperienciaGratuitaActivaConReintento(correo, intentos = REGISTRO_REINTENTOS, esperaMs = REGISTRO_ESPERA_MS) {
+  for (let intento = 1; intento <= intentos; intento++) {
+    const experiencia = await obtenerExperienciaGratuitaActiva(correo);
+    if (experiencia && experiencia.convocatoriaId && experiencia.fechaHora) return experiencia;
+    if (intento < intentos) await esperar(esperaMs);
+  }
+  return null;
+}
+
 // Puerta 2 — Slice 4, pieza P6: reserva el lugar de una Persona ya
 // autenticada en la proxima Convocatoria abierta. NUNCA se le pasa un
 // correo que venga del cliente/navegador — el unico llamador valido es la
@@ -200,6 +227,7 @@ export {
   obtenerRegistrosActivos,
   obtenerProximaConvocatoriaDisponible,
   obtenerExperienciaGratuitaActiva,
+  obtenerExperienciaGratuitaActivaConReintento,
   crearRegistroAutenticado,
   registrarClaseGratuita,
 };

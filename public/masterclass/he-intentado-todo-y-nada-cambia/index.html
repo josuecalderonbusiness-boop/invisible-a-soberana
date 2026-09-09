@@ -218,8 +218,8 @@ footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
 <section class="registro" id="registro">
   <div class="wrap">
     <div class="registro-card">
-      <span class="registro-live"><span class="registro-live-dot"></span>En vivo · Sábado 26</span>
-      <p class="registro-fecha">Sábado 26 de septiembre de 2026</p>
+      <span class="registro-live"><span class="registro-live-dot"></span>En vivo · <span id="registroLiveDia">próximo sábado</span></span>
+      <p class="registro-fecha" id="registroFecha">Cargando la fecha de la próxima clase…</p>
       <p class="registro-hora">🕖 7:00 p.m. Colombia</p>
       <p class="registro-gratis">Clase gratuita · Replay disponible 72 horas</p>
 
@@ -388,6 +388,31 @@ document.getElementById('unmuteBtn').addEventListener('click', function () {
   if (vslPlayer) { vslPlayer.unmute(); setTimeout(function () { if (vslPlayer) vslPlayer.unmute(); }, 400); }
 });
 
+// ── Fecha dinámica — Puerta 2, Slice 6: la clase gratuita ocurre todos los
+// sábados 7pm Bogotá, indefinidamente (Ads permanentes, nunca se pausan) —
+// ya no hay una sola fecha fija que hardcodear aquí. Se pregunta a Orbit
+// (vía el proxy same-origin) cuál es la próxima convocatoria real en cada
+// carga de página. Si la consulta falla, la tarjeta se queda con el texto
+// neutral de "Cargando…" en vez de mostrar una fecha inventada o vencida —
+// el formulario de abajo sigue funcionando igual (Orbit decide la
+// convocatoria real al momento del registro, no depende de esto).
+(function cargarProximaConvocatoria() {
+  fetch('/api/mi-espacio-proxima-convocatoria')
+    .then(function (res) { if (!res.ok) throw new Error('respuesta no ok'); return res.json(); })
+    .then(function (data) {
+      if (!data || !data.fechaHora) return;
+      var d = new Date(data.fechaHora);
+      var opts = { timeZone: 'America/Bogota' };
+      var diaCorto = d.toLocaleString('es-CO', Object.assign({ weekday: 'long', day: 'numeric' }, opts));
+      var fechaCompleta = d.toLocaleString('es-CO', Object.assign({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, opts));
+      document.getElementById('registroLiveDia').textContent = diaCorto.charAt(0).toUpperCase() + diaCorto.slice(1);
+      document.getElementById('registroFecha').textContent = fechaCompleta.charAt(0).toUpperCase() + fechaCompleta.slice(1);
+    })
+    .catch(function () {
+      document.getElementById('registroFecha').textContent = 'Escríbenos por WhatsApp para confirmar la fecha de la próxima clase.';
+    });
+})();
+
 // ── Registro — Puerta 2, Slice 2: same-origin, vía invisible-a-soberana
 // (/api/mi-espacio-registro-gratuito), que reenvía server-to-server al
 // mismo endpoint público de Orbit (orbit-mc) que se llamaba antes
@@ -455,6 +480,7 @@ document.getElementById('regForm').addEventListener('submit', async function (ev
         sessionStorage.setItem('puerta2_confirmacion', JSON.stringify({
           fechaHora: data.convocatoria && data.convocatoria.fecha_hora,
           ventanaReplayHoras: data.convocatoria && data.convocatoria.ventana_replay_horas,
+          enlaceGrupoWhatsapp: data.convocatoria && data.convocatoria.enlace_grupo_whatsapp,
           nombre: nombre
         }));
       } catch (e) {}
@@ -465,10 +491,7 @@ document.getElementById('regForm').addEventListener('submit', async function (ev
       return;
     }
 
-    if (res.status === 409) {
-      msg.className = 'form-msg err show';
-      msg.textContent = data.error || 'No hay ninguna clase gratuita abierta en este momento. Vuelve a intentarlo más tarde.';
-    } else if (res.status === 400) {
+    if (res.status === 400) {
       msg.className = 'form-msg err show';
       msg.textContent = data.error || 'Revisa los datos del formulario e inténtalo de nuevo.';
     } else {

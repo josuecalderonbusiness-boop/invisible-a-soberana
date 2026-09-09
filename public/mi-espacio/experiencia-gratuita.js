@@ -60,6 +60,7 @@ function msTickClaseGratuita() {
   const video = document.getElementById('ms-clase-video');
   const btn = document.getElementById('ms-clase-btn');
   const cal = document.getElementById('ms-clase-calendario');
+  const grupo = document.getElementById('ms-clase-grupo');
 
   const fechaTexto = new Date(exp.fechaHora).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
 
@@ -105,6 +106,21 @@ function msTickClaseGratuita() {
       video.style.display = 'block';
       video.innerHTML = '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
       btn.style.display = 'none';
+    }
+  }
+
+  // Puerta 2 — Slice 6: enlace del grupo de WhatsApp asignado a la
+  // convocatoria (rotación 1→2→3→4→1) — independiente de la fase (espera,
+  // en_vivo o replay: unirse al grupo tiene sentido en cualquiera). Solo
+  // se muestra si Orbit ya tiene un enlace real configurado para ese
+  // grupo (nunca se inventa uno) — `grupo` puede no existir en el DOM de
+  // paginas que no incluyan este boton, por eso el guard.
+  if (grupo) {
+    if (exp.enlaceGrupoWhatsapp) {
+      grupo.href = exp.enlaceGrupoWhatsapp;
+      grupo.style.display = 'inline-block';
+    } else {
+      grupo.style.display = 'none';
     }
   }
 }

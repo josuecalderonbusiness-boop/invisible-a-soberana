@@ -95,6 +95,17 @@ test('registro-gratuito: 400 si el correo es invalido, aunque el WhatsApp sea va
   assert.equal(res.statusCode, 400);
 });
 
+// ── Puerta 2 — Slice 6: proxima-convocatoria (publica, sin secreto). No
+// llama a puedeIntentar ni a Firestore — el unico camino testeable aqui sin
+// tocar Orbit real es la guarda de metodo. El pass-through de Orbit ya
+// esta cubierto en orbit-perfil-acceso.test.js (obtenerProximaConvocatoriaPublica). ──
+
+test('proxima-convocatoria: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'proxima-convocatoria' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
 // ── Puerta 2 — Slice 3: sesión temporal de clase gratuita.
 //
 // registro-gratuito llama a puedeIntentar() (rate-limit sobre Firestore)

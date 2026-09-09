@@ -219,6 +219,37 @@ async function registrarClaseGratuita({ email, telefono, nombre, origen }) {
   }
 }
 
+// Puerta 2 — Slice 6: proxy same-origin del endpoint PUBLICO
+// GET /api/v1/proxima-convocatoria (sin secreto, igual que
+// registrarClaseGratuita) — la landing lo usa para mostrar la fecha real
+// del proximo sabado en vez de una fecha fija en el HTML. Deliberadamente
+// distinto de obtenerProximaConvocatoriaDisponible (esa es la version
+// AUTENTICADA que consume Mi Espacio via perfil-acceso, con secreto) — dos
+// endpoints de Orbit distintos para dos audiencias distintas (anonima vs.
+// ya identificada), mismo dato de fondo.
+async function obtenerProximaConvocatoriaPublica() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/proxima-convocatoria`, { signal: controller.signal });
+    if (!res.ok) {
+      const err = new Error(`Orbit respondió ${res.status} al consultar la proxima convocatoria`);
+      err.motivo = `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export {
   tieneDerechoVigente,
   tieneDerechoVigenteA,
@@ -226,6 +257,7 @@ export {
   tieneRegistroActivo,
   obtenerRegistrosActivos,
   obtenerProximaConvocatoriaDisponible,
+  obtenerProximaConvocatoriaPublica,
   obtenerExperienciaGratuitaActiva,
   obtenerExperienciaGratuitaActivaConReintento,
   crearRegistroAutenticado,

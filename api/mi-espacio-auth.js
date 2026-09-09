@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -205,6 +205,25 @@ async function registroGratuitoAccion(req, res) {
     console.error('mi-espacio-auth/registro-gratuito error:', err.message);
     await registrarIntento('ip-registro-gratuito', ip);
     return res.status(502).json({ error: 'No pudimos completar tu registro en este momento. Inténtalo de nuevo en unos minutos.' });
+  }
+}
+
+// Puerta 2 — Slice 6: proxy same-origin del endpoint publico de Orbit que
+// dice cual es el proximo sabado con clase (y desde cuando empieza a
+// contar el replay). Sin sesion, sin secreto, sin rate limiting propio —
+// es lectura pura, sin efectos sobre ninguna identidad, la misma landing
+// que hoy llama a esto la llama en cada carga de pagina. Deliberadamente
+// NO expone el enlace del grupo de WhatsApp (regla "quien necesita conocer
+// este dato" — nadie en la landing lo necesita antes del registro).
+async function proximaConvocatoriaPublicaAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  try {
+    const proximaConvocatoria = await obtenerProximaConvocatoriaPublica();
+    return res.status(200).json(proximaConvocatoria);
+  } catch (err) {
+    console.error('mi-espacio-auth/proxima-convocatoria error:', err.message);
+    return res.status(503).json({ error: 'No pudimos cargar la fecha de la clase. Intenta de nuevo en un momento.' });
   }
 }
 
@@ -528,6 +547,7 @@ const ACCIONES = {
   'cuenta-solicitar': solicitarCuentaAccion,
   'registro-gratuito': registroGratuitoAccion,
   'sesion-clase-gratuita': sesionClaseGratuitaAccion,
+  'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
   login: loginAccion,
   logout: logoutAccion,
   sesion: sesionAccion,

@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita, obtenerProximaConvocatoriaPublica } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -180,4 +180,32 @@ test('obtenerExperienciaGratuitaActivaConReintento: nunca aparece → null tras 
   const resultado = await obtenerExperienciaGratuitaActivaConReintento('alumna@correo.com', 3, 0);
   assert.equal(resultado, null);
   assert.equal(fetchMock.mock.calls.length, 3);
+});
+
+// ── obtenerProximaConvocatoriaPublica (Puerta 2, Slice 6) — proxy del
+// endpoint PUBLICO GET /api/v1/proxima-convocatoria (sin secreto), usado
+// por la landing para mostrar la fecha real del proximo sabado. Distinto
+// de obtenerProximaConvocatoriaDisponible (esa es la version autenticada
+// de perfil-acceso, POST + secreto, para Mi Espacio). ──
+
+test('obtenerProximaConvocatoriaPublica: llama a GET /api/v1/proxima-convocatoria sin secreto ni body', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ fechaHora: '2026-09-27T00:00:00.000Z', ventanaReplayHoras: 72 }) }));
+  await obtenerProximaConvocatoriaPublica();
+
+  assert.equal(fetchMock.mock.calls.length, 1);
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, 'https://orbit-mc-six.vercel.app/api/v1/proxima-convocatoria');
+  assert.equal(opciones?.method, undefined); // GET por defecto, sin body
+  assert.equal(opciones?.headers, undefined); // publica: nunca x-mi-espacio-secret
+});
+
+test('obtenerProximaConvocatoriaPublica: pass-through exacto de la respuesta de Orbit', async (t) => {
+  const cuerpo = { fechaHora: '2026-10-04T00:00:00.000Z', ventanaReplayHoras: 72 };
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => cuerpo }));
+  assert.deepEqual(await obtenerProximaConvocatoriaPublica(), cuerpo);
+});
+
+test('obtenerProximaConvocatoriaPublica: lanza con motivo si Orbit responde error', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 503, json: async () => ({}) }));
+  await assert.rejects(() => obtenerProximaConvocatoriaPublica(), (err) => err.motivo === 'orbit_respondio_503');
 });

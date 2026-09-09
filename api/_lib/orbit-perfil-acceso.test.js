@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, registrarClaseGratuita } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -146,4 +146,38 @@ test('registrarClaseGratuita: pass-through exacto de un error de Orbit (sin conv
   t.mock.method(global, 'fetch', async () => ({ status: 409, json: async () => cuerpoOrbit }));
   const resultado = await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
   assert.deepEqual(resultado, { status: 409, cuerpo: cuerpoOrbit });
+});
+
+// ── obtenerExperienciaGratuitaActivaConReintento — hallazgo real 2026-09-09:
+// la lectura de experienciaGratuitaActiva justo después de un registro puede
+// llegar antes de que Orbit refleje internamente ese registro. Reintento
+// acotado (máximo 3 intentos), esperaMs en 0 en las pruebas para que corran
+// rápido sin fingir el reloj. ──
+
+const EXPERIENCIA = { convocatoriaId: 'c1', fechaHora: '2026-09-27T00:00:00.000Z', duracionEstimada: 3600, ventanaReplayHoras: 72, fase: 'espera', enlaceEnVivo: null, enlaceReplay: null };
+
+test('obtenerExperienciaGratuitaActivaConReintento: la encuentra en el primer intento, sin reintentar', async (t) => {
+  const fetchMock = mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: EXPERIENCIA });
+  const resultado = await obtenerExperienciaGratuitaActivaConReintento('alumna@correo.com', 3, 0);
+  assert.deepEqual(resultado, EXPERIENCIA);
+  assert.equal(fetchMock.mock.calls.length, 1);
+});
+
+test('obtenerExperienciaGratuitaActivaConReintento: null en el primer intento, aparece en el segundo', async (t) => {
+  let llamada = 0;
+  const fetchMock = t.mock.method(global, 'fetch', async () => {
+    llamada += 1;
+    const experienciaGratuitaActiva = llamada === 1 ? null : EXPERIENCIA;
+    return { ok: true, status: 200, json: async () => ({ nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva }) };
+  });
+  const resultado = await obtenerExperienciaGratuitaActivaConReintento('alumna@correo.com', 3, 0);
+  assert.deepEqual(resultado, EXPERIENCIA);
+  assert.equal(fetchMock.mock.calls.length, 2);
+});
+
+test('obtenerExperienciaGratuitaActivaConReintento: nunca aparece → null tras exactamente 3 intentos, sin loop infinito', async (t) => {
+  const fetchMock = mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: null });
+  const resultado = await obtenerExperienciaGratuitaActivaConReintento('alumna@correo.com', 3, 0);
+  assert.equal(resultado, null);
+  assert.equal(fetchMock.mock.calls.length, 3);
 });

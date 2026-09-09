@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tu clase gratuita</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* Puerta 2, Slice 4 — sala aislada de la clase gratuita. Tokens y clases
+   copiados de public/mi-espacio/index.html (mismo lenguaje visual), pero
+   esta página vive completamente aparte del shell de Mi Espacio — sin
+   sidebar, sin Sala Soberana, sin biblioteca, sin nada de Código Soberana. */
+:root {
+  --wine-deep: #3D0C11; --wine-primary: #6B1A2A;
+  --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
+  --charcoal-deep: #150D11; --charcoal: #1E1218;
+  --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-eyebrow: 'Jost', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--charcoal-deep); min-height: 100vh; }
+body { font-family: var(--font-body); color: var(--text-light); }
+a { color: inherit; }
+
+.cg-wrap { min-height: 100vh; min-height: 100dvh; padding: 60px 24px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; }
+.cg-eyebrow-pagina { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 24px; }
+
+.cg-cargando, .cg-estado { text-align: center; font-family: var(--font-body); font-size: 14px; color: var(--text-muted); padding: 20px 0; }
+.cg-estado h1 { font-family: var(--font-display); font-size: clamp(20px, 5vw, 26px); font-weight: 800; color: var(--text-light); margin-bottom: 10px; }
+
+/* ── Tarjeta de experiencia gratuita — misma estructura/clases que
+   ms-invite-card en public/mi-espacio/index.html, para que
+   experiencia-gratuita.js funcione sin ningún cambio. ── */
+.ms-invite-card { position: relative; border: 1.5px solid rgba(184,137,42,.35); border-radius: 18px; padding: 30px 32px; background: linear-gradient(165deg, rgba(184,137,42,.09), transparent 65%); }
+.ms-invite-eyebrow { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 10px; }
+.ms-invite-title { font-family: var(--font-display); font-size: clamp(20px, 5vw, 26px); font-weight: 800; margin-bottom: 8px; }
+.ms-invite-sub { font-family: var(--font-body); font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; }
+.ms-invite-btn { display: inline-block; padding: 14px 26px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-family: var(--font-body); font-weight: 700; font-size: 14px; text-decoration: none; text-align: center; }
+
+.db-countdown { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
+.db-cd-unit { background: rgba(255,255,255,.03); border: 1px solid rgba(184,137,42,.2); border-radius: 12px; padding: 12px 8px; min-width: 54px; }
+.db-cd-n { font-family: var(--font-display); font-size: 21px; font-weight: 900; color: var(--gold-light); }
+.db-cd-l { font-family: var(--font-eyebrow); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+.db-video-box { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: var(--charcoal); margin-bottom: 20px; }
+.db-video-box iframe { width: 100%; height: 100%; border: none; }
+</style>
+</head>
+<body>
+
+<div class="cg-wrap">
+  <div class="cg-eyebrow-pagina">Tu espacio</div>
+
+  <div class="cg-cargando" id="cg-cargando">Cargando tu clase…</div>
+
+  <div class="cg-estado" id="cg-sin-autorizacion" style="display:none">
+    <h1>No encontramos tu clase</h1>
+    <p>Puede que el enlace haya cambiado o que tu sesión haya expirado.</p>
+    <p style="margin-top:16px"><a href="/masterclass/he-intentado-todo-y-nada-cambia/" style="color:var(--gold-light)">Volver al inicio →</a></p>
+  </div>
+
+  <div class="cg-estado" id="cg-finalizada" style="display:none">
+    <h1>Tu clase ha terminado</h1>
+    <p>Gracias por haber estado aquí.</p>
+  </div>
+
+  <div class="ms-invite-card" id="ms-clase-card" style="display:none">
+    <div class="ms-invite-eyebrow" id="ms-clase-eyebrow">Tu próxima clase</div>
+    <div class="ms-invite-title" id="ms-clase-title"></div>
+    <p class="ms-invite-sub" id="ms-clase-sub"></p>
+    <div class="db-countdown" id="ms-clase-countdown" style="display:none">
+      <div class="db-cd-unit"><div class="db-cd-n" id="ms-clase-cd-d">–</div><div class="db-cd-l">Días</div></div>
+      <div class="db-cd-unit"><div class="db-cd-n" id="ms-clase-cd-h">–</div><div class="db-cd-l">Horas</div></div>
+      <div class="db-cd-unit"><div class="db-cd-n" id="ms-clase-cd-m">–</div><div class="db-cd-l">Min</div></div>
+      <div class="db-cd-unit"><div class="db-cd-n" id="ms-clase-cd-s">–</div><div class="db-cd-l">Seg</div></div>
+    </div>
+    <div class="db-video-box" id="ms-clase-video" style="display:none"></div>
+    <a class="ms-invite-btn" id="ms-clase-btn" href="#" target="_blank" style="display:none">→</a>
+    <a class="ms-invite-btn" id="ms-clase-calendario" href="#" target="_blank" style="display:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Añadir a mi calendario</a>
+  </div>
+</div>
+
+<script src="/mi-espacio/experiencia-gratuita.js"></script>
+<script>
+// Puerta 2, Slice 4 — la sala usa EXCLUSIVAMENTE la cookie clase_gratuita_sesion
+// (enviada automáticamente por el navegador con credentials:'include') a
+// través de /api/mi-espacio-sesion-clase-gratuita. Nunca lee ni depende de
+// mi_espacio_sesion — esta vista no sabe que esa cookie existe.
+let dbExperienciaGratuita = null; // mismo nombre que espera experiencia-gratuita.js
+
+async function cgInit() {
+  try {
+    const res = await fetch('/api/mi-espacio-sesion-clase-gratuita', { credentials: 'include' });
+    const data = await res.json();
+    document.getElementById('cg-cargando').style.display = 'none';
+
+    if (!data.autorizado) {
+      document.getElementById('cg-sin-autorizacion').style.display = 'block';
+      return;
+    }
+    if (!data.experienciaGratuitaActiva) {
+      // autorizado:true pero sin experiencia activa = la clase ya terminó
+      // (o era de otra convocatoria) — nunca se muestra contenido protegido
+      // ni nada de Código Soberana aquí todavía (slice posterior).
+      document.getElementById('cg-finalizada').style.display = 'block';
+      return;
+    }
+
+    dbExperienciaGratuita = data.experienciaGratuitaActiva;
+    msRenderClaseGratuita();
+  } catch (e) {
+    document.getElementById('cg-cargando').style.display = 'none';
+    document.getElementById('cg-sin-autorizacion').style.display = 'block';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', cgInit);
+</script>
+</body>
+</html>

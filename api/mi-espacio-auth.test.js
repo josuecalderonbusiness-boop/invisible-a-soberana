@@ -22,7 +22,10 @@ import assert from 'node:assert/strict';
 // este archivo, asi que fijar la env var despues llega tarde. Se fija
 // primero y se carga el modulo con `import()` dinamico.
 process.env.MI_ESPACIO_SESSION_SECRET = process.env.MI_ESPACIO_SESSION_SECRET || 'shh-test-session-secret';
+process.env.CLASE_GRATUITA_SESSION_SECRET = process.env.CLASE_GRATUITA_SESSION_SECRET || 'shh-test-clase-gratuita-secret';
+process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-test-orbit-secret';
 const { default: handler } = await import('./mi-espacio-auth.js');
+const { crearToken: crearTokenClaseGratuitaTest } = await import('./_lib/auth-clase-gratuita.js');
 
 function mockRes() {
   const res = { statusCode: null, body: null, headers: {} };
@@ -61,6 +64,157 @@ test('cuenta-solicitar: 400 si el correo no es valido (nunca llega a tocar Fires
   const res = mockRes();
   await handler({ method: 'POST', query: { accion: 'cuenta-solicitar' }, body: { correo: 'no-es-un-correo' } }, res);
   assert.equal(res.statusCode, 400);
+});
+
+// ── Puerta 2 — Slice 2: registro-gratuito. Igual que el resto del
+// archivo, solo se prueba aquí la frontera que no toca Firestore/Orbit
+// (405 y las validaciones de formato) — el camino feliz (llamada real a
+// Orbit) está cubierto por mock de fetch en orbit-perfil-acceso.test.js. ──
+
+test('registro-gratuito: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'registro-gratuito' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('registro-gratuito: 400 si faltan ambos campos', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: {} }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('registro-gratuito: 400 si el WhatsApp es invalido, aunque el correo sea valido', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: { email: 'alumna@correo.com', telefono: '123' } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('registro-gratuito: 400 si el correo es invalido, aunque el WhatsApp sea valido', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'registro-gratuito' }, body: { email: 'no-es-un-correo', telefono: '3001234567' } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+// ── Puerta 2 — Slice 3: sesión temporal de clase gratuita.
+//
+// registro-gratuito llama a puedeIntentar() (rate-limit sobre Firestore)
+// para CUALQUIER body con formato válido, antes incluso de tocar Orbit —
+// mismo límite ya documentado arriba para cuenta-crear/cuenta-solicitar/
+// login: no se puede probar aquí el camino feliz completo (emisión real de
+// la cookie tras un 200 de Orbit) sin Firestore real. Por eso la decisión
+// "¿corresponde emitir la cookie, y con qué payload exacto?" se extrajo a
+// una función PURA (construirCookieSiCorresponde, en auth-clase-gratuita.js)
+// que no toca red ni Firestore — se prueba ahí, no aquí. Lo que SÍ se
+// prueba en este archivo son las guardas de entrada (arriba) y
+// sesion-clase-gratuita completa, que nunca llama a puedeIntentar. ──
+
+const CONVOCATORIA_MOCK = {
+  convocatoriaId: 'he-intentado-todo-2026-09',
+  fechaHora: '2026-09-27T00:00:00.000Z',
+  duracionEstimada: 5400,
+  ventanaReplayHoras: 72,
+  fase: 'espera',
+  enlaceEnVivo: null,
+  enlaceReplay: null,
+};
+
+function mockFetchPerfilAcceso(t, experiencia = CONVOCATORIA_MOCK) {
+  return t.mock.method(global, 'fetch', async (url) => {
+    if (String(url).includes('/api/v1/perfil-acceso')) {
+      return { ok: true, status: 200, json: async () => ({ programas: [], registros: [], experienciaGratuitaActiva: experiencia }) };
+    }
+    throw new Error(`fetch no mockeado para ${url}`);
+  });
+}
+
+test('sesion-clase-gratuita: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sesion-clase-gratuita' }, body: {}, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sesion-clase-gratuita: sin cookie → autorizado false', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: {} }, res);
+  assert.deepEqual(res.body, { autorizado: false });
+});
+
+test('sesion-clase-gratuita: cookie manipulada → autorizado false', async () => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const tokenRoto = token.slice(0, -2) + 'xx';
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${tokenRoto}` } }, res);
+  assert.deepEqual(res.body, { autorizado: false });
+});
+
+test('sesion-clase-gratuita: cookie de otro tipo (payload ajeno, aunque bien firmado) → autorizado false', async (t) => {
+  // Simula que alguien intentara reutilizar la forma de mi_espacio_sesion bajo este nombre de cookie.
+  const crypto = await import('node:crypto');
+  const payload = Buffer.from(JSON.stringify({ correo: 'alumna@correo.com', sessionVersion: 0, exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
+  const firma = crypto.createHmac('sha256', process.env.CLASE_GRATUITA_SESSION_SECRET).update(payload).digest('base64url');
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${payload}.${firma}` } }, res);
+  assert.deepEqual(res.body, { autorizado: false });
+});
+
+test('sesion-clase-gratuita: cookie expirada → autorizado false', async () => {
+  const crypto = await import('node:crypto');
+  const payload = Buffer.from(JSON.stringify({ correo: 'alumna@correo.com', convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, tipo: 'clase_gratuita', exp: Math.floor(Date.now() / 1000) - 10 })).toString('base64url');
+  const firma = crypto.createHmac('sha256', process.env.CLASE_GRATUITA_SESSION_SECRET).update(payload).digest('base64url');
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${payload}.${firma}` } }, res);
+  assert.deepEqual(res.body, { autorizado: false });
+});
+
+test('sesion-clase-gratuita: cookie válida + experiencia activa vigente → devuelve sus datos completos', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  mockFetchPerfilAcceso(t);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK });
+});
+
+test('sesion-clase-gratuita: el secreto de clase gratuita nunca aparece en la respuesta al navegador', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  mockFetchPerfilAcceso(t);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.equal(JSON.stringify(res.body).includes(process.env.CLASE_GRATUITA_SESSION_SECRET), false);
+  assert.equal(JSON.stringify(res.headers).includes(process.env.CLASE_GRATUITA_SESSION_SECRET), false);
+});
+
+test('sesion-clase-gratuita: cookie válida pero la experiencia ya terminó (Orbit devuelve null) → autorizado, sin acceso a contenido', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  mockFetchPerfilAcceso(t, null);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null });
+});
+
+test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya la registró para una nueva) → no autoriza contenido de la vieja', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', 'convocatoria-vieja', CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  mockFetchPerfilAcceso(t); // Orbit devuelve experienciaGratuitaActiva de CONVOCATORIA_MOCK.convocatoriaId, distinta de 'convocatoria-vieja'
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null });
+});
+
+// ── Confirma que mi_espacio_sesion no se ve afectada — ni por la existencia
+// del módulo nuevo, ni porque la cookie de clase gratuita viaje en el mismo
+// header. sesionAccion sigue usando exclusivamente su propia cookie. ──
+
+test('sesion: mi_espacio_sesion sigue exactamente igual — una cookie de clase gratuita, sola, nunca autentica en Mi Espacio completo', async () => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('sesion: mi_espacio_sesion se sigue leyendo igual aunque clase_gratuita_sesion viaje en el mismo header (sin cuenta real, sigue sin autenticar)', async () => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `clase_gratuita_sesion=${token}; mi_espacio_sesion=token-invalido-de-cuenta` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
 });
 
 test('login: 405 si el metodo no es POST', async () => {

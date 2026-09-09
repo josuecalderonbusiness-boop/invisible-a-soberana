@@ -14,8 +14,9 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
+import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
 import { puedenIntentarTodas, puedeIntentar, registrarIntento, registrarExito } from './_lib/rate-limit.js';
@@ -85,7 +86,16 @@ async function crearCuentaAccion(req, res) {
 
     const sesion = crearTokenSesion(correo, 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras });
+    // Puerta 2 — mismo dato que ya viaja en loginAccion (P7): sin esto, una mujer que
+    // entra por primera vez con solo Registro gratuito crea su cuenta y cae en el
+    // estado vacío del dashboard, porque el frontend lee estos campos de la respuesta
+    // de la acción que se acaba de ejecutar (crear cuenta o login), no de una carga
+    // aparte (bug real encontrado 2026-09-08 en prueba end-to-end).
+    const [proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+      obtenerProximaConvocatoriaDisponible(correo),
+      obtenerExperienciaGratuitaActiva(correo),
+    ]);
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva });
   } catch (err) {
     console.error('mi-espacio-auth/cuenta-crear error:', err.message);
     return res.status(500).json({ error: 'No se pudo crear la cuenta.' });
@@ -127,6 +137,103 @@ async function solicitarCuentaAccion(req, res) {
   } catch (err) {
     console.error('mi-espacio-auth/cuenta-solicitar error:', err.message);
     return res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
+  }
+}
+
+// Puerta 2 — Slice 2 ("Simplificación del registro gratuito"): proxy
+// same-origin de /api/registro. Mismas validaciones que ya aplica la
+// landing del lado cliente (Slice 1: WhatsApp y correo obligatorios) —
+// aquí se repiten porque el cliente nunca es la fuente de verdad. No hay
+// sesión, no hay cookie, no hay cambio de contrato con Orbit: se reenvía
+// el mismo body y se devuelve el mismo status/cuerpo que Orbit responde,
+// para que la landing siga funcionando exactamente igual sin tocar su
+// lógica de éxito/error.
+function normalizarEmailRegistro(v) {
+  const email = String(v || '').trim().toLowerCase();
+  return email.includes('@') ? email : null;
+}
+
+function normalizarTelefonoRegistro(v) {
+  const digitos = String(v || '').replace(/[^0-9]/g, '');
+  return (digitos.length >= 10 && digitos.length <= 15) ? digitos : null;
+}
+
+async function registroGratuitoAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const email = normalizarEmailRegistro(req.body?.email);
+  const telefono = normalizarTelefonoRegistro(req.body?.telefono);
+  const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
+  const origen = typeof req.body?.origen === 'string' ? req.body.origen.trim() : '';
+
+  if (!email || !telefono) {
+    return res.status(400).json({ error: 'Necesitamos tu WhatsApp y tu correo para reservarte el lugar.' });
+  }
+
+  const ip = ipDelRequest(req);
+  if (!(await puedeIntentar('ip-registro-gratuito', ip))) {
+    return res.status(429).json({ error: 'Demasiados intentos. Inténtalo nuevamente en unos minutos.' });
+  }
+
+  try {
+    const { status, cuerpo } = await registrarClaseGratuita({ email, telefono, nombre, origen });
+    if (status === 200 && cuerpo && cuerpo.ok) {
+      await registrarExito('ip-registro-gratuito', ip);
+      // Puerta 2 — Slice 3: la cookie SOLO se intenta emitir después de que
+      // Orbit confirmó el registro (nunca antes, nunca si Orbit rechazó).
+      // El body publico de /api/registro no trae convocatoriaId — se pide
+      // aparte a experienciaGratuitaActiva (misma fuente que ya usa el
+      // resto de Mi Espacio) para anclar la cookie a la convocatoria real,
+      // con su fecha y ventana de replay verdaderas. Si esa consulta falla
+      // o todavia no ve el registro (posible carrera/latencia entre las
+      // dos llamadas a Orbit), la cookie simplemente no se emite — el
+      // registro ya fue exitoso para la landing de cualquier forma, esto
+      // es una mejora aditiva, nunca una condicion de exito.
+      try {
+        const experiencia = await obtenerExperienciaGratuitaActiva(email);
+        const resultado = construirCookieSiCorresponde(email, experiencia);
+        if (resultado) res.setHeader('Set-Cookie', resultado.cookie);
+      } catch (err) {
+        console.error('mi-espacio-auth/registro-gratuito: no se pudo emitir la sesion de clase gratuita (no bloqueante):', err.message);
+      }
+    } else {
+      await registrarIntento('ip-registro-gratuito', ip);
+    }
+    return res.status(status).json(cuerpo);
+  } catch (err) {
+    console.error('mi-espacio-auth/registro-gratuito error:', err.message);
+    await registrarIntento('ip-registro-gratuito', ip);
+    return res.status(502).json({ error: 'No pudimos completar tu registro en este momento. Inténtalo de nuevo en unos minutos.' });
+  }
+}
+
+// Puerta 2 — Slice 3: valida la cookie de clase gratuita y devuelve el
+// estado REAL de la experiencia, siempre preguntado en vivo a Orbit — la
+// cookie nunca es la fuente de la fase (espera/en_vivo/replay), solo prueba
+// identidad + convocatoria. Respuesta deliberadamente angosta: jamas
+// `compras`, jamas `emailVerified`, nada que pertenezca al mundo de una
+// Cuenta permanente (frontera aprobada 2026-09-09).
+async function sesionClaseGratuitaAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const token = leerCookieClaseGratuita(req);
+  const datos = verificarTokenClaseGratuita(token);
+  if (!datos) return res.status(200).json({ autorizado: false });
+
+  try {
+    const experiencia = await obtenerExperienciaGratuitaActiva(datos.correo);
+    // Una cookie valida sin experiencia activa (terminada, o de una
+    // convocatoria distinta a la que Orbit reconoce hoy para este correo)
+    // sigue siendo una cookie legitima — solo que no autoriza a ver
+    // contenido de clase. autorizado:true + experienciaGratuitaActiva:null
+    // es exactamente esa distincion (identidad valida vs. nada que mostrar).
+    if (!experiencia || experiencia.convocatoriaId !== datos.convocatoriaId) {
+      return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null });
+    }
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: experiencia });
+  } catch (err) {
+    console.error('mi-espacio-auth/sesion-clase-gratuita: Orbit no respondió:', err.message);
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, verificacionPendiente: true });
   }
 }
 
@@ -418,6 +525,8 @@ async function workbookAccesoAccion(req, res) {
 const ACCIONES = {
   'cuenta-crear': crearCuentaAccion,
   'cuenta-solicitar': solicitarCuentaAccion,
+  'registro-gratuito': registroGratuitoAccion,
+  'sesion-clase-gratuita': sesionClaseGratuitaAccion,
   login: loginAccion,
   logout: logoutAccion,
   sesion: sesionAccion,

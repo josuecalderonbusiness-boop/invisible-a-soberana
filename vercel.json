@@ -3,6 +3,8 @@
   "rewrites": [
     { "source": "/api/mi-espacio-cuenta-crear", "destination": "/api/mi-espacio-auth?accion=cuenta-crear" },
     { "source": "/api/mi-espacio-cuenta-solicitar", "destination": "/api/mi-espacio-auth?accion=cuenta-solicitar" },
+    { "source": "/api/mi-espacio-registro-gratuito", "destination": "/api/mi-espacio-auth?accion=registro-gratuito" },
+    { "source": "/api/mi-espacio-sesion-clase-gratuita", "destination": "/api/mi-espacio-auth?accion=sesion-clase-gratuita" },
     { "source": "/api/mi-espacio-login", "destination": "/api/mi-espacio-auth?accion=login" },
     { "source": "/api/mi-espacio-logout", "destination": "/api/mi-espacio-auth?accion=logout" },
     { "source": "/api/mi-espacio-sesion", "destination": "/api/mi-espacio-auth?accion=sesion" },
@@ -23,6 +25,7 @@
     { "source": "/soberana7d/:path*", "destination": "/public/soberana7d/:path*" },
     { "source": "/instalar", "destination": "/public/instalar/index.html" },
     { "source": "/mi-espacio", "destination": "/public/mi-espacio/index.html" },
+    { "source": "/clase-gratuita", "destination": "/public/clase-gratuita/index.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }

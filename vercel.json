@@ -4,6 +4,7 @@
     { "source": "/api/mi-espacio-cuenta-crear", "destination": "/api/mi-espacio-auth?accion=cuenta-crear" },
     { "source": "/api/mi-espacio-cuenta-solicitar", "destination": "/api/mi-espacio-auth?accion=cuenta-solicitar" },
     { "source": "/api/mi-espacio-registro-gratuito", "destination": "/api/mi-espacio-auth?accion=registro-gratuito" },
+    { "source": "/api/mi-espacio-sesion-clase-gratuita", "destination": "/api/mi-espacio-auth?accion=sesion-clase-gratuita" },
     { "source": "/api/mi-espacio-login", "destination": "/api/mi-espacio-auth?accion=login" },
     { "source": "/api/mi-espacio-logout", "destination": "/api/mi-espacio-auth?accion=logout" },
     { "source": "/api/mi-espacio-sesion", "destination": "/api/mi-espacio-auth?accion=sesion" },

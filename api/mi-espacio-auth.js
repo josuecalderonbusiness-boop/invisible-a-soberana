@@ -16,6 +16,7 @@ import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado,
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
 import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerExperienciaGratuitaActiva, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
+import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
 import { puedenIntentarTodas, puedeIntentar, registrarIntento, registrarExito } from './_lib/rate-limit.js';
@@ -178,6 +179,23 @@ async function registroGratuitoAccion(req, res) {
     const { status, cuerpo } = await registrarClaseGratuita({ email, telefono, nombre, origen });
     if (status === 200 && cuerpo && cuerpo.ok) {
       await registrarExito('ip-registro-gratuito', ip);
+      // Puerta 2 — Slice 3: la cookie SOLO se intenta emitir después de que
+      // Orbit confirmó el registro (nunca antes, nunca si Orbit rechazó).
+      // El body publico de /api/registro no trae convocatoriaId — se pide
+      // aparte a experienciaGratuitaActiva (misma fuente que ya usa el
+      // resto de Mi Espacio) para anclar la cookie a la convocatoria real,
+      // con su fecha y ventana de replay verdaderas. Si esa consulta falla
+      // o todavia no ve el registro (posible carrera/latencia entre las
+      // dos llamadas a Orbit), la cookie simplemente no se emite — el
+      // registro ya fue exitoso para la landing de cualquier forma, esto
+      // es una mejora aditiva, nunca una condicion de exito.
+      try {
+        const experiencia = await obtenerExperienciaGratuitaActiva(email);
+        const resultado = construirCookieSiCorresponde(email, experiencia);
+        if (resultado) res.setHeader('Set-Cookie', resultado.cookie);
+      } catch (err) {
+        console.error('mi-espacio-auth/registro-gratuito: no se pudo emitir la sesion de clase gratuita (no bloqueante):', err.message);
+      }
     } else {
       await registrarIntento('ip-registro-gratuito', ip);
     }
@@ -186,6 +204,36 @@ async function registroGratuitoAccion(req, res) {
     console.error('mi-espacio-auth/registro-gratuito error:', err.message);
     await registrarIntento('ip-registro-gratuito', ip);
     return res.status(502).json({ error: 'No pudimos completar tu registro en este momento. Inténtalo de nuevo en unos minutos.' });
+  }
+}
+
+// Puerta 2 — Slice 3: valida la cookie de clase gratuita y devuelve el
+// estado REAL de la experiencia, siempre preguntado en vivo a Orbit — la
+// cookie nunca es la fuente de la fase (espera/en_vivo/replay), solo prueba
+// identidad + convocatoria. Respuesta deliberadamente angosta: jamas
+// `compras`, jamas `emailVerified`, nada que pertenezca al mundo de una
+// Cuenta permanente (frontera aprobada 2026-09-09).
+async function sesionClaseGratuitaAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const token = leerCookieClaseGratuita(req);
+  const datos = verificarTokenClaseGratuita(token);
+  if (!datos) return res.status(200).json({ autorizado: false });
+
+  try {
+    const experiencia = await obtenerExperienciaGratuitaActiva(datos.correo);
+    // Una cookie valida sin experiencia activa (terminada, o de una
+    // convocatoria distinta a la que Orbit reconoce hoy para este correo)
+    // sigue siendo una cookie legitima — solo que no autoriza a ver
+    // contenido de clase. autorizado:true + experienciaGratuitaActiva:null
+    // es exactamente esa distincion (identidad valida vs. nada que mostrar).
+    if (!experiencia || experiencia.convocatoriaId !== datos.convocatoriaId) {
+      return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null });
+    }
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: experiencia });
+  } catch (err) {
+    console.error('mi-espacio-auth/sesion-clase-gratuita: Orbit no respondió:', err.message);
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, verificacionPendiente: true });
   }
 }
 
@@ -478,6 +526,7 @@ const ACCIONES = {
   'cuenta-crear': crearCuentaAccion,
   'cuenta-solicitar': solicitarCuentaAccion,
   'registro-gratuito': registroGratuitoAccion,
+  'sesion-clase-gratuita': sesionClaseGratuitaAccion,
   login: loginAccion,
   logout: logoutAccion,
   sesion: sesionAccion,

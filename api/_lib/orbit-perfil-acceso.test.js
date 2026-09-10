@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita, obtenerProximaConvocatoriaPublica } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -208,4 +208,50 @@ test('obtenerProximaConvocatoriaPublica: pass-through exacto de la respuesta de 
 test('obtenerProximaConvocatoriaPublica: lanza con motivo si Orbit responde error', async (t) => {
   t.mock.method(global, 'fetch', async () => ({ ok: false, status: 503, json: async () => ({}) }));
   await assert.rejects(() => obtenerProximaConvocatoriaPublica(), (err) => err.motivo === 'orbit_respondio_503');
+});
+
+// ── relayBotonVerMiClaseAOrbit (Puerta 2, Slice 7e) — a diferencia de TODO
+// lo demás en este archivo, esta función NUNCA debe lanzar: su único
+// llamador es el webhook real de Meta (api/whatsapp.js), que debe
+// responder 200 sin importar qué pase con Orbit. Mismo secreto/patrón que
+// crearRegistroAutenticado (x-mi-espacio-secret), nunca el
+// X-Hub-Signature-256 de Meta. ──
+
+test('relayBotonVerMiClaseAOrbit: arma la petición correcta (URL, método, header de secreto, body) y devuelve {ok:true} en éxito', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
+  const resultado = await relayBotonVerMiClaseAOrbit({ wamid: 'wamid.1', telefono: '573001112222', payload: 'VER_MI_CLASE', texto: 'Ver mi clase', timestampMeta: '1700000000' });
+
+  assert.deepEqual(resultado, { ok: true });
+  assert.equal(fetchMock.mock.calls.length, 1);
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, 'https://orbit-mc-six.vercel.app/api/v1/perfil-acceso?accion=whatsapp-relay-ver-mi-clase');
+  assert.equal(opciones.method, 'POST');
+  assert.equal(opciones.headers['x-mi-espacio-secret'], 'shh-mi-espacio');
+  assert.deepEqual(JSON.parse(opciones.body), { wamid: 'wamid.1', telefono: '573001112222', payload: 'VER_MI_CLASE', texto: 'Ver mi clase', timestampMeta: '1700000000' });
+});
+
+test('relayBotonVerMiClaseAOrbit: Orbit responde 4xx/5xx -> {ok:false, motivo}, NUNCA lanza', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 500, json: async () => ({ error: 'Error interno' }) }));
+  const resultado = await relayBotonVerMiClaseAOrbit({ wamid: 'w1', telefono: '573001112222' });
+  assert.deepEqual(resultado, { ok: false, motivo: 'orbit_respondio_500' });
+});
+
+test('relayBotonVerMiClaseAOrbit: error de red (Orbit caído) -> {ok:false, motivo:"error_red"}, NUNCA lanza', async (t) => {
+  t.mock.method(global, 'fetch', async () => { throw new Error('ECONNREFUSED'); });
+  const resultado = await relayBotonVerMiClaseAOrbit({ wamid: 'w1', telefono: '573001112222' });
+  assert.deepEqual(resultado, { ok: false, motivo: 'error_red' });
+});
+
+test('relayBotonVerMiClaseAOrbit: timeout -> {ok:false, motivo:"timeout"}, NUNCA lanza', async (t) => {
+  t.mock.method(global, 'fetch', async (url, opciones) => {
+    return new Promise((_, reject) => {
+      opciones.signal.addEventListener('abort', () => {
+        const err = new Error('The operation was aborted');
+        err.name = 'AbortError';
+        reject(err);
+      });
+    });
+  });
+  const resultado = await relayBotonVerMiClaseAOrbit({ wamid: 'w1', telefono: '573001112222' });
+  assert.deepEqual(resultado, { ok: false, motivo: 'timeout' });
 });

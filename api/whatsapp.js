@@ -1,4 +1,5 @@
 import { resolverContingenciaAcceso, registrarResultadoBienvenidaPorTelefono } from './_lib/recuperacion-acceso.js';
+import { relayBotonVerMiClaseAOrbit } from './_lib/orbit-perfil-acceso.js';
 
 // api/whatsapp.js — Arquitectura híbrida v4
 // Botones: procesados directamente en Vercel (inmediato)
@@ -153,6 +154,21 @@ export default async function handler(req, res) {
         : (msg.button?.text || '').toLowerCase();
 
       console.log(`Botón: id="${btnId}" tx="${btnTx}" payload="${msg.button?.payload}" text="${msg.button?.text}"`);
+
+      // Puerta 2 — Slice 7e (relay selectivo, 2026-09-10, ver auditoria del
+      // mismo dia): "Ver mi clase" es el ÚNICO botón que no pertenece a
+      // este funnel — es de la Clase Gratuita de Orbit, que hoy no tiene
+      // numero/app propio de WhatsApp (por eso Meta sigue apuntando aquí).
+      // Se intercepta ANTES de manejarBoton() a propósito: ese arranca con
+      // buscarContacto() (una consulta a Sheets que este botón no
+      // necesita) y no reconoce este btnId de todas formas (caería en el
+      // "Botón no reconocido" del final). relayBotonVerMiClaseAOrbit()
+      // NUNCA lanza — timeout, 4xx, 5xx o Orbit caído no deben poder
+      // alterar esta respuesta 200 ni afectar ningún otro mensaje.
+      if (btnId === 'ver_mi_clase') {
+        await relayBotonVerMiClaseAOrbit({ wamid: msgId, telefono: msg.from, payload: msg.button?.payload, texto: msg.button?.text, timestampMeta: msg.timestamp });
+        return res.status(200).json({ ok: true });
+      }
 
       // Procesar botón ANTES de responder
       await manejarBoton(phone, btnId, btnTx);

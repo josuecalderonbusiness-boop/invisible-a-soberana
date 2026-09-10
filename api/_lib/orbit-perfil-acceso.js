@@ -250,6 +250,50 @@ async function obtenerProximaConvocatoriaPublica() {
   }
 }
 
+// Puerta 2 — Slice 7e (relay selectivo Legacy->Orbit, 2026-09-10, ver
+// auditoria del mismo dia): unico llamador es el guard nuevo en
+// api/whatsapp.js para el boton Quick Reply "Ver mi clase" — el webhook
+// REAL de Meta sigue siendo este archivo/api/whatsapp.js (Orbit no tiene
+// numero/app propio todavia), asi que esto es lo que le entrega a Orbit
+// exactamente el evento que necesita para responder, sin que Orbit tenga
+// que suscribirse a Meta directamente.
+//
+// Fail-safe estricto (a diferencia del resto de este archivo, que SI
+// relanza): el llamador es el webhook de Meta en vivo, que debe responder
+// 200 pase lo que pase con Orbit — nunca debe lanzar. Mismo patron
+// AbortController+timeout que el resto del archivo, mismo secreto
+// (MI_ESPACIO_ORBIT_SECRET / x-mi-espacio-secret) — NUNCA el
+// X-Hub-Signature-256 de Meta, que es una garantia distinta (prueba que el
+// mensaje vino de Meta, no que la llamada vino de invisible-a-soberana) y
+// que Orbit reserva exclusivamente para su propio webhook.
+async function relayBotonVerMiClaseAOrbit({ wamid, telefono, payload, texto, timestampMeta }) {
+  if (!MI_ESPACIO_ORBIT_SECRET) {
+    console.error('relayBotonVerMiClaseAOrbit: MI_ESPACIO_ORBIT_SECRET no configurada, relay omitido');
+    return { ok: false, motivo: 'sin_secreto' };
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=whatsapp-relay-ver-mi-clase`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      body: JSON.stringify({ wamid, telefono, payload, texto, timestampMeta }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      console.error(`relayBotonVerMiClaseAOrbit: Orbit respondio ${res.status}`);
+      return { ok: false, motivo: `orbit_respondio_${res.status}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    const motivo = err.name === 'AbortError' ? 'timeout' : 'error_red';
+    console.error('relayBotonVerMiClaseAOrbit error:', motivo, err.message);
+    return { ok: false, motivo };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 export {
   tieneDerechoVigente,
   tieneDerechoVigenteA,
@@ -262,4 +306,5 @@ export {
   obtenerExperienciaGratuitaActivaConReintento,
   crearRegistroAutenticado,
   registrarClaseGratuita,
+  relayBotonVerMiClaseAOrbit,
 };

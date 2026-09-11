@@ -118,6 +118,30 @@ async function obtenerExperienciaGratuitaActiva(correo) {
   return perfil.experienciaGratuitaActiva || null;
 }
 
+// Puerta 2 — Bootcamp Codigo Soberana (diseño cerrado 2026-09-11): dos
+// campos que Orbit ya expone en perfil-acceso desde hace semanas
+// (tieneRegistroHistorico, Slice 9) o desde el commit del Bootcamp
+// (oportunidadBootcampActiva) pero que nunca habian llegado hasta aqui —
+// espejo exacto del mismo patron ya usado para experienciaGratuitaActiva,
+// sin transformar nada de lo que Orbit ya resolvio.
+
+// "¿Alguna vez tuvo un Registro?" (historico, no solo activo) — distinto de
+// tieneRegistroActivo de arriba, que solo mira registros ACTIVOS. false si
+// el campo no viene (compatibilidad hacia atras).
+async function obtenerTieneRegistroHistorico(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return !!perfil.tieneRegistroHistorico;
+}
+
+// { cohorteId, abierta } | null — Orbit ya resolvio internamente cual
+// Convocatoria le corresponde a esta Persona y si su ventana comercial esta
+// abierta; Mi Espacio nunca elige ninguna Convocatoria por su cuenta, solo
+// representa este resultado ya calculado.
+async function obtenerOportunidadBootcampActiva(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.oportunidadBootcampActiva || null;
+}
+
 // Puerta 2 — hallazgo real 2026-09-09 (prueba end-to-end en Preview): justo
 // después de que Orbit acepta un registro nuevo (escritura en /api/registro,
 // público), preguntar de inmediato por experienciaGratuitaActiva (lectura en
@@ -304,6 +328,8 @@ export {
   obtenerProximaConvocatoriaPublica,
   obtenerExperienciaGratuitaActiva,
   obtenerExperienciaGratuitaActivaConReintento,
+  obtenerTieneRegistroHistorico,
+  obtenerOportunidadBootcampActiva,
   crearRegistroAutenticado,
   registrarClaseGratuita,
   relayBotonVerMiClaseAOrbit,

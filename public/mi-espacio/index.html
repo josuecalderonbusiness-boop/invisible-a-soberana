@@ -427,6 +427,25 @@ button { font: inherit; }
       <p class="ms-invite-msg" id="ms-invite-msg" style="display:none"></p>
     </div>
 
+    <!-- Bootcamp Codigo Soberana (diseño cerrado 2026-09-11) — se muestra
+         SOLO a quien ya consumio su gratuidad (dbTieneRegistroHistorico) y
+         cuya oportunidad esta abierta (dbOportunidadBootcamp.abierta). Mismo
+         estilo .ms-invite-card ya usado arriba, sin CSS nuevo. -->
+    <div class="ms-invite-card" id="ms-bootcamp-abierto-card" style="display:none">
+      <div class="ms-invite-eyebrow">Tu oportunidad está abierta</div>
+      <div class="ms-invite-title">Código Soberana está disponible</div>
+      <p class="ms-invite-sub">Tu oportunidad de entrar al Bootcamp está abierta.</p>
+      <a class="ms-invite-btn" id="ms-bootcamp-abierto-btn" href="#" target="_blank" style="text-decoration:none;text-align:center">Entrar al Bootcamp →</a>
+    </div>
+
+    <!-- Estado de cierre: misma persona, misma pregunta ("ya uso su
+         gratuidad"), pero sin ventana de Bootcamp abierta — nunca se ofrece
+         un CTA de nueva Convocatoria aqui, solo se comunica el cierre. -->
+    <div class="ms-bienvenida-vacio" id="ms-bootcamp-cerrado-card" style="display:none">
+      <div class="ms-bienvenida-title">Esta oportunidad ya cerró</div>
+      <p class="ms-bienvenida-text">Te avisaremos cuando haya una nueva oportunidad.</p>
+    </div>
+
     <div class="ms-bienvenida-vacio" id="ms-bienvenida-vacio" style="display:none">
       <div class="ms-bienvenida-title">Bienvenida a tu espacio</div>
       <p class="ms-bienvenida-text">Todavía no tienes ninguna experiencia activa en este momento. En cuanto haya una nueva clase disponible, la verás aquí.</p>
@@ -619,6 +638,10 @@ let dbCompras = [];
 let dbSeleccion = -1;
 let dbProximaConvocatoria = null; // Puerta 2, Slice 4 — { id, fechaHora } | null
 let dbExperienciaGratuita = null; // Puerta 2, Slice 5 — experienciaGratuitaActiva | null
+let dbTieneRegistroHistorico = false; // Puerta 2, Slice 9 — ¿alguna vez tuvo un Registro? (no solo el activo)
+let dbOportunidadBootcamp = null; // Puerta 2, Bootcamp Codigo Soberana — { cohorteId, abierta } | null, ya resuelto por Orbit
+// Checkout unico y permanente del Bootcamp (producto Hotmart 8499175, oferta kyuhhfy2) — no cambia por ciclo.
+const BOOTCAMP_CHECKOUT_URL = 'https://pay.hotmart.com/A107564829Y?bid=1789093799825';
 
 function dbEventoFin(config) { return config.sesiones[config.sesiones.length - 1].fin; }
 function dbEnVivo(config) { return Date.now() < dbEventoFin(config).getTime(); }
@@ -802,6 +825,8 @@ async function dbEnviarPassword(ev) {
     dbCompras = dbPrepararCompras(data.compras);
     dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
     dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
+    dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
+    dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
     msShowBiblioteca();
   } catch (e) {
     console.error(e);
@@ -866,15 +891,32 @@ function msShowBiblioteca() {
 // real que le da sentido (una Convocatoria futura distinta ya agendada).
 // Regla "nunca vacio": si no hay compras, ni proxima convocatoria, ni
 // experiencia activa, se muestra la bienvenida por defecto.
+// Puerta 2 — Bootcamp Codigo Soberana (diseño cerrado 2026-09-11): corrige
+// un gap real que llevaba semanas sin cerrarse — dbTieneRegistroHistorico
+// (Orbit ya lo exponia desde el Slice 9, nunca habia llegado hasta aqui)
+// ahora apaga tier 2 para quien ya uso su gratuidad alguna vez, en vez de
+// mirar solo "es la misma Convocatoria de su experiencia activa". Mi
+// Espacio NUNCA elige ninguna Convocatoria por su cuenta para el Bootcamp:
+// dbOportunidadBootcamp ya viene resuelto por Orbit ({cohorteId, abierta}),
+// aqui solo se representa. Los 4 estados (ver auditoria del mismo dia):
+//   1) experienciaGratuitaActiva          -> tier 1, sin cambios
+//   2) nunca uso su gratuidad             -> tier 2 (invitacion generica), sin cambios
+//   3) ya la uso + Bootcamp abierto       -> tarjeta "Codigo Soberana disponible"
+//   4) ya la uso + Bootcamp cerrado/nulo  -> tarjeta de cierre, SIN CTA de nueva Convocatoria
 function msRenderShellPrioridad() {
   const hayCompras = dbCompras.length > 0;
   const esLaMismaConvocatoria = !!(dbProximaConvocatoria && dbExperienciaGratuita &&
     dbProximaConvocatoria.id === dbExperienciaGratuita.convocatoriaId);
-  const hayProxima = !!dbProximaConvocatoria && !esLaMismaConvocatoria;
   const hayExperienciaActiva = !!dbExperienciaGratuita;
+  const hayProxima = !!dbProximaConvocatoria && !esLaMismaConvocatoria && !dbTieneRegistroHistorico;
+
+  const bootcampAbierto = !!dbOportunidadBootcamp && dbOportunidadBootcamp.abierta === true;
+  const mostrarBootcampAbierto = !hayExperienciaActiva && dbTieneRegistroHistorico && bootcampAbierto;
+  const mostrarOportunidadCerrada = !hayExperienciaActiva && dbTieneRegistroHistorico && !bootcampAbierto;
 
   document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';
-  document.getElementById('ms-bienvenida-vacio').style.display = (!hayCompras && !hayProxima && !hayExperienciaActiva) ? 'block' : 'none';
+  document.getElementById('ms-bienvenida-vacio').style.display =
+    (!hayCompras && !hayProxima && !hayExperienciaActiva && !mostrarBootcampAbierto && !mostrarOportunidadCerrada) ? 'block' : 'none';
 
   msRenderClaseGratuita();
 
@@ -888,6 +930,12 @@ function msRenderShellPrioridad() {
   } else {
     document.getElementById('ms-invite-card').style.display = 'none';
   }
+
+  document.getElementById('ms-bootcamp-abierto-card').style.display = mostrarBootcampAbierto ? 'block' : 'none';
+  if (mostrarBootcampAbierto) {
+    document.getElementById('ms-bootcamp-abierto-btn').href = BOOTCAMP_CHECKOUT_URL;
+  }
+  document.getElementById('ms-bootcamp-cerrado-card').style.display = mostrarOportunidadCerrada ? 'block' : 'none';
 }
 
 // Puerta 2, Slice 4 — dbFmt, dbFmtCountdown, msFinClaseMs, msFinReplayMs,
@@ -1223,6 +1271,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       dbCompras = dbPrepararCompras(data.compras);
       dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
       dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
+      dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
+      dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
       msShowBiblioteca();
     }
   } catch (e) {

@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -111,6 +111,37 @@ test('obtenerExperienciaGratuitaActiva: devuelve el objeto tal como lo manda Orb
   };
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], experienciaGratuitaActiva: experiencia });
   assert.deepEqual(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), experiencia);
+});
+
+// ── obtenerTieneRegistroHistorico / obtenerOportunidadBootcampActiva
+// (Puerta 2, Bootcamp Codigo Soberana, diseño cerrado 2026-09-11) — mismo
+// patron espejo que obtenerExperienciaGratuitaActiva. Orbit ya resuelve
+// ambos campos; aqui solo se leen sin transformar nada. ──
+
+test('obtenerTieneRegistroHistorico: false cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerTieneRegistroHistorico('alumna@correo.com'), false);
+});
+
+test('obtenerTieneRegistroHistorico: true cuando Orbit lo confirma', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], tieneRegistroHistorico: true });
+  assert.equal(await obtenerTieneRegistroHistorico('alumna@correo.com'), true);
+});
+
+test('obtenerOportunidadBootcampActiva: null cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerOportunidadBootcampActiva('alumna@correo.com'), null);
+});
+
+test('obtenerOportunidadBootcampActiva: devuelve el objeto tal como lo manda Orbit, sin transformarlo', async (t) => {
+  const oportunidad = { cohorteId: 'cohorte-1', abierta: true };
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], oportunidadBootcampActiva: oportunidad });
+  assert.deepEqual(await obtenerOportunidadBootcampActiva('alumna@correo.com'), oportunidad);
+});
+
+test('obtenerOportunidadBootcampActiva: null explicito de Orbit (oportunidad cerrada o inexistente) se conserva tal cual', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], oportunidadBootcampActiva: null });
+  assert.equal(await obtenerOportunidadBootcampActiva('alumna@correo.com'), null);
 });
 
 // ── registrarClaseGratuita (Puerta 2, Slice 2) — proxy same-origin de

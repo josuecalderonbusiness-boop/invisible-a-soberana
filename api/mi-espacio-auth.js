@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -91,11 +91,13 @@ async function crearCuentaAccion(req, res) {
     // estado vacío del dashboard, porque el frontend lee estos campos de la respuesta
     // de la acción que se acaba de ejecutar (crear cuenta o login), no de una carga
     // aparte (bug real encontrado 2026-09-08 en prueba end-to-end).
-    const [proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+    const [proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva] = await Promise.all([
       obtenerProximaConvocatoriaDisponible(correo),
       obtenerExperienciaGratuitaActiva(correo),
+      obtenerTieneRegistroHistorico(correo),
+      obtenerOportunidadBootcampActiva(correo),
     ]);
-    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva });
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva });
   } catch (err) {
     console.error('mi-espacio-auth/cuenta-crear error:', err.message);
     return res.status(500).json({ error: 'No se pudo crear la cuenta.' });
@@ -356,10 +358,12 @@ async function loginAccion(req, res) {
     // proximaConvocatoriaDisponible viaja en la misma tanda de llamadas
     // (Slice 4, P7) para que el shell sepa de inmediato si mostrar la
     // tarjeta de invitacion, sin esperar a la siguiente carga de pagina.
-    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva] = await Promise.all([
       obtenerComprasVigentes(correo),
       obtenerProximaConvocatoriaDisponible(correo),
       obtenerExperienciaGratuitaActiva(correo),
+      obtenerTieneRegistroHistorico(correo),
+      obtenerOportunidadBootcampActiva(correo),
     ]);
 
     await registrarExito('ip', ip);
@@ -367,7 +371,7 @@ async function loginAccion(req, res) {
 
     const sesion = crearTokenSesion(correo, cuenta.sessionVersion || 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, emailVerified: !!cuenta.emailVerified });
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, emailVerified: !!cuenta.emailVerified });
   } catch (err) {
     console.error('mi-espacio-auth/login error:', err.message);
     return res.status(500).json({ error: 'No se pudo iniciar sesión.' });
@@ -397,15 +401,17 @@ async function sesionAccion(req, res) {
       // experienciaGratuitaActiva viajan en la misma respuesta que ya
       // consulta compras (sin llamada de red extra), para que el shell de
       // Mi Espacio sepa que tarjetas mostrar sin esperar otra carga.
-      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva] = await Promise.all([
+      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva] = await Promise.all([
         obtenerComprasVigentes(datos.correo),
         obtenerProximaConvocatoriaDisponible(datos.correo),
         obtenerExperienciaGratuitaActiva(datos.correo),
+        obtenerTieneRegistroHistorico(datos.correo),
+        obtenerOportunidadBootcampActiva(datos.correo),
       ]);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, emailVerified: !!cuenta.emailVerified });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, emailVerified: !!cuenta.emailVerified });
     } catch (err) {
       console.error('mi-espacio-auth/sesion: Orbit no respondió, sesión sigue siendo válida:', err.message);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, tieneRegistroHistorico: false, oportunidadBootcampActiva: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
     }
   } catch (err) {
     console.error('mi-espacio-auth/sesion error:', err.message);

@@ -61,12 +61,6 @@ h1 em { color: var(--gold-light); font-style: italic; }
 }
 .nota { margin-top: 20px; font-size: 13px; color: var(--text-muted); }
 .nota a { color: var(--gold-light); }
-.btn-grupo {
-  display: inline-block; font-family: var(--font-label); font-weight: 700; font-size: 14px;
-  color: var(--gold-light); background: transparent; border: 1px solid rgba(184,137,42,.4);
-  border-radius: 10px; padding: 14px 30px; text-decoration: none; width: 100%; margin-top: 12px;
-  box-sizing: border-box;
-}
 </style>
 </head>
 <body>
@@ -76,7 +70,7 @@ h1 em { color: var(--gold-light); font-style: italic; }
     <svg viewBox="0 0 24 24" fill="none" stroke="#E8C870" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
   </div>
   <h1 id="tituloConNombre">Tu lugar está <em>reservado</em>.</h1>
-  <p class="sub">Guarda esta fecha — te esperamos ahí.</p>
+  <p class="sub" id="subGrupo">Únete al grupo de WhatsApp para recibir el enlace de tu clase.</p>
 
   <div class="detalle">
     <p>Fecha de la clase</p>
@@ -84,9 +78,9 @@ h1 em { color: var(--gold-light); font-style: italic; }
     <p class="replay" id="replayInfo"></p>
   </div>
 
-  <a href="/clase-gratuita" class="btn">Ver mi clase →</a>
-  <a href="#" id="btnGrupoWhatsapp" class="btn-grupo" target="_blank" rel="noopener" style="display:none">Unirme al grupo de WhatsApp →</a>
-  <p class="nota">Ahí vas a poder ver tu clase, el enlace en vivo cuando esté disponible, y el replay después.</p>
+  <a href="#" id="btnGrupoWhatsapp" class="btn" target="_blank" rel="noopener" style="display:none">Entrar al grupo de WhatsApp →</a>
+  <p class="nota" id="notaSinGrupo" style="display:none">Ya tenemos tu registro. En breve te compartimos por WhatsApp el enlace del grupo de tu clase.</p>
+  <p class="nota">En el grupo vas a recibir el enlace de tu clase, el aviso cuando empiece, y el replay después.</p>
 </div>
 
 <script>
@@ -114,15 +108,20 @@ h1 em { color: var(--gold-light); font-style: italic; }
     if (datos.nombre) {
       tituloEl.innerHTML = 'Listo, ' + datos.nombre.split(' ')[0] + '. Tu lugar está <em>reservado</em>.';
     }
-    // Puerta 2 — Slice 6: el grupo de WhatsApp asignado a la convocatoria
-    // (rotación 1→2→3→4→1). Solo se muestra si Orbit ya tiene un enlace
-    // real configurado para ese grupo — nunca se inventa uno, y unirse
-    // nunca es requisito para acceder a la clase (el botón de arriba ya
-    // funciona sin esto).
+    // Puerta 2 — Slice 6, cambio de prioridad 2026-09-11: el grupo de
+    // WhatsApp (rotación 1→2→3→4→1) es ahora el ÚNICO CTA de esta página —
+    // el grupo es el canal por el que se entrega el enlace de la clase, ya
+    // no se ofrece un acceso directo desde aquí. Solo se muestra el botón
+    // si Orbit ya tiene un enlace real configurado para ese grupo — nunca
+    // se inventa uno; si todavía no existe, se muestra un estado honesto
+    // sin botón (nota #notaSinGrupo), nunca un enlace directo a la clase.
     if (datos.enlaceGrupoWhatsapp) {
       var btnGrupo = document.getElementById('btnGrupoWhatsapp');
       btnGrupo.href = datos.enlaceGrupoWhatsapp;
       btnGrupo.style.display = 'inline-block';
+    } else {
+      document.getElementById('subGrupo').style.display = 'none';
+      document.getElementById('notaSinGrupo').style.display = 'block';
     }
   } else {
     // Estado honesto sin datos de sesión — no inventa fecha ni nombre.

@@ -121,3 +121,65 @@ test('payload sin messages / objeto distinto de whatsapp_business_account -> 200
 
   assert.equal(fetchMock.mock.calls.length, 0);
 });
+
+// ── Puente Orbit → Legacy (2026-09-11): accion 'orbit-enviar-meta' ──
+// Unico punto por el que Orbit puede disparar un envio real de WhatsApp —
+// reenvia el payload tal cual a Meta con las credenciales que YA existen
+// aqui, nunca las expone, nunca decide QUE se manda (eso lo decide Orbit).
+
+test('orbit-enviar-meta: sin el secreto correcto -> 401, nunca toca la red', async (t) => {
+  process.env.ORBIT_SHARED_SECRET = 'secreto-real';
+  const fetchMock = t.mock.method(global, 'fetch', async () => { throw new Error('no debía tocar la red'); });
+  const res = mockRes();
+  await handler({ method: 'POST', body: { accion: 'orbit-enviar-meta', payload: { to: '573001112222' } }, headers: { 'x-orbit-secret': 'secreto-equivocado' } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchMock.mock.calls.length, 0);
+  delete process.env.ORBIT_SHARED_SECRET;
+});
+
+test('orbit-enviar-meta: sin ORBIT_SHARED_SECRET configurado en Legacy -> 401, nunca toca la red', async (t) => {
+  delete process.env.ORBIT_SHARED_SECRET;
+  const fetchMock = t.mock.method(global, 'fetch', async () => { throw new Error('no debía tocar la red'); });
+  const res = mockRes();
+  await handler({ method: 'POST', body: { accion: 'orbit-enviar-meta', payload: { to: '573001112222' } }, headers: { 'x-orbit-secret': 'lo-que-sea' } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchMock.mock.calls.length, 0);
+});
+
+test('orbit-enviar-meta: con el secreto correcto, reenvia el payload TAL CUAL a Meta y devuelve la respuesta cruda sin interpretar', async (t) => {
+  process.env.ORBIT_SHARED_SECRET = 'secreto-real';
+  const payloadOrbit = {
+    messaging_product: 'whatsapp', to: '573001112222', type: 'template',
+    template: { name: 'confirmacion_registro_clase_gratuita', language: { code: 'es_MX' }, components: [] },
+  };
+  const fetchMock = t.mock.method(global, 'fetch', async (url, opciones) => {
+    assert.deepEqual(JSON.parse(opciones.body), payloadOrbit);
+    return { status: 200, json: async () => ({ messages: [{ id: 'wamid.REAL123' }] }) };
+  });
+  const res = mockRes();
+  await handler({ method: 'POST', body: { accion: 'orbit-enviar-meta', payload: payloadOrbit }, headers: { 'x-orbit-secret': 'secreto-real' } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { httpStatus: 200, body: { messages: [{ id: 'wamid.REAL123' }] } });
+  assert.equal(fetchMock.mock.calls.length, 1);
+  delete process.env.ORBIT_SHARED_SECRET;
+});
+
+test('orbit-enviar-meta: sin payload -> 400, nunca toca la red', async (t) => {
+  process.env.ORBIT_SHARED_SECRET = 'secreto-real';
+  const fetchMock = t.mock.method(global, 'fetch', async () => { throw new Error('no debía tocar la red'); });
+  const res = mockRes();
+  await handler({ method: 'POST', body: { accion: 'orbit-enviar-meta' }, headers: { 'x-orbit-secret': 'secreto-real' } }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(fetchMock.mock.calls.length, 0);
+  delete process.env.ORBIT_SHARED_SECRET;
+});
+
+test('orbit-enviar-meta: Meta caida (error de red) -> 200 con sinRespuesta:true, nunca lanza', async (t) => {
+  process.env.ORBIT_SHARED_SECRET = 'secreto-real';
+  t.mock.method(global, 'fetch', async () => { throw new Error('ECONNREFUSED'); });
+  const res = mockRes();
+  await handler({ method: 'POST', body: { accion: 'orbit-enviar-meta', payload: { to: '573001112222' } }, headers: { 'x-orbit-secret': 'secreto-real' } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.sinRespuesta, true);
+  delete process.env.ORBIT_SHARED_SECRET;
+});

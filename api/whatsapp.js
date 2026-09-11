@@ -85,6 +85,47 @@ export default async function handler(req, res) {
         }
       }
 
+      // test=confirmacion_registro_clase_raw → prueba controlada, temporal, de la
+      // plantilla real de Puerta 2 (Clase Gratuita de Orbit) recién aprobada por
+      // Meta. Mismo patrón EXACTO que dia13_raw (llamada cruda, respuesta sin
+      // procesar) — deliberadamente NO generico: solo esta plantilla, solo estos
+      // 3 parametros nombrados (nunca un nombre de plantilla arbitrario por
+      // querystring), mismo componente de boton quick_reply con payload fijo
+      // 'VER_MI_CLASE' que ya usan sendTemplateDia2/Dia27/etc. en este mismo
+      // archivo — para poder confirmar contra Meta real si ese es en efecto el
+      // valor que despues vuelve en el webhook del clic (nunca antes verificado
+      // con un click real, ver auditoria 2026-09-10/11). Uso exclusivo de
+      // verificacion manual — no se llama desde ningun flujo automatico todavia.
+      if (test === 'confirmacion_registro_clase_raw') {
+        const number = String(phone).replace(/[^0-9]/g, '');
+        const nombre = req.query.nombre || 'amiga';
+        const nombreClase = req.query.nombreClase || 'He intentado todo y nada cambia';
+        const fecha = req.query.fecha || '';
+        try {
+          const metaRes = await fetch(WA_BASE(), {
+            method: 'POST', headers: WA_HDR(),
+            body: JSON.stringify({
+              messaging_product: 'whatsapp', to: number, type: 'template',
+              template: {
+                name: 'confirmacion_registro_clase_gratuita', language: { code: 'es_MX' },
+                components: [
+                  { type: 'body', parameters: [
+                    { type: 'text', text: nombre },
+                    { type: 'text', text: nombreClase },
+                    { type: 'text', text: fecha },
+                  ] },
+                  { type: 'button', sub_type: 'quick_reply', index: '0', parameters: [{ type: 'payload', payload: 'VER_MI_CLASE' }] },
+                ],
+              },
+            }),
+          });
+          const metaData = await metaRes.json();
+          return res.status(200).json({ meta_status: metaRes.status, meta_response: metaData });
+        } catch (err) {
+          return res.status(500).json({ ok: false, error: err.message });
+        }
+      }
+
       // Atajos de prueba
       const aliases = { dia9: 'dia9_diagnostico', dia15: 'dia15_decision', dia27: 'dia27_cierre', dia27tarde: 'dia27_tarde', dia27noche: 'dia27_noche' };
       const paso = aliases[test] || test;
@@ -102,6 +143,41 @@ export default async function handler(req, res) {
       return res.status(200).send(challenge);
     }
     return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  // ── POST: puente Orbit → Legacy (2026-09-11, ver auditoría "Orbit tiene
+  // el cerebro, Legacy tiene la boca") ────────────────────────────────
+  // Unico punto de entrada server-to-server para que Orbit pueda enviar
+  // WhatsApp real usando las credenciales que YA existen aqui (WA_BASE/
+  // WA_HDR) — sin exponerlas, sin moverlas, sin crear otro numero. Orbit
+  // sigue siendo quien decide QUE mandar (nombre de plantilla, variables,
+  // texto libre): este endpoint reenvia el payload ya armado por Orbit tal
+  // cual a Meta, y devuelve la respuesta CRUDA sin interpretar — la
+  // clasificacion (enviado/reintentable/permanente/config) sigue viviendo
+  // unicamente en lib/whatsapp.js de Orbit (clasificarRespuestaMeta), nunca
+  // duplicada aqui. Autenticado con el mismo ORBIT_SHARED_SECRET que ya usa
+  // el contrato Programa/Edicion (DR-006/DR-007, api/_lib/programa.js) —
+  // ningun secreto nuevo.
+  if (req.method === 'POST' && req.body?.accion === 'orbit-enviar-meta') {
+    const secreto = req.headers['x-orbit-secret'];
+    if (!process.env.ORBIT_SHARED_SECRET || secreto !== process.env.ORBIT_SHARED_SECRET) {
+      return res.status(401).json({ error: 'No autorizado' });
+    }
+    const { payload } = req.body;
+    if (!payload || typeof payload !== 'object') {
+      return res.status(400).json({ error: 'payload requerido' });
+    }
+    try {
+      const metaRes = await fetch(WA_BASE(), { method: 'POST', headers: WA_HDR(), body: JSON.stringify(payload) });
+      let body = null;
+      try { body = await metaRes.json(); } catch (e) { body = null; }
+      console.log(`Puente Orbit→Meta: to=${payload?.to} type=${payload?.type} → ${body?.messages?.[0]?.id ? '✓ ' + body.messages[0].id : JSON.stringify(body)}`);
+      return res.status(200).json({ httpStatus: metaRes.status, body });
+    } catch (err) {
+      // sinRespuesta: mismo criterio que "incierto" en lib/whatsapp.js — el
+      // mensaje pudo haber sido aceptado, nunca se reintenta desde aqui.
+      return res.status(200).json({ httpStatus: 0, body: null, sinRespuesta: true, error: err.message });
+    }
   }
 
   // ── POST: trigger desde Apps Script ─────────────────────────────

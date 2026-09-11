@@ -228,6 +228,30 @@ test('sesion: mi_espacio_sesion se sigue leyendo igual aunque clase_gratuita_ses
   assert.deepEqual(res.body, { autenticado: false });
 });
 
+// ── Puerta 2 — cambio de prioridad (2026-09-11): recuperar la sesión de
+// clase gratuita en un dispositivo nuevo, solo con correo. Mismo gap
+// documentado arriba (sin Firestore real no se puede probar aquí el camino
+// que llama a puedenIntentarTodas) — solo se prueba la frontera de entrada
+// que nunca toca Firestore/Orbit: método y formato del correo. ──
+
+test('reclamar-sesion-clase-gratuita: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'reclamar-sesion-clase-gratuita' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('reclamar-sesion-clase-gratuita: 400 si el correo no es valido (nunca llega a tocar Firestore/Orbit)', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'reclamar-sesion-clase-gratuita' }, body: { correo: 'no-es-un-correo' } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('reclamar-sesion-clase-gratuita: 400 si falta el correo', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'reclamar-sesion-clase-gratuita' }, body: {} }, res);
+  assert.equal(res.statusCode, 400);
+});
+
 test('login: 405 si el metodo no es POST', async () => {
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'login' }, body: {} }, res);

@@ -50,6 +50,16 @@ a { color: inherit; }
 
 .db-video-box { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: var(--charcoal); margin-bottom: 20px; }
 .db-video-box iframe { width: 100%; height: 100%; border: none; }
+
+.cg-correo-form p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
+.cg-correo-form input {
+  width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.35);
+  background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 15px;
+  margin-bottom: 14px;
+}
+.cg-correo-form input::placeholder { color: var(--text-muted); }
+.cg-correo-form .ms-invite-btn { width: 100%; border: none; font-size: 15px; }
+.cg-correo-error { color: var(--gold-light); font-size: 13px; margin-top: 12px; text-align: center; display: none; }
 </style>
 </head>
 <body>
@@ -58,6 +68,16 @@ a { color: inherit; }
   <div class="cg-eyebrow-pagina">Tu espacio</div>
 
   <div class="cg-cargando" id="cg-cargando">Cargando tu clase…</div>
+
+  <div class="cg-estado cg-correo-form" id="cg-pedir-correo" style="display:none">
+    <h1 style="text-align:center">Esta es tu clase</h1>
+    <p>Escribe el correo con el que te registraste para continuar.</p>
+    <form id="cg-form-correo">
+      <input type="email" id="cg-input-correo" placeholder="Correo electrónico" autocomplete="email" required>
+      <button type="submit" class="ms-invite-btn" id="cg-btn-continuar">Continuar</button>
+    </form>
+    <p class="cg-correo-error" id="cg-correo-error"></p>
+  </div>
 
   <div class="cg-estado" id="cg-sin-autorizacion" style="display:none">
     <h1>No encontramos tu clase</h1>
@@ -101,7 +121,13 @@ async function cgInit() {
     document.getElementById('cg-cargando').style.display = 'none';
 
     if (!data.autorizado) {
-      document.getElementById('cg-sin-autorizacion').style.display = 'block';
+      // Puerta 2 — cambio de prioridad (2026-09-11): el enlace del grupo de
+      // WhatsApp es esta misma URL para todas. Sin cookie (dispositivo
+      // nuevo, cookies borradas), nunca mostramos el error final de una vez
+      // — se le da la oportunidad de recuperar su sesión con su correo
+      // (ver reclamar-sesion-clase-gratuita). El estado "no encontramos tu
+      // clase" queda para cuando ESO también falla de forma irrecuperable.
+      document.getElementById('cg-pedir-correo').style.display = 'block';
       return;
     }
     if (!data.experienciaGratuitaActiva) {
@@ -120,7 +146,54 @@ async function cgInit() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', cgInit);
+// Puerta 2 — cambio de prioridad (2026-09-11): recupera la sesión de clase
+// gratuita en un dispositivo sin cookie, pidiendo solo el correo (nunca
+// password, nunca cuenta). Éxito -> el backend ya dejó la cookie puesta
+// (credentials:'include' la recibe) -> se reintenta cgInit() como si nada,
+// mismo camino que el flujo normal.
+function cgInitFormularioCorreo() {
+  const form = document.getElementById('cg-form-correo');
+  const input = document.getElementById('cg-input-correo');
+  const errorEl = document.getElementById('cg-correo-error');
+  const boton = document.getElementById('cg-btn-continuar');
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    errorEl.style.display = 'none';
+    boton.disabled = true;
+    boton.textContent = 'Verificando…';
+
+    try {
+      const res = await fetch('/api/mi-espacio-auth?accion=reclamar-sesion-clase-gratuita', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: input.value }),
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        document.getElementById('cg-pedir-correo').style.display = 'none';
+        document.getElementById('cg-cargando').style.display = 'block';
+        return cgInit();
+      }
+
+      errorEl.textContent = data.error || 'No pudimos verificar tu clase en este momento. Inténtalo de nuevo.';
+      errorEl.style.display = 'block';
+    } catch (e) {
+      errorEl.textContent = 'No pudimos verificar tu clase en este momento. Inténtalo de nuevo.';
+      errorEl.style.display = 'block';
+    } finally {
+      boton.disabled = false;
+      boton.textContent = 'Continuar';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  cgInitFormularioCorreo();
+  cgInit();
+});
 </script>
 </body>
 </html>

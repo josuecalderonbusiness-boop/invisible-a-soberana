@@ -257,6 +257,70 @@ async function sesionClaseGratuitaAccion(req, res) {
   }
 }
 
+// Puerta 2 — cambio de prioridad (2026-09-11): el enlace del grupo de
+// WhatsApp ahora es /clase-gratuita, la MISMA URL para todas — pero esa
+// pagina depende de la cookie clase_gratuita_sesion, emitida SOLO en el
+// dispositivo donde se hizo el registro (ver registroGratuitoAccion). Sin
+// esta accion, cualquiera que abra el enlace del grupo desde OTRO
+// dispositivo caeria siempre en "no encontramos tu clase".
+//
+// Esta accion "recupera" esa sesion en el dispositivo nuevo: recibe SOLO un
+// correo (nunca password, nunca cuenta nueva), pregunta a Orbit si ese
+// correo tiene una experienciaGratuitaActiva real (misma fuente de verdad
+// que sesionClaseGratuitaAccion) y, si la tiene, emite la MISMA cookie que
+// ya emite el registro (construirCookieSiCorresponde, mismo payload firmado
+// {correo, convocatoriaId, tipo, exp}) — nunca una cookie distinta, nunca
+// un convocatoriaId inventado o tomado del cliente.
+//
+// Enumeracion (mismo riesgo/patron ya documentado en workbookAccesoAccion):
+// una respuesta concluyente (correo sin experiencia activa) es tan
+// informativa para un atacante como un login fallido, asi que cuenta como
+// intento igual que una password incorrecta. Un fallo de Orbit (timeout/5xx)
+// NUNCA cuenta intento ni se confunde con "no tiene acceso" — mismo
+// principio que sesionClaseGratuitaAccion.
+const MENSAJE_SIN_CLASE_ACTIVA = 'No encontramos una clase activa con ese correo. Verifica que estés usando el correo con el que te registraste.';
+
+async function reclamarSesionClaseGratuitaAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const correo = normalizarCorreo(req.body?.correo);
+  if (!correo || !correo.includes('@')) {
+    return res.status(400).json({ ok: false, error: 'Escribe un correo válido.' });
+  }
+
+  const ip = ipDelRequest(req);
+  if (!(await puedenIntentarTodas([['ip-clase-gratuita', ip], ['correo-clase-gratuita', correo]]))) {
+    return res.status(429).json({ error: 'Demasiados intentos. Inténtalo nuevamente en unos minutos.' });
+  }
+
+  let experiencia;
+  try {
+    experiencia = await obtenerExperienciaGratuitaActiva(correo);
+  } catch (err) {
+    // Fallo de infraestructura (Orbit no respondio) — nunca se cuenta como
+    // intento ni se confunde con "ese correo no tiene clase" (mismo
+    // principio que sesionClaseGratuitaAccion/workbookAccesoAccion).
+    console.error('mi-espacio-auth/reclamar-sesion-clase-gratuita: Orbit no respondió:', err.message);
+    return res.status(503).json({ ok: false, error: 'No pudimos verificar tu clase en este momento. Inténtalo de nuevo en un momento.' });
+  }
+
+  // construirCookieSiCorresponde ya es la MISMA funcion pura que usa
+  // registroGratuitoAccion — mismo criterio exacto de "¿corresponde emitir
+  // la cookie?" (requiere convocatoriaId + fechaHora reales), nunca una
+  // segunda version de esa decision.
+  const resultado = construirCookieSiCorresponde(correo, experiencia);
+  if (!resultado) {
+    await registrarIntento('ip-clase-gratuita', ip);
+    await registrarIntento('correo-clase-gratuita', correo);
+    return res.status(200).json({ ok: false, error: MENSAJE_SIN_CLASE_ACTIVA });
+  }
+
+  await registrarExito('ip-clase-gratuita', ip);
+  await registrarExito('correo-clase-gratuita', correo);
+  res.setHeader('Set-Cookie', resultado.cookie);
+  return res.status(200).json({ ok: true });
+}
+
 async function loginAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -547,6 +611,7 @@ const ACCIONES = {
   'cuenta-solicitar': solicitarCuentaAccion,
   'registro-gratuito': registroGratuitoAccion,
   'sesion-clase-gratuita': sesionClaseGratuitaAccion,
+  'reclamar-sesion-clase-gratuita': reclamarSesionClaseGratuitaAccion,
   'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
   login: loginAccion,
   logout: logoutAccion,

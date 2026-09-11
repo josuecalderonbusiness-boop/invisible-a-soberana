@@ -60,6 +60,9 @@ a { color: inherit; }
 .cg-correo-form input::placeholder { color: var(--text-muted); }
 .cg-correo-form .ms-invite-btn { width: 100%; border: none; font-size: 15px; }
 .cg-correo-error { color: var(--gold-light); font-size: 13px; margin-top: 12px; text-align: center; display: none; }
+.cg-correo-cta { margin-top: 22px; padding-top: 22px; border-top: 1px solid rgba(184,137,42,.2); text-align: center; }
+.cg-correo-cta-pregunta { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.cg-correo-cta .ms-invite-btn { width: 100%; box-sizing: border-box; background: transparent; border: 1px solid rgba(184,137,42,.4); color: var(--gold-light); }
 </style>
 </head>
 <body>
@@ -77,6 +80,10 @@ a { color: inherit; }
       <button type="submit" class="ms-invite-btn" id="cg-btn-continuar">Continuar</button>
     </form>
     <p class="cg-correo-error" id="cg-correo-error"></p>
+    <div class="cg-correo-cta" id="cg-correo-cta" style="display:none">
+      <p class="cg-correo-cta-pregunta">¿Aún no te has registrado?</p>
+      <a href="/masterclass/he-intentado-todo-y-nada-cambia/" class="ms-invite-btn" id="cg-btn-activar">Activar mi clase</a>
+    </div>
   </div>
 
   <div class="cg-estado" id="cg-sin-autorizacion" style="display:none">
@@ -160,6 +167,7 @@ function cgInitFormularioCorreo() {
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     errorEl.style.display = 'none';
+    document.getElementById('cg-correo-cta').style.display = 'none';
     boton.disabled = true;
     boton.textContent = 'Verificando…';
 
@@ -180,6 +188,16 @@ function cgInitFormularioCorreo() {
 
       errorEl.textContent = data.error || 'No pudimos verificar tu clase en este momento. Inténtalo de nuevo.';
       errorEl.style.display = 'block';
+      // Puerta 2 — cierre del circulo (2026-09-11): SOLO el caso concreto
+      // "correo sin experiencia activa" (200, ok:false — respuesta
+      // concluyente de reclamar-sesion-clase-gratuita) ofrece la salida a
+      // registrarse. Errores de formato (400), rate-limit (429) o Orbit
+      // caido (503) nunca la muestran — no son "no estas registrada", son
+      // "corrige el correo" o "intenta de nuevo", y mostrar el CTA ahi
+      // confundiria a alguien que SI esta registrada.
+      if (res.status === 200) {
+        document.getElementById('cg-correo-cta').style.display = 'block';
+      }
     } catch (e) {
       errorEl.textContent = 'No pudimos verificar tu clase en este momento. Inténtalo de nuevo.';
       errorEl.style.display = 'block';

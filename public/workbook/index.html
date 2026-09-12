@@ -2556,6 +2556,87 @@
  
   #lesson-view.open { display: flex; }
 
+  /* ── REVELACIÓN (Puerta 5, Corte 7, diseño cerrado 2026-09-12) ──
+     Mismo patrón de overlay a pantalla completa que #lesson-view
+     (position:fixed, inset:0), un nivel de z-index por encima para
+     cubrir tambien el tab-bar inferior. Solo Puerta A, solo una vez
+     por persona (ver revelacionCodigoSoberanaCorresponde). */
+  #revelacion-view {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--burgundy-deep);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  #revelacion-view.open { display: flex; }
+  #revelacion-view .rev-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background: var(--gold-primary);
+    opacity: 0.55;
+    transition: width linear;
+  }
+  #revelacion-view .rev-escena {
+    display: none;
+    max-width: 560px;
+    padding: 0 32px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.1s ease;
+  }
+  #revelacion-view .rev-escena.activa { display: block; }
+  #revelacion-view .rev-escena.visible { opacity: 1; }
+  #revelacion-view .rev-linea1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 44px);
+    color: var(--cream);
+    line-height: 1.25;
+    margin: 0;
+  }
+  #revelacion-view .rev-cuerpo {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(19px, 3.6vw, 24px);
+    color: rgba(249,244,236,.88);
+    line-height: 1.75;
+    margin: 0;
+    white-space: pre-line;
+  }
+  #revelacion-view .rev-marca {
+    font-family: 'Jost', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: var(--gold-primary);
+    margin: 0 0 14px;
+  }
+  #revelacion-view .rev-cta {
+    display: inline-block;
+    margin-top: 34px;
+    padding: 15px 34px;
+    border-radius: 2px;
+    border: 1px solid var(--gold-primary);
+    background: transparent;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  #revelacion-view .rev-cta:hover { background: var(--gold-primary); color: var(--burgundy-deep); }
+
   /* ── SLIDE HEADER ── */
   .slide-header {
     display: flex;
@@ -5027,6 +5108,48 @@
     </div>
   </div>
 
+  <!-- Revelación al completar el Bootcamp (Puerta 5, Corte 7, diseño
+       cerrado 2026-09-12). Solo Puerta A. Sin navegación visible mientras
+       está abierta — click/tap en cualquier parte avanza la escena actual
+       si todavía está en modo automático; en la escena 4 solo el CTA. -->
+  <div id="revelacion-view" onclick="revelacionClicOverlay(event)">
+    <div class="rev-progress" id="rev-progress"></div>
+
+    <div class="rev-escena" data-escena="1">
+      <p class="rev-linea1">Ya llegaste.</p>
+    </div>
+
+    <div class="rev-escena" data-escena="2">
+      <p class="rev-cuerpo">Tres veces elegiste estar aquí.
+
+Llegar.
+Volver.
+Sostenerte.
+
+Y quizá eso sea más importante de lo que parece.
+
+Porque no se trata de demostrarle a nadie que puedes.
+
+Acabas de demostrártelo a ti misma.</p>
+    </div>
+
+    <div class="rev-escena" data-escena="3">
+      <p class="rev-cuerpo">Hay momentos en los que algo cambia.
+
+No porque alguien te diga qué hacer.
+
+Sino porque empiezas a mirar de otra manera aquello que antes simplemente soportabas.
+
+Esto es solo el comienzo.</p>
+    </div>
+
+    <div class="rev-escena" data-escena="4">
+      <p class="rev-marca">CÓDIGO SOBERANA</p>
+      <p class="rev-linea1" style="font-size:clamp(22px,4.2vw,28px)">Tu siguiente recorrido comienza aquí.</p>
+      <button class="rev-cta" onclick="revelacionEntrarACodigoSoberana(event)">Entrar a Código Soberana →</button>
+    </div>
+  </div>
+
   <!-- Video Lesson Overlay (landscape expandido) -->
   <div id="video-lesson-overlay">
     <div class="video-overlay-header">
@@ -5244,6 +5367,11 @@ async function fsCargarProgreso(email) {
         ...(state.completedWeeks || {}),
         ...remote.completedWeeks
       };
+    }
+
+    // Puerta 5, Corte 7 — Firestore gana (una vez true, nunca vuelve a false)
+    if (remote.revelacionCodigoSoberanaVista === true) {
+      state.revelacionCodigoSoberanaVista = true;
     }
 
     saveState();
@@ -6381,6 +6509,106 @@ function irASeccion(sectionId, temaNum) {
   switchTab('inicio');
   setTimeout(() => openLesson(sectionId), 300);
 }
+
+// ═══════════════════════════════════════════
+// REVELACIÓN AL COMPLETAR EL BOOTCAMP
+// Puerta 5, Corte 7 — diseño y copy V1 aprobados 2026-09-12.
+//
+// Exclusiva de Puerta A: exige bootcampCompletado (no solo
+// recorridoHabilitado) para no mostrarla a quien compró acceso directo a
+// Código Soberana (producto 7369041) y nunca hizo Bootcamp. Se persiste
+// en progreso/{email} (Firestore) — hecho de EXPERIENCIA, no de derecho;
+// si esa escritura falla, jamás bloquea la entrada al recorrido, que
+// sigue dependiendo solo de recorridoHabilitado (Orbit).
+// ═══════════════════════════════════════════
+function revelacionCodigoSoberanaCorresponde() {
+  return (
+    state._origenSesion === 'puerta-a' &&
+    state.recorridoHabilitado === true &&
+    !!(state.bootcampHitos && state.bootcampHitos.bootcampCompletado === true) &&
+    state.revelacionCodigoSoberanaVista !== true
+  );
+}
+
+let _revEscenaActual = 0;
+let _revTimer = null;
+const REV_DURACIONES_MS = [2500, 8000, 8000]; // escenas 1-3, automáticas; la 4 espera al CTA
+
+function mostrarRevelacionCodigoSoberanaSiCorresponde() {
+  if (!revelacionCodigoSoberanaCorresponde()) return;
+  const overlay = document.getElementById('revelacion-view');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  _revEscenaActual = 0;
+  _revMostrarEscena(1);
+}
+
+function _revMostrarEscena(n) {
+  clearTimeout(_revTimer);
+  _revEscenaActual = n;
+  document.querySelectorAll('#revelacion-view .rev-escena').forEach(function (el) {
+    el.classList.remove('activa', 'visible');
+  });
+  const el = document.querySelector('#revelacion-view .rev-escena[data-escena="' + n + '"]');
+  if (el) {
+    el.classList.add('activa');
+    requestAnimationFrame(function () { el.classList.add('visible'); });
+  }
+
+  const barra = document.getElementById('rev-progress');
+  if (n <= 3) {
+    const duracion = REV_DURACIONES_MS[n - 1];
+    if (barra) {
+      barra.style.transition = 'none';
+      barra.style.width = ((n - 1) / 3 * 100) + '%';
+      requestAnimationFrame(function () {
+        barra.style.transition = 'width ' + duracion + 'ms linear';
+        barra.style.width = (n / 3 * 100) + '%';
+      });
+    }
+    _revTimer = setTimeout(function () { _revMostrarEscena(n + 1); }, duracion);
+  } else if (barra) {
+    // Escena 4: se detiene, sin barra de progreso — aquí espera su decisión.
+    barra.style.transition = 'opacity 0.4s ease';
+    barra.style.opacity = '0';
+  }
+}
+
+// Tap/click en cualquier parte del overlay adelanta la escena actual si
+// todavía está en modo automático (1-3). En la escena 4 no hace nada —
+// solo el botón "Entrar a Código Soberana" avanza, nunca un clic al azar.
+function revelacionClicOverlay(event) {
+  if (event.target.closest('.rev-cta')) return;
+  if (_revEscenaActual >= 1 && _revEscenaActual <= 3) {
+    _revMostrarEscena(_revEscenaActual + 1);
+  }
+}
+
+async function revelacionEntrarACodigoSoberana(event) {
+  if (event) event.stopPropagation();
+  clearTimeout(_revTimer);
+
+  const email = state.user && state.user.email;
+  if (email) {
+    try {
+      await db.collection('progreso').doc(email).set({
+        revelacionCodigoSoberanaVista: true,
+        revelacionCodigoSoberanaVistaEn: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) {
+      // Nunca bloquea la entrada al recorrido por esto — se reintentará
+      // solo/a en el próximo boot si la condición se sigue cumpliendo.
+      console.warn('No se pudo guardar revelacionCodigoSoberanaVista:', e.message);
+    }
+  }
+  state.revelacionCodigoSoberanaVista = true;
+  saveState();
+
+  const overlay = document.getElementById('revelacion-view');
+  if (overlay) overlay.classList.remove('open');
+
+  irASeccion('s0');
+}
 function nfToggle(num) {
   if (!_nfState[num]) _nfState[num] = { playing: false, cur: 0, total: 0, interval: null };
   const s = _nfState[num];
@@ -6824,7 +7052,18 @@ let state = {
   streak: 0,
   lastActive: null,
   eresLog: [],
-  completed7d: {}
+  completed7d: {},
+  // Puerta 5, Corte 7 (Revelación al completar Bootcamp, diseño cerrado
+  // 2026-09-12): hecho de EXPERIENCIA de contenido ("ya atravesó la
+  // Revelación"), no un derecho — vive en progreso/{email} (Firestore),
+  // igual que completedSections/completed7d. Nunca decide acceso al
+  // recorrido; eso lo sigue decidiendo solo recorridoHabilitado.
+  revelacionCodigoSoberanaVista: false,
+  // 'puerta-a' | 'puerta-b' | null — de dónde vino esta sesión. La
+  // Revelación es exclusiva de Puerta A (ver revelacionCorresponde): Puerta
+  // B no tiene un recorridoHabilitado real (Corte 6, límite reconocido),
+  // así que nunca podríamos confiar en "bootcampCompletado" desde ahí.
+  _origenSesion: null
 };
 
 function saveState() {
@@ -6951,6 +7190,11 @@ async function doLogin() {
     // recorrido, sin Hitos de por medio para esta puerta) como fallback
     // explicito, documentado como limite reconocido del diseño del Corte 6.
     state.recorridoHabilitado = bootcampHitosAcceso !== null;
+    // Puerta 5, Corte 7: la Revelación jamás se evalúa para esta puerta
+    // (ver revelacionCodigoSoberanaCorresponde) — bootcampCompletado no es
+    // confiable aquí de la misma forma que en Puerta A (Corte 6, límite
+    // reconocido).
+    state._origenSesion = 'puerta-b';
 
     // PASO 3 — Verificar acceso 7D (silencioso, no bloquea el login)
     try {
@@ -7099,6 +7343,7 @@ async function initApp() {
   updateGemCounter();
   renderBootcampHitosBlock();
   renderSectionsList();
+  mostrarRevelacionCodigoSoberanaSiCorresponde();
   // Header mode — 7D si tiene acceso, workshop si no; el observer corrige según scroll en workshop
   updateHeaderMode(state.user && state.user.tiene7d ? '7d' : 'workshop');
   setupHeaderObserver();
@@ -14656,6 +14901,9 @@ async function resolverSesionYArrancar() {
   // Puerta 5, Corte 6: EL gate real de S0-S9 (Puerta A) — ya resuelto por
   // Orbit, nunca recalculado aqui.
   state.recorridoHabilitado = !!data.recorridoHabilitado;
+  // Puerta 5, Corte 7: marca de dónde vino esta sesión — la Revelación
+  // (más abajo) solo se evalúa para 'puerta-a'.
+  state._origenSesion = 'puerta-a';
 
   // Progreso: se mezcla igual que siempre (Firestore + lo que ya hubiera en
   // localStorage), nunca se pierde por el cambio de gate de identidad.

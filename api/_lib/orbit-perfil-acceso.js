@@ -142,6 +142,16 @@ async function obtenerOportunidadBootcampActiva(correo) {
   return perfil.oportunidadBootcampActiva || null;
 }
 
+// Puerta 3 — Replay $5 (diseño cerrado 2026-09-11): espejo exacto del mismo
+// patron ya usado arriba — { convocatoriaId, fechaHora, nombreClase,
+// enlaceReplay } | null, ya resuelto por Orbit (replayCompradoParaRespuesta
+// en api/v1/perfil-acceso.js). Independiente de experienciaGratuitaActiva y
+// de oportunidadBootcampActiva — ninguno de los tres se deriva de los otros.
+async function obtenerReplayCompradoActivo(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.replayCompradoActivo || null;
+}
+
 // Puerta 2 — hallazgo real 2026-09-09 (prueba end-to-end en Preview): justo
 // después de que Orbit acepta un registro nuevo (escritura en /api/registro,
 // público), preguntar de inmediato por experienciaGratuitaActiva (lectura en
@@ -330,6 +340,7 @@ export {
   obtenerExperienciaGratuitaActivaConReintento,
   obtenerTieneRegistroHistorico,
   obtenerOportunidadBootcampActiva,
+  obtenerReplayCompradoActivo,
   crearRegistroAutenticado,
   registrarClaseGratuita,
   relayBotonVerMiClaseAOrbit,

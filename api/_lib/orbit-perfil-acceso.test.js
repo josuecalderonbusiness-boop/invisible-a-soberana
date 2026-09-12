@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -142,6 +142,26 @@ test('obtenerOportunidadBootcampActiva: devuelve el objeto tal como lo manda Orb
 test('obtenerOportunidadBootcampActiva: null explicito de Orbit (oportunidad cerrada o inexistente) se conserva tal cual', async (t) => {
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], oportunidadBootcampActiva: null });
   assert.equal(await obtenerOportunidadBootcampActiva('alumna@correo.com'), null);
+});
+
+// ── obtenerReplayCompradoActivo (Puerta 3, Replay $5, diseño cerrado
+// 2026-09-11) — mismo patron espejo, independiente de experienciaGratuita/
+// oportunidadBootcamp. ──
+
+test('obtenerReplayCompradoActivo: null cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerReplayCompradoActivo('alumna@correo.com'), null);
+});
+
+test('obtenerReplayCompradoActivo: devuelve el objeto tal como lo manda Orbit, sin transformarlo', async (t) => {
+  const replay = { convocatoriaId: 'c1', fechaHora: '2026-09-10T18:00:00.000Z', nombreClase: 'He intentado todo y nada cambia', enlaceReplay: 'https://bunny.example/replay' };
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], replayCompradoActivo: replay });
+  assert.deepEqual(await obtenerReplayCompradoActivo('alumna@correo.com'), replay);
+});
+
+test('obtenerReplayCompradoActivo: null explicito de Orbit (sin derecho o compra ya no aprobada) se conserva tal cual', async (t) => {
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], replayCompradoActivo: null });
+  assert.equal(await obtenerReplayCompradoActivo('alumna@correo.com'), null);
 });
 
 // ── registrarClaseGratuita (Puerta 2, Slice 2) — proxy same-origin de

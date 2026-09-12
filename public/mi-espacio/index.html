@@ -853,16 +853,11 @@ async function dbEnviarPassword(ev) {
       return;
     }
 
-    dbEmail = data.correo;
-    dbMostrarBannerVerificacion(data.emailVerified);
-    dbCompras = dbPrepararCompras(data.compras);
-    dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
-    dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
-    dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
-    dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
-    dbReplayComprado = data.replayCompradoActivo || null;
-    dbBootcampHitos = data.bootcampHitos || null;
-    msShowBiblioteca();
+    // Puerta 5, Corte 5 (Arquitectura de la Casa, diseño cerrado
+    // 2026-09-12): /mi-espacio deja de renderizar su propio dashboard —
+    // una vez confirmada la identidad, la casa unica es /workbook. Esta
+    // pantalla queda exclusivamente como login/creacion de cuenta.
+    window.location.href = '/workbook';
   } catch (e) {
     console.error(e);
     errLogin.textContent = 'No pudimos conectarnos en este momento. Inténtalo nuevamente en unos minutos.';
@@ -1469,20 +1464,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
     const data = await res.json();
     if (data.autenticado) {
-      dbEmail = data.correo;
-      dbMostrarBannerVerificacion(data.emailVerified);
-      // Orbit no respondió a tiempo (data.verificacionPendiente) — la sesión sigue siendo
-      // válida (ya la confirmó el backend), solo no sabemos qué programas mostrar todavía.
-      // Nunca se interpreta como "sin programas" ni se cierra la sesión (Fase 3.2).
-      document.getElementById('ms-verificacion-pendiente-banner').style.display = data.verificacionPendiente ? 'flex' : 'none';
-      dbCompras = dbPrepararCompras(data.compras);
-      dbProximaConvocatoria = data.proximaConvocatoriaDisponible || null;
-      dbExperienciaGratuita = data.experienciaGratuitaActiva || null;
-      dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
-      dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
-      dbReplayComprado = data.replayCompradoActivo || null;
-      dbBootcampHitos = data.bootcampHitos || null;
-      msShowBiblioteca();
+      // Puerta 5, Corte 5: sesión ya vigente -> directo a la casa unica
+      // (/workbook), nunca se vuelve a mostrar el dashboard propio de esta
+      // pantalla ni el formulario de login a alguien ya identificado.
+      window.location.href = '/workbook';
     }
   } catch (e) {
     console.warn('No se pudo verificar la sesión:', e.message);

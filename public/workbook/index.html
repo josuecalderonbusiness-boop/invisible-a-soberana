@@ -4551,6 +4551,13 @@
           </div>
         </div>
 
+        <!-- Puerta 5, Corte 5 (diseño cerrado 2026-09-12): los 3 Hitos del
+             Bootcamp, arriba del recorrido — misma logica ya usada en Mi
+             Espacio (Corte 4), alimentada por state.bootcampHitos (Orbit).
+             Oculto por completo si bootcampHitos es null (sin Cohorte o sin
+             derecho vigente a codigo-soberana) — nunca se fabrica progreso. -->
+        <div id="bootcamp-hitos-block" style="display:none"></div>
+
         <div class="sections-list" id="sections-list"></div>
       </div>
 
@@ -4608,6 +4615,17 @@
           </div>
 
           <div id="install-section"></div>
+
+          <!-- Puerta 5, Corte 5 (diseño cerrado 2026-09-12): "Mis
+               experiencias" — la biblioteca personal (Replay $5, Bootcamp,
+               futuras experiencias), alimentada exclusivamente por Orbit
+               (state.replayCompradoActivo / state.bootcampHitos /
+               state.oportunidadBootcampActiva / state.proximaConvocatoriaDisponible).
+               Contenedor generico: hoy solo hay 2-3 tarjetas posibles, pero
+               el molde ya alcanza para lo que Orbit agregue despues, sin
+               reconstruir esta seccion. -->
+          <div class="profile-section-title">Mis experiencias</div>
+          <div class="profile-cards" id="mis-experiencias-lista"></div>
 
           <div class="profile-section-title">Mi workbook</div>
           <div class="profile-cards">
@@ -6781,6 +6799,19 @@ let state = {
   completedSections: [],
   beliefRows: {},
   identityChecks: {},
+  // Puerta 5, Corte 5 (Arquitectura de la Casa, diseño cerrado 2026-09-12):
+  // derechos comerciales, SIEMPRE resueltos por Orbit via /api/mi-espacio-sesion
+  // — nunca decididos aqui, nunca por localStorage. bootcampHitos !== null es
+  // la MISMA condicion que ya usa bootcampHitosParaRespuesta en Orbit
+  // (tieneAccesoVigenteA a codigo-soberana) — por eso se reusa tal cual como
+  // gate de contenido del recorrido S0-S9, sin inventar un campo nuevo.
+  compras: [],
+  proximaConvocatoriaDisponible: null,
+  experienciaGratuitaActiva: null,
+  tieneRegistroHistorico: false,
+  oportunidadBootcampActiva: null,
+  replayCompradoActivo: null,
+  bootcampHitos: null,
   streak: 0,
   lastActive: null,
   eresLog: [],
@@ -7035,6 +7066,7 @@ async function initApp() {
   updateStreak(); // async, no bloqueamos initApp — el streak-num se actualiza internamente
   applyStreakSemanaColor();
   updateGemCounter();
+  renderBootcampHitosBlock();
   renderSectionsList();
   // Header mode — 7D si tiene acceso, workshop si no; el observer corrige según scroll en workshop
   updateHeaderMode(state.user && state.user.tiene7d ? '7d' : 'workshop');
@@ -8086,8 +8118,129 @@ function computeSemanaActiva() {
   return Math.min(Math.max(Math.floor(dias / 7) + 1, 1), 4);
 }
 
+// Puerta 5, Corte 5 (diseño cerrado 2026-09-12): los 3 Hitos, arriba del
+// recorrido. Misma mecanica exacta ya usada en Mi Espacio (Corte 4) — LIVE
+// y Replay se muestran juntos cuando ambos enlaces existen, nunca por
+// horario. Oculto por completo si state.bootcampHitos es null.
+const HITO_NOMBRES_WB = { 1: 'Hito 1', 2: 'Hito 2', 3: 'Hito 3' };
+function _formatFechaHitoWB(fechaISO) {
+  try {
+    return new Date(fechaISO).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+function renderBootcampHitosBlock() {
+  const wrap = document.getElementById('bootcamp-hitos-block');
+  if (!wrap) return;
+  const hitos = state.bootcampHitos && state.bootcampHitos.hitos;
+  if (!Array.isArray(hitos)) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const cardBase = 'border:1.5px solid rgba(184,137,42,.35);border-radius:16px;padding:18px 20px;margin-bottom:12px;background:linear-gradient(165deg,rgba(184,137,42,.08),transparent 65%);background-color:rgba(43,28,36,.4);';
+  const eyebrow = 'font-family:\'Jost\',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-primary);margin-bottom:8px;';
+  const title = 'font-family:Georgia,serif;font-size:19px;font-weight:800;color:var(--cream);margin:0 0 6px;';
+  const sub = 'font-family:\'Jost\',sans-serif;font-size:12.5px;color:rgba(249,244,236,.6);margin:0;';
+  const btn = 'display:inline-block;margin-top:10px;padding:11px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,#7A5C1E,var(--gold-primary),#D4A843);color:#2B1C24;font-family:\'Jost\',sans-serif;font-weight:700;font-size:13px;text-decoration:none;';
+
+  wrap.style.display = 'block';
+  wrap.innerHTML = '<div style="' + eyebrow + '">Tu Bootcamp — Código Soberana</div>' +
+    hitos.map(function (h) {
+      const nombre = HITO_NOMBRES_WB[h.hito] || ('Hito ' + h.hito);
+      if (h.completado) {
+        return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">✓ Completado</div></div>';
+      }
+      if (!h.disponible) {
+        return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
+      }
+      const live = h.enlaceEnVivo ? '<a href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="' + btn + '">🔴 Entrar a la clase</a>' : '';
+      const replay = h.enlaceReplay ? '<div style="margin-top:10px;aspect-ratio:16/9;border-radius:12px;overflow:hidden"><iframe src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe></div>' : '';
+      const nada = (!h.enlaceEnVivo && !h.enlaceReplay) ? '<p style="' + sub + '">🔓 Disponible — el enlace se activa aquí apenas esté listo</p>' : '';
+      return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">Disponible</div>' + live + replay + nada + '</div>';
+    }).join('');
+}
+
+// Puerta 5, Corte 5 (diseño cerrado 2026-09-12): "Mis experiencias" dentro
+// de tab-perfil ("Mi espacio") — biblioteca personal, contenedor generico.
+// Cada derecho es independiente de los demas (Replay $5 no depende de
+// Bootcamp, ni viceversa — Orbit ya los resuelve por separado, aqui solo se
+// representa). Sin CTA de "reservar" todavia: esa accion vive hoy solo en
+// el dashboard viejo de Mi Espacio (retirado como destino) — moverla aqui
+// es trabajo de un corte posterior, no se improvisa ahora.
+function renderMisExperiencias() {
+  const wrap = document.getElementById('mis-experiencias-lista');
+  if (!wrap) return;
+
+  const filas = [];
+
+  if (state.bootcampHitos && Array.isArray(state.bootcampHitos.hitos)) {
+    const completado = state.bootcampHitos.bootcampCompletado;
+    filas.push(
+      '<div class="profile-item" onclick="switchTab(\'inicio\')">' +
+        '<div class="profile-item-icon">🎯</div>' +
+        '<div class="profile-item-text">' +
+          '<div class="profile-item-label">Bootcamp — Código Soberana</div>' +
+          '<div class="profile-item-sub">' + (completado ? '✓ Completado' : 'En progreso — ver Hitos en Inicio') + '</div>' +
+        '</div>' +
+        '<svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+      '</div>'
+    );
+  }
+
+  if (state.replayCompradoActivo) {
+    const r = state.replayCompradoActivo;
+    filas.push(
+      '<div class="profile-item" style="cursor:default">' +
+        '<div class="profile-item-icon">🎬</div>' +
+        '<div class="profile-item-text">' +
+          '<div class="profile-item-label">' + (r.nombreClase || 'Tu Replay') + '</div>' +
+          '<div class="profile-item-sub">Replay disponible</div>' +
+        '</div>' +
+      '</div>' +
+      (r.enlaceReplay ? '<div style="margin:0 0 4px;aspect-ratio:16/9;border-radius:12px;overflow:hidden"><iframe src="' + r.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe></div>' : '')
+    );
+  }
+
+  if (state.experienciaGratuitaActiva) {
+    const e = state.experienciaGratuitaActiva;
+    const label = e.fase === 'en_vivo' ? 'En vivo ahora' : (e.fase === 'replay' ? 'Replay disponible' : 'Empieza pronto');
+    filas.push(
+      '<div class="profile-item" style="cursor:default">' +
+        '<div class="profile-item-icon">🔴</div>' +
+        '<div class="profile-item-text">' +
+          '<div class="profile-item-label">Masterclass gratuita</div>' +
+          '<div class="profile-item-sub">' + label + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  } else if (state.proximaConvocatoriaDisponible) {
+    filas.push(
+      '<div class="profile-item" style="cursor:default">' +
+        '<div class="profile-item-icon">📅</div>' +
+        '<div class="profile-item-text">' +
+          '<div class="profile-item-label">Próxima Masterclass</div>' +
+          '<div class="profile-item-sub">' + _formatFechaHitoWB(state.proximaConvocatoriaDisponible.fechaHora) + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  wrap.innerHTML = filas.length
+    ? filas.join('')
+    : '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px;cursor:default">Todavía no tienes ninguna experiencia activa</div>';
+}
+
+// Puerta 5, Corte 5: gate de CONTENIDO (distinto del gate de aplicación en
+// resolverSesionYArrancar). Tener sesion valida abre la casa; ver el
+// recorrido exige ademas el derecho vigente a Código Soberana en Orbit —
+// bootcampHitosParaRespuesta ya solo devuelve no-null cuando ese derecho
+// existe (tieneAccesoVigenteA), asi que se reusa tal cual como condicion,
+// sin inventar un campo nuevo ni duplicar la regla de negocio.
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
+  const tieneAccesoRecorrido = state.bootcampHitos !== null && state.bootcampHitos !== undefined;
+  if (!tieneAccesoRecorrido) {
+    list.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:\'Jost\',sans-serif;color:rgba(249,244,236,.6);font-size:13.5px;line-height:1.7">🔒 Tu recorrido Código Soberana se activa aquí en cuanto tengas acceso al Bootcamp.</div>';
+    list.style.height = '';
+    return;
+  }
   list.innerHTML = '';
   list.style.height = ''; // allow natural height for 7D content below
 
@@ -13402,7 +13555,7 @@ function openArticleFullscreen(card) {
 // TABS
 // ═══════════════════════════════════════════
 function switchTab(tab) {
-  if (tab === 'perfil') { cargarGuardados(); cargarApuntes(); }
+  if (tab === 'perfil') { cargarGuardados(); cargarApuntes(); renderMisExperiencias(); }
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   const tabEl = document.getElementById('tab-' + tab);
@@ -14388,11 +14541,87 @@ if ('serviceWorker' in navigator) {
   window.initDebugPanel = function() { _createFab(); };
 })();
 
-if (loadState() && state.user) {
-  maybeShowNotifScreen();
-} else {
-  document.getElementById('screen-splash').classList.add('active');
+// Puerta 5, Corte 5 (Arquitectura de la Casa / integracion PWA, diseño
+// cerrado 2026-09-12): reemplaza el gate viejo (localStorage decidia
+// identidad). Ahora SIEMPRE se confirma contra la cookie de sesion
+// mi_espacio_sesion (el mismo endpoint /api/mi-espacio-sesion que ya usa
+// Mi Espacio) — localStorage['soberana_state'] sigue existiendo para
+// progreso/estado local, pero NUNCA vuelve a decidir identidad, acceso ni
+// derechos comerciales (regla explicita del diseño). El login propio de
+// nombre+correo (doLogin/screen-splash) queda retirado como punto de
+// entrada: quien no tenga sesion valida se manda a /mi-espacio, que ya
+// tiene el login/creacion de cuenta real.
+//
+// Importante: entrar a la casa (sesion valida) NO es lo mismo que ver el
+// recorrido (derecho a Código Soberana) — esa distincion vive en
+// renderSectionsList() (gate de contenido), nunca aqui.
+function _nombreDesdeCorreo(correo) {
+  const local = String(correo || '').split('@')[0] || 'Soberana';
+  return local.charAt(0).toUpperCase() + local.slice(1);
 }
+
+async function resolverSesionYArrancar() {
+  let data;
+  try {
+    const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+    data = await res.json();
+  } catch (e) {
+    // Sin conexion: unico caso donde se acepta una sesion local cacheada —
+    // fallback offline explicito, nunca la fuente de verdad cuando hay red.
+    if (loadState() && state.user) {
+      maybeShowNotifScreen();
+    } else {
+      document.getElementById('screen-splash').classList.add('active');
+    }
+    return;
+  }
+
+  if (!data.autenticado) {
+    window.location.href = '/mi-espacio';
+    return;
+  }
+
+  const email = data.correo;
+  const nombrePrevio = (loadState() && state.user && state.user.email === email) ? state.user.name : null;
+
+  state.user = { name: nombrePrevio || _nombreDesdeCorreo(email), email, tiene7d: false };
+  state.compras = data.compras || [];
+  state.proximaConvocatoriaDisponible = data.proximaConvocatoriaDisponible || null;
+  state.experienciaGratuitaActiva = data.experienciaGratuitaActiva || null;
+  state.tieneRegistroHistorico = !!data.tieneRegistroHistorico;
+  state.oportunidadBootcampActiva = data.oportunidadBootcampActiva || null;
+  state.replayCompradoActivo = data.replayCompradoActivo || null;
+  state.bootcampHitos = data.bootcampHitos || null;
+
+  // Progreso: se mezcla igual que siempre (Firestore + lo que ya hubiera en
+  // localStorage), nunca se pierde por el cambio de gate de identidad.
+  try {
+    const docResp = await db.collection('workbook_respuestas').doc(email).get();
+    if (docResp.exists && docResp.data().answers) {
+      const localState = localStorage.getItem('soberana_state');
+      const localAnswers = localState ? (JSON.parse(localState).answers || {}) : {};
+      state.answers = { ...localAnswers, ...docResp.data().answers };
+    }
+  } catch (e) {
+    console.warn('No se pudo cargar progreso desde Firestore, usando datos locales');
+  }
+  state.completedSections = calcularSeccionesCompletadas(state.answers);
+
+  // Acceso 7D: sigue siendo un sistema aparte (Google Sheets, fuera de
+  // Orbit) — sin cambios de este corte, solo re-ubicado desde el login viejo.
+  try {
+    const res7d = await fetch(`${SHEETS_URL}?action=verificar7d&email=${encodeURIComponent(email)}`);
+    const json7d = await res7d.json();
+    state.user.tiene7d = json7d.ok || false;
+  } catch (e) {
+    state.user.tiene7d = false;
+  }
+
+  saveState();
+  maybeShowNotifScreen();
+}
+
+resolverSesionYArrancar();
 
 </script>
 

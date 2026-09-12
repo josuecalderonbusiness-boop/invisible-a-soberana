@@ -4496,14 +4496,14 @@
       <div class="brand-sub">por Josué Calderón</div>
       <div class="divider-gold"></div>
 
-      <div class="login-card">
+      <div class="login-card" id="splash-login-card">
         <label class="login-label">Tu acceso personal</label>
         <p class="login-hint">Ingresa tu nombre y correo para guardar tu progreso y respuestas de forma permanente.</p>
         <input type="text" class="inp" id="inp-name" placeholder="Tu nombre" autocomplete="given-name">
         <input type="email" class="inp" id="inp-email" placeholder="tu@correo.com" autocomplete="email">
         <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
       </div>
-      <p class="login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
+      <p class="login-footer" id="splash-login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
     </div>
   </div>
 
@@ -6875,6 +6875,14 @@ async function doLogin() {
     //                   denegado, ni se inventa acceso)
     let accesoActivo = false;
     let verificacionFallo = false;
+    // Puerta 5, Corte 5 (diseño cerrado 2026-09-12): /api/workbook-acceso
+    // ahora tambien trae bootcampHitos/replayCompradoActivo (extension
+    // aditiva, mismas funciones de Orbit que ya usa sesionAccion) — para
+    // que esta Puerta B alimente EXACTAMENTE el mismo gate de contenido y
+    // el mismo "Mis experiencias" que la Puerta A, sin una segunda logica
+    // de negocio. null si Orbit no los resolvio — nunca se fabrica.
+    let bootcampHitosAcceso = null;
+    let replayCompradoAcceso = null;
     try {
       const resAcceso = await fetch('/api/workbook-acceso', {
         method: 'POST',
@@ -6886,6 +6894,8 @@ async function doLogin() {
       } else {
         const dataAcceso = await resAcceso.json();
         accesoActivo = dataAcceso.activo === true;
+        bootcampHitosAcceso = dataAcceso.bootcampHitos || null;
+        replayCompradoAcceso = dataAcceso.replayCompradoActivo || null;
       }
     } catch (e) {
       verificacionFallo = true;
@@ -6920,6 +6930,12 @@ async function doLogin() {
 
     // Siempre recalcular completedSections con las respuestas finales
     state.completedSections = calcularSeccionesCompletadas(state.answers);
+
+    // Puerta B: mismos campos que ya usa la Puerta A (Corte 5) — el gate de
+    // contenido (renderSectionsList) y "Mis experiencias" no distinguen por
+    // cual puerta llego la identidad.
+    state.bootcampHitos = bootcampHitosAcceso;
+    state.replayCompradoActivo = replayCompradoAcceso;
 
     // PASO 3 — Verificar acceso 7D (silencioso, no bloquea el login)
     try {
@@ -14542,22 +14558,40 @@ if ('serviceWorker' in navigator) {
 })();
 
 // Puerta 5, Corte 5 (Arquitectura de la Casa / integracion PWA, diseño
-// cerrado 2026-09-12): reemplaza el gate viejo (localStorage decidia
-// identidad). Ahora SIEMPRE se confirma contra la cookie de sesion
-// mi_espacio_sesion (el mismo endpoint /api/mi-espacio-sesion que ya usa
-// Mi Espacio) — localStorage['soberana_state'] sigue existiendo para
-// progreso/estado local, pero NUNCA vuelve a decidir identidad, acceso ni
-// derechos comerciales (regla explicita del diseño). El login propio de
-// nombre+correo (doLogin/screen-splash) queda retirado como punto de
-// entrada: quien no tenga sesion valida se manda a /mi-espacio, que ya
-// tiene el login/creacion de cuenta real.
+// cerrado 2026-09-12, revisado tras auditoria de la Puerta B): Código
+// Soberana tiene DOS puertas de entrada legitimas hacia la MISMA casa —
+// ninguna elimina a la otra:
+//   Puerta A — Mi Espacio (Masterclass -> Bootcamp): cookie mi_espacio_sesion,
+//     confirmada aqui contra /api/mi-espacio-sesion.
+//   Puerta B — venta directa de Código Soberana (Hotmart -> Brevo, lista
+//     #11 COMPRADORA_WORKSHOP, ver api/hotmart-webhook.js): login
+//     tradicional nombre+correo (doLogin/screen-splash) contra
+//     /api/workbook-acceso — NUNCA se retira, sigue siendo el unico camino
+//     de esa compradora real hacia /workbook.
+// Ambas puertas terminan construyendo la MISMA forma de state.user — el
+// resto del archivo (30+ lugares que leen state.user.email/.name) nunca
+// sabe ni le importa por cual puerta entro.
 //
-// Importante: entrar a la casa (sesion valida) NO es lo mismo que ver el
-// recorrido (derecho a Código Soberana) — esa distincion vive en
-// renderSectionsList() (gate de contenido), nunca aqui.
+// Importante: entrar a la casa (identidad confirmada, por cualquiera de
+// las dos puertas) NO es lo mismo que ver el recorrido (derecho a Código
+// Soberana) — esa distincion vive en renderSectionsList() (gate de
+// contenido), nunca aqui.
 function _nombreDesdeCorreo(correo) {
   const local = String(correo || '').split('@')[0] || 'Soberana';
   return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+// Puerta 5, Corte 5: offline y sin ninguna sesion previamente confirmada
+// que continuar — ni la Puerta A ni la Puerta B pueden autenticar sin red,
+// asi que NUNCA se muestra el formulario de login (no podria completarse)
+// ni se inventa acceso. Reemplaza el contenido del splash por un mensaje
+// neutro, sin tocar el resto del DOM.
+function mostrarSinConexion() {
+  const card = document.getElementById('splash-login-card');
+  const footer = document.getElementById('splash-login-footer');
+  if (card) card.innerHTML = '<p class="login-hint" style="text-align:center">Sin conexión. Conéctate a internet para entrar a tu Workbook.</p>';
+  if (footer) footer.style.display = 'none';
+  document.getElementById('screen-splash').classList.add('active');
 }
 
 async function resolverSesionYArrancar() {
@@ -14566,18 +14600,29 @@ async function resolverSesionYArrancar() {
     const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
     data = await res.json();
   } catch (e) {
-    // Sin conexion: unico caso donde se acepta una sesion local cacheada —
-    // fallback offline explicito, nunca la fuente de verdad cuando hay red.
+    // Sin conexion: NUNCA se decide identidad ni derechos desde
+    // localStorage — solo se permite CONTINUAR una sesion previamente
+    // confirmada por el servidor (saveState() solo se llama despues de una
+    // confirmacion real, por cualquiera de las dos puertas). Esto no crea
+    // ni amplia ningun derecho: es continuidad de lo ultimo ya confirmado,
+    // nunca una fuente de autorizacion nueva. Sin nada cacheado, o si esta
+    // offline y tampoco hay forma de autenticarse (ninguna de las dos
+    // puertas funciona sin red), se muestra un estado neutro de sin
+    // conexion — nunca el formulario de login, que no podria completarse.
     if (loadState() && state.user) {
       maybeShowNotifScreen();
     } else {
-      document.getElementById('screen-splash').classList.add('active');
+      mostrarSinConexion();
     }
     return;
   }
 
   if (!data.autenticado) {
-    window.location.href = '/mi-espacio';
+    // Puerta B: sin cookie de Mi Espacio, se ofrece el login tradicional —
+    // sigue siendo el camino real de la venta directa, nunca se redirige a
+    // /mi-espacio (esa compradora no tiene ni tendra una cuenta con
+    // contraseña).
+    document.getElementById('screen-splash').classList.add('active');
     return;
   }
 

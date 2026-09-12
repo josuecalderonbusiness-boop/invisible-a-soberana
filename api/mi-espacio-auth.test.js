@@ -269,7 +269,18 @@ test('login: 400 si falta correo o password (nunca llega a tocar Firestore/Orbit
 // camino real (correo inválido/rate-limit/consulta a Orbit) necesita
 // Firestore real y Orbit real, cubierto por separado en
 // orbit-perfil-acceso.test.js (tieneDerechoVigenteA) y verificado en
-// navegador contra datos simulados, mismo gap ya documentado arriba. ──
+// navegador contra datos simulados, mismo gap ya documentado arriba.
+//
+// Puerta 5, Corte 5 (diseño cerrado 2026-09-12, revisado tras auditoria de
+// la Puerta B): este endpoint es la venta directa de Código Soberana
+// (Hotmart -> Brevo lista #11 -> login tradicional de /workbook) — NUNCA
+// se retira, sigue siendo el unico camino real de esa compradora. Se
+// extendió de forma aditiva (`bootcampHitos`/`replayCompradoActivo`,
+// mismas funciones de Orbit que ya usa sesionAccion, sin segunda lógica de
+// negocio) — cualquier consumidor viejo que solo lea `.activo` sigue
+// funcionando igual. Camino feliz (activo:true + los campos nuevos)
+// verificado en navegador con /api/workbook-acceso mockeado, mismo gap de
+// Firestore/Orbit real ya documentado arriba. ──
 
 test('workbook-acceso: 405 si el metodo no es POST', async () => {
   const res = mockRes();

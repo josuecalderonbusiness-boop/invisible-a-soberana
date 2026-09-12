@@ -604,23 +604,23 @@ async function reenviarConfirmacionAccion(req, res) {
 // Orbit. Ver PUERTA-2-CODIGO-SOBERANA-MAPA-DE-SLICES.md, "Corrección de
 // arquitectura — Orbit como única fuente del Derecho a Workbook".
 //
-// Contrato deliberadamente mínimo: solo `{activo}` cuando la consulta se
-// resolvió (200), y un 503 `{error:'no_disponible'}` cuando Orbit no
-// respondió — nunca se confunde un fallo de infraestructura con un
-// `activo:false` real (decisión explícita de la usuaria).
+// Contrato: `{activo}` cuando la consulta se resolvió (200), y un 503
+// `{error:'no_disponible'}` cuando Orbit no respondió — nunca se confunde
+// un fallo de infraestructura con un `activo:false` real (decisión
+// explícita de la usuaria).
 //
-// Rate limiting — el riesgo de este endpoint es enumeración (barrer
-// correos para descubrir quién tiene acceso), no fuerza bruta de
-// contraseña, así que la semántica de "intento" es distinta a login:
-//   - activo:false (respuesta concluyente, posible barrido) -> registrarIntento
-//   - correo invalido (ni se consulta a Orbit) -> registrarIntento
-//   - activo:true -> registrarExito (necesario de verdad, no un reset
-//     cosmético: puedeIntentar() bloquea solo mirando bloqueadoHasta, sin
-//     importar si la consulta actual sería exitosa — sin este reset, una
-//     alumna que fue rechazada varias veces antes de comprar quedaría
-//     bloqueada 15 minutos incluso ya con Derecho vigente real)
-//   - 503 (falla nuestra o de Orbit) -> no se registra nada, nunca se le
-//     cobra a la alumna un problema de infraestructura
+// Puerta 5, Corte 5 (Arquitectura de la Casa, diseño cerrado 2026-09-12):
+// este endpoint es la Puerta B (venta directa de Código Soberana vía
+// Hotmart → Brevo → login tradicional) — se descubrió que sigue siendo un
+// consumidor real y activo (api/hotmart-webhook.js, lista Brevo #11,
+// COMPRADORA_WORKSHOP), distinto de la Puerta A (Mi Espacio → cookie
+// mi_espacio_sesion). NO se retira. Se extiende de forma aditiva con
+// `bootcampHitos`/`replayCompradoActivo` (mismas funciones de Orbit que ya
+// usa sesionAccion — obtenerBootcampHitos/obtenerReplayCompradoActivo,
+// nunca una segunda logica de negocio) para que el shell de /workbook
+// pueda aplicar el mismo gate de contenido sin importar por cual puerta
+// entro la mujer. Cualquier consumidor viejo que solo lea `.activo` sigue
+// funcionando exactamente igual — estos campos son puramente aditivos.
 const PROGRAMA_CODIGO_SOBERANA = 'codigo-soberana';
 
 async function workbookAccesoAccion(req, res) {
@@ -641,14 +641,32 @@ async function workbookAccesoAccion(req, res) {
 
   try {
     const activo = await tieneDerechoVigenteA(correo, PROGRAMA_CODIGO_SOBERANA);
-    if (activo) {
-      await registrarExito('ip', ip);
-      await registrarExito('correo', correo);
-    } else {
+    if (!activo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
+      return res.status(200).json({ activo: false });
     }
-    return res.status(200).json({ activo });
+
+    await registrarExito('ip', ip);
+    await registrarExito('correo', correo);
+
+    // Aditivo (Corte 5): mismas funciones de Orbit que ya usa sesionAccion
+    // — nunca una segunda decision de negocio. Un fallo aqui no debe negar
+    // el acceso ya confirmado arriba (activo:true es la garantia real);
+    // simplemente esos campos quedan null, igual que ya hace sesionAccion
+    // cuando Orbit no responde a tiempo.
+    let bootcampHitos = null;
+    let replayCompradoActivo = null;
+    try {
+      [bootcampHitos, replayCompradoActivo] = await Promise.all([
+        obtenerBootcampHitos(correo),
+        obtenerReplayCompradoActivo(correo),
+      ]);
+    } catch (err) {
+      console.error('mi-espacio-auth/workbook-acceso: derechos adicionales no resueltos (acceso ya confirmado, no bloquea):', err.message);
+    }
+
+    return res.status(200).json({ activo: true, bootcampHitos, replayCompradoActivo });
   } catch (err) {
     console.error('mi-espacio-auth/workbook-acceso: Orbit no respondió:', err.message);
     return res.status(503).json({ error: 'no_disponible' });

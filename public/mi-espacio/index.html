@@ -459,16 +459,21 @@ button { font: inherit; }
       <div class="db-video-box" id="ms-replay-comprado-video"></div>
     </div>
 
-    <!-- Bootcamp — 3 Hitos (Puerta 5, Corte 2, diseño cerrado 2026-09-12).
-         Estetica deliberadamente minima en este corte (queda para
-         despues) — lo que importa aqui es la mecanica: disponible viene
-         del calendario de la Cohorte (Orbit), completado viene EXCLUSIVAMENTE
-         de bootcamp_hito_confirmado (nunca de esta pantalla). Un Hito
-         disponible y no completado muestra su replay embebido (Bunny);
-         al recibir el evento 'ended', se llama una sola vez al proxy de
-         Orbit — el backend es idempotente de todas formas. -->
-    <div class="ms-invite-card" id="ms-bootcamp-hitos-card" style="display:none">
-      <div class="ms-invite-eyebrow">Tu Bootcamp — Código Soberana</div>
+    <!-- Bootcamp — 3 Hitos (Puerta 5, Corte 4, diseño cerrado 2026-09-12).
+         Cada Hito es ahora su propia tarjeta (.ms-invite-card, sin CSS
+         nuevo), con un header de rango de fechas de la Cohorte arriba.
+         Mecanica sin cambios desde el Corte 2: disponible viene del
+         calendario de la Cohorte (Orbit), completado viene EXCLUSIVAMENTE
+         de bootcamp_hito_confirmado (nunca de esta pantalla). Novedad del
+         Corte 4: un Hito disponible y no completado ahora puede mostrar
+         LIVE (enlaceEnVivo, boton externo a Zoom) Y Replay (enlaceReplay,
+         iframe embebido de Bunny) A LA VEZ si ambos existen — nunca se
+         elige uno por horario, esa logica NO vive en el frontend (Orbit no
+         expone ventana horaria, solo disponible/completado/enlaces/fecha;
+         ver diseño cerrado del Corte 4). El listener del evento 'ended' de
+         Bunny y la llamada a bootcamp-replay-visto no cambiaron. -->
+    <div id="ms-bootcamp-hitos-wrap" style="display:none">
+      <div class="ms-invite-eyebrow" id="ms-bootcamp-cohorte-rango" style="margin:0 0 14px 2px"></div>
       <div id="ms-bootcamp-hitos-lista"></div>
     </div>
 
@@ -978,7 +983,7 @@ function msRenderShellPrioridad() {
     }
   }
 
-  document.getElementById('ms-bootcamp-hitos-card').style.display = mostrarBootcampHitos ? 'block' : 'none';
+  document.getElementById('ms-bootcamp-hitos-wrap').style.display = mostrarBootcampHitos ? 'block' : 'none';
   if (mostrarBootcampHitos) msRenderBootcampHitos();
 
   if (hayProxima) {
@@ -1010,30 +1015,88 @@ function msRenderShellPrioridad() {
 const HITO_NOMBRES = { 1: 'Hito 1', 2: 'Hito 2', 3: 'Hito 3' };
 const msHitosConfirmando = new Set(); // evita reenvios mientras la llamada al proxy sigue en curso
 
+// Puerta 5, Corte 4: mismo criterio de formato que msFormatFechaConvocatoria
+// (mas abajo), sin el prefijo "Próxima clase:" — el contexto ya lo da el
+// nombre del Hito. Nunca calcula ventana horaria: solo presenta la fecha
+// que Orbit ya resolvió (cohorte.fecha_diaN).
+function msFormatFechaHito(fechaISO) {
+  try {
+    return new Date(fechaISO).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+  } catch (e) {
+    return '';
+  }
+}
+
+// "Tu Cohorte — 7 · 8 · 9 de octubre" — usa las 3 fechas ya presentes en
+// dbBootcampHitos.hitos (campo `fecha`, agregado en el Corte 4). Si algun
+// dato viniera incompleto, se omite el rango en vez de mostrar algo
+// incorrecto — nunca se adivina una fecha.
+function msRenderRangoCohorte() {
+  const el = document.getElementById('ms-bootcamp-cohorte-rango');
+  const hitos = dbBootcampHitos && dbBootcampHitos.hitos;
+  if (!Array.isArray(hitos) || hitos.length !== 3 || hitos.some(function (h) { return !h.fecha; })) {
+    el.textContent = 'Tu Bootcamp — Código Soberana';
+    return;
+  }
+  try {
+    const dias = hitos.map(function (h) { return new Date(h.fecha).toLocaleDateString('es-CO', { day: 'numeric', timeZone: 'America/Bogota' }); });
+    const mes = new Date(hitos[0].fecha).toLocaleDateString('es-CO', { month: 'long', timeZone: 'America/Bogota' });
+    el.textContent = 'Tu Cohorte — ' + dias.join(' · ') + ' de ' + mes;
+  } catch (e) {
+    el.textContent = 'Tu Bootcamp — Código Soberana';
+  }
+}
+
+// Puerta 5, Corte 4 (diseño cerrado 2026-09-12): cada Hito es su propia
+// tarjeta. Un Hito disponible y no completado puede mostrar LIVE
+// (enlaceEnVivo) y Replay (enlaceReplay) SIMULTANEAMENTE si ambos existen
+// — nunca se elige uno por horario (esa logica no vive aqui, ver
+// encabezado de #ms-bootcamp-hitos-wrap). El estado "completado" nunca
+// vuelve a mostrar ningun enlace ni video, sin importar por que canal se
+// confirmo (vivo o replay, son indistinguibles para esta pantalla).
 function msRenderBootcampHitos() {
+  msRenderRangoCohorte();
   const lista = document.getElementById('ms-bootcamp-hitos-lista');
   if (!dbBootcampHitos || !Array.isArray(dbBootcampHitos.hitos)) { lista.innerHTML = ''; return; }
 
   lista.innerHTML = dbBootcampHitos.hitos.map(function (h) {
     const nombre = HITO_NOMBRES[h.hito] || ('Hito ' + h.hito);
+
     if (h.completado) {
-      return '<div class="ms-invite-sub" style="margin:10px 0">✓ ' + nombre + ' — ya lo viviste</div>';
-    }
-    if (!h.disponible) {
-      return '<div class="ms-invite-sub" style="margin:10px 0;opacity:.6">🔒 ' + nombre + ' — todavía no disponible</div>';
-    }
-    // Disponible, no completado: honesto sobre lo que hay — mismo patron
-    // "video pendiente" ya usado en el resto del shell si el enlace aun
-    // no esta configurado.
-    if (h.enlaceReplay) {
-      return '<div style="margin:14px 0">' +
-        '<div class="ms-invite-sub" style="margin-bottom:6px">🔓 ' + nombre + ' — disponible</div>' +
-        '<div class="db-video-box" id="ms-hito-video-' + h.hito + '">' +
-          '<iframe id="ms-hito-iframe-' + h.hito + '" data-hito="' + h.hito + '" src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>' +
-        '</div>' +
+      return '<div class="ms-invite-card">' +
+        '<div class="ms-invite-eyebrow">' + nombre + '</div>' +
+        '<div class="ms-invite-title">✓ Completado</div>' +
       '</div>';
     }
-    return '<div class="ms-invite-sub" style="margin:10px 0">🔓 ' + nombre + ' — disponible, el replay se activa aquí apenas esté listo</div>';
+
+    if (!h.disponible) {
+      return '<div class="ms-invite-card">' +
+        '<div class="ms-invite-eyebrow">' + nombre + '</div>' +
+        '<div class="ms-invite-title">🔒 Próximamente</div>' +
+        '<p class="ms-invite-sub" style="margin-bottom:0">Disponible el ' + msFormatFechaHito(h.fecha) + '</p>' +
+      '</div>';
+    }
+
+    // Disponible, no completado: honesto sobre lo que hay — mismo patron
+    // "video/enlace pendiente" ya usado en el resto del shell si el dato
+    // aun no esta configurado.
+    const botonLive = h.enlaceEnVivo
+      ? '<a class="ms-invite-btn" href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;text-align:center;margin-bottom:' + (h.enlaceReplay ? '16px' : '0') + '">🔴 Entrar a la clase</a>'
+      : '';
+    const bloqueReplay = h.enlaceReplay
+      ? '<div class="db-video-box" id="ms-hito-video-' + h.hito + '">' +
+          '<iframe id="ms-hito-iframe-' + h.hito + '" data-hito="' + h.hito + '" src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>' +
+        '</div>'
+      : '';
+    const sinEnlaces = (!h.enlaceEnVivo && !h.enlaceReplay)
+      ? '<p class="ms-invite-sub" style="margin-bottom:0">🔓 Disponible — el enlace se activa aquí apenas esté listo</p>'
+      : '';
+
+    return '<div class="ms-invite-card">' +
+      '<div class="ms-invite-eyebrow">' + nombre + '</div>' +
+      '<div class="ms-invite-title">Disponible</div>' +
+      botonLive + bloqueReplay + sinEnlaces +
+    '</div>';
   }).join('');
 }
 

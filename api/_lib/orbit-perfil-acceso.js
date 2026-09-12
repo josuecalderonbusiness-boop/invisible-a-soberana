@@ -162,6 +162,19 @@ async function obtenerBootcampHitos(correo) {
   return perfil.bootcampHitos || null;
 }
 
+// Puerta 5, Corte 6 (diseño cerrado 2026-09-12, ver CORTE-6-DISENO-REVELACION.md):
+// EL gate real del recorrido Código Soberana (S0-S9) — booleano ya resuelto
+// por Orbit (recorridoCodigoSoberanaHabilitado en api/v1/perfil-acceso.js):
+// acceso vigente AND (origen de venta directa OR bootcamp_recorrido_habilitado).
+// Reemplaza, para la Puerta A (Mi Espacio -> /workbook), al criterio viejo
+// "bootcampHitos !== null" que solo exigia acceso, nunca haber completado
+// nada — espejo exacto del mismo patron ya usado arriba, Orbit decide, aqui
+// solo se representa.
+async function obtenerRecorridoHabilitado(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return !!perfil.recorridoHabilitado;
+}
+
 // Puerta 5, Corte 2 — unica evidencia de completitud implementada en este
 // corte: Bunny 'ended' en el replay. Frontera de identidad, no negociable
 // (mismo criterio ya congelado para crearRegistroAutenticado): el correo
@@ -392,6 +405,7 @@ export {
   obtenerOportunidadBootcampActiva,
   obtenerReplayCompradoActivo,
   obtenerBootcampHitos,
+  obtenerRecorridoHabilitado,
   confirmarBootcampHitoVisto,
   crearRegistroAutenticado,
   registrarClaseGratuita,

@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -360,7 +360,7 @@ async function loginAccion(req, res) {
     // proximaConvocatoriaDisponible viaja en la misma tanda de llamadas
     // (Slice 4, P7) para que el shell sepa de inmediato si mostrar la
     // tarjeta de invitacion, sin esperar a la siguiente carga de pagina.
-    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos] = await Promise.all([
+    const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, recorridoHabilitado] = await Promise.all([
       obtenerComprasVigentes(correo),
       obtenerProximaConvocatoriaDisponible(correo),
       obtenerExperienciaGratuitaActiva(correo),
@@ -368,6 +368,7 @@ async function loginAccion(req, res) {
       obtenerOportunidadBootcampActiva(correo),
       obtenerReplayCompradoActivo(correo),
       obtenerBootcampHitos(correo),
+      obtenerRecorridoHabilitado(correo), // Puerta 5, Corte 6 — gate real de S0-S9 (Puerta A)
     ]);
 
     await registrarExito('ip', ip);
@@ -375,7 +376,7 @@ async function loginAccion(req, res) {
 
     const sesion = crearTokenSesion(correo, cuenta.sessionVersion || 0);
     res.setHeader('Set-Cookie', cookieDeSesion(sesion));
-    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, emailVerified: !!cuenta.emailVerified });
+    return res.status(200).json({ ok: true, correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, recorridoHabilitado, emailVerified: !!cuenta.emailVerified });
   } catch (err) {
     console.error('mi-espacio-auth/login error:', err.message);
     return res.status(500).json({ error: 'No se pudo iniciar sesión.' });
@@ -405,7 +406,7 @@ async function sesionAccion(req, res) {
       // experienciaGratuitaActiva viajan en la misma respuesta que ya
       // consulta compras (sin llamada de red extra), para que el shell de
       // Mi Espacio sepa que tarjetas mostrar sin esperar otra carga.
-      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos] = await Promise.all([
+      const [compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, recorridoHabilitado] = await Promise.all([
         obtenerComprasVigentes(datos.correo),
         obtenerProximaConvocatoriaDisponible(datos.correo),
         obtenerExperienciaGratuitaActiva(datos.correo),
@@ -413,11 +414,16 @@ async function sesionAccion(req, res) {
         obtenerOportunidadBootcampActiva(datos.correo),
         obtenerReplayCompradoActivo(datos.correo),
         obtenerBootcampHitos(datos.correo),
+        obtenerRecorridoHabilitado(datos.correo), // Puerta 5, Corte 6 — gate real de S0-S9 (Puerta A)
       ]);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, emailVerified: !!cuenta.emailVerified });
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras, proximaConvocatoriaDisponible, experienciaGratuitaActiva, tieneRegistroHistorico, oportunidadBootcampActiva, replayCompradoActivo, bootcampHitos, recorridoHabilitado, emailVerified: !!cuenta.emailVerified });
     } catch (err) {
       console.error('mi-espacio-auth/sesion: Orbit no respondió, sesión sigue siendo válida:', err.message);
-      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, tieneRegistroHistorico: false, oportunidadBootcampActiva: null, replayCompradoActivo: null, bootcampHitos: null, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
+      // recorridoHabilitado:false aqui — nunca se fabrica un "si" cuando
+      // Orbit no pudo confirmarlo (mismo principio ya aplicado al resto de
+      // este fallback: honesto, nunca optimista, sobre todo tratandose del
+      // gate comercial mas sensible de todo el contrato).
+      return res.status(200).json({ autenticado: true, correo: datos.correo, compras: null, proximaConvocatoriaDisponible: null, experienciaGratuitaActiva: null, tieneRegistroHistorico: false, oportunidadBootcampActiva: null, replayCompradoActivo: null, bootcampHitos: null, recorridoHabilitado: false, emailVerified: !!cuenta.emailVerified, verificacionPendiente: true });
     }
   } catch (err) {
     console.error('mi-espacio-auth/sesion error:', err.message);

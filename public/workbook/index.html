@@ -6799,12 +6799,20 @@ let state = {
   completedSections: [],
   beliefRows: {},
   identityChecks: {},
-  // Puerta 5, Corte 5 (Arquitectura de la Casa, diseño cerrado 2026-09-12):
-  // derechos comerciales, SIEMPRE resueltos por Orbit via /api/mi-espacio-sesion
-  // — nunca decididos aqui, nunca por localStorage. bootcampHitos !== null es
-  // la MISMA condicion que ya usa bootcampHitosParaRespuesta en Orbit
-  // (tieneAccesoVigenteA a codigo-soberana) — por eso se reusa tal cual como
-  // gate de contenido del recorrido S0-S9, sin inventar un campo nuevo.
+  // Puerta 5, Corte 5/6 (Arquitectura de la Casa + Revelacion, diseños
+  // cerrados 2026-09-12): derechos comerciales, SIEMPRE resueltos por
+  // Orbit via /api/mi-espacio-sesion — nunca decididos aqui, nunca por
+  // localStorage.
+  //
+  // recorridoHabilitado (Corte 6) es EL gate real de S0-S9 — corrige el
+  // bug real encontrado en el Corte 6: "bootcampHitos !== null" solo
+  // exigia acceso vigente, nunca haber completado el Bootcamp. Para la
+  // Puerta A (resolverSesionYArrancar, mas abajo) viene directo de Orbit
+  // (recorridoCodigoSoberanaHabilitado — acceso vigente AND, si el origen
+  // fue el Bootcamp, bootcamp_recorrido_habilitado). Para la Puerta B
+  // (doLogin, login tradicional -> /api/workbook-acceso, NO tocado en
+  // este corte) se preserva el criterio anterior (bootcampHitos !== null)
+  // como fallback explicito — ver diseño Corte 6, limite reconocido.
   compras: [],
   proximaConvocatoriaDisponible: null,
   experienciaGratuitaActiva: null,
@@ -6812,6 +6820,7 @@ let state = {
   oportunidadBootcampActiva: null,
   replayCompradoActivo: null,
   bootcampHitos: null,
+  recorridoHabilitado: false,
   streak: 0,
   lastActive: null,
   eresLog: [],
@@ -6936,6 +6945,12 @@ async function doLogin() {
     // cual puerta llego la identidad.
     state.bootcampHitos = bootcampHitosAcceso;
     state.replayCompradoActivo = replayCompradoAcceso;
+    // Puerta 5, Corte 6: /api/workbook-acceso (Puerta B) NO se tocó en
+    // este corte — sigue sin exponer recorridoHabilitado real. Se
+    // preserva aqui el criterio anterior (acceso vigente ya implica
+    // recorrido, sin Hitos de por medio para esta puerta) como fallback
+    // explicito, documentado como limite reconocido del diseño del Corte 6.
+    state.recorridoHabilitado = bootcampHitosAcceso !== null;
 
     // PASO 3 — Verificar acceso 7D (silencioso, no bloquea el login)
     try {
@@ -8243,15 +8258,16 @@ function renderMisExperiencias() {
     : '<div class="profile-item" style="justify-content:center;color:rgba(196,160,178,0.5);font-size:13px;padding:20px;cursor:default">Todavía no tienes ninguna experiencia activa</div>';
 }
 
-// Puerta 5, Corte 5: gate de CONTENIDO (distinto del gate de aplicación en
-// resolverSesionYArrancar). Tener sesion valida abre la casa; ver el
-// recorrido exige ademas el derecho vigente a Código Soberana en Orbit —
-// bootcampHitosParaRespuesta ya solo devuelve no-null cuando ese derecho
-// existe (tieneAccesoVigenteA), asi que se reusa tal cual como condicion,
-// sin inventar un campo nuevo ni duplicar la regla de negocio.
+// Puerta 5, Corte 5/6: gate de CONTENIDO (distinto del gate de aplicación
+// en resolverSesionYArrancar). Tener sesion valida abre la casa; ver el
+// recorrido exige ADEMAS state.recorridoHabilitado — corregido en el
+// Corte 6 tras encontrar que el criterio viejo ("bootcampHitos !== null")
+// solo exigia acceso vigente, nunca haber completado el Bootcamp (una
+// compradora podia ver S0-S9 desde el instante de la compra). Alcance del
+// recorrido: TODO S0-S9, sin subdivision (decision cerrada del Corte 6).
 function renderSectionsList() {
   const list = document.getElementById('sections-list');
-  const tieneAccesoRecorrido = state.bootcampHitos !== null && state.bootcampHitos !== undefined;
+  const tieneAccesoRecorrido = state.recorridoHabilitado === true;
   if (!tieneAccesoRecorrido) {
     list.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:\'Jost\',sans-serif;color:rgba(249,244,236,.6);font-size:13.5px;line-height:1.7">🔒 Tu recorrido Código Soberana se activa aquí en cuanto tengas acceso al Bootcamp.</div>';
     list.style.height = '';
@@ -14637,6 +14653,9 @@ async function resolverSesionYArrancar() {
   state.oportunidadBootcampActiva = data.oportunidadBootcampActiva || null;
   state.replayCompradoActivo = data.replayCompradoActivo || null;
   state.bootcampHitos = data.bootcampHitos || null;
+  // Puerta 5, Corte 6: EL gate real de S0-S9 (Puerta A) — ya resuelto por
+  // Orbit, nunca recalculado aqui.
+  state.recorridoHabilitado = !!data.recorridoHabilitado;
 
   // Progreso: se mezcla igual que siempre (Firestore + lo que ya hubiera en
   // localStorage), nunca se pierde por el cambio de gate de identidad.

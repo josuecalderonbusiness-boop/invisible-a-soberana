@@ -459,6 +459,19 @@ button { font: inherit; }
       <div class="db-video-box" id="ms-replay-comprado-video"></div>
     </div>
 
+    <!-- Bootcamp — 3 Hitos (Puerta 5, Corte 2, diseño cerrado 2026-09-12).
+         Estetica deliberadamente minima en este corte (queda para
+         despues) — lo que importa aqui es la mecanica: disponible viene
+         del calendario de la Cohorte (Orbit), completado viene EXCLUSIVAMENTE
+         de bootcamp_hito_confirmado (nunca de esta pantalla). Un Hito
+         disponible y no completado muestra su replay embebido (Bunny);
+         al recibir el evento 'ended', se llama una sola vez al proxy de
+         Orbit — el backend es idempotente de todas formas. -->
+    <div class="ms-invite-card" id="ms-bootcamp-hitos-card" style="display:none">
+      <div class="ms-invite-eyebrow">Tu Bootcamp — Código Soberana</div>
+      <div id="ms-bootcamp-hitos-lista"></div>
+    </div>
+
     <div class="ms-bienvenida-vacio" id="ms-bienvenida-vacio" style="display:none">
       <div class="ms-bienvenida-title">Bienvenida a tu espacio</div>
       <p class="ms-bienvenida-text">Todavía no tienes ninguna experiencia activa en este momento. En cuanto haya una nueva clase disponible, la verás aquí.</p>
@@ -654,6 +667,7 @@ let dbExperienciaGratuita = null; // Puerta 2, Slice 5 — experienciaGratuitaAc
 let dbTieneRegistroHistorico = false; // Puerta 2, Slice 9 — ¿alguna vez tuvo un Registro? (no solo el activo)
 let dbOportunidadBootcamp = null; // Puerta 2, Bootcamp Codigo Soberana — { cohorteId, abierta } | null, ya resuelto por Orbit
 let dbReplayComprado = null; // Puerta 3, Replay $5 — { convocatoriaId, fechaHora, nombreClase, enlaceReplay } | null, ya resuelto por Orbit
+let dbBootcampHitos = null; // Puerta 5, Corte 2 — { cohorteId, hitos:[{hito,disponible,completado,enlaceEnVivo,enlaceReplay}], bootcampCompletado } | null, ya resuelto por Orbit
 // Checkout unico y permanente del Bootcamp (producto Hotmart 8499175, oferta kyuhhfy2) — no cambia por ciclo.
 const BOOTCAMP_CHECKOUT_URL = 'https://pay.hotmart.com/A107564829Y?bid=1789093799825';
 
@@ -842,6 +856,7 @@ async function dbEnviarPassword(ev) {
     dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
     dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
     dbReplayComprado = data.replayCompradoActivo || null;
+    dbBootcampHitos = data.bootcampHitos || null;
     msShowBiblioteca();
   } catch (e) {
     console.error(e);
@@ -940,10 +955,15 @@ function msRenderShellPrioridad() {
   const mostrarBootcampAbierto = !hayExperienciaActiva && dbTieneRegistroHistorico && bootcampAbierto;
   const mostrarOportunidadCerrada = !hayExperienciaActiva && dbTieneRegistroHistorico && !bootcampAbierto;
   const mostrarReplayComprado = !hayExperienciaActiva && !!dbReplayComprado;
+  // Puerta 5, Corte 2: independiente de todo lo demas — puede coexistir
+  // con cualquier otra tarjeta, mismo principio acumulativo ya congelado
+  // para el resto del shell. Solo se muestra si Orbit ya resolvio una
+  // Cohorte real (dbBootcampHitos.hitos !== null).
+  const mostrarBootcampHitos = !!dbBootcampHitos && Array.isArray(dbBootcampHitos.hitos);
 
   document.getElementById('ms-experiencias-header').style.display = hayCompras ? 'flex' : 'none';
   document.getElementById('ms-bienvenida-vacio').style.display =
-    (!hayCompras && !hayProxima && !hayExperienciaActiva && !mostrarBootcampAbierto && !mostrarOportunidadCerrada && !mostrarReplayComprado) ? 'block' : 'none';
+    (!hayCompras && !hayProxima && !hayExperienciaActiva && !mostrarBootcampAbierto && !mostrarOportunidadCerrada && !mostrarReplayComprado && !mostrarBootcampHitos) ? 'block' : 'none';
 
   msRenderClaseGratuita();
 
@@ -957,6 +977,9 @@ function msRenderShellPrioridad() {
       video.innerHTML = '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
     }
   }
+
+  document.getElementById('ms-bootcamp-hitos-card').style.display = mostrarBootcampHitos ? 'block' : 'none';
+  if (mostrarBootcampHitos) msRenderBootcampHitos();
 
   if (hayProxima) {
     document.getElementById('ms-invite-card').style.display = 'block';
@@ -974,6 +997,89 @@ function msRenderShellPrioridad() {
     document.getElementById('ms-bootcamp-abierto-btn').href = BOOTCAMP_CHECKOUT_URL;
   }
   document.getElementById('ms-bootcamp-cerrado-card').style.display = mostrarOportunidadCerrada ? 'block' : 'none';
+}
+
+// Puerta 5, Corte 2 (diseño cerrado 2026-09-12) — memoria de los 3 Hitos.
+// Regla no negociable: "disponible" y "completado" son independientes —
+// ningun Hito depende de que otro se haya completado (una alumna que
+// entra tarde ve los 3 disponibles y los completa en cualquier orden).
+// La UNICA evidencia de completitud en este corte es el evento 'ended'
+// del embed de Bunny Stream en el replay — el "en vivo" (Zoom) queda para
+// el Corte 3. Sin botón manual "Completar Hito": el sistema solo
+// registra lo que ya observó.
+const HITO_NOMBRES = { 1: 'Hito 1', 2: 'Hito 2', 3: 'Hito 3' };
+const msHitosConfirmando = new Set(); // evita reenvios mientras la llamada al proxy sigue en curso
+
+function msRenderBootcampHitos() {
+  const lista = document.getElementById('ms-bootcamp-hitos-lista');
+  if (!dbBootcampHitos || !Array.isArray(dbBootcampHitos.hitos)) { lista.innerHTML = ''; return; }
+
+  lista.innerHTML = dbBootcampHitos.hitos.map(function (h) {
+    const nombre = HITO_NOMBRES[h.hito] || ('Hito ' + h.hito);
+    if (h.completado) {
+      return '<div class="ms-invite-sub" style="margin:10px 0">✓ ' + nombre + ' — ya lo viviste</div>';
+    }
+    if (!h.disponible) {
+      return '<div class="ms-invite-sub" style="margin:10px 0;opacity:.6">🔒 ' + nombre + ' — todavía no disponible</div>';
+    }
+    // Disponible, no completado: honesto sobre lo que hay — mismo patron
+    // "video pendiente" ya usado en el resto del shell si el enlace aun
+    // no esta configurado.
+    if (h.enlaceReplay) {
+      return '<div style="margin:14px 0">' +
+        '<div class="ms-invite-sub" style="margin-bottom:6px">🔓 ' + nombre + ' — disponible</div>' +
+        '<div class="db-video-box" id="ms-hito-video-' + h.hito + '">' +
+          '<iframe id="ms-hito-iframe-' + h.hito + '" data-hito="' + h.hito + '" src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>' +
+        '</div>' +
+      '</div>';
+    }
+    return '<div class="ms-invite-sub" style="margin:10px 0">🔓 ' + nombre + ' — disponible, el replay se activa aquí apenas esté listo</div>';
+  }).join('');
+}
+
+// Bunny Stream emite sus eventos de reproduccion (play/timeupdate/ended)
+// por window.postMessage de forma nativa en su embed oficial — sin
+// necesidad de ningun SDK adicional. Se filtra por la forma exacta del
+// mensaje (Bunny no documenta un "origin" fijo utilizable aqui) y se
+// dispara la confirmacion UNA sola vez por Hito — el backend ya es
+// idempotente de todas formas (ON CONFLICT DO NOTHING), este flag local
+// solo evita trafico de red innecesario si el evento llega repetido.
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (!data || typeof data !== 'object' || data.event !== 'ended') return;
+  const iframes = document.querySelectorAll('[id^="ms-hito-iframe-"]');
+  for (const iframe of iframes) {
+    if (iframe.contentWindow === event.source) {
+      msConfirmarHitoVisto(Number(iframe.dataset.hito));
+      break;
+    }
+  }
+});
+
+async function msConfirmarHitoVisto(hito) {
+  if (msHitosConfirmando.has(hito)) return;
+  msHitosConfirmando.add(hito);
+  try {
+    const res = await fetch('/api/mi-espacio-bootcamp-replay-visto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ hito: hito }),
+    });
+    if (res.ok) {
+      // Refleja el nuevo estado localmente sin esperar un recargo completo
+      // de sesion — Orbit sigue siendo la fuente de verdad; esto es solo
+      // una actualizacion optimista de la vista ya confirmada por el 200.
+      const fila = dbBootcampHitos && dbBootcampHitos.hitos.find(function (h) { return h.hito === hito; });
+      if (fila) fila.completado = true;
+      if (dbBootcampHitos) dbBootcampHitos.bootcampCompletado = dbBootcampHitos.hitos.every(function (h) { return h.completado; });
+      msRenderBootcampHitos();
+    }
+  } catch (e) {
+    console.warn('No se pudo confirmar el Hito', hito, e.message);
+  } finally {
+    msHitosConfirmando.delete(hito);
+  }
 }
 
 // Puerta 2, Slice 4 — dbFmt, dbFmtCountdown, msFinClaseMs, msFinReplayMs,
@@ -1312,6 +1418,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       dbTieneRegistroHistorico = !!data.tieneRegistroHistorico;
       dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
       dbReplayComprado = data.replayCompradoActivo || null;
+      dbBootcampHitos = data.bootcampHitos || null;
       msShowBiblioteca();
     }
   } catch (e) {

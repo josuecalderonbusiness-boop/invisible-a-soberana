@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -162,6 +162,51 @@ test('obtenerReplayCompradoActivo: devuelve el objeto tal como lo manda Orbit, s
 test('obtenerReplayCompradoActivo: null explicito de Orbit (sin derecho o compra ya no aprobada) se conserva tal cual', async (t) => {
   mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], replayCompradoActivo: null });
   assert.equal(await obtenerReplayCompradoActivo('alumna@correo.com'), null);
+});
+
+// ── obtenerBootcampHitos / confirmarBootcampHitoVisto (Puerta 5, Corte 2,
+// diseño cerrado 2026-09-12) — espejo del mismo patron, independiente de
+// todo lo demas. ──
+
+test('obtenerBootcampHitos: null cuando el campo no viene (compatibilidad hacia atras)', async (t) => {
+  mockFetchOnce(t, { nombre: null, programas: [], registros: [] });
+  assert.equal(await obtenerBootcampHitos('alumna@correo.com'), null);
+});
+
+test('obtenerBootcampHitos: devuelve el objeto tal como lo manda Orbit, sin transformarlo', async (t) => {
+  const bootcampHitos = {
+    cohorteId: 'cohorte-1',
+    hitos: [
+      { hito: 1, disponible: true, completado: true, enlaceEnVivo: null, enlaceReplay: 'https://bunny.example/dia1' },
+      { hito: 2, disponible: false, completado: false, enlaceEnVivo: null, enlaceReplay: null },
+      { hito: 3, disponible: false, completado: false, enlaceEnVivo: null, enlaceReplay: null },
+    ],
+    bootcampCompletado: false,
+  };
+  mockFetchOnce(t, { nombre: 'Alumna', programas: [], registros: [], bootcampHitos });
+  assert.deepEqual(await obtenerBootcampHitos('alumna@correo.com'), bootcampHitos);
+});
+
+test('confirmarBootcampHitoVisto: llama a perfil-acceso?accion=bootcamp-replay-visto con el secreto compartido, correo y hito', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200, json: async () => ({ ok: true }),
+  }));
+  const resultado = await confirmarBootcampHitoVisto('alumna@correo.com', 1);
+  assert.deepEqual(resultado, { ok: true });
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.match(url, /\/api\/v1\/perfil-acceso\?accion=bootcamp-replay-visto$/);
+  assert.equal(opciones.headers['x-mi-espacio-secret'], 'shh-mi-espacio');
+  assert.deepEqual(JSON.parse(opciones.body), { correo: 'alumna@correo.com', hito: 1 });
+});
+
+test('confirmarBootcampHitoVisto: Orbit responde error (ej. Hito no disponible) -> lanza con el motivo, nunca lo esconde', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({
+    ok: false, status: 409, json: async () => ({ error: 'hito_no_disponible' }),
+  }));
+  await assert.rejects(() => confirmarBootcampHitoVisto('alumna@correo.com', 2), (err) => {
+    assert.equal(err.motivo, 'hito_no_disponible');
+    return true;
+  });
 });
 
 // ── registrarClaseGratuita (Puerta 2, Slice 2) — proxy same-origin de

@@ -152,6 +152,56 @@ async function obtenerReplayCompradoActivo(correo) {
   return perfil.replayCompradoActivo || null;
 }
 
+// Puerta 5, Corte 2 (cerrado 2026-09-12): memoria de los 3 Hitos del
+// Bootcamp — { cohorteId, hitos: [{hito, disponible, completado,
+// enlaceEnVivo, enlaceReplay}], bootcampCompletado } | null. Espejo exacto
+// del mismo patron ya usado arriba — Orbit ya resolvio todo, aqui solo se
+// representa.
+async function obtenerBootcampHitos(correo) {
+  const perfil = await consultarPerfilAcceso(correo);
+  return perfil.bootcampHitos || null;
+}
+
+// Puerta 5, Corte 2 — unica evidencia de completitud implementada en este
+// corte: Bunny 'ended' en el replay. Frontera de identidad, no negociable
+// (mismo criterio ya congelado para crearRegistroAutenticado): el correo
+// SIEMPRE viene de la sesion ya verificada del lado servidor de Mi
+// Espacio — este archivo nunca acepta un correo que el navegador proponga
+// directamente para esta llamada. El endpoint de Orbit tampoco acepta
+// ningun cohorteId — la Cohorte se resuelve siempre alla, del lado
+// servidor, con la misma resolucion que usa todo lo demas.
+async function confirmarBootcampHitoVisto(correo, hito) {
+  if (!MI_ESPACIO_ORBIT_SECRET) {
+    throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=bootcamp-replay-visto`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      body: JSON.stringify({ correo, hito }),
+      signal: controller.signal,
+    });
+    const cuerpo = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(cuerpo.error || `Orbit respondió ${res.status} al confirmar el Hito`);
+      err.motivo = cuerpo.error || `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return cuerpo;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // Puerta 2 — hallazgo real 2026-09-09 (prueba end-to-end en Preview): justo
 // después de que Orbit acepta un registro nuevo (escritura en /api/registro,
 // público), preguntar de inmediato por experienciaGratuitaActiva (lectura en
@@ -341,6 +391,8 @@ export {
   obtenerTieneRegistroHistorico,
   obtenerOportunidadBootcampActiva,
   obtenerReplayCompradoActivo,
+  obtenerBootcampHitos,
+  confirmarBootcampHitoVisto,
   crearRegistroAutenticado,
   registrarClaseGratuita,
   relayBotonVerMiClaseAOrbit,

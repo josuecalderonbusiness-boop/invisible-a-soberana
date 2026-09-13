@@ -421,7 +421,13 @@
      MAIN APP LAYOUT
   ════════════════════════════════════════ */
   #screen-app {
-    background: var(--surface);
+    /* Antes usaba var(--surface) (crema claro) — cada .tab-content ya trae
+       su propio fondo oscuro, asi que ese crema nunca es la superficie
+       final; solo se veia como un destello blanco durante el instante de
+       carga antes de que el contenido oscuro pinte encima. Puerta 5,
+       Corte 7 (ajuste 2026-09-12): fondo oscuro desde el arranque, para
+       que ese instante nunca se sienta como una app cargando. */
+    background: var(--burgundy-deep);
   }
 
   /* Top Header */

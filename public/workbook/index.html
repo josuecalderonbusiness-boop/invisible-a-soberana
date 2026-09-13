@@ -8469,10 +8469,102 @@ function renderBootcampHitosBlock() {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
       }
       const live = h.enlaceEnVivo ? '<a href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="' + btn + '">🔴 Entrar a la clase</a>' : '';
-      const replay = h.enlaceReplay ? '<div style="margin-top:10px;aspect-ratio:16/9;border-radius:12px;overflow:hidden"><iframe src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe></div>' : '';
+      // id/data-hito: asi el listener global de 'message' (mas abajo) sabe
+      // EXACTAMENTE que Hito corresponde a que iframe cuando Bunny avisa
+      // 'ended' — nunca asume que un ended es el Hito 3, ni ningun otro.
+      const replay = h.enlaceReplay ? '<div style="margin-top:10px;aspect-ratio:16/9;border-radius:12px;overflow:hidden"><iframe id="wb-hito-iframe-' + h.hito + '" data-hito="' + h.hito + '" src="' + h.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe></div>' : '';
       const nada = (!h.enlaceEnVivo && !h.enlaceReplay) ? '<p style="' + sub + '">🔓 Disponible — el enlace se activa aquí apenas esté listo</p>' : '';
       return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">Disponible</div>' + live + replay + nada + '</div>';
     }).join('');
+}
+
+// Puerta 5, Corte 8 (pendiente cerrado, diseño aprobado 2026-09-12):
+// confirmación de Hito por Replay visto — existía en el /mi-espacio viejo
+// (msConfirmarHitoVisto) pero nunca se portó a /workbook cuando este pasó
+// a ser la casa única (Corte 5); desde entonces solo Zoom en vivo podía
+// confirmar un Hito. Bunny Stream emite sus eventos de reproducción
+// (play/timeupdate/ended) por window.postMessage de forma nativa en su
+// embed oficial. Se filtra por la forma exacta del mensaje (Bunny no
+// documenta un "origin" fijo utilizable aqui).
+const _wbHitosConfirmando = new Set();
+
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (!data || typeof data !== 'object' || data.event !== 'ended') return;
+  const iframes = document.querySelectorAll('[id^="wb-hito-iframe-"]');
+  for (const iframe of iframes) {
+    if (iframe.contentWindow === event.source) {
+      wbConfirmarHitoVisto(Number(iframe.dataset.hito));
+      break;
+    }
+  }
+});
+
+// El navegador solo PROPONE el hecho ("vi terminar el replay de este
+// Hito"); Orbit es quien decide si corresponde confirmarlo (Cohorte
+// resuelta del lado servidor, Hito realmente disponible) y quien escribe
+// la autoridad (bootcamp_hito_confirmado, bootcamp_recorrido_habilitado)
+// — este archivo nunca fabrica ninguno de esos dos hechos.
+async function wbConfirmarHitoVisto(hito) {
+  if (![1, 2, 3].includes(hito)) return;
+  if (_wbHitosConfirmando.has(hito)) return;
+
+  // Ya visto localmente (por Replay o por LIVE) — nada que hacer. Evita
+  // trafico de red innecesario; el backend igual es idempotente
+  // (ON CONFLICT DO NOTHING) si de todas formas llegara a llamarse.
+  const filaLocal = state.bootcampHitos && Array.isArray(state.bootcampHitos.hitos) &&
+    state.bootcampHitos.hitos.find(function (h) { return h.hito === hito; });
+  if (filaLocal && filaLocal.completado) return;
+
+  _wbHitosConfirmando.add(hito);
+  try {
+    const res = await fetch('/api/mi-espacio-bootcamp-replay-visto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ hito: hito }),
+    });
+    // Orbit decidio que no corresponde (409 hito_no_disponible/cohorte_no_resuelta,
+    // 401 sesion invalida, etc.) — nunca se fuerza nada localmente.
+    if (!res.ok) return;
+
+    if (state._origenSesion === 'puerta-a') {
+      // Puerta A: hay cookie de Mi Espacio — se vuelve a preguntar a Orbit
+      // el estado fresco (bootcampHitos/recorridoHabilitado). Nunca se
+      // fabrica aqui si este Replay resulto ser el 3er Hito.
+      await wbRefrescarSesionTrasHito();
+    } else {
+      // Puerta B: sin cookie que reconsultar (workbookAccesoAccion no fue
+      // tocado en el Corte 6, sigue sin exponer recorridoHabilitado real)
+      // — actualizacion optimista solo de la tarjeta visible, igual que
+      // hacia el codigo viejo de /mi-espacio. Nunca toca recorridoHabilitado
+      // ni puede disparar la Revelacion (exclusiva de Puerta A).
+      if (filaLocal) filaLocal.completado = true;
+      renderBootcampHitosBlock();
+    }
+  } catch (e) {
+    console.warn('No se pudo confirmar el Hito', hito, e.message);
+  } finally {
+    _wbHitosConfirmando.delete(hito);
+  }
+}
+
+async function wbRefrescarSesionTrasHito() {
+  let data;
+  try {
+    const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+    data = await res.json();
+  } catch (e) {
+    console.warn('No se pudo refrescar la sesión tras confirmar el Hito:', e.message);
+    return;
+  }
+  if (!data.autenticado) return; // sesion perdida entretanto — no se fuerza nada
+  state.bootcampHitos = data.bootcampHitos || null;
+  state.recorridoHabilitado = !!data.recorridoHabilitado;
+  saveState();
+  renderBootcampHitosBlock();
+  renderSectionsList();
+  mostrarRevelacionCodigoSoberanaSiCorresponde();
 }
 
 // Puerta 5, Corte 5 (diseño cerrado 2026-09-12): "Mis experiencias" dentro

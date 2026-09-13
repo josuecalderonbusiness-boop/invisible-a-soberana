@@ -147,7 +147,12 @@ form#regForm { display: flex; flex-direction: column; gap: 12px; }
 }
 .country-opt:hover { background: rgba(184,137,42,.12); }
 .country-opt span { color: var(--gold-primary); font-size: 12px; }
-.campo-tel-row input { flex: 1; }
+/* min-width:0 es lo que de verdad permite encogerse a un input dentro de
+   un flex row -- sin esto, el ancho intrinseco del input (o del atributo
+   size/placeholder) lo empuja fuera de la tarjeta en pantallas angostas
+   (bug real visto en un Android real, Corte 9). */
+.campo-tel-row { min-width: 0; }
+.campo-tel-row input { flex: 1; min-width: 0; }
 .campo.error .campo-error { display: block; }
 
 .btn-registro {

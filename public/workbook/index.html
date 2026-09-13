@@ -2590,18 +2590,41 @@
     max-width: 560px;
     padding: 0 32px;
     text-align: center;
-    opacity: 0;
-    transition: opacity 1.1s ease;
   }
   #revelacion-view .rev-escena.activa { display: block; }
-  #revelacion-view .rev-escena.visible { opacity: 1; }
+  /* Cada frase entra por separado — blur+fundido, subiendo desde abajo,
+     en cascada (--i por elemento) para guiar la lectura de arriba hacia
+     abajo mientras cada linea individual sube hacia su lugar. Arranca
+     sola apenas el contenedor pasa de display:none a block (.activa) —
+     no depende de una clase .visible aparte. */
+  #revelacion-view .rev-line {
+    --i: 0;
+    margin: 20px 0 0;
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(18px);
+    animation: revLineIn 900ms cubic-bezier(.16,.8,.24,1) forwards;
+    animation-delay: calc(var(--i) * 220ms);
+  }
+  #revelacion-view .rev-line:first-child { margin-top: 0; }
+  #revelacion-view .rev-line.rev-line-tight { margin-top: 4px; }
+  @keyframes revLineIn {
+    to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #revelacion-view .rev-line {
+      animation: none;
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
   #revelacion-view .rev-linea1 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 600;
     font-size: clamp(30px, 6vw, 44px);
     color: var(--cream);
     line-height: 1.25;
-    margin: 0;
   }
   #revelacion-view .rev-cuerpo {
     font-family: 'Cormorant Garamond', serif;
@@ -2609,8 +2632,6 @@
     font-size: clamp(19px, 3.6vw, 24px);
     color: rgba(249,244,236,.88);
     line-height: 1.75;
-    margin: 0;
-    white-space: pre-line;
   }
   #revelacion-view .rev-marca {
     font-family: 'Jost', sans-serif;
@@ -2618,7 +2639,6 @@
     font-size: 13px;
     letter-spacing: 5px;
     color: var(--gold-primary);
-    margin: 0 0 14px;
   }
   #revelacion-view .rev-cta {
     display: inline-block;
@@ -5116,36 +5136,29 @@
     <div class="rev-progress" id="rev-progress"></div>
 
     <div class="rev-escena" data-escena="1">
-      <p class="rev-linea1">Ya llegaste.</p>
+      <p class="rev-line rev-linea1" style="--i:0">Ya llegaste.</p>
     </div>
 
     <div class="rev-escena" data-escena="2">
-      <p class="rev-cuerpo">Tres veces elegiste estar aquí.
-
-Llegar.
-Volver.
-Sostenerte.
-
-Y quizá eso sea más importante de lo que parece.
-
-Porque no se trata de demostrarle a nadie que puedes.
-
-Acabas de demostrártelo a ti misma.</p>
+      <p class="rev-line rev-cuerpo" style="--i:0">Tres veces elegiste estar aquí.</p>
+      <p class="rev-line rev-cuerpo" style="--i:1">Llegar.</p>
+      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:2">Volver.</p>
+      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:3">Sostenerte.</p>
+      <p class="rev-line rev-cuerpo" style="--i:4">Y quizá eso sea más importante de lo que parece.</p>
+      <p class="rev-line rev-cuerpo" style="--i:5">Porque no se trata de demostrarle a nadie que puedes.</p>
+      <p class="rev-line rev-cuerpo" style="--i:6">Acabas de demostrártelo a ti misma.</p>
     </div>
 
     <div class="rev-escena" data-escena="3">
-      <p class="rev-cuerpo">Hay momentos en los que algo cambia.
-
-No porque alguien te diga qué hacer.
-
-Sino porque empiezas a mirar de otra manera aquello que antes simplemente soportabas.
-
-Esto es solo el comienzo.</p>
+      <p class="rev-line rev-cuerpo" style="--i:0">Hay momentos en los que algo cambia.</p>
+      <p class="rev-line rev-cuerpo" style="--i:1">No porque alguien te diga qué hacer.</p>
+      <p class="rev-line rev-cuerpo" style="--i:2">Sino porque empiezas a mirar de otra manera aquello que antes simplemente soportabas.</p>
+      <p class="rev-line rev-cuerpo" style="--i:3">Esto es solo el comienzo.</p>
     </div>
 
     <div class="rev-escena" data-escena="4">
-      <p class="rev-marca">CÓDIGO SOBERANA</p>
-      <p class="rev-linea1" style="font-size:clamp(22px,4.2vw,28px)">Tu siguiente recorrido comienza aquí.</p>
+      <p class="rev-line rev-marca" style="--i:0">CÓDIGO SOBERANA</p>
+      <p class="rev-line rev-linea1" style="--i:1;font-size:clamp(22px,4.2vw,28px)">Tu siguiente recorrido comienza aquí.</p>
       <button class="rev-cta" onclick="revelacionEntrarACodigoSoberana(event)">Entrar a Código Soberana →</button>
     </div>
   </div>
@@ -6547,13 +6560,13 @@ function _revMostrarEscena(n) {
   clearTimeout(_revTimer);
   _revEscenaActual = n;
   document.querySelectorAll('#revelacion-view .rev-escena').forEach(function (el) {
-    el.classList.remove('activa', 'visible');
+    el.classList.remove('activa');
   });
+  // Pasar de display:none a block es lo que arranca de cero la animacion
+  // de entrada (blur+fundido, de abajo hacia arriba) de cada .rev-line —
+  // no depende de ninguna clase aparte, solo de que la escena se muestre.
   const el = document.querySelector('#revelacion-view .rev-escena[data-escena="' + n + '"]');
-  if (el) {
-    el.classList.add('activa');
-    requestAnimationFrame(function () { el.classList.add('visible'); });
-  }
+  if (el) el.classList.add('activa');
 
   const barra = document.getElementById('rev-progress');
   if (n <= 3) {

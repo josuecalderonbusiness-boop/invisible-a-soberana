@@ -2604,7 +2604,11 @@
     filter: blur(10px);
     transform: translateY(18px);
     animation: revLineIn 900ms cubic-bezier(.16,.8,.24,1) forwards;
-    animation-delay: calc(var(--i) * 220ms);
+    /* --i son milisegundos directos (no un multiplicador) — permite pausas
+       desiguales entre frases (Corte 7, ajuste V1.1, 2026-09-12: el ritmo
+       deja de ser una cascada pareja y pasa a tener "pausas" y "pausas
+       más largas" a criterio de cada escena). */
+    animation-delay: calc(var(--i) * 1ms);
   }
   #revelacion-view .rev-line:first-child { margin-top: 0; }
   #revelacion-view .rev-line.rev-line-tight { margin-top: 4px; }
@@ -2632,6 +2636,18 @@
     font-size: clamp(19px, 3.6vw, 24px);
     color: rgba(249,244,236,.88);
     line-height: 1.75;
+  }
+  /* Ajuste V1.1: la ultima frase de la escena 3 ("aquello que antes
+     simplemente soportabas") se separa como su propio momento, con mas
+     protagonismo visual que el resto del cuerpo — cursiva, mas grande,
+     color pleno en vez de atenuado. */
+  #revelacion-view .rev-enfasis {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(23px, 4.4vw, 30px);
+    color: var(--cream);
+    line-height: 1.5;
   }
   #revelacion-view .rev-marca {
     font-family: 'Jost', sans-serif;
@@ -5139,21 +5155,28 @@
       <p class="rev-line rev-linea1" style="--i:0">Ya llegaste.</p>
     </div>
 
+    <!-- Ajuste V1.1 (2026-09-12): se retira "Porque no se trata de
+         demostrarle a nadie que puedes." — la frase final ya contiene esa
+         idea. Pausas desiguales entre grupos ("Tres veces...", el trio
+         Llegar/Volver/Sostenerte, y el cierre) en vez de cascada pareja. -->
     <div class="rev-escena" data-escena="2">
       <p class="rev-line rev-cuerpo" style="--i:0">Tres veces elegiste estar aquí.</p>
-      <p class="rev-line rev-cuerpo" style="--i:1">Llegar.</p>
-      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:2">Volver.</p>
-      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:3">Sostenerte.</p>
-      <p class="rev-line rev-cuerpo" style="--i:4">Y quizá eso sea más importante de lo que parece.</p>
-      <p class="rev-line rev-cuerpo" style="--i:5">Porque no se trata de demostrarle a nadie que puedes.</p>
-      <p class="rev-line rev-cuerpo" style="--i:6">Acabas de demostrártelo a ti misma.</p>
+      <p class="rev-line rev-cuerpo" style="--i:1500">Llegar.</p>
+      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:1750">Volver.</p>
+      <p class="rev-line rev-cuerpo rev-line-tight" style="--i:2000">Sostenerte.</p>
+      <p class="rev-line rev-cuerpo" style="--i:4300">Y quizá eso sea más importante de lo que parece.</p>
+      <p class="rev-line rev-cuerpo" style="--i:7200">Acabas de demostrártelo a ti misma.</p>
     </div>
 
+    <!-- Ajuste V1.1: "aquello que antes simplemente soportabas" se separa
+         en su propio momento (rev-enfasis) en vez de ir pegada dentro de
+         la misma frase larga — mas protagonismo visual, propia pausa. -->
     <div class="rev-escena" data-escena="3">
       <p class="rev-line rev-cuerpo" style="--i:0">Hay momentos en los que algo cambia.</p>
-      <p class="rev-line rev-cuerpo" style="--i:1">No porque alguien te diga qué hacer.</p>
-      <p class="rev-line rev-cuerpo" style="--i:2">Sino porque empiezas a mirar de otra manera aquello que antes simplemente soportabas.</p>
-      <p class="rev-line rev-cuerpo" style="--i:3">Esto es solo el comienzo.</p>
+      <p class="rev-line rev-cuerpo" style="--i:1800">No porque alguien te diga qué hacer.</p>
+      <p class="rev-line rev-cuerpo" style="--i:3800">Sino porque empiezas a mirar de otra manera...</p>
+      <p class="rev-line rev-enfasis" style="--i:6200">aquello que antes simplemente soportabas.</p>
+      <p class="rev-line rev-cuerpo" style="--i:8300">Esto es solo el comienzo.</p>
     </div>
 
     <div class="rev-escena" data-escena="4">
@@ -6545,7 +6568,7 @@ function revelacionCodigoSoberanaCorresponde() {
 
 let _revEscenaActual = 0;
 let _revTimer = null;
-const REV_DURACIONES_MS = [2500, 8000, 8000]; // escenas 1-3, automáticas; la 4 espera al CTA
+const REV_DURACIONES_MS = [3200, 10500, 10500]; // escenas 1-3, automáticas; la 4 espera al CTA (ajuste V1.1)
 
 function mostrarRevelacionCodigoSoberanaSiCorresponde() {
   if (!revelacionCodigoSoberanaCorresponde()) return;

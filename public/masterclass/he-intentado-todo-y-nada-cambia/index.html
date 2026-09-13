@@ -121,6 +121,33 @@ form#regForm { display: flex; flex-direction: column; gap: 12px; }
 .campo input:focus { border-color: var(--gold-primary); }
 .campo-error { font-size: 12.5px; color: var(--error); display: none; }
 .campo.error input { border-color: var(--error); }
+
+/* Selector de indicativo de país (Puerta 2, corregido 2026-09-13 tras el
+   Corte 9: un numero sin indicativo llega "enviado" segun Meta pero el
+   WhatsApp real nunca lo recibe — el mismo sistema ya usado en
+   public/test/index.html, para no inventar un segundo). La mujer elige su
+   pais, nunca tiene que escribir el "+57" ella misma. */
+.campo-tel-row { display: flex; gap: 8px; align-items: stretch; }
+#country-selector { position: relative; flex-shrink: 0; }
+#country-selector > button {
+  display: flex; align-items: center; gap: 6px; height: 100%;
+  background: var(--charcoal-deep); border: 1px solid rgba(184,137,42,.25); border-radius: 8px;
+  padding: 0 10px; cursor: pointer; color: var(--text-light); font-family: var(--font-body); font-size: 14px;
+  white-space: nowrap;
+}
+#country-menu {
+  display: none; position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--charcoal-deep); border: 1px solid rgba(184,137,42,.25); border-radius: 10px;
+  overflow: hidden; z-index: 10; min-width: 170px; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.country-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 11px 14px; font-family: var(--font-body); font-size: 13.5px; color: var(--text-light);
+  cursor: pointer; transition: background .15s;
+}
+.country-opt:hover { background: rgba(184,137,42,.12); }
+.country-opt span { color: var(--gold-primary); font-size: 12px; }
+.campo-tel-row input { flex: 1; }
 .campo.error .campo-error { display: block; }
 
 .btn-registro {
@@ -230,7 +257,25 @@ footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
         </div>
         <div class="campo" id="campoTelWrap">
           <label for="campoTel">Tu WhatsApp</label>
-          <input type="tel" id="campoTel" name="telefono" autocomplete="tel" placeholder="+57 300 000 0000" required>
+          <div class="campo-tel-row">
+            <div id="country-selector">
+              <button type="button" onclick="toggleCountryMenu()">
+                <span id="country-flag">🇨🇴</span>
+                <span id="country-code">+57</span>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3.5l3 3 3-3"/></svg>
+              </button>
+              <div id="country-menu">
+                <div class="country-opt" onclick="selectCountry('🇨🇴','+57','CO')">🇨🇴 Colombia <span>+57</span></div>
+                <div class="country-opt" onclick="selectCountry('🇲🇽','+52','MX')">🇲🇽 México <span>+52</span></div>
+                <div class="country-opt" onclick="selectCountry('🇺🇸','+1','US')">🇺🇸 Estados Unidos <span>+1</span></div>
+                <div class="country-opt" onclick="selectCountry('🇧🇷','+55','BR')">🇧🇷 Brasil <span>+55</span></div>
+                <div class="country-opt" onclick="selectCountry('🇦🇷','+54','AR')">🇦🇷 Argentina <span>+54</span></div>
+                <div class="country-opt" onclick="selectCountry('🇨🇱','+56','CL')">🇨🇱 Chile <span>+56</span></div>
+                <div class="country-opt" onclick="selectCountry('🇪🇸','+34','ES')">🇪🇸 España <span>+34</span></div>
+              </div>
+            </div>
+            <input type="tel" id="campoTel" name="telefono" autocomplete="tel" placeholder="300 000 0000" required>
+          </div>
           <span class="campo-error">Escribe un número de WhatsApp válido (10 a 15 dígitos).</span>
         </div>
         <div class="campo" id="campoEmailWrap">
@@ -423,7 +468,36 @@ document.getElementById('unmuteBtn').addEventListener('click', function () {
 var ORBIT_REGISTRO_URL = '/api/mi-espacio-registro-gratuito';
 
 function normalizarEmailCliente(v) { v = (v || '').trim().toLowerCase(); return v.includes('@') ? v : null; }
-function normalizarTelefonoCliente(v) { var d = (v || '').replace(/[^0-9]/g, ''); return (d.length >= 10 && d.length <= 15) ? d : null; }
+// Corte 9 (2026-09-13): el numero SIEMPRE lleva el indicativo del pais
+// elegido antepuesto -- ya no depende de que ella misma escriba "+57".
+// Sigue devolviendo solo digitos (mismo formato que ya exige
+// normalizarTelefono() del lado de Orbit, lib/identidad.js).
+function normalizarTelefonoCliente(v) {
+  var d = (selectedCountryCode + (v || '')).replace(/[^0-9]/g, '');
+  return (d.length >= 10 && d.length <= 15) ? d : null;
+}
+
+// Selector de indicativo -- mismo sistema que public/test/index.html,
+// aqui con Colombia como pais por defecto (mercado principal de esta
+// campana; Mexico y el resto quedan un clic de distancia).
+var selectedCountryCode = '+57';
+function toggleCountryMenu() {
+  var m = document.getElementById('country-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+function selectCountry(flag, code, iso) {
+  selectedCountryCode = code;
+  document.getElementById('country-flag').textContent = flag;
+  document.getElementById('country-code').textContent = code;
+  document.getElementById('country-menu').style.display = 'none';
+}
+document.addEventListener('click', function (e) {
+  var sel = document.getElementById('country-selector');
+  if (sel && !sel.contains(e.target)) {
+    var m = document.getElementById('country-menu');
+    if (m) m.style.display = 'none';
+  }
+});
 
 document.getElementById('regForm').addEventListener('submit', async function (ev) {
   ev.preventDefault();

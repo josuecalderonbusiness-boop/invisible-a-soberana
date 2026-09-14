@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Prueba real — tk → registrant_id</title>
+<meta name="robots" content="noindex">
+<!--
+  Puerta 5 — Ensayo General, Estación 4: verificación real y obligatoria
+  del vínculo tk → registrant_id → participant_joined, pedida
+  explícitamente antes de dar por cerrado el corte del Meeting SDK.
+  Página de prueba, aislada, SOLO para esta verificación — usa la misma
+  cookie clase_gratuita_sesion que ya existe en este dominio (Path=/),
+  minteada para una Persona/Convocatoria/Registro ficticios y
+  claramente separados de la Convocatoria real del 26-sept. Se puede
+  borrar después de la prueba.
+-->
+<link type="text/css" rel="stylesheet" href="https://source.zoom.us/3.9.0/css/bootstrap.css" />
+<link type="text/css" rel="stylesheet" href="https://source.zoom.us/3.9.0/css/react-select.css" />
+<style>
+  body { font-family: -apple-system, sans-serif; background: #14100f; color: #f0e6ea; margin: 0; padding: 20px; }
+  h1 { font-size: 18px; }
+  #estado { margin-top: 14px; font-size: 13px; color: #d4a843; white-space: pre-wrap; }
+  #meetingSDKElement { margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<h1>Prueba real — vínculo tk → registrant_id</h1>
+<div id="estado">Cargando…</div>
+<div id="meetingSDKElement"></div>
+
+<script src="https://source.zoom.us/3.9.0/lib/vendor/react.min.js"></script>
+<script src="https://source.zoom.us/3.9.0/lib/vendor/react-dom.min.js"></script>
+<script src="https://source.zoom.us/3.9.0/lib/vendor/redux.min.js"></script>
+<script src="https://source.zoom.us/3.9.0/lib/vendor/redux-thunk.min.js"></script>
+<script src="https://source.zoom.us/3.9.0/lib/vendor/lodash.min.js"></script>
+<script src="https://source.zoom.us/3.9.0/zoom-meeting-embedded-3.9.0.min.js"></script>
+
+<script>
+const estadoEl = document.getElementById('estado');
+function log(msg) { estadoEl.textContent += '\n' + msg; console.log(msg); }
+
+// Mismo mecanismo todo-o-nada que /clase-gratuita: query param leido UNA
+// vez, guardado en sessionStorage, URL limpiada de inmediato.
+function capturarQaRelojDeUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const secreto = params.get('qaReloj');
+  const simulado = params.get('qaAhora');
+  if (secreto && simulado) {
+    sessionStorage.setItem('qaRelojSecreto', secreto);
+    sessionStorage.setItem('qaRelojSimulado', simulado);
+    params.delete('qaReloj');
+    params.delete('qaAhora');
+    const nuevaQuery = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (nuevaQuery ? '?' + nuevaQuery : ''));
+  }
+}
+
+function headersQaReloj() {
+  const secreto = sessionStorage.getItem('qaRelojSecreto');
+  const simulado = sessionStorage.getItem('qaRelojSimulado');
+  if (!secreto || !simulado) return {};
+  return { 'x-qa-reloj-secret': secreto, 'x-qa-reloj-simulado': simulado };
+}
+
+async function iniciar() {
+  capturarQaRelojDeUrl();
+  try {
+    const res = await fetch('/api/mi-espacio-auth?accion=masterclass-zoom-join', {
+      credentials: 'include',
+      headers: headersQaReloj(),
+    });
+    const data = await res.json();
+    log('Respuesta de masterclass-zoom-join: ' + JSON.stringify(data));
+
+    if (!data.ok) {
+      estadoEl.textContent = 'No autorizado: ' + (data.motivo || 'desconocido');
+      return;
+    }
+
+    log('tk recibido: ' + (data.tk || '(ninguno)'));
+    log('Iniciando el SDK...');
+
+    const client = ZoomMtgEmbedded.createClient();
+    await client.init({ zoomAppRoot: document.getElementById('meetingSDKElement'), language: 'es-ES', patchJsMedia: true });
+    log('SDK inicializado. Uniendo a la reunión con tk...');
+    await client.join({
+      signature: data.signature,
+      sdkKey: data.sdkKey,
+      meetingNumber: data.meetingNumber,
+      password: data.passcode,
+      userName: data.userName,
+      tk: data.tk,
+    });
+    log('¡Conectada! Revisa ahora el webhook/participant_joined en Orbit.');
+  } catch (e) {
+    log('Error: ' + (e && e.message ? e.message : JSON.stringify(e)));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', iniciar);
+</script>
+</body>
+</html>

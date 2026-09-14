@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -272,6 +272,37 @@ async function sesionClaseGratuitaAccion(req, res) {
   } catch (err) {
     console.error('mi-espacio-auth/sesion-clase-gratuita: Orbit no respondió:', err.message);
     return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, verificacionPendiente: true });
+  }
+}
+
+// Puerta 5 — Ensayo General, Estación 4 (Masterclass gratuita en_vivo vía
+// Meeting SDK embebido, diseño cerrado 2026-09-14): misma cookie
+// clase_gratuita_sesion que sesionClaseGratuitaAccion, mismo criterio de
+// seguridad — el resultado de Orbit solo se entrega si su
+// convocatoriaId coincide con el de la cookie ya verificada (nunca se
+// confía en que Orbit resolvió "la Convocatoria correcta" sin
+// comprobarlo aquí también, mismo candado que ya protege el contenido de
+// /clase-gratuita).
+async function masterclassZoomJoinAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const token = leerCookieClaseGratuita(req);
+  const datos = verificarTokenClaseGratuita(token);
+  if (!datos) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
+
+  try {
+    const resultado = await obtenerMasterclassZoomJoin(datos.correo, qaRelojDeRequest(req));
+    if (!resultado || resultado.ok !== true) return res.status(200).json(resultado || { ok: false, motivo: 'sin_respuesta' });
+    if (resultado.convocatoriaId !== datos.convocatoriaId) {
+      // Misma decision que sesionClaseGratuitaAccion: una cookie valida
+      // pero de otra Convocatoria nunca autoriza contenido de esta.
+      return res.status(200).json({ ok: false, motivo: 'convocatoria_no_coincide' });
+    }
+    const { convocatoriaId, ...resto } = resultado;
+    return res.status(200).json(resto);
+  } catch (err) {
+    console.error('mi-espacio-auth/masterclass-zoom-join: Orbit no respondió:', err.message);
+    return res.status(503).json({ ok: false, motivo: 'no_disponible' });
   }
 }
 
@@ -698,6 +729,7 @@ const ACCIONES = {
   'cuenta-solicitar': solicitarCuentaAccion,
   'registro-gratuito': registroGratuitoAccion,
   'sesion-clase-gratuita': sesionClaseGratuitaAccion,
+  'masterclass-zoom-join': masterclassZoomJoinAccion,
   'reclamar-sesion-clase-gratuita': reclamarSesionClaseGratuitaAccion,
   'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
   login: loginAccion,

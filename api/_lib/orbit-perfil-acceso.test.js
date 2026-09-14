@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -257,6 +257,40 @@ test('confirmarBootcampHitoVisto: Orbit responde error (ej. Hito no disponible) 
   }));
   await assert.rejects(() => confirmarBootcampHitoVisto('alumna@correo.com', 2), (err) => {
     assert.equal(err.motivo, 'hito_no_disponible');
+    return true;
+  });
+});
+
+// ── obtenerMasterclassZoomJoin (Puerta 5 — Ensayo General, Estación 4,
+// diseño cerrado 2026-09-14) — mismo patron que confirmarBootcampHitoVisto,
+// mas el mecanismo todo-o-nada de qaReloj (mismo que
+// obtenerExperienciaGratuitaActiva). ──
+
+test('obtenerMasterclassZoomJoin: llama a perfil-acceso?accion=masterclass-zoom-join con el secreto compartido y el correo', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200, json: async () => ({ ok: true, convocatoriaId: 'c1', meetingNumber: '82659498763' }),
+  }));
+  const resultado = await obtenerMasterclassZoomJoin('alumna@correo.com');
+  assert.deepEqual(resultado, { ok: true, convocatoriaId: 'c1', meetingNumber: '82659498763' });
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.match(url, /\/api\/v1\/perfil-acceso\?accion=masterclass-zoom-join$/);
+  assert.equal(opciones.headers['x-mi-espacio-secret'], 'shh-mi-espacio');
+  assert.deepEqual(JSON.parse(opciones.body), { correo: 'alumna@correo.com' });
+  assert.equal('x-qa-reloj-secret' in opciones.headers, false);
+});
+
+test('obtenerMasterclassZoomJoin: con qaReloj completo, reenvia los 2 headers', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
+  await obtenerMasterclassZoomJoin('alumna@correo.com', { secreto: 'shh-qa', simulado: '2026-09-27T00:30:00-05:00' });
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa');
+  assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-27T00:30:00-05:00');
+});
+
+test('obtenerMasterclassZoomJoin: Orbit responde error -> lanza con el motivo, nunca lo esconde', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: 'fase_no_en_vivo' }) }));
+  await assert.rejects(() => obtenerMasterclassZoomJoin('alumna@correo.com'), (err) => {
+    assert.equal(err.motivo, 'fase_no_en_vivo');
     return true;
   });
 });

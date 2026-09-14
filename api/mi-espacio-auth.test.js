@@ -265,6 +265,76 @@ test('sesion-clase-gratuita: SOLO uno de los dos headers QA -> no reenvia ningun
   assert.equal('x-qa-reloj-simulado' in headers, false);
 });
 
+// ── masterclass-zoom-join (Puerta 5 — Ensayo General, Estación 4, diseño
+// cerrado 2026-09-14) — misma cookie clase_gratuita_sesion, mismo
+// candado de convocatoriaId que sesion-clase-gratuita. ──
+
+test('masterclass-zoom-join: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'masterclass-zoom-join' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('masterclass-zoom-join: sin cookie -> ok:false sin_sesion, nunca llama a Orbit', async (t) => {
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'masterclass-zoom-join' }, headers: {} }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('masterclass-zoom-join: cookie valida + Orbit autoriza la MISMA convocatoria -> entrega los datos del SDK, sin exponer convocatoriaId', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ ok: true, convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, meetingNumber: '82659498763', passcode: 'X6Q39Z', signature: 'a.b.c', sdkKey: 'shh-sdk-id', userName: 'Alumna', tk: 'TOKEN123' }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'masterclass-zoom-join' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { ok: true, meetingNumber: '82659498763', passcode: 'X6Q39Z', signature: 'a.b.c', sdkKey: 'shh-sdk-id', userName: 'Alumna', tk: 'TOKEN123' });
+  assert.equal('convocatoriaId' in res.body, false, 'convocatoriaId es solo para verificar aqui, nunca se expone al navegador');
+});
+
+test('masterclass-zoom-join: cookie valida pero Orbit autoriza OTRA convocatoria -> ok:false convocatoria_no_coincide, nunca entrega los datos del SDK', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ ok: true, convocatoriaId: 'convocatoria-distinta', meetingNumber: '82659498763', signature: 'a.b.c', tk: 'TOKEN123' }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'masterclass-zoom-join' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'convocatoria_no_coincide' });
+});
+
+test('masterclass-zoom-join: Orbit responde ok:false (ej. fase_no_en_vivo via 409) -> se pasa tal cual, sin fabricar datos', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: false, motivo: 'zoom_no_configurado', enlaceGenerico: null }) }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'masterclass-zoom-join' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'zoom_no_configurado', enlaceGenerico: null });
+});
+
+test('masterclass-zoom-join: Orbit no responde (caido/timeout) -> 503, nunca lanza', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => { throw new Error('ECONNREFUSED'); });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'masterclass-zoom-join' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.equal(res.statusCode, 503);
+});
+
+test('masterclass-zoom-join: reenvia los headers QA al llamar a Orbit, tal como sesion-clase-gratuita', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true, convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId }) }));
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'masterclass-zoom-join' },
+    headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa', 'x-qa-reloj-simulado': '2026-09-27T00:30:00-05:00' },
+  }, res);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa');
+  assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-27T00:30:00-05:00');
+});
+
 // ── Confirma que mi_espacio_sesion no se ve afectada — ni por la existencia
 // del módulo nuevo, ni porque la cookie de clase gratuita viaje en el mismo
 // header. sesionAccion sigue usando exclusivamente su propia cookie. ──

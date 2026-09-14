@@ -229,6 +229,45 @@ async function confirmarBootcampHitoVisto(correo, hito) {
   }
 }
 
+// Puerta 5 — Ensayo General, Estación 4 (Masterclass gratuita en_vivo vía
+// Meeting SDK embebido, diseño cerrado 2026-09-14): mismo criterio de
+// frontera de identidad que confirmarBootcampHitoVisto — el correo
+// SIEMPRE viene de la sesion ya verificada del lado servidor (nunca uno
+// que el navegador proponga). `qaReloj` es opcional, mismo mecanismo
+// todo-o-nada ya usado en consultarPerfilAcceso — sin el, comportamiento
+// identico al de siempre.
+async function obtenerMasterclassZoomJoin(correo, qaReloj) {
+  if (!MI_ESPACIO_ORBIT_SECRET) {
+    throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=masterclass-zoom-join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
+      body: JSON.stringify({ correo }),
+      signal: controller.signal,
+    });
+    const cuerpo = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(cuerpo.error || `Orbit respondió ${res.status} al pedir el join de Zoom`);
+      err.motivo = cuerpo.error || `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return cuerpo;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // Puerta 2 — hallazgo real 2026-09-09 (prueba end-to-end en Preview): justo
 // después de que Orbit acepta un registro nuevo (escritura en /api/registro,
 // público), preguntar de inmediato por experienciaGratuitaActiva (lectura en
@@ -421,6 +460,7 @@ export {
   obtenerBootcampHitos,
   obtenerRecorridoHabilitado,
   confirmarBootcampHitoVisto,
+  obtenerMasterclassZoomJoin,
   crearRegistroAutenticado,
   registrarClaseGratuita,
   relayBotonVerMiClaseAOrbit,

@@ -110,13 +110,17 @@ function msTickClaseGratuita() {
   }
 
   // Puerta 2 — Slice 6: enlace del grupo de WhatsApp asignado a la
-  // convocatoria (rotación 1→2→3→4→1) — independiente de la fase (espera,
-  // en_vivo o replay: unirse al grupo tiene sentido en cualquiera). Solo
-  // se muestra si Orbit ya tiene un enlace real configurado para ese
-  // grupo (nunca se inventa uno) — `grupo` puede no existir en el DOM de
-  // paginas que no incluyan este boton, por eso el guard.
+  // convocatoria (rotación 1→2→3→4→1). Se muestra en espera y en replay
+  // (unirse al grupo tiene sentido ahi), pero NUNCA en en_vivo — decision
+  // de negocio cerrada 2026-09-14 (Ensayo General, Estación 4): a la hora
+  // de entrar a la clase queremos una sola jerarquia (entrar a la clase),
+  // sin una segunda puerta compitiendo al lado. El grupo ya cumplio su
+  // funcion antes de este momento. Solo se muestra ademas si Orbit ya
+  // tiene un enlace real configurado (nunca se inventa uno) — `grupo`
+  // puede no existir en el DOM de paginas que no incluyan este boton, por
+  // eso el guard.
   if (grupo) {
-    if (exp.enlaceGrupoWhatsapp) {
+    if (exp.fase !== 'en_vivo' && exp.enlaceGrupoWhatsapp) {
       grupo.href = exp.enlaceGrupoWhatsapp;
       grupo.style.display = 'inline-block';
     } else {

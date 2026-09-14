@@ -151,8 +151,13 @@ async function obtenerTieneRegistroHistorico(correo) {
 // Convocatoria le corresponde a esta Persona y si su ventana comercial esta
 // abierta; Mi Espacio nunca elige ninguna Convocatoria por su cuenta, solo
 // representa este resultado ya calculado.
-async function obtenerOportunidadBootcampActiva(correo) {
-  const perfil = await consultarPerfilAcceso(correo);
+//
+// Puerta 5 — Ensayo General, Estación 3 (hallazgo 2026-09-14): hasta este
+// corte no reenviaba `qaReloj` (a diferencia de obtenerExperienciaGratuitaActiva,
+// su vecino exacto arriba) — imposible de probar con el reloj QA end-to-end.
+// Ahora es un espejo real, no solo de forma.
+async function obtenerOportunidadBootcampActiva(correo, qaReloj) {
+  const perfil = await consultarPerfilAcceso(correo, qaReloj);
   return perfil.oportunidadBootcampActiva || null;
 }
 

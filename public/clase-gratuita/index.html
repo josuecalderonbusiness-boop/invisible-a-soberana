@@ -92,8 +92,21 @@ a { color: inherit; }
   </div>
 
   <div class="cg-estado" id="cg-finalizada" style="display:none">
-    <h1>Tu clase ha terminado</h1>
+    <h1>Tu oportunidad ha terminado</h1>
     <p>Gracias por haber estado aquí.</p>
+  </div>
+
+  <!-- Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
+       2026-09-14): experienciaGratuitaActiva ya vencio (sin video), pero
+       oportunidadBootcampActiva.abierta sigue true — la ventana comercial
+       del Bootcamp cierra mas tarde que las 72h del replay gratuito (ver
+       calcularVentanaComercial, lib/convocatoria.js en orbit-mc). Unica
+       accion: la CTA de Código Soberana, mismo checkout que ms-clase-card
+       de abajo. -->
+  <div class="cg-estado" id="cg-replay-vencido-oportunidad-abierta" style="display:none">
+    <h1>Tu clase ha terminado</h1>
+    <p>Ahora puedes entrar a Código Soberana.</p>
+    <a class="ms-invite-btn" id="cg-btn-codigo-soberana-vencido" href="#" target="_blank" style="display:inline-block;margin-top:18px;text-decoration:none">Entrar a Código Soberana →</a>
   </div>
 
   <div class="ms-invite-card" id="ms-clase-card" style="display:none">
@@ -108,6 +121,12 @@ a { color: inherit; }
     </div>
     <div class="db-video-box" id="ms-clase-video" style="display:none"></div>
     <a class="ms-invite-btn" id="ms-clase-btn" href="#" target="_blank" style="display:none">→</a>
+    <!-- Puerta 5 — Ensayo General, Estación 3 (PRIORIDAD MAXIMA, decision de
+         negocio cerrada 2026-09-14): CTA comercial hacia Código Soberana,
+         visible en en_vivo Y en replay — nunca se espera a que el replay
+         venza. Ver experiencia-gratuita.js (mostrarCtaComercial). -->
+    <p class="ms-invite-sub" id="ms-clase-cta-label" style="display:none;margin-top:16px;margin-bottom:8px">Código Soberana está disponible</p>
+    <a class="ms-invite-btn" id="ms-clase-cta-comercial" href="#" target="_blank" style="display:none">Entrar a Código Soberana →</a>
     <a class="ms-invite-btn" id="ms-clase-calendario" href="#" target="_blank" style="display:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Añadir a mi calendario</a>
     <a class="ms-invite-btn" id="ms-clase-grupo" href="#" target="_blank" rel="noopener" style="display:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Unirme al grupo de WhatsApp →</a>
   </div>
@@ -120,6 +139,7 @@ a { color: inherit; }
 // través de /api/mi-espacio-sesion-clase-gratuita. Nunca lee ni depende de
 // mi_espacio_sesion — esta vista no sabe que esa cookie existe.
 let dbExperienciaGratuita = null; // mismo nombre que espera experiencia-gratuita.js
+let dbOportunidadBootcamp = null; // Puerta 5, Estación 3 — { cohorteId, abierta } | null, mismo nombre que espera experiencia-gratuita.js (CTA opcional)
 
 // Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
 // SOLO existe para el ensayo — no forma parte de la experiencia real de
@@ -173,13 +193,25 @@ async function cgInit() {
     }
     if (!data.experienciaGratuitaActiva) {
       // autorizado:true pero sin experiencia activa = la clase ya terminó
-      // (o era de otra convocatoria) — nunca se muestra contenido protegido
-      // ni nada de Código Soberana aquí todavía (slice posterior).
-      document.getElementById('cg-finalizada').style.display = 'block';
+      // (o era de otra convocatoria). Puerta 5 — Ensayo General, Estación 3
+      // (decision de negocio cerrada 2026-09-14): antes de este corte esto
+      // siempre caia en "Tu oportunidad ha terminado" sin mas — un
+      // callejon sin salida real para la unica pagina que alcanza una mujer
+      // sin cuenta. Ahora se distingue si la ventana comercial del
+      // Bootcamp (que cierra MAS TARDE que las 72h del replay gratuito,
+      // ver calcularVentanaComercial en orbit-mc) sigue abierta.
+      const oportunidadAbierta = !!(data.oportunidadBootcampActiva && data.oportunidadBootcampActiva.abierta);
+      if (oportunidadAbierta) {
+        document.getElementById('cg-btn-codigo-soberana-vencido').href = CODIGO_SOBERANA_CHECKOUT_URL;
+        document.getElementById('cg-replay-vencido-oportunidad-abierta').style.display = 'block';
+      } else {
+        document.getElementById('cg-finalizada').style.display = 'block';
+      }
       return;
     }
 
     dbExperienciaGratuita = data.experienciaGratuitaActiva;
+    dbOportunidadBootcamp = data.oportunidadBootcampActiva || null;
     msRenderClaseGratuita();
   } catch (e) {
     document.getElementById('cg-cargando').style.display = 'none';

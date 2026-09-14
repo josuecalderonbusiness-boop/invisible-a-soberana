@@ -195,7 +195,58 @@ test('sesion-clase-gratuita: cookie válida + experiencia activa vigente → dev
   mockFetchPerfilAcceso(t);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null });
+});
+
+// Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
+// 2026-09-14, PRIORIDAD MAXIMA): oportunidadBootcampActiva ahora viaja en
+// la misma respuesta — /clase-gratuita la necesita para la CTA comercial
+// durante en_vivo/replay y para distinguir el cierre del replay (ver
+// experiencia-gratuita.js y cgInit() en clase-gratuita/index.html). Nunca
+// se ata a datos.convocatoriaId (a diferencia de experienciaGratuitaActiva
+// arriba) — es la oportunidad de la Persona, no de una Convocatoria puntual.
+test('sesion-clase-gratuita: oportunidadBootcampActiva abierta viaja tal cual, incluso si la experiencia gratuita ya vencio', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+});
+
+test('sesion-clase-gratuita: oportunidadBootcampActiva se conserva aunque la cookie sea de OTRA convocatoria (nunca se ata a datos.convocatoriaId)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', 'convocatoria-vieja', CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  // experienciaGratuitaActiva se anula por el candado de convocatoriaId (test ya existente abajo);
+  // oportunidadBootcampActiva NO tiene ese candado, se conserva.
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+});
+
+test('sesion-clase-gratuita: reenvia los headers QA tambien para resolver oportunidadBootcampActiva (antes de este corte, no los reenviaba)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const llamadas = [];
+  t.mock.method(global, 'fetch', async (url, opts) => {
+    llamadas.push(opts && opts.headers);
+    return { ok: true, status: 200, json: async () => ({ experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } }) };
+  });
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'sesion-clase-gratuita' },
+    headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa', 'x-qa-reloj-simulado': '2026-09-30T02:00:00-05:00' },
+  }, res);
+  assert.equal(llamadas.length, 2, 'dos llamadas en paralelo a Orbit: experiencia + oportunidad');
+  for (const headers of llamadas) {
+    assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
+    assert.equal(headers['x-qa-reloj-simulado'], '2026-09-30T02:00:00-05:00');
+  }
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
 });
 
 test('sesion-clase-gratuita: el secreto de clase gratuita nunca aparece en la respuesta al navegador', async (t) => {
@@ -212,7 +263,7 @@ test('sesion-clase-gratuita: cookie válida pero la experiencia ya terminó (Orb
   mockFetchPerfilAcceso(t, null);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null });
 });
 
 test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya la registró para una nueva) → no autoriza contenido de la vieja', async (t) => {
@@ -220,7 +271,7 @@ test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya 
   mockFetchPerfilAcceso(t); // Orbit devuelve experienciaGratuitaActiva de CONVOCATORIA_MOCK.convocatoriaId, distinta de 'convocatoria-vieja'
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null });
 });
 
 // ── Puente QA temporal (Puerta 5, Ensayo General, Estación 4, 2026-09-13):
@@ -236,7 +287,7 @@ test('sesion-clase-gratuita: SIN headers QA en la peticion -> nunca los reenvia 
   const headers = leerHeaders();
   assert.equal('x-qa-reloj-secret' in headers, false);
   assert.equal('x-qa-reloj-simulado' in headers, false);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null });
 });
 
 test('sesion-clase-gratuita: CON los 2 headers QA en la peticion -> los reenvia tal cual a Orbit', async (t) => {

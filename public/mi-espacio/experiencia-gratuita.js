@@ -15,6 +15,15 @@
 // ms-clase-sub, ms-clase-countdown, ms-clase-cd-{d,h,m,s}, ms-clase-video,
 // ms-clase-btn, ms-clase-calendario, ms-clase-card).
 //
+// Puerta 5 — Ensayo General, Estación 3 (2026-09-14): CTA comercial hacia
+// Código Soberana, opcional — solo se activa si quien carga el script
+// TAMBIEN declara una variable global `dbOportunidadBootcamp` (objeto
+// oportunidadBootcampActiva de Orbit, o null) y los elementos
+// ms-clase-cta-label/ms-clase-cta-comercial. Ninguno de los dos es
+// obligatorio (mismo guard `if (elemento)` que ya usa ms-clase-grupo) —
+// /mi-espacio no los declara (tiene su propia tarjeta de Bootcamp separada)
+// y sigue funcionando exactamente igual que antes de este corte.
+//
 // Script clásico, sin módulos — mismo estilo que el resto del proyecto (sin
 // bundler, cada página se basta con <script src="...">).
 
@@ -48,6 +57,20 @@ function msFinReplayMs(exp) { return msFinClaseMs(exp) + exp.ventanaReplayHoras 
 // que el iframe se cree una sola vez por carga de pagina.
 let _msUltimoVideoReplayRenderizado = null;
 
+// Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
+// 2026-09-14, PRIORIDAD MAXIMA): la Masterclass gratuita es la puerta de
+// entrada a Código Soberana, no un fin en si misma — la CTA comercial debe
+// existir desde en_vivo y permanecer durante todo el replay (72h), nunca
+// esperar a que la experiencia gratuita venza. Mismo checkout permanente
+// que ya usa /mi-espacio (ms-bootcamp-abierto-btn, BOOTCAMP_CHECKOUT_URL en
+// mi-espacio/index.html) — const CON OTRO NOMBRE a proposito: mi-espacio
+// carga este archivo Y declara su propio BOOTCAMP_CHECKOUT_URL en su script
+// inline, en el mismo scope global de esa pagina — dos `const` con el mismo
+// nombre ahi chocarian (SyntaxError). Si el valor del checkout cambia,
+// actualizar los DOS lugares (no hay bundler, cada pagina se basta con su
+// propio <script src>, ver encabezado de este archivo).
+const CODIGO_SOBERANA_CHECKOUT_URL = 'https://pay.hotmart.com/A107564829Y?bid=1789093799825';
+
 function msRenderClaseGratuita() {
   clearInterval(window._msClaseInterval);
   _msUltimoVideoReplayRenderizado = null;
@@ -70,6 +93,8 @@ function msTickClaseGratuita() {
   const btn = document.getElementById('ms-clase-btn');
   const cal = document.getElementById('ms-clase-calendario');
   const grupo = document.getElementById('ms-clase-grupo');
+  const ctaLabel = document.getElementById('ms-clase-cta-label');
+  const ctaComercial = document.getElementById('ms-clase-cta-comercial');
 
   const fechaTexto = new Date(exp.fechaHora).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
 
@@ -119,18 +144,42 @@ function msTickClaseGratuita() {
     }
   }
 
+  // Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
+  // 2026-09-14, PRIORIDAD MAXIMA): CTA comercial hacia Código Soberana,
+  // visible en en_vivo Y en replay por igual — nunca se espera a que el
+  // replay venza. Se condiciona a oportunidadBootcampActiva.abierta (nunca
+  // solo a la fase): si la Persona ya tiene acceso vigente a Código
+  // Soberana, Orbit devuelve oportunidadBootcampActiva:null y esta CTA
+  // jamas se ofrece (nunca se le vuelve a vender lo que ya tiene). Mismo
+  // guard `if (elemento)` que `grupo` arriba — /mi-espacio no declara estos
+  // ids en su propio ms-clase-card (tiene su propia tarjeta de Bootcamp
+  // separada, ms-bootcamp-abierto-card en mi-espacio/index.html), asi que
+  // esto no le afecta en absoluto.
+  const mostrarCtaComercial = (exp.fase === 'en_vivo' || exp.fase === 'replay') &&
+    !!dbOportunidadBootcamp && dbOportunidadBootcamp.abierta === true;
+  if (ctaComercial) {
+    ctaComercial.style.display = mostrarCtaComercial ? 'inline-block' : 'none';
+    if (mostrarCtaComercial) ctaComercial.href = CODIGO_SOBERANA_CHECKOUT_URL;
+  }
+  if (ctaLabel) ctaLabel.style.display = mostrarCtaComercial ? 'block' : 'none';
+
   // Puerta 2 — Slice 6: enlace del grupo de WhatsApp asignado a la
   // convocatoria (rotación 1→2→3→4→1). Se muestra en espera y en replay
   // (unirse al grupo tiene sentido ahi), pero NUNCA en en_vivo — decision
   // de negocio cerrada 2026-09-14 (Ensayo General, Estación 4): a la hora
   // de entrar a la clase queremos una sola jerarquia (entrar a la clase),
   // sin una segunda puerta compitiendo al lado. El grupo ya cumplio su
-  // funcion antes de este momento. Solo se muestra ademas si Orbit ya
-  // tiene un enlace real configurado (nunca se inventa uno) — `grupo`
-  // puede no existir en el DOM de paginas que no incluyan este boton, por
-  // eso el guard.
+  // funcion antes de este momento.
+  // Puerta 5 — Ensayo General, Estación 3 (2026-09-14): tampoco se muestra
+  // cuando la CTA comercial esta activa — "no debe competir" (requisito
+  // explicito de negocio). Esto es una supresion mecanica, NO el
+  // rediseño/copy de WhatsApp en replay que sigue pendiente aparte, sin
+  // tocar, como ajuste UX independiente.
+  // Solo se muestra ademas si Orbit ya tiene un enlace real configurado
+  // (nunca se inventa uno) — `grupo` puede no existir en el DOM de paginas
+  // que no incluyan este boton, por eso el guard.
   if (grupo) {
-    if (exp.fase !== 'en_vivo' && exp.enlaceGrupoWhatsapp) {
+    if (exp.fase !== 'en_vivo' && !mostrarCtaComercial && exp.enlaceGrupoWhatsapp) {
       grupo.href = exp.enlaceGrupoWhatsapp;
       grupo.style.display = 'inline-block';
     } else {

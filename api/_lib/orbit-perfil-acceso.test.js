@@ -196,6 +196,25 @@ test('obtenerOportunidadBootcampActiva: null explicito de Orbit (oportunidad cer
   assert.equal(await obtenerOportunidadBootcampActiva('alumna@correo.com'), null);
 });
 
+// Puerta 5 — Ensayo General, Estación 3 (hallazgo 2026-09-14): hasta este
+// corte, a diferencia de obtenerExperienciaGratuitaActiva (arriba), esta
+// funcion no reenviaba qaReloj — imposible de probar con reloj QA.
+test('obtenerOportunidadBootcampActiva: CON qaReloj completo -> agrega los 2 headers tal cual (antes de este corte, no los agregaba)', async (t) => {
+  const leer = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [], oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+  await obtenerOportunidadBootcampActiva('alumna@correo.com', { secreto: 'shh-qa', simulado: '2026-09-30T02:00:00-05:00' });
+  const { headers } = leer();
+  assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
+  assert.equal(headers['x-qa-reloj-simulado'], '2026-09-30T02:00:00-05:00');
+});
+
+test('obtenerOportunidadBootcampActiva: SIN qaReloj -> nunca agrega los headers QA (regresión, comportamiento normal)', async (t) => {
+  const leer = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [], oportunidadBootcampActiva: null });
+  await obtenerOportunidadBootcampActiva('alumna@correo.com');
+  const { headers } = leer();
+  assert.equal('x-qa-reloj-secret' in headers, false);
+  assert.equal('x-qa-reloj-simulado' in headers, false);
+});
+
 // ── obtenerReplayCompradoActivo (Puerta 3, Replay $5, diseño cerrado
 // 2026-09-11) — mismo patron espejo, independiente de experienciaGratuita/
 // oportunidadBootcamp. ──

@@ -258,20 +258,35 @@ async function sesionClaseGratuitaAccion(req, res) {
   const datos = verificarTokenClaseGratuita(token);
   if (!datos) return res.status(200).json({ autorizado: false });
 
+  const qaReloj = qaRelojDeRequest(req);
   try {
-    const experiencia = await obtenerExperienciaGratuitaActiva(datos.correo, qaRelojDeRequest(req));
+    // Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
+    // 2026-09-14): la Masterclass gratuita es la puerta de entrada a Código
+    // Soberana, no un fin en si misma — /clase-gratuita necesita
+    // oportunidadBootcampActiva para poder mostrar la CTA comercial durante
+    // en_vivo/replay y en el cierre del replay (ver experiencia-gratuita.js
+    // y cgInit() en public/clase-gratuita/index.html). Ambas lecturas en
+    // paralelo, mismo patron ya usado en las demas acciones de este archivo
+    // (ver perfilAccesoAccion/cuentaConsultarAccion mas abajo).
+    const [experiencia, oportunidadBootcampActiva] = await Promise.all([
+      obtenerExperienciaGratuitaActiva(datos.correo, qaReloj),
+      obtenerOportunidadBootcampActiva(datos.correo, qaReloj),
+    ]);
     // Una cookie valida sin experiencia activa (terminada, o de una
     // convocatoria distinta a la que Orbit reconoce hoy para este correo)
     // sigue siendo una cookie legitima — solo que no autoriza a ver
     // contenido de clase. autorizado:true + experienciaGratuitaActiva:null
     // es exactamente esa distincion (identidad valida vs. nada que mostrar).
-    if (!experiencia || experiencia.convocatoriaId !== datos.convocatoriaId) {
-      return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null });
-    }
-    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: experiencia });
+    // oportunidadBootcampActiva NUNCA se ata a datos.convocatoriaId (a
+    // diferencia de experienciaGratuitaActiva arriba) — no es una propiedad
+    // de UNA convocatoria puntual, es "la oportunidad de esta Persona ahora
+    // mismo" (resolverCohorteDePersona, lib/convocatoria.js), independiente
+    // de cual Convocatoria trae la cookie.
+    const experienciaGratuitaActiva = (experiencia && experiencia.convocatoriaId === datos.convocatoriaId) ? experiencia : null;
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva, oportunidadBootcampActiva });
   } catch (err) {
     console.error('mi-espacio-auth/sesion-clase-gratuita: Orbit no respondió:', err.message);
-    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, verificacionPendiente: true });
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, verificacionPendiente: true });
   }
 }
 

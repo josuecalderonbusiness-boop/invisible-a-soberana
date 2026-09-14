@@ -237,6 +237,20 @@ async function proximaConvocatoriaPublicaAccion(req, res) {
 // identidad + convocatoria. Respuesta deliberadamente angosta: jamas
 // `compras`, jamas `emailVerified`, nada que pertenezca al mundo de una
 // Cuenta permanente (frontera aprobada 2026-09-09).
+// Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
+// reenvía los 2 headers de reloj QA hacia Orbit SOLO si ambos llegan en la
+// petición entrante — todo-o-nada, sin valores por defecto. El teléfono
+// nunca manda esto directamente: la página los lee de un query param una
+// sola vez y los guarda en sessionStorage (ver public/clase-gratuita).
+// La autoridad real es Orbit (resolverAhoraQA, Corte 9); esta función solo
+// transporta lo que ya llegó, nunca inventa ni valida el secreto.
+function qaRelojDeRequest(req) {
+  const secreto = req.headers['x-qa-reloj-secret'];
+  const simulado = req.headers['x-qa-reloj-simulado'];
+  if (!secreto || !simulado) return undefined;
+  return { secreto, simulado };
+}
+
 async function sesionClaseGratuitaAccion(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -245,7 +259,7 @@ async function sesionClaseGratuitaAccion(req, res) {
   if (!datos) return res.status(200).json({ autorizado: false });
 
   try {
-    const experiencia = await obtenerExperienciaGratuitaActiva(datos.correo);
+    const experiencia = await obtenerExperienciaGratuitaActiva(datos.correo, qaRelojDeRequest(req));
     // Una cookie valida sin experiencia activa (terminada, o de una
     // convocatoria distinta a la que Orbit reconoce hoy para este correo)
     // sigue siendo una cookie legitima — solo que no autoriza a ver

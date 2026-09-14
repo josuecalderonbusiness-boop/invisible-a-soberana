@@ -113,6 +113,58 @@ test('obtenerExperienciaGratuitaActiva: devuelve el objeto tal como lo manda Orb
   assert.deepEqual(await obtenerExperienciaGratuitaActiva('alumna@correo.com'), experiencia);
 });
 
+// ── Puente QA temporal (Puerta 5, Ensayo General, Estación 4, 2026-09-13):
+// consultarPerfilAcceso/obtenerExperienciaGratuitaActiva reenvían los 2
+// headers de reloj QA SOLO cuando ambos vienen presentes — todo-o-nada, sin
+// valores por defecto. Sin `qaReloj`, el comportamiento debe ser idéntico
+// (regresión) al de antes de este cambio. ──
+
+function mockFetchCapturaHeaders(t, body, ok = true) {
+  let capturado = null;
+  t.mock.method(global, 'fetch', async (url, opts) => {
+    capturado = { url, headers: opts.headers };
+    return { ok, status: ok ? 200 : 500, json: async () => body };
+  });
+  return () => capturado;
+}
+
+test('obtenerExperienciaGratuitaActiva: SIN qaReloj -> nunca agrega los headers QA (regresión, comportamiento idéntico a antes)', async (t) => {
+  const leer = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com');
+  const { headers } = leer();
+  assert.equal('x-qa-reloj-secret' in headers, false);
+  assert.equal('x-qa-reloj-simulado' in headers, false);
+  assert.equal(headers['x-mi-espacio-secret'], 'shh-mi-espacio'); // el header real de siempre sigue intacto
+});
+
+test('obtenerExperienciaGratuitaActiva: CON qaReloj completo -> agrega los 2 headers tal cual', async (t) => {
+  const leer = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com', { secreto: 'shh-qa', simulado: '2026-09-26T19:00:00-05:00' });
+  const { headers } = leer();
+  assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
+  assert.equal(headers['x-qa-reloj-simulado'], '2026-09-26T19:00:00-05:00');
+});
+
+test('obtenerExperienciaGratuitaActiva: qaReloj con SOLO uno de los dos campos -> no agrega ninguno (todo-o-nada)', async (t) => {
+  const leer1 = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com', { secreto: 'shh-qa' });
+  assert.equal('x-qa-reloj-secret' in leer1().headers, false);
+
+  const leer2 = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com', { simulado: '2026-09-26T19:00:00-05:00' });
+  assert.equal('x-qa-reloj-simulado' in leer2().headers, false);
+});
+
+test('obtenerExperienciaGratuitaActiva: qaReloj vacío ({}) o undefined -> sin headers QA, mismo resultado', async (t) => {
+  const leer1 = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com', {});
+  assert.equal('x-qa-reloj-secret' in leer1().headers, false);
+
+  const leer2 = mockFetchCapturaHeaders(t, { nombre: 'Alumna', programas: [], registros: [] });
+  await obtenerExperienciaGratuitaActiva('alumna@correo.com', undefined);
+  assert.equal('x-qa-reloj-secret' in leer2().headers, false);
+});
+
 // ── obtenerTieneRegistroHistorico / obtenerOportunidadBootcampActiva
 // (Puerta 2, Bootcamp Codigo Soberana, diseño cerrado 2026-09-11) — mismo
 // patron espejo que obtenerExperienciaGratuitaActiva. Orbit ya resuelve

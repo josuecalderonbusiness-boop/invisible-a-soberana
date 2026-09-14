@@ -121,9 +121,43 @@ a { color: inherit; }
 // mi_espacio_sesion — esta vista no sabe que esa cookie existe.
 let dbExperienciaGratuita = null; // mismo nombre que espera experiencia-gratuita.js
 
+// Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
+// SOLO existe para el ensayo — no forma parte de la experiencia real de
+// ninguna mujer. Lee ?qaReloj=<secreto>&qaAhora=<ISO> UNA vez al cargar,
+// lo guarda en sessionStorage (nunca localStorage — se pierde al cerrar la
+// pestaña, a propósito) y limpia la URL de inmediato con
+// history.replaceState para que el secreto nunca quede visible en la barra
+// de direcciones ni se pueda reenviar por accidente (compartir el enlace,
+// capturas de pantalla). Todo-o-nada: si falta cualquiera de los dos
+// valores, no se guarda nada y el comportamiento es idéntico al de
+// siempre. La autoridad real de si esto hace algo es exclusivamente de
+// Orbit (QA_RELOJ_SECRET, Corte 9) — esta página nunca valida el secreto,
+// solo lo transporta.
+function cgCapturarQaRelojDeUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const secreto = params.get('qaReloj');
+  const simulado = params.get('qaAhora');
+  if (secreto && simulado) {
+    sessionStorage.setItem('qaRelojSecreto', secreto);
+    sessionStorage.setItem('qaRelojSimulado', simulado);
+    params.delete('qaReloj');
+    params.delete('qaAhora');
+    const nuevaQuery = params.toString();
+    const nuevaUrl = window.location.pathname + (nuevaQuery ? '?' + nuevaQuery : '') + window.location.hash;
+    window.history.replaceState({}, '', nuevaUrl);
+  }
+}
+
+function cgHeadersQaReloj() {
+  const secreto = sessionStorage.getItem('qaRelojSecreto');
+  const simulado = sessionStorage.getItem('qaRelojSimulado');
+  if (!secreto || !simulado) return {};
+  return { 'x-qa-reloj-secret': secreto, 'x-qa-reloj-simulado': simulado };
+}
+
 async function cgInit() {
   try {
-    const res = await fetch('/api/mi-espacio-sesion-clase-gratuita', { credentials: 'include' });
+    const res = await fetch('/api/mi-espacio-sesion-clase-gratuita', { credentials: 'include', headers: cgHeadersQaReloj() });
     const data = await res.json();
     document.getElementById('cg-cargando').style.display = 'none';
 
@@ -209,6 +243,7 @@ function cgInitFormularioCorreo() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  cgCapturarQaRelojDeUrl();
   cgInitFormularioCorreo();
   cgInit();
 });

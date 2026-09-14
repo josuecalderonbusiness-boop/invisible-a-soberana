@@ -24,7 +24,21 @@ const ORBIT_BASE_URL = process.env.ORBIT_BASE_URL || 'https://orbit-mc-six.verce
 const MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET;
 const TIMEOUT_MS = 4000; // Conversación interactiva (contrato cerrado 2026-08-02) — la alumna espera en pantalla.
 
-async function consultarPerfilAcceso(correo) {
+// Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
+// `qaReloj` es opcional y TODO-O-NADA — solo se agregan los 2 headers si
+// ambos campos vienen presentes ({ secreto, simulado }), nunca uno solo y
+// nunca un valor por defecto. Sin `qaReloj`, esta función es byte-por-byte
+// idéntica a como era antes de este cambio. La autoridad real de si esos
+// headers hacen algo vive enteramente del lado de Orbit (resolverAhoraQA,
+// Corte 9) — timingSafeEqual contra QA_RELOJ_SECRET, que además NUNCA se
+// deja configurada en Production fuera de la ventana explícita de un
+// ensayo. Este archivo solo transporta, nunca decide ni valida el secreto.
+function headersQaReloj(qaReloj) {
+  if (!qaReloj || !qaReloj.secreto || !qaReloj.simulado) return {};
+  return { 'x-qa-reloj-secret': qaReloj.secreto, 'x-qa-reloj-simulado': qaReloj.simulado };
+}
+
+async function consultarPerfilAcceso(correo, qaReloj) {
   if (!MI_ESPACIO_ORBIT_SECRET) {
     throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
   }
@@ -33,7 +47,7 @@ async function consultarPerfilAcceso(correo) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
       body: JSON.stringify({ correo }),
       signal: controller.signal
     });
@@ -113,8 +127,8 @@ async function obtenerProximaConvocatoriaDisponible(correo) {
 // { convocatoriaId, fechaHora, duracionEstimada, ventanaReplayHoras, fase,
 // enlaceEnVivo, enlaceReplay } | null — fase en {espera,en_vivo,replay},
 // nunca 'vencido' (esa es la ausencia del campo, null).
-async function obtenerExperienciaGratuitaActiva(correo) {
-  const perfil = await consultarPerfilAcceso(correo);
+async function obtenerExperienciaGratuitaActiva(correo, qaReloj) {
+  const perfil = await consultarPerfilAcceso(correo, qaReloj);
   return perfil.experienciaGratuitaActiva || null;
 }
 

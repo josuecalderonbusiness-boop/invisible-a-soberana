@@ -129,6 +129,19 @@ const CONVOCATORIA_MOCK = {
   enlaceReplay: null,
 };
 
+// Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
+// captura los headers reales con los que se llamó a fetch, para confirmar
+// que sesion-clase-gratuita reenvía (o no) los 2 headers QA segun lo que
+// traiga la peticion entrante — nunca inventa nada.
+function mockFetchPerfilAccesoCapturaHeaders(t, experiencia = CONVOCATORIA_MOCK) {
+  let capturado = null;
+  t.mock.method(global, 'fetch', async (url, opts) => {
+    capturado = opts && opts.headers;
+    return { ok: true, status: 200, json: async () => ({ programas: [], registros: [], experienciaGratuitaActiva: experiencia }) };
+  });
+  return () => capturado;
+}
+
 function mockFetchPerfilAcceso(t, experiencia = CONVOCATORIA_MOCK) {
   return t.mock.method(global, 'fetch', async (url) => {
     if (String(url).includes('/api/v1/perfil-acceso')) {
@@ -208,6 +221,48 @@ test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya 
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
   assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null });
+});
+
+// ── Puente QA temporal (Puerta 5, Ensayo General, Estación 4, 2026-09-13):
+// sesion-clase-gratuita reenvía los 2 headers QA hacia Orbit solo cuando
+// ambos vienen en la petición entrante — todo-o-nada. Sin ellos (el caso de
+// siempre, cualquier mujer real), el comportamiento es idéntico a antes. ──
+
+test('sesion-clase-gratuita: SIN headers QA en la peticion -> nunca los reenvia a Orbit (regresion, comportamiento normal)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  const headers = leerHeaders();
+  assert.equal('x-qa-reloj-secret' in headers, false);
+  assert.equal('x-qa-reloj-simulado' in headers, false);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK });
+});
+
+test('sesion-clase-gratuita: CON los 2 headers QA en la peticion -> los reenvia tal cual a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'sesion-clase-gratuita' },
+    headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa', 'x-qa-reloj-simulado': '2026-09-26T19:00:00-05:00' },
+  }, res);
+  const headers = leerHeaders();
+  assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
+  assert.equal(headers['x-qa-reloj-simulado'], '2026-09-26T19:00:00-05:00');
+});
+
+test('sesion-clase-gratuita: SOLO uno de los dos headers QA -> no reenvia ninguno (todo-o-nada)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'sesion-clase-gratuita' },
+    headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa' },
+  }, res);
+  const headers = leerHeaders();
+  assert.equal('x-qa-reloj-secret' in headers, false);
+  assert.equal('x-qa-reloj-simulado' in headers, false);
 });
 
 // ── Confirma que mi_espacio_sesion no se ve afectada — ni por la existencia

@@ -40,8 +40,17 @@ function dbFmtCountdown(prefijo, diffMs) {
 function msFinClaseMs(exp) { return new Date(exp.fechaHora).getTime() + exp.duracionEstimada * 1000; }
 function msFinReplayMs(exp) { return msFinClaseMs(exp) + exp.ventanaReplayHoras * 3600000; }
 
+// Puerta 5 — Ensayo General (hallazgo real 2026-09-14): msTickClaseGratuita
+// corre cada 1s para refrescar el contador, pero el video de replay NUNCA
+// debe reconstruirse en cada tick — recrear el <iframe> cada segundo lo
+// hace parpadear y nunca reproducir (cualquier intento de play se borra un
+// segundo despues). Este flag recuerda que enlace ya quedo pintado, para
+// que el iframe se cree una sola vez por carga de pagina.
+let _msUltimoVideoReplayRenderizado = null;
+
 function msRenderClaseGratuita() {
   clearInterval(window._msClaseInterval);
+  _msUltimoVideoReplayRenderizado = null;
   const card = document.getElementById('ms-clase-card');
   if (!dbExperienciaGratuita) { card.style.display = 'none'; return; }
 
@@ -96,16 +105,17 @@ function msTickClaseGratuita() {
     countdown.style.display = 'flex';
     dbFmtCountdown('ms-clase-cd', msFinReplayMs(exp) - Date.now());
     cal.style.display = 'none';
-    if (exp.enlaceReplay) {
-      sub.textContent = 'Disponible por tiempo limitado.';
-      btn.style.display = 'none';
-      video.style.display = 'block';
-      video.innerHTML = '<iframe src="' + exp.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>';
-    } else {
-      sub.textContent = 'El video se activa aquí apenas esté listo.';
-      video.style.display = 'block';
-      video.innerHTML = '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
-      btn.style.display = 'none';
+    btn.style.display = 'none';
+    video.style.display = 'block';
+    sub.textContent = exp.enlaceReplay ? 'Disponible por tiempo limitado.' : 'El video se activa aquí apenas esté listo.';
+    // Solo se toca el DOM del video cuando el enlace efectivamente cambia
+    // (primera vez que se pinta esta pagina) — nunca en cada tick del
+    // contador, para no destruir un video que ya esta reproduciendose.
+    if (_msUltimoVideoReplayRenderizado !== (exp.enlaceReplay || null)) {
+      video.innerHTML = exp.enlaceReplay
+        ? '<iframe src="' + exp.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>'
+        : '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
+      _msUltimoVideoReplayRenderizado = exp.enlaceReplay || null;
     }
   }
 

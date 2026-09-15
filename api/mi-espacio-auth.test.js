@@ -133,13 +133,19 @@ const CONVOCATORIA_MOCK = {
 // captura los headers reales con los que se llamó a fetch, para confirmar
 // que sesion-clase-gratuita reenvía (o no) los 2 headers QA segun lo que
 // traiga la peticion entrante — nunca inventa nada.
+//
+// Puerta 5, Estación 3, PRIORIDAD MAXIMA (2026-09-14): sesion-clase-gratuita
+// ahora hace 4 llamadas en paralelo (experiencia, oportunidad, replay
+// comprado, tiene Código Soberana) — las 2 primeras SI reenvian qaReloj, las
+// otras 2 NUNCA (son derechos permanentes, no ventanas de tiempo). Se
+// captura la lista completa; cada test decide que verificar sobre ella.
 function mockFetchPerfilAccesoCapturaHeaders(t, experiencia = CONVOCATORIA_MOCK) {
-  let capturado = null;
+  const llamadas = [];
   t.mock.method(global, 'fetch', async (url, opts) => {
-    capturado = opts && opts.headers;
+    llamadas.push(opts && opts.headers);
     return { ok: true, status: 200, json: async () => ({ programas: [], registros: [], experienciaGratuitaActiva: experiencia }) };
   });
-  return () => capturado;
+  return () => llamadas;
 }
 
 function mockFetchPerfilAcceso(t, experiencia = CONVOCATORIA_MOCK) {
@@ -195,7 +201,7 @@ test('sesion-clase-gratuita: cookie válida + experiencia activa vigente → dev
   mockFetchPerfilAcceso(t);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
 // Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
@@ -213,7 +219,7 @@ test('sesion-clase-gratuita: oportunidadBootcampActiva abierta viaja tal cual, i
   }));
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true }, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
 test('sesion-clase-gratuita: oportunidadBootcampActiva se conserva aunque la cookie sea de OTRA convocatoria (nunca se ata a datos.convocatoriaId)', async (t) => {
@@ -226,7 +232,34 @@ test('sesion-clase-gratuita: oportunidadBootcampActiva se conserva aunque la coo
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
   // experienciaGratuitaActiva se anula por el candado de convocatoriaId (test ya existente abajo);
   // oportunidadBootcampActiva NO tiene ese candado, se conserva.
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true }, replayCompradoActivo: null, tieneCodigoSoberana: false });
+});
+
+// Puerta 5 — Ensayo General, Estación 3, PRIORIDAD MAXIMA (2026-09-14):
+// replayCompradoActivo y tieneCodigoSoberana — los 2 estados post-cierre
+// (Replay $5 comprado / Código Soberana comprado) que /clase-gratuita
+// necesita para no ofrecer un checkout a quien ya tiene el derecho.
+test('sesion-clase-gratuita: replayCompradoActivo viaja tal cual cuando Orbit lo reporta (sin experiencia gratuita activa)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const replayComprado = { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, fechaHora: CONVOCATORIA_MOCK.fechaHora, nombreClase: 'He intentado todo y nada cambia', enlaceReplay: 'https://bunny.example/replay' };
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: replayComprado, programas: [] }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: replayComprado, tieneCodigoSoberana: false });
+});
+
+test('sesion-clase-gratuita: tieneCodigoSoberana=true cuando Orbit reporta un Derecho vigente a codigo-soberana entre programas[]', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: null, programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }] }),
+  }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: true });
 });
 
 test('sesion-clase-gratuita: reenvia los headers QA tambien para resolver oportunidadBootcampActiva (antes de este corte, no los reenviaba)', async (t) => {
@@ -241,12 +274,15 @@ test('sesion-clase-gratuita: reenvia los headers QA tambien para resolver oportu
     method: 'GET', query: { accion: 'sesion-clase-gratuita' },
     headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa', 'x-qa-reloj-simulado': '2026-09-30T02:00:00-05:00' },
   }, res);
-  assert.equal(llamadas.length, 2, 'dos llamadas en paralelo a Orbit: experiencia + oportunidad');
-  for (const headers of llamadas) {
-    assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
+  // 4 llamadas en paralelo a Orbit (experiencia, oportunidad, replay
+  // comprado, Código Soberana) — solo las 2 primeras reenvian reloj QA.
+  assert.equal(llamadas.length, 4);
+  const llamadasConQaReloj = llamadas.filter((h) => h['x-qa-reloj-secret'] === 'shh-qa');
+  assert.equal(llamadasConQaReloj.length, 2, 'experiencia + oportunidad reenvian el reloj QA; replayComprado/tieneCodigoSoberana nunca lo necesitan');
+  for (const headers of llamadasConQaReloj) {
     assert.equal(headers['x-qa-reloj-simulado'], '2026-09-30T02:00:00-05:00');
   }
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true } });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: { cohorteId: 'cohorte-1', abierta: true }, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
 test('sesion-clase-gratuita: el secreto de clase gratuita nunca aparece en la respuesta al navegador', async (t) => {
@@ -263,7 +299,7 @@ test('sesion-clase-gratuita: cookie válida pero la experiencia ya terminó (Orb
   mockFetchPerfilAcceso(t, null);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
 test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya la registró para una nueva) → no autoriza contenido de la vieja', async (t) => {
@@ -271,7 +307,7 @@ test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya 
   mockFetchPerfilAcceso(t); // Orbit devuelve experienciaGratuitaActiva de CONVOCATORIA_MOCK.convocatoriaId, distinta de 'convocatoria-vieja'
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null });
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
 // ── Puente QA temporal (Puerta 5, Ensayo General, Estación 4, 2026-09-13):
@@ -281,39 +317,43 @@ test('sesion-clase-gratuita: cookie válida pero de OTRA convocatoria (Orbit ya 
 
 test('sesion-clase-gratuita: SIN headers QA en la peticion -> nunca los reenvia a Orbit (regresion, comportamiento normal)', async (t) => {
   const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
-  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const leerLlamadas = mockFetchPerfilAccesoCapturaHeaders(t);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion-clase-gratuita' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
-  const headers = leerHeaders();
-  assert.equal('x-qa-reloj-secret' in headers, false);
-  assert.equal('x-qa-reloj-simulado' in headers, false);
-  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null });
+  for (const headers of leerLlamadas()) {
+    assert.equal('x-qa-reloj-secret' in headers, false);
+    assert.equal('x-qa-reloj-simulado' in headers, false);
+  }
+  assert.deepEqual(res.body, { autorizado: true, experienciaGratuitaActiva: CONVOCATORIA_MOCK, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: false });
 });
 
-test('sesion-clase-gratuita: CON los 2 headers QA en la peticion -> los reenvia tal cual a Orbit', async (t) => {
+test('sesion-clase-gratuita: CON los 2 headers QA en la peticion -> los reenvia tal cual a Orbit (para experienciaGratuitaActiva/oportunidadBootcampActiva -- replayCompradoActivo/tieneCodigoSoberana nunca los necesitan, son derechos permanentes)', async (t) => {
   const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
-  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const leerLlamadas = mockFetchPerfilAccesoCapturaHeaders(t);
   const res = mockRes();
   await handler({
     method: 'GET', query: { accion: 'sesion-clase-gratuita' },
     headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa', 'x-qa-reloj-simulado': '2026-09-26T19:00:00-05:00' },
   }, res);
-  const headers = leerHeaders();
-  assert.equal(headers['x-qa-reloj-secret'], 'shh-qa');
-  assert.equal(headers['x-qa-reloj-simulado'], '2026-09-26T19:00:00-05:00');
+  const llamadasConQaReloj = leerLlamadas().filter((h) => h['x-qa-reloj-secret'] === 'shh-qa');
+  assert.equal(llamadasConQaReloj.length >= 2, true, 'al menos experienciaGratuitaActiva y oportunidadBootcampActiva deben reenviar el reloj QA');
+  for (const headers of llamadasConQaReloj) {
+    assert.equal(headers['x-qa-reloj-simulado'], '2026-09-26T19:00:00-05:00');
+  }
 });
 
 test('sesion-clase-gratuita: SOLO uno de los dos headers QA -> no reenvia ninguno (todo-o-nada)', async (t) => {
   const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
-  const leerHeaders = mockFetchPerfilAccesoCapturaHeaders(t);
+  const leerLlamadas = mockFetchPerfilAccesoCapturaHeaders(t);
   const res = mockRes();
   await handler({
     method: 'GET', query: { accion: 'sesion-clase-gratuita' },
     headers: { cookie: `clase_gratuita_sesion=${token}`, 'x-qa-reloj-secret': 'shh-qa' },
   }, res);
-  const headers = leerHeaders();
-  assert.equal('x-qa-reloj-secret' in headers, false);
-  assert.equal('x-qa-reloj-simulado' in headers, false);
+  for (const headers of leerLlamadas()) {
+    assert.equal('x-qa-reloj-secret' in headers, false);
+    assert.equal('x-qa-reloj-simulado' in headers, false);
+  }
 });
 
 // ── masterclass-zoom-join (Puerta 5 — Ensayo General, Estación 4, diseño

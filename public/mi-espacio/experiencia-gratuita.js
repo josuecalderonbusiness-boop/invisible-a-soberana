@@ -47,7 +47,12 @@ function dbFmtCountdown(prefijo, diffMs) {
 // en su bienvenida genérica; la sala aislada, Slice 4, muestra su propio
 // estado "finalizada" — esa decisión vive fuera de este archivo).
 function msFinClaseMs(exp) { return new Date(exp.fechaHora).getTime() + exp.duracionEstimada * 1000; }
-function msFinReplayMs(exp) { return msFinClaseMs(exp) + exp.ventanaReplayHoras * 3600000; }
+// Puerta 5 — Ensayo General, Estación 3, PRIORIDAD MAXIMA (2026-09-14): el
+// vencimiento del replay YA NO es fechaHora+duracion+ventanaReplayHoras (72h
+// fijas) — es exactamente el cierre de la ventana comercial del Bootcamp,
+// que Orbit ya calcula y expone como `vigenteHasta` (ISO). El frontend NUNCA
+// vuelve a inventar esta fecha — msFinReplayMs queda retirada a proposito
+// (usar exp.vigenteHasta directamente, ver el countdown de 'replay' abajo).
 
 // Puerta 5 — Ensayo General (hallazgo real 2026-09-14): msTickClaseGratuita
 // corre cada 1s para refrescar el contador, pero el video de replay NUNCA
@@ -128,7 +133,7 @@ function msTickClaseGratuita() {
     eyebrow.textContent = 'Disponible en tu espacio';
     title.textContent = 'Revive tu clase';
     countdown.style.display = 'flex';
-    dbFmtCountdown('ms-clase-cd', msFinReplayMs(exp) - Date.now());
+    dbFmtCountdown('ms-clase-cd', new Date(exp.vigenteHasta).getTime() - Date.now());
     cal.style.display = 'none';
     btn.style.display = 'none';
     video.style.display = 'block';
@@ -145,17 +150,22 @@ function msTickClaseGratuita() {
   }
 
   // Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
-  // 2026-09-14, PRIORIDAD MAXIMA): CTA comercial hacia Código Soberana,
-  // visible en en_vivo Y en replay por igual — nunca se espera a que el
-  // replay venza. Se condiciona a oportunidadBootcampActiva.abierta (nunca
-  // solo a la fase): si la Persona ya tiene acceso vigente a Código
-  // Soberana, Orbit devuelve oportunidadBootcampActiva:null y esta CTA
-  // jamas se ofrece (nunca se le vuelve a vender lo que ya tiene). Mismo
-  // guard `if (elemento)` que `grupo` arriba — /mi-espacio no declara estos
-  // ids en su propio ms-clase-card (tiene su propia tarjeta de Bootcamp
-  // separada, ms-bootcamp-abierto-card en mi-espacio/index.html), asi que
-  // esto no le afecta en absoluto.
-  const mostrarCtaComercial = (exp.fase === 'en_vivo' || exp.fase === 'replay') &&
+  // 2026-09-14, PRIORIDAD MAXIMA): CTA comercial hacia Código Soberana.
+  // `exp.dentroVentanaCtaComercial` (calculado por Orbit) YA encierra toda
+  // la logica de "¿en que momento debe verse?" — en 'espera' es false, en
+  // 'en_vivo' es true SOLO en los ultimos minutos antes de finClase
+  // (nunca desde el minuto 0 — no competir con la experiencia de la clase,
+  // ni depende de cuanto tiempo lleva ELLA en la pagina), en 'replay' es
+  // siempre true. El frontend nunca vuelve a calcular ninguna fecha aqui —
+  // solo combina esa señal con oportunidadBootcampActiva.abierta: si la
+  // Persona ya tiene acceso vigente a Código Soberana, Orbit devuelve
+  // oportunidadBootcampActiva:null y esta CTA jamas se ofrece (nunca se le
+  // vuelve a vender lo que ya tiene). Mismo guard `if (elemento)` que
+  // `grupo` arriba — /mi-espacio no declara estos ids en su propio
+  // ms-clase-card (tiene su propia tarjeta de Bootcamp separada,
+  // ms-bootcamp-abierto-card en mi-espacio/index.html), asi que esto no le
+  // afecta en absoluto.
+  const mostrarCtaComercial = !!exp.dentroVentanaCtaComercial &&
     !!dbOportunidadBootcamp && dbOportunidadBootcamp.abierta === true;
   if (ctaComercial) {
     ctaComercial.style.display = mostrarCtaComercial ? 'inline-block' : 'none';

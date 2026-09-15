@@ -261,32 +261,42 @@ async function sesionClaseGratuitaAccion(req, res) {
   const qaReloj = qaRelojDeRequest(req);
   try {
     // Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
-    // 2026-09-14): la Masterclass gratuita es la puerta de entrada a Código
-    // Soberana, no un fin en si misma — /clase-gratuita necesita
-    // oportunidadBootcampActiva para poder mostrar la CTA comercial durante
-    // en_vivo/replay y en el cierre del replay (ver experiencia-gratuita.js
-    // y cgInit() en public/clase-gratuita/index.html). Ambas lecturas en
-    // paralelo, mismo patron ya usado en las demas acciones de este archivo
-    // (ver perfilAccesoAccion/cuentaConsultarAccion mas abajo).
-    const [experiencia, oportunidadBootcampActiva] = await Promise.all([
+    // 2026-09-14, PRIORIDAD MAXIMA): la Masterclass gratuita es la puerta de
+    // entrada a Código Soberana, no un fin en si misma — /clase-gratuita
+    // necesita las 4 señales para representar el circuito comercial
+    // completo (en_vivo/replay con CTA -> cierre del carrito -> Replay $5 o
+    // "ya lo compro" o "ya tiene Código Soberana", segun corresponda):
+    //   - oportunidadBootcampActiva: CTA durante en_vivo/replay.
+    //   - replayCompradoActivo: si ya compro el Replay $5 (Puerta 3),
+    //     mismo helper que ya usa perfilAccesoAccion — nunca se le vuelve a
+    //     ofrecer el checkout.
+    //   - tieneCodigoSoberana: precedencia MAXIMA (ver mas abajo) — si ya
+    //     tiene el Derecho, jamas se le ofrece comprar Bootcamp ni Replay.
+    //     Reutiliza tieneDerechoVigenteA, YA existente (usada hoy por
+    //     workbook-acceso) — cero contrato nuevo del lado de Orbit para
+    //     esto. replayCompradoActivo/tieneCodigoSoberana no dependen del
+    //     reloj QA (son derechos permanentes, no ventanas de tiempo).
+    const [experiencia, oportunidadBootcampActiva, replayCompradoActivo, tieneCodigoSoberana] = await Promise.all([
       obtenerExperienciaGratuitaActiva(datos.correo, qaReloj),
       obtenerOportunidadBootcampActiva(datos.correo, qaReloj),
+      obtenerReplayCompradoActivo(datos.correo),
+      tieneDerechoVigenteA(datos.correo, PROGRAMA_CODIGO_SOBERANA),
     ]);
     // Una cookie valida sin experiencia activa (terminada, o de una
     // convocatoria distinta a la que Orbit reconoce hoy para este correo)
     // sigue siendo una cookie legitima — solo que no autoriza a ver
     // contenido de clase. autorizado:true + experienciaGratuitaActiva:null
     // es exactamente esa distincion (identidad valida vs. nada que mostrar).
-    // oportunidadBootcampActiva NUNCA se ata a datos.convocatoriaId (a
-    // diferencia de experienciaGratuitaActiva arriba) — no es una propiedad
-    // de UNA convocatoria puntual, es "la oportunidad de esta Persona ahora
-    // mismo" (resolverCohorteDePersona, lib/convocatoria.js), independiente
+    // oportunidadBootcampActiva/replayCompradoActivo NUNCA se atan a
+    // datos.convocatoriaId (a diferencia de experienciaGratuitaActiva
+    // arriba) — no son una propiedad de UNA convocatoria puntual, son "la
+    // oportunidad/el derecho de esta Persona ahora mismo", independientes
     // de cual Convocatoria trae la cookie.
     const experienciaGratuitaActiva = (experiencia && experiencia.convocatoriaId === datos.convocatoriaId) ? experiencia : null;
-    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva, oportunidadBootcampActiva });
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva, oportunidadBootcampActiva, replayCompradoActivo, tieneCodigoSoberana });
   } catch (err) {
     console.error('mi-espacio-auth/sesion-clase-gratuita: Orbit no respondió:', err.message);
-    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, verificacionPendiente: true });
+    return res.status(200).json({ autorizado: true, experienciaGratuitaActiva: null, oportunidadBootcampActiva: null, replayCompradoActivo: null, tieneCodigoSoberana: false, verificacionPendiente: true });
   }
 }
 

@@ -91,22 +91,41 @@ a { color: inherit; }
     <p>Puede que el enlace haya cambiado o que tu sesión haya expirado.</p>
   </div>
 
-  <div class="cg-estado" id="cg-finalizada" style="display:none">
-    <h1>Tu oportunidad ha terminado</h1>
-    <p>Gracias por haber estado aquí.</p>
+  <!-- Puerta 5 — Ensayo General, Estación 3, PRIORIDAD MAXIMA (rediseño
+       cerrado 2026-09-14 — "un unico reloj comercial"): desde este corte,
+       experienciaGratuitaActiva y oportunidadBootcampActiva.abierta cierran
+       en el MISMO instante exacto (ambos derivan de
+       calcularVentanaComercial en orbit-mc) — el estado intermedio "replay
+       vencido pero la oportunidad sigue abierta" que existia horas antes
+       (por la vieja formula fin_replay, mas corta que el cierre comercial
+       real) YA NO PUEDE OCURRIR. Se retira esa rama. Los 3 estados
+       reales de "sin experiencia gratuita activa" (precedencia en ese
+       orden, ver cgInit): ya tiene Código Soberana > ya compro el Replay >
+       oferta del Replay $5 (unico caso sin ningun derecho previo). -->
+
+  <!-- Estado 6 — ya tiene acceso vigente a Código Soberana: precedencia
+       MAXIMA sobre cualquier otro estado post-cierre. Nunca se le vuelve a
+       ofrecer comprar nada. -->
+  <div class="cg-estado" id="cg-tiene-codigo-soberana" style="display:none">
+    <h1>Ya tienes acceso a Código Soberana</h1>
+    <p>Ingresa a tu espacio para continuar tu recorrido.</p>
+    <a class="ms-invite-btn" href="/mi-espacio" style="display:inline-block;margin-top:18px;text-decoration:none">Ir a mi espacio →</a>
   </div>
 
-  <!-- Puerta 5 — Ensayo General, Estación 3 (decision de negocio cerrada
-       2026-09-14): experienciaGratuitaActiva ya vencio (sin video), pero
-       oportunidadBootcampActiva.abierta sigue true — la ventana comercial
-       del Bootcamp cierra mas tarde que las 72h del replay gratuito (ver
-       calcularVentanaComercial, lib/convocatoria.js en orbit-mc). Unica
-       accion: la CTA de Código Soberana, mismo checkout que ms-clase-card
-       de abajo. -->
-  <div class="cg-estado" id="cg-replay-vencido-oportunidad-abierta" style="display:none">
-    <h1>Tu clase ha terminado</h1>
-    <p>Ahora puedes entrar a Código Soberana.</p>
-    <a class="ms-invite-btn" id="cg-btn-codigo-soberana-vencido" href="#" target="_blank" style="display:inline-block;margin-top:18px;text-decoration:none">Entrar a Código Soberana →</a>
+  <!-- Estado 5 — ya compró el Replay $5 (Puerta 3, replay_comprado + compra
+       aprobada — nunca experiencia_comprada ni un producto legacy). Se le
+       muestra su propio video, nunca se le vuelve a ofrecer el checkout. -->
+  <div class="cg-estado" id="cg-replay-comprado" style="display:none">
+    <h1 id="cg-replay-comprado-title">Revive tu clase</h1>
+    <div class="db-video-box" id="cg-replay-comprado-video" style="margin-top:18px"></div>
+  </div>
+
+  <!-- Estado 4 — ambas ventanas gratuitas cerraron y no tiene ningun
+       derecho previo: unica alternativa comercial, el Replay $5 (Hotmart
+       8498705, checkout confirmado 2026-09-14). -->
+  <div class="cg-estado" id="cg-oferta-replay-pago" style="display:none">
+    <h1>¿Quieres volver a ver la Masterclass?</h1>
+    <a class="ms-invite-btn" id="cg-btn-replay-pago" href="#" target="_blank" style="display:inline-block;margin-top:18px;text-decoration:none">Comprar el Replay — $5 →</a>
   </div>
 
   <div class="ms-invite-card" id="ms-clase-card" style="display:none">
@@ -122,9 +141,12 @@ a { color: inherit; }
     <div class="db-video-box" id="ms-clase-video" style="display:none"></div>
     <a class="ms-invite-btn" id="ms-clase-btn" href="#" target="_blank" style="display:none">→</a>
     <!-- Puerta 5 — Ensayo General, Estación 3 (PRIORIDAD MAXIMA, decision de
-         negocio cerrada 2026-09-14): CTA comercial hacia Código Soberana,
-         visible en en_vivo Y en replay — nunca se espera a que el replay
-         venza. Ver experiencia-gratuita.js (mostrarCtaComercial). -->
+         negocio cerrada 2026-09-14): CTA comercial hacia Código Soberana.
+         En en_vivo solo aparece en los ultimos minutos antes de que
+         termine la clase (dentroVentanaCtaComercial, calculado por Orbit —
+         nunca desde el minuto 0, para no competir con la experiencia); en
+         replay permanece visible mientras la ventana comercial siga
+         abierta. Ver experiencia-gratuita.js (mostrarCtaComercial). -->
     <p class="ms-invite-sub" id="ms-clase-cta-label" style="display:none;margin-top:16px;margin-bottom:8px">Código Soberana está disponible</p>
     <a class="ms-invite-btn" id="ms-clase-cta-comercial" href="#" target="_blank" style="display:none">Entrar a Código Soberana →</a>
     <a class="ms-invite-btn" id="ms-clase-calendario" href="#" target="_blank" style="display:none;margin-top:10px;background:transparent;border:1px solid rgba(184,137,42,.4);color:var(--gold-light)">Añadir a mi calendario</a>
@@ -140,6 +162,15 @@ a { color: inherit; }
 // mi_espacio_sesion — esta vista no sabe que esa cookie existe.
 let dbExperienciaGratuita = null; // mismo nombre que espera experiencia-gratuita.js
 let dbOportunidadBootcamp = null; // Puerta 5, Estación 3 — { cohorteId, abierta } | null, mismo nombre que espera experiencia-gratuita.js (CTA opcional)
+
+// Puerta 5 — Ensayo General, Estación 3, PRIORIDAD MAXIMA (checkout
+// confirmado 2026-09-14): oferta del Replay $5, Hotmart 8498705 ("MASTERCLASS:
+// He intentado todo y nada cambia (Replay)") — checkout/oferta PUBLICA ya
+// existente, no se crea ninguna oferta nueva. Nombre distinto de
+// CODIGO_SOBERANA_CHECKOUT_URL (esa vive en experiencia-gratuita.js) a
+// proposito, sin riesgo de colision aqui — este archivo nunca comparte
+// scope con mi-espacio/index.html.
+const REPLAY_PAGO_CHECKOUT_URL = 'https://pay.hotmart.com/R107563747L';
 
 // Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
 // SOLO existe para el ensayo — no forma parte de la experiencia real de
@@ -192,20 +223,35 @@ async function cgInit() {
       return;
     }
     if (!data.experienciaGratuitaActiva) {
-      // autorizado:true pero sin experiencia activa = la clase ya terminó
-      // (o era de otra convocatoria). Puerta 5 — Ensayo General, Estación 3
-      // (decision de negocio cerrada 2026-09-14): antes de este corte esto
-      // siempre caia en "Tu oportunidad ha terminado" sin mas — un
-      // callejon sin salida real para la unica pagina que alcanza una mujer
-      // sin cuenta. Ahora se distingue si la ventana comercial del
-      // Bootcamp (que cierra MAS TARDE que las 72h del replay gratuito,
-      // ver calcularVentanaComercial en orbit-mc) sigue abierta.
-      const oportunidadAbierta = !!(data.oportunidadBootcampActiva && data.oportunidadBootcampActiva.abierta);
-      if (oportunidadAbierta) {
-        document.getElementById('cg-btn-codigo-soberana-vencido').href = CODIGO_SOBERANA_CHECKOUT_URL;
-        document.getElementById('cg-replay-vencido-oportunidad-abierta').style.display = 'block';
+      // autorizado:true pero sin experiencia activa = ambas ventanas
+      // gratuitas (replay + Bootcamp) ya cerraron JUNTAS — Puerta 5,
+      // Ensayo General, Estación 3, PRIORIDAD MAXIMA (rediseño cerrado
+      // 2026-09-14, "un unico reloj comercial"): experienciaGratuitaActiva
+      // y oportunidadBootcampActiva.abierta ahora derivan del MISMO cierre
+      // (calcularVentanaComercial en orbit-mc), asi que no puede llegar
+      // aqui con la oportunidad todavia abierta — esa rama intermedia se
+      // retiro por imposible. Quedan 3 estados reales, con esta precedencia
+      // exacta (ver auditoria del mismo dia):
+      //   1) ya tiene acceso vigente a Código Soberana -> precedencia
+      //      MAXIMA, nunca se le ofrece comprar nada.
+      //   2) ya compro el Replay $5 (replay_comprado + compra aprobada,
+      //      Puerta 3) -> se le muestra SU video, nunca el checkout de
+      //      nuevo.
+      //   3) ningun derecho previo -> unica alternativa comercial: ofrecer
+      //      el Replay $5 (Hotmart 8498705).
+      if (data.tieneCodigoSoberana) {
+        document.getElementById('cg-tiene-codigo-soberana').style.display = 'block';
+      } else if (data.replayCompradoActivo) {
+        const rc = data.replayCompradoActivo;
+        document.getElementById('cg-replay-comprado-title').textContent = rc.nombreClase || 'Revive tu clase';
+        const video = document.getElementById('cg-replay-comprado-video');
+        video.innerHTML = rc.enlaceReplay
+          ? '<iframe src="' + rc.enlaceReplay + '" allow="autoplay;fullscreen" allowfullscreen></iframe>'
+          : '<p style="display:flex;align-items:center;justify-content:center;height:100%;font-family:\'Jost\',sans-serif;font-size:13px;color:var(--text-muted);padding:20px;text-align:center;">Video pendiente — se activa aquí apenas se suba la grabación.</p>';
+        document.getElementById('cg-replay-comprado').style.display = 'block';
       } else {
-        document.getElementById('cg-finalizada').style.display = 'block';
+        document.getElementById('cg-btn-replay-pago').href = REPLAY_PAGO_CHECKOUT_URL;
+        document.getElementById('cg-oferta-replay-pago').style.display = 'block';
       }
       return;
     }

@@ -76,6 +76,51 @@ let _msUltimoVideoReplayRenderizado = null;
 // propio <script src>, ver encabezado de este archivo).
 const CODIGO_SOBERANA_CHECKOUT_URL = 'https://pay.hotmart.com/A107564829Y?bid=1789093799825';
 
+// Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado 2026-09-15):
+// opt-in EXPLICITO — solo /clase-gratuita declara
+// `window.msHabilitarZoomEmbebido = true` antes de cargar este script.
+// /mi-espacio comparte los mismos ids (ms-clase-btn/ms-clase-video, ver
+// encabezado del archivo) pero NUNCA declara ese flag, asi que su tarjeta
+// sigue exactamente igual que siempre (enlace externo plano) — este cambio
+// no le afecta en absoluto. Requiere ademas que la pagina defina
+// `window.abrirZoomEmbebido` (cargando /mi-espacio/zoom-embed.js antes de
+// este script) y opcionalmente `window.msObtenerHeadersQaReloj` (para el
+// reloj QA de ensayo, mismo mecanismo todo-o-nada que el resto de la Puerta 5).
+function msPrepararBotonZoomEmbebido(btn, video) {
+  // msTickClaseGratuita corre cada 1s (mismo patron que el resto de este
+  // archivo) — una vez que el embed arranco con exito (dataset.zoomEmbedActivo),
+  // nunca se vuelve a tocar el display aqui, o el siguiente tick lo ocultaria
+  // un segundo despues de mostrarlo.
+  if (video.dataset.zoomEmbedActivo) return;
+  video.style.display = 'none'; // se muestra solo si el embed realmente arranca
+  if (!window.msHabilitarZoomEmbebido || typeof window.abrirZoomEmbebido !== 'function') return;
+  if (btn.dataset.zoomEmbedWired) return; // idempotente entre ticks de msTickClaseGratuita
+  btn.dataset.zoomEmbedWired = '1';
+  const enlaceOriginal = btn.href;
+  const textoOriginal = btn.textContent;
+  btn.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    btn.textContent = 'Conectando…';
+    window.abrirZoomEmbebido({
+      obtenerJoinInfo: () => fetch('/api/mi-espacio-auth?accion=masterclass-zoom-join', {
+        credentials: 'include',
+        headers: (window.msObtenerHeadersQaReloj && window.msObtenerHeadersQaReloj()) || {},
+      }).then((r) => r.json()),
+      contenedorId: video.id,
+      enlaceGenericoRespaldo: enlaceOriginal,
+      onExito: function () {
+        video.dataset.zoomEmbedActivo = '1';
+        btn.style.display = 'none';
+        video.style.display = 'block';
+      },
+      onFallback: function (motivo, enlace) {
+        btn.textContent = textoOriginal;
+        window.open(enlace || enlaceOriginal, '_blank', 'noopener');
+      },
+    });
+  });
+}
+
 function msRenderClaseGratuita() {
   clearInterval(window._msClaseInterval);
   _msUltimoVideoReplayRenderizado = null;
@@ -118,18 +163,30 @@ function msTickClaseGratuita() {
     title.textContent = 'Tu clase está en curso';
     sub.textContent = 'Entra a tu clase en vivo.';
     countdown.style.display = 'none';
-    video.style.display = 'none';
     cal.style.display = 'none';
     if (exp.enlaceEnVivo) {
       btn.style.display = 'inline-block';
       btn.href = exp.enlaceEnVivo;
       btn.textContent = 'Entrar a la clase →';
+      msPrepararBotonZoomEmbebido(btn, video);
     } else {
+      video.style.display = 'none';
       btn.style.display = 'inline-block';
       btn.removeAttribute('href');
       btn.textContent = 'El enlace llega en un momento';
     }
   } else { // 'replay'
+    // Puerta 5, Estación 7 (ciclo de vida del embed, diseño cerrado
+    // 2026-09-15): si el embed de Zoom llegó a estar activo (en_vivo), esta
+    // es la transición en_vivo -> replay — cierra la sesión de Zoom ANTES
+    // de que el código de abajo reemplace video.innerHTML con el iframe de
+    // Bunny, para no dejar un cliente de Zoom vivo detrás de un DOM que ya
+    // no lo muestra. Solo se dispara una vez (el flag se borra de
+    // inmediato), no en cada tick de los que siguen ya en fase replay.
+    if (video.dataset.zoomEmbedActivo) {
+      delete video.dataset.zoomEmbedActivo;
+      if (typeof window.cerrarZoomEmbebidoActivo === 'function') window.cerrarZoomEmbebidoActivo();
+    }
     eyebrow.textContent = 'Disponible en tu espacio';
     title.textContent = 'Revive tu clase';
     countdown.style.display = 'flex';

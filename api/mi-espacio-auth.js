@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
@@ -649,6 +649,36 @@ async function bootcampReplayVistoAccion(req, res) {
   }
 }
 
+// Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado
+// 2026-09-15): equivalente de masterclassZoomJoinAccion para las 3
+// Estaciones del Bootcamp. Mismo patron de autenticacion que
+// bootcampReplayVistoAccion (cookie mi_espacio_sesion, Puerta A) — `hito`
+// es el UNICO dato que decide el cliente, la Cohorte la resuelve Orbit del
+// lado servidor via resolverCohorteDePersona, nunca un valor que el
+// navegador pudiera manipular.
+async function bootcampZoomJoinAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
+
+  const hito = Number(req.query?.hito);
+  if (![1, 2, 3].includes(hito)) return res.status(400).json({ error: 'hito debe ser 1, 2 o 3' });
+
+  try {
+    const cuenta = await obtenerCuenta(datos.correo);
+    const vigente = cuenta && cuenta.estado === 'activa' && (cuenta.sessionVersion || 0) === datos.sessionVersion;
+    if (!vigente) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
+
+    const resultado = await obtenerBootcampZoomJoin(datos.correo, hito);
+    return res.status(200).json(resultado || { ok: false, motivo: 'sin_respuesta' });
+  } catch (err) {
+    console.error('mi-espacio-auth/bootcamp-zoom-join: Orbit no respondió:', err.message);
+    return res.status(503).json({ ok: false, motivo: 'no_disponible' });
+  }
+}
+
 async function reenviarConfirmacionAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -755,6 +785,7 @@ const ACCIONES = {
   'registro-gratuito': registroGratuitoAccion,
   'sesion-clase-gratuita': sesionClaseGratuitaAccion,
   'masterclass-zoom-join': masterclassZoomJoinAccion,
+  'bootcamp-zoom-join': bootcampZoomJoinAccion,
   'reclamar-sesion-clase-gratuita': reclamarSesionClaseGratuitaAccion,
   'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
   login: loginAccion,

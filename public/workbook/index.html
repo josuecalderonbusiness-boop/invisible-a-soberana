@@ -5257,6 +5257,11 @@
   <div id="masterclass-popup-content"></div>
 </div>
 
+<!-- Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado 2026-09-15):
+     componente UNICO compartido con /clase-gratuita — ver
+     public/mi-espacio/zoom-embed.js. -->
+<script src="/mi-espacio/zoom-embed.js"></script>
+
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -8458,6 +8463,16 @@ function renderBootcampHitosBlock() {
   const sub = 'font-family:\'Jost\',sans-serif;font-size:12.5px;color:rgba(249,244,236,.6);margin:0;';
   const btn = 'display:inline-block;margin-top:10px;padding:11px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,#7A5C1E,var(--gold-primary),#D4A843);color:#2B1C24;font-family:\'Jost\',sans-serif;font-weight:700;font-size:13px;text-decoration:none;';
 
+  // Puerta 5, Estación 7 (ciclo de vida del embed, diseño cerrado
+  // 2026-09-15): esta función reconstruye TODO el innerHTML de wrap cada
+  // vez que se llama (al confirmar un Hito por replay, por ejemplo) — si
+  // algún contenedor de embed activo va a desaparecer con ese reemplazo,
+  // cierra su sesión de Zoom primero para no dejar un cliente vivo detrás
+  // de una tarjeta que ya no existe.
+  if (wrap.querySelector('[data-zoom-embed-activo]') && typeof window.cerrarZoomEmbebidoActivo === 'function') {
+    window.cerrarZoomEmbebidoActivo();
+  }
+
   wrap.style.display = 'block';
   wrap.innerHTML = '<div style="' + eyebrow + '">Tu Bootcamp — Código Soberana</div>' +
     hitos.map(function (h) {
@@ -8468,7 +8483,17 @@ function renderBootcampHitosBlock() {
       if (!h.disponible) {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
       }
-      const live = h.enlaceEnVivo ? '<a href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="' + btn + '">🔴 Entrar en vivo</a>' : '';
+      // Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado
+      // 2026-09-15): el boton ya no navega directo — dispara
+      // abrirZoomEmbebido (mismo componente que /clase-gratuita) y monta
+      // Zoom dentro del contenedor de esta misma tarjeta. data-wb-vivo-btn
+      // lo identifica para el listener que se conecta despues de pintar el
+      // innerHTML (ver abajo); data-enlace-generico es el respaldo si el
+      // embed falla por cualquier motivo.
+      const live = h.enlaceEnVivo
+        ? '<button type="button" data-wb-vivo-btn data-hito="' + h.hito + '" data-enlace-generico="' + h.enlaceEnVivo + '" style="' + btn + ';cursor:pointer;font:inherit;">🔴 Entrar en vivo</button>' +
+          '<div id="wb-zoom-embed-' + h.hito + '" style="display:none;margin-top:10px;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000"></div>'
+        : '';
       // id/data-hito: asi el listener global de 'message' (mas abajo) sabe
       // EXACTAMENTE que Hito corresponde a que iframe cuando Bunny avisa
       // 'ended' — nunca asume que un ended es el Hito 3, ni ningun otro.
@@ -8476,6 +8501,41 @@ function renderBootcampHitosBlock() {
       const nada = (!h.enlaceEnVivo && !h.enlaceReplay) ? '<p style="' + sub + '">🔓 Disponible — el enlace se activa aquí apenas esté listo</p>' : '';
       return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">Disponible</div>' + live + replay + nada + '</div>';
     }).join('');
+
+  wrap.querySelectorAll('[data-wb-vivo-btn]').forEach(function (btnEl) {
+    btnEl.addEventListener('click', function () {
+      const hito = Number(btnEl.dataset.hito);
+      const enlaceGenerico = btnEl.dataset.enlaceGenerico;
+      // Sin el componente compartido cargado (fallo de red del <script src>,
+      // ver public/mi-espacio/zoom-embed.js), degradacion segura: abre el
+      // enlace generico tal como se hacia antes de este corte.
+      if (typeof window.abrirZoomEmbebido !== 'function') {
+        window.open(enlaceGenerico, '_blank', 'noopener');
+        return;
+      }
+      const contenedor = document.getElementById('wb-zoom-embed-' + hito);
+      const textoOriginal = btnEl.textContent;
+      btnEl.textContent = 'Conectando…';
+      btnEl.disabled = true;
+      window.abrirZoomEmbebido({
+        obtenerJoinInfo: function () {
+          return fetch('/api/mi-espacio-auth?accion=bootcamp-zoom-join&hito=' + hito, { credentials: 'include' }).then(function (r) { return r.json(); });
+        },
+        contenedorId: contenedor.id,
+        enlaceGenericoRespaldo: enlaceGenerico,
+        onExito: function () {
+          contenedor.dataset.zoomEmbedActivo = '1';
+          btnEl.style.display = 'none';
+          contenedor.style.display = 'block';
+        },
+        onFallback: function (motivo, enlace) {
+          btnEl.textContent = textoOriginal;
+          btnEl.disabled = false;
+          window.open(enlace || enlaceGenerico, '_blank', 'noopener');
+        },
+      });
+    });
+  });
 }
 
 // Puerta 5, Corte 8 (pendiente cerrado, diseño aprobado 2026-09-12):

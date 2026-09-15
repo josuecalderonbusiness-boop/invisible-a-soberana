@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -310,6 +310,30 @@ test('obtenerMasterclassZoomJoin: Orbit responde error -> lanza con el motivo, n
   t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: 'fase_no_en_vivo' }) }));
   await assert.rejects(() => obtenerMasterclassZoomJoin('alumna@correo.com'), (err) => {
     assert.equal(err.motivo, 'fase_no_en_vivo');
+    return true;
+  });
+});
+
+// ── obtenerBootcampZoomJoin (Puerta 5, Estación 7, diseño cerrado
+// 2026-09-15) — equivalente de obtenerMasterclassZoomJoin para las 3
+// Estaciones del Bootcamp, mismo patron, mas el parametro `hito`. ──
+
+test('obtenerBootcampZoomJoin: llama a perfil-acceso?accion=bootcamp-zoom-registrar con el secreto compartido, el correo y el hito', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200, json: async () => ({ ok: true, meetingNumber: '111222333' }),
+  }));
+  const resultado = await obtenerBootcampZoomJoin('alumna@correo.com', 2);
+  assert.deepEqual(resultado, { ok: true, meetingNumber: '111222333' });
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.match(url, /\/api\/v1\/perfil-acceso\?accion=bootcamp-zoom-registrar$/);
+  assert.equal(opciones.headers['x-mi-espacio-secret'], 'shh-mi-espacio');
+  assert.deepEqual(JSON.parse(opciones.body), { correo: 'alumna@correo.com', hito: 2 });
+});
+
+test('obtenerBootcampZoomJoin: Orbit responde error -> lanza con el motivo, nunca lo esconde', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: 'hito_no_disponible' }) }));
+  await assert.rejects(() => obtenerBootcampZoomJoin('alumna@correo.com', 1), (err) => {
+    assert.equal(err.motivo, 'hito_no_disponible');
     return true;
   });
 });

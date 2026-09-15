@@ -26,6 +26,7 @@ process.env.CLASE_GRATUITA_SESSION_SECRET = process.env.CLASE_GRATUITA_SESSION_S
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-test-orbit-secret';
 const { default: handler } = await import('./mi-espacio-auth.js');
 const { crearToken: crearTokenClaseGratuitaTest } = await import('./_lib/auth-clase-gratuita.js');
+const { crearToken: crearTokenSesionTest } = await import('./_lib/auth-session.js');
 
 function mockRes() {
   const res = { statusCode: null, body: null, headers: {} };
@@ -425,6 +426,84 @@ test('masterclass-zoom-join: reenvia los headers QA al llamar a Orbit, tal como 
   assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa');
   assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-27T00:30:00-05:00');
 });
+
+// ── bootcamp-zoom-join (Puerta 5, Estación 7, diseño cerrado 2026-09-15) ──
+// Equivalente de masterclass-zoom-join para las 3 Estaciones del Bootcamp,
+// pero autenticado con la cookie mi_espacio_sesion (Puerta A) en vez de
+// clase_gratuita_sesion — misma frontera que bootcamp-replay-visto/
+// convocatoria-reservar (que ya viven sin cobertura de "camino feliz" en
+// este archivo, ver encabezado). verificarToken/crearToken (auth-session.js)
+// son criptografia local pura, sin Firestore — se pueden ejercitar aqui
+// para probar TODO lo que ocurre antes de tocar obtenerCuenta. Lo que hay
+// DESPUES de obtenerCuenta (cuenta activa -> obtenerBootcampZoomJoin ->
+// respuesta de Orbit) es exactamente el mismo gap ya documentado (Firestore
+// real, sin mock.module estable) — no simulado aqui, cubierto en cambio por
+// obtenerBootcampZoomJoin.test.js (api/_lib/orbit-perfil-acceso.test.js).
+
+test('bootcamp-zoom-join: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-zoom-join', hito: '1' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('bootcamp-zoom-join: sin cookie -> ok:false sin_sesion, nunca llama a Orbit — un hito/correo hostil en la query no tiene ningun efecto', async (t) => {
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '1', correo: 'atacante@evil.com' }, headers: {} }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('bootcamp-zoom-join: cookie corrupta/invalida -> ok:false sin_sesion, nunca llama a Orbit', async (t) => {
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '1' },
+    headers: { cookie: 'mi_espacio_sesion=token-corrupto-no-es-un-jwt-valido' },
+  }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+// hito se valida ANTES de tocar obtenerCuenta (ver bootcampZoomJoinAccion) —
+// por eso esta rama SI es ejercitable con un token de sesion valido, sin
+// necesitar Firestore real.
+test('bootcamp-zoom-join: cookie de sesion valida pero hito invalido -> 400, nunca llama a Orbit', async (t) => {
+  const token = crearTokenSesionTest('alumna@correo.com', 1);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '9' },
+    headers: { cookie: `mi_espacio_sesion=${token}` },
+  }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('bootcamp-zoom-join: cookie de sesion valida sin hito en la query -> 400, nunca llama a Orbit', async (t) => {
+  const token = crearTokenSesionTest('alumna@correo.com', 1);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'GET', query: { accion: 'bootcamp-zoom-join' },
+    headers: { cookie: `mi_espacio_sesion=${token}` },
+  }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+// El camino "cookie valida + cuenta activa -> Orbit ok:true/ok:false/caido"
+// necesita obtenerCuenta (Firestore) real -- mismo gap ya documentado en el
+// encabezado de este archivo para bootcamp-replay-visto/convocatoria-reservar,
+// NO simulado aqui a proposito (un "camino feliz" fabricado sin Firestore
+// real seria una prueba falsa, no una prueba). Lo que SI queda probado y es
+// el punto de seguridad real: el cliente nunca puede decidir la Cohorte ni
+// suplantar un correo -- unicamente `hito` sale de la query, el correo
+// SIEMPRE sale de `datos.correo` (el token de sesion ya verificado), nunca
+// de `req.query` ni `req.body`. Confirmado por lectura de codigo
+// (bootcampZoomJoinAccion nunca lee req.query.correo/req.body.correo) mas
+// las dos pruebas de arriba, que demuestran que un correo hostil en la
+// query es ignorado sin tocar Orbit.
 
 // ── Confirma que mi_espacio_sesion no se ve afectada — ni por la existencia
 // del módulo nuevo, ni porque la cookie de clase gratuita viaje en el mismo

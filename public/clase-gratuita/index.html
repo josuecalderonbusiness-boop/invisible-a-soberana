@@ -157,6 +157,15 @@ a { color: inherit; }
   </div>
 </div>
 
+<script src="/mi-espacio/zoom-embed.js"></script>
+<script>
+// Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado 2026-09-15):
+// opt-in explicito, ver encabezado de msPrepararBotonZoomEmbebido en
+// experiencia-gratuita.js — /mi-espacio comparte los mismos ids pero NUNCA
+// declara este flag, asi que su tarjeta sigue con el enlace externo plano.
+window.msHabilitarZoomEmbebido = true;
+window.msObtenerHeadersQaReloj = function () { return cgHeadersQaReloj(); };
+</script>
 <script src="/mi-espacio/experiencia-gratuita.js"></script>
 <script>
 // Puerta 2, Slice 4 — la sala usa EXCLUSIVAMENTE la cookie clase_gratuita_sesion

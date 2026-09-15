@@ -234,6 +234,45 @@ async function confirmarBootcampHitoVisto(correo, hito) {
   }
 }
 
+// Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado 2026-09-15):
+// equivalente de obtenerMasterclassZoomJoin para las 3 Estaciones del
+// Bootcamp — mismo criterio de frontera de identidad (correo SIEMPRE de la
+// sesion ya verificada, `hito` es el unico dato que decide el cliente,
+// Cohorte se resuelve del lado de Orbit). Devuelve el MISMO contrato SDK
+// que obtenerMasterclassZoomJoin — el componente de embed del frontend no
+// necesita saber cual de las dos llamo.
+async function obtenerBootcampZoomJoin(correo, hito) {
+  if (!MI_ESPACIO_ORBIT_SECRET) {
+    throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=bootcamp-zoom-registrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      body: JSON.stringify({ correo, hito }),
+      signal: controller.signal,
+    });
+    const cuerpo = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(cuerpo.error || `Orbit respondió ${res.status} al pedir el join de Zoom del Bootcamp`);
+      err.motivo = cuerpo.error || `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return cuerpo;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // Puerta 5 — Ensayo General, Estación 4 (Masterclass gratuita en_vivo vía
 // Meeting SDK embebido, diseño cerrado 2026-09-14): mismo criterio de
 // frontera de identidad que confirmarBootcampHitoVisto — el correo
@@ -466,6 +505,7 @@ export {
   obtenerRecorridoHabilitado,
   confirmarBootcampHitoVisto,
   obtenerMasterclassZoomJoin,
+  obtenerBootcampZoomJoin,
   crearRegistroAutenticado,
   registrarClaseGratuita,
   relayBotonVerMiClaseAOrbit,

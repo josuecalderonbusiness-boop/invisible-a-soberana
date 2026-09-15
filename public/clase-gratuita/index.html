@@ -104,12 +104,15 @@ a { color: inherit; }
        oferta del Replay $5 (unico caso sin ningun derecho previo). -->
 
   <!-- Estado 6 — ya tiene acceso vigente a Código Soberana: precedencia
-       MAXIMA sobre cualquier otro estado post-cierre. Nunca se le vuelve a
-       ofrecer comprar nada. -->
+       MAXIMA sobre CUALQUIER otro estado, en CUALQUIER fase (espera/
+       en_vivo/replay, no solo post-cierre — Puerta 5, Estación 4, Frente C,
+       diseño cerrado 2026-09-15, ver cgInit). Nunca se le vuelve a ofrecer
+       comprar nada. Enlace directo a /workbook (la única casa real, DR-007)
+       — no a /mi-espacio, que es solo la puerta de autenticación. -->
   <div class="cg-estado" id="cg-tiene-codigo-soberana" style="display:none">
     <h1>Ya tienes acceso a Código Soberana</h1>
     <p>Ingresa a tu espacio para continuar tu recorrido.</p>
-    <a class="ms-invite-btn" href="/mi-espacio" style="display:inline-block;margin-top:18px;text-decoration:none">Ir a mi espacio →</a>
+    <a class="ms-invite-btn" href="/workbook" style="display:inline-block;margin-top:18px;text-decoration:none">ENTRAR A CÓDIGO SOBERANA</a>
   </div>
 
   <!-- Estado 5 — ya compró el Replay $5 (Puerta 3, replay_comprado + compra
@@ -222,6 +225,27 @@ async function cgInit() {
       document.getElementById('cg-pedir-correo').style.display = 'block';
       return;
     }
+
+    // Puerta 5 — Estación 4, Frente C (diseño cerrado 2026-09-15):
+    // precedencia MAXIMA, independiente de la fase — si ya tiene acceso
+    // vigente a Código Soberana, la Masterclass NUNCA vuelve a ofrecerle
+    // comprar nada, sin importar si experienciaGratuitaActiva sigue viva
+    // (espera/en_vivo/replay) o ya cerró. ANTES este chequeo vivía dentro
+    // del bloque "sin experiencia activa" (solo aplicaba tras el cierre del
+    // carrito) — se sube aquí, antes de cualquier rama de fase, para cerrar
+    // el hueco real encontrado en la auditoría: una compradora que volvía a
+    // /clase-gratuita MIENTRAS la ventana gratuita seguía abierta caía de
+    // largo en msRenderClaseGratuita() y volvía a ver la oferta comercial
+    // del Bootcamp. tieneCodigoSoberana ya lo calcula el backend de forma
+    // incondicional (api/mi-espacio-auth.js:sesionClaseGratuitaAccion, en
+    // paralelo con las señales de fase) — nunca depende del reloj QA (es un
+    // Derecho permanente, no una ventana de tiempo). Ninguna otra regla del
+    // circuito comercial (fases, ventanas, Replay $5) se toca aquí.
+    if (data.tieneCodigoSoberana) {
+      document.getElementById('cg-tiene-codigo-soberana').style.display = 'block';
+      return;
+    }
+
     if (!data.experienciaGratuitaActiva) {
       // autorizado:true pero sin experiencia activa = ambas ventanas
       // gratuitas (replay + Bootcamp) ya cerraron JUNTAS — Puerta 5,
@@ -230,18 +254,15 @@ async function cgInit() {
       // y oportunidadBootcampActiva.abierta ahora derivan del MISMO cierre
       // (calcularVentanaComercial en orbit-mc), asi que no puede llegar
       // aqui con la oportunidad todavia abierta — esa rama intermedia se
-      // retiro por imposible. Quedan 3 estados reales, con esta precedencia
-      // exacta (ver auditoria del mismo dia):
-      //   1) ya tiene acceso vigente a Código Soberana -> precedencia
-      //      MAXIMA, nunca se le ofrece comprar nada.
-      //   2) ya compro el Replay $5 (replay_comprado + compra aprobada,
+      // retiro por imposible. Quedan 2 estados reales aqui (el 3ro, "ya
+      // tiene Código Soberana", ya se resolvió arriba con precedencia
+      // MAXIMA, antes de esta rama de fase):
+      //   1) ya compro el Replay $5 (replay_comprado + compra aprobada,
       //      Puerta 3) -> se le muestra SU video, nunca el checkout de
       //      nuevo.
-      //   3) ningun derecho previo -> unica alternativa comercial: ofrecer
+      //   2) ningun derecho previo -> unica alternativa comercial: ofrecer
       //      el Replay $5 (Hotmart 8498705).
-      if (data.tieneCodigoSoberana) {
-        document.getElementById('cg-tiene-codigo-soberana').style.display = 'block';
-      } else if (data.replayCompradoActivo) {
+      if (data.replayCompradoActivo) {
         const rc = data.replayCompradoActivo;
         document.getElementById('cg-replay-comprado-title').textContent = rc.nombreClase || 'Revive tu clase';
         const video = document.getElementById('cg-replay-comprado-video');

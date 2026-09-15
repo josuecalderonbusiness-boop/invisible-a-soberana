@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bienvenida a Código Soberana</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Jost:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* Puerta 5 — Estación 4, Frente A (2026-09-15): página de gracias post-compra
+   del Bootcamp Código Soberana. Mismo lenguaje visual que
+   public/clase-gratuita/index.html (mismos tokens, mismas clases
+   .ms-invite-card/.ms-invite-btn) — una sola identidad visual en todo el
+   circuito de compra, nunca una pantalla "de sistema" aparte. */
+:root {
+  --wine-deep: #3D0C11; --wine-primary: #6B1A2A;
+  --gold-deep: #7A5C1E; --gold-primary: #B8892A; --gold-medium: #D4A843; --gold-light: #E8C870;
+  --charcoal-deep: #150D11; --charcoal: #1E1218;
+  --text-light: #F0E6EA; --text-muted: #C4A8B0;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', sans-serif;
+  --font-eyebrow: 'Jost', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--charcoal-deep); min-height: 100vh; }
+body { font-family: var(--font-body); color: var(--text-light); }
+a { color: inherit; }
+
+.bc-wrap { min-height: 100vh; min-height: 100dvh; padding: 60px 24px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; }
+.bc-eyebrow { font-family: var(--font-eyebrow); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-primary); text-align: center; margin-bottom: 24px; }
+
+.bc-card { position: relative; border: 1.5px solid rgba(184,137,42,.35); border-radius: 18px; padding: 36px 32px; background: linear-gradient(165deg, rgba(184,137,42,.09), transparent 65%); text-align: center; }
+.bc-card h1 { font-family: var(--font-display); font-size: clamp(22px, 6vw, 28px); font-weight: 800; color: var(--text-light); margin-bottom: 14px; }
+.bc-card p { font-family: var(--font-body); font-size: 14.5px; line-height: 1.6; color: var(--text-muted); margin-bottom: 10px; }
+.bc-card p:last-of-type { margin-bottom: 26px; }
+
+.ms-invite-btn { display: inline-block; width: 100%; padding: 16px 26px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, var(--gold-deep), var(--gold-primary), var(--gold-medium)); color: var(--charcoal-deep); font-family: var(--font-body); font-weight: 700; font-size: 14.5px; letter-spacing: .5px; text-decoration: none; text-align: center; }
+.bc-btn-secundario { display: inline-block; width: 100%; margin-top: 12px; padding: 15px 26px; border-radius: 12px; border: 1px solid rgba(184,137,42,.4); cursor: pointer; background: transparent; color: var(--gold-light); font-family: var(--font-body); font-weight: 600; font-size: 14px; text-decoration: none; text-align: center; }
+.ms-invite-btn:disabled, .bc-btn-secundario:disabled { opacity: .55; cursor: default; }
+
+.bc-pulso { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold-light); margin-right: 8px; animation: bc-latido 1.4s ease-in-out infinite; vertical-align: middle; }
+@keyframes bc-latido { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .bc-pulso { animation: none; opacity: .8; } }
+
+.bc-correo-form input {
+  width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(184,137,42,.35);
+  background: rgba(255,255,255,.03); color: var(--text-light); font-family: var(--font-body); font-size: 15px;
+  margin-bottom: 14px;
+}
+.bc-correo-form input::placeholder { color: var(--text-muted); }
+.bc-error { color: var(--gold-light); font-size: 13px; margin-top: 14px; text-align: center; display: none; }
+</style>
+</head>
+<body>
+
+<div class="bc-wrap">
+  <div class="bc-eyebrow">Tu compra</div>
+
+  <!-- Estado inicial: sin correo en la URL (Hotmart no lo mandó, o llegó
+       directo sin parámetros) -- se le pide, mismo patrón ya usado en
+       clase-gratuita/index.html (#cg-pedir-correo), pero contra
+       /api/workbook-acceso. Nunca un segundo mecanismo de identificación:
+       el mismo endpoint que ya usa /workbook (Puerta B). -->
+  <div class="bc-card bc-correo-form" id="bc-pedir-correo" style="display:none">
+    <h1>¡Bienvenida a Código Soberana!</h1>
+    <p>Tu compra fue confirmada. Escribe el correo con el que compraste para preparar tu espacio.</p>
+    <form id="bc-form-correo">
+      <input type="email" id="bc-input-correo" placeholder="Correo electrónico" autocomplete="email" required>
+      <button type="submit" class="ms-invite-btn" id="bc-btn-confirmar">Confirmar mi acceso</button>
+    </form>
+    <p class="bc-error" id="bc-error-correo">Escribe un correo válido.</p>
+  </div>
+
+  <!-- Estado "confirmando": tenemos un correo (de la URL o recién escrito) y
+       o bien seguimos comprobando, o Orbit todavía no ve el acceso activo
+       (el webhook de Hotmart puede tardar unos segundos). NUNCA "acceso
+       denegado" -- ver diseño aprobado 2026-09-15. El boton de reintento es
+       SIEMPRE manual (nunca un poll automático) por el rate limit real de
+       /api/workbook-acceso (5 intentos/15min, ver api/_lib/rate-limit.js).
+       Copy revisado 2026-09-15: menos técnico/explicativo, más propio de
+       una bienvenida que de una pantalla de estado. -->
+  <div class="bc-card" id="bc-confirmando" style="display:none">
+    <h1>Estamos preparando tu espacio</h1>
+    <p>Tu compra ya fue recibida. Estamos terminando de preparar tu acceso.</p>
+    <button type="button" class="ms-invite-btn" id="bc-btn-reintentar">COMPROBAR MI ACCESO</button>
+  </div>
+
+  <!-- Estado "bienvenida": activo:true -- destino unico, /workbook (la unica
+       casa real, DR-007) -- nunca /mi-espacio directamente. -->
+  <div class="bc-card" id="bc-bienvenida" style="display:none">
+    <h1>¡Bienvenida a Código Soberana!</h1>
+    <p>Tu compra fue confirmada.</p>
+    <p>Tu espacio ya está listo.</p>
+    <a class="ms-invite-btn" href="/workbook">ENTRAR A CÓDIGO SOBERANA</a>
+  </div>
+</div>
+
+<script>
+// Puerta 5 — Estación 4, Frente A (diseño cerrado 2026-09-15): Hotmart ->
+// esta página -> comprobar acceso real en Orbit (vía /api/workbook-acceso,
+// YA EXISTENTE -- mismo contrato que ya usa Puerta B en /workbook, ningún
+// endpoint nuevo) -> /workbook. El correo que Hotmart pueda anexar a la URL
+// de esta página es SOLO conveniencia de UX (prellenar/consultar) -- JAMAS
+// autoridad de identidad ni de acceso. La autoridad real es siempre
+// /api/workbook-acceso, que consulta el Derecho vigente en Orbit/Postgres.
+//
+// Nombres de parametro sin documentacion oficial de Hotmart (confirmado en
+// la auditoria de la Página de Agradecimiento externa, 2026-09-14) -- se
+// prueban unos pocos candidatos razonables, el primero que aparezca gana;
+// si ninguno aparece, se le pide el correo (mismo mecanismo, sin inventar
+// nada).
+const BC_CLAVES_EMAIL_URL = ['email', 'buyer_email', 'hotmart_email'];
+
+function bcLeerEmailDeUrl() {
+  const params = new URLSearchParams(window.location.search);
+  for (const clave of BC_CLAVES_EMAIL_URL) {
+    const valor = params.get(clave);
+    if (valor) return valor;
+  }
+  return null;
+}
+
+function bcMostrar(idVisible) {
+  ['bc-pedir-correo', 'bc-confirmando', 'bc-bienvenida'].forEach((id) => {
+    document.getElementById(id).style.display = id === idVisible ? 'block' : 'none';
+  });
+}
+
+// Resultado: 'activo' | 'pendiente' | 'error'. Un 503/fallo de red NUNCA se
+// interpreta como "compra rechazada" -- mismo criterio que ya usan
+// clase-gratuita/index.html y workbook/index.html para este mismo endpoint.
+async function bcComprobarAcceso(correo) {
+  try {
+    const res = await fetch('/api/workbook-acceso', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo }),
+    });
+    if (res.status === 503) return 'error';
+    const data = await res.json();
+    return data.activo === true ? 'activo' : 'pendiente';
+  } catch (e) {
+    return 'error';
+  }
+}
+
+let bcCorreoActual = null;
+let bcComprobando = false;
+
+async function bcEjecutarComprobacion(correo, boton) {
+  if (bcComprobando) return; // nunca dos comprobaciones en vuelo a la vez
+  bcComprobando = true;
+  if (boton) { boton.disabled = true; boton.textContent = 'Comprobando...'; }
+
+  const resultado = await bcComprobarAcceso(correo);
+  if (resultado === 'activo') {
+    bcMostrar('bc-bienvenida');
+  } else {
+    bcMostrar('bc-confirmando');
+  }
+
+  bcComprobando = false;
+  if (boton) { boton.disabled = false; boton.textContent = 'COMPROBAR MI ACCESO'; }
+}
+
+function bcInitFormularioCorreo() {
+  const form = document.getElementById('bc-form-correo');
+  const input = document.getElementById('bc-input-correo');
+  const error = document.getElementById('bc-error-correo');
+  const boton = document.getElementById('bc-btn-confirmar');
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const correo = input.value.trim();
+    if (!correo || !correo.includes('@')) {
+      error.style.display = 'block';
+      return;
+    }
+    error.style.display = 'none';
+    bcCorreoActual = correo;
+    await bcEjecutarComprobacion(correo, boton);
+  });
+}
+
+function bcInitBotonReintentar() {
+  const boton = document.getElementById('bc-btn-reintentar');
+  boton.addEventListener('click', async () => {
+    if (!bcCorreoActual) return;
+    await bcEjecutarComprobacion(bcCorreoActual, boton);
+  });
+}
+
+async function bcInit() {
+  bcInitFormularioCorreo();
+  bcInitBotonReintentar();
+
+  const emailUrl = bcLeerEmailDeUrl();
+  if (emailUrl) {
+    // Único intento automático (diseño aprobado 2026-09-15) -- nunca un
+    // poll en loop: /api/workbook-acceso tiene un limitador anti-abuso de 5
+    // intentos/15min por IP y por correo (api/_lib/rate-limit.js) que un
+    // auto-poll agresivo autobloquearía, dejando a la compradora real
+    // fuera 15 minutos mientras el webhook de Hotmart todavía procesa.
+    bcCorreoActual = emailUrl;
+    bcMostrar('bc-confirmando'); // copy neutro mientras se resuelve el único intento
+    await bcEjecutarComprobacion(emailUrl, null);
+  } else {
+    bcMostrar('bc-pedir-correo');
+  }
+}
+
+bcInit();
+</script>
+</body>
+</html>

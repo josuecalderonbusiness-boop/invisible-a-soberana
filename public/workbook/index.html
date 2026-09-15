@@ -8440,7 +8440,7 @@ function computeSemanaActiva() {
 // recorrido. Misma mecanica exacta ya usada en Mi Espacio (Corte 4) — LIVE
 // y Replay se muestran juntos cuando ambos enlaces existen, nunca por
 // horario. Oculto por completo si state.bootcampHitos es null.
-const HITO_NOMBRES_WB = { 1: 'Hito 1', 2: 'Hito 2', 3: 'Hito 3' };
+const HITO_NOMBRES_WB = { 1: 'Estación 1 — Llegar', 2: 'Estación 2 — Volver', 3: 'Estación 3 — Sostenerte' };
 function _formatFechaHitoWB(fechaISO) {
   try {
     return new Date(fechaISO).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
@@ -8468,7 +8468,7 @@ function renderBootcampHitosBlock() {
       if (!h.disponible) {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
       }
-      const live = h.enlaceEnVivo ? '<a href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="' + btn + '">🔴 Entrar a la clase</a>' : '';
+      const live = h.enlaceEnVivo ? '<a href="' + h.enlaceEnVivo + '" target="_blank" rel="noopener" style="' + btn + '">🔴 Entrar en vivo</a>' : '';
       // id/data-hito: asi el listener global de 'message' (mas abajo) sabe
       // EXACTAMENTE que Hito corresponde a que iframe cuando Bunny avisa
       // 'ended' — nunca asume que un ended es el Hito 3, ni ningun otro.
@@ -8587,7 +8587,7 @@ function renderMisExperiencias() {
         '<div class="profile-item-icon">🎯</div>' +
         '<div class="profile-item-text">' +
           '<div class="profile-item-label">Bootcamp — Código Soberana</div>' +
-          '<div class="profile-item-sub">' + (completado ? '✓ Completado' : 'En progreso — ver Hitos en Inicio') + '</div>' +
+          '<div class="profile-item-sub">' + (completado ? '✓ Completado' : 'En progreso — ver Estaciones en Inicio') + '</div>' +
         '</div>' +
         '<svg class="profile-item-arrow" width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
       '</div>'

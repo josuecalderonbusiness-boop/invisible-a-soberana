@@ -5240,7 +5240,7 @@
       3. Abre la app instalada y activa las notificaciones
     </div>
     <button class="notif-modal-btn" id="notif-btn" onclick="activarNotificaciones()">Activar notificaciones</button>
-    <button class="notif-modal-skip" onclick="cerrarNotifModal()">Ahora no</button>
+    <button class="notif-modal-skip" onclick="posponerPushDesdeModal()">Ahora no</button>
   </div>
 </div>
 
@@ -5465,40 +5465,42 @@ function _goToApp() {
   requestAnimationFrame(() => initApp());
 }
 
-// Disparado por initApp() 3s después de cargar
+// Puerta 5, Estación 8 (diseño cerrado 2026-09-16): ya NO gestiona su
+// propio flag de "ya preguntado" — esa decisión ahora es exclusiva de
+// puedeOfrecerPush() (granted/denied siempre en vivo desde
+// Notification.permission, "pospuesto" con cooldown reversible). Se
+// mantiene el chequeo aquí también (defensa en profundidad, por si algo
+// más además del orquestador llegara a invocar esta función).
+// Disparado por evaluarOportunidadOnboarding().
 function maybeShowNotifModal() {
-  const alreadyAsked = localStorage.getItem('soberana_notif_asked');
-  const hasPush      = ('Notification' in window) && ('PushManager' in window);
-  const permission   = hasPush ? Notification.permission : 'unsupported';
-
-  console.log('[Notif] maybeShowNotifModal —', {
-    soberana_notif_asked: alreadyAsked,
-    'Notification.permission': permission,
-    PushManager: hasPush
-  });
-
-  if (alreadyAsked)                { console.log('[Notif] → ya preguntado, skip'); return; }
-  if (!hasPush)                    { console.log('[Notif] → sin soporte, skip'); return; }
-  if (permission === 'granted')    { console.log('[Notif] → ya granted, skip'); return; }
-  // permission === 'default' → mostrar modal
-  console.log('[Notif] → mostrando modal (permission=' + permission + ')');
+  if (!puedeOfrecerPush()) { console.log('[Notif] → no procede ofrecer ahora'); return; }
+  console.log('[Notif] → mostrando modal (permission=' + Notification.permission + ')');
 
   const isIOS       = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
+  const isStandalone = estaInstalada();
 
   if (isIOS && !isStandalone) {
-    // iOS fuera de standalone: no puede pedir permiso — mostrar hint de instalación
+    // Defensivo: puedeOfrecerPush() ya excluye este caso, pero se
+    // conserva el hint por si acaso — iOS fuera de standalone no puede
+    // pedir permiso real.
     document.getElementById('notif-ios-hint').classList.add('visible');
     document.getElementById('notif-btn').style.display = 'none';
-    console.log('[Notif] → iOS no-standalone: mostrando hint de instalación');
   }
 
   document.getElementById('notif-modal-overlay').classList.add('open');
 }
 
+// Solo cierra la UI — nunca escribe estado por sí sola. "Ahora no" pasa
+// por posponerPushDesdeModal() (pospone, reversible); conceder/rechazar
+// pasa por activarNotificaciones() (Notification.permission manda,
+// siempre en vivo, terminal para "denied").
 function cerrarNotifModal() {
-  localStorage.setItem('soberana_notif_asked', '1');
   document.getElementById('notif-modal-overlay').classList.remove('open');
+}
+
+function posponerPushDesdeModal() {
+  posponerPush();
+  cerrarNotifModal();
 }
 
 function activarNotificaciones() {
@@ -7410,19 +7412,20 @@ async function initApp() {
     publishComunidadPost(state.user.name, `${state.user.name.split(' ')[0]} comenzó Soberana 7D 👑`, 'automatico');
   }
 
-  // Popup de instalación — una sola vez, 3s después de entrar
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  if (!isStandalone && !localStorage.getItem('soberana_install_shown')) {
-    setTimeout(() => showInstallPopup(), 3000);
-  }
-
-  // Guardar/actualizar token FCM si ya tiene permiso concedido
+  // Guardar/actualizar token FCM si ya tiene permiso concedido — esto no
+  // es "ofrecer" nada, es renovación silenciosa de un derecho ya concedido.
   if ('Notification' in window && Notification.permission === 'granted') {
     saveFcmToken();
   }
 
-  // Modal de notificaciones — 3s después, solo si permission === 'default' y no se ha preguntado
-  setTimeout(() => maybeShowNotifModal(), 3000);
+  // Puerta 5, Estación 8 (orquestador de onboarding, diseño cerrado
+  // 2026-09-16): UNA sola oportunidad — instalación O Push, nunca ambas —
+  // nunca en la primera entrada. Reemplaza los dos temporizadores
+  // independientes que existían antes (hallazgo real de la auditoría: los
+  // dos disparaban al mismo setTimeout(3000), produciendo en el peor caso
+  // dos modales apilados — Push encima de instalación, esta última
+  // bloqueada debajo). Ver evaluarOportunidadOnboarding() más abajo.
+  setTimeout(() => evaluarOportunidadOnboarding(), 3000);
 
   // Community toast — 1 vez por sesión, 1.5s después de entrar
   setTimeout(() => showCommunityToast(), 1500);
@@ -14230,36 +14233,176 @@ function exportData() {
 }
 
 // ═══════════════════════════════════════════
+// ONBOARDING: ORQUESTADOR DE INSTALACIÓN + PUSH
+// (Puerta 5, Estación 8, diseño cerrado 2026-09-16)
+//
+// Reemplaza los dos flags irreversibles de antes (soberana_install_shown,
+// soberana_notif_asked — "se mostró una vez, nunca más se evalúa") por un
+// estado que solo se escribe cuando ella toma una decisión real de
+// posponer. "Instalada" y "permiso de Push" NUNCA se guardan como flag —
+// se leen siempre en vivo (matchMedia/navigator.standalone,
+// Notification.permission), porque esa es la única fuente que no puede
+// desincronizarse de la realidad.
+//
+// Regla de prioridad (nunca las dos a la vez): instalación primero. En
+// iOS fuera de standalone, Push ni siquiera es una oportunidad real
+// todavía (Safari no permite pedir permiso sin app instalada) — ahí el
+// orquestador solo considera instalación.
+// ═══════════════════════════════════════════
+const ONBOARDING_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 días — reaparición tras "Ahora no"
+const SESION_DEBOUNCE_MS = 30 * 60 * 1000; // ventana para no contar como "sesión nueva" un reload silencioso (ver initAutoUpdate más abajo)
+const SESION_MINIMA_PARA_ONBOARDING = 2; // nunca en la primera entrada — la bienvenida gana, cero interrupciones
+
+function _onbLeerJSON(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+}
+
+// Cuenta sesiones REALES, no ejecuciones de script. Verificado en la
+// auditoría: initApp() solo se invoca una vez por carga de página (un
+// único punto de entrada, _goToApp() ← maybeShowNotifScreen(), con ramas
+// mutuamente excluyentes) — pero initAutoUpdate() puede forzar un
+// window.location.reload() silencioso ante una nueva versión del Service
+// Worker, lo que SÍ vuelve a ejecutar todo el script desde cero dentro de
+// lo que ella percibe como una sola visita. Por eso, si la última sesión
+// contada fue hace menos de SESION_DEBOUNCE_MS, esta ejecución no cuenta
+// como una sesión nueva.
+function contarSesionWorkbook() {
+  const actual = _onbLeerJSON('soberana_sesion_contador') || { n: 0, ultima: null };
+  const ahora = Date.now();
+  if (actual.ultima && (ahora - new Date(actual.ultima).getTime()) < SESION_DEBOUNCE_MS) {
+    return actual.n;
+  }
+  const nuevo = { n: actual.n + 1, ultima: new Date(ahora).toISOString() };
+  localStorage.setItem('soberana_sesion_contador', JSON.stringify(nuevo));
+  return nuevo.n;
+}
+
+function estaInstalada() {
+  return window.matchMedia('(display-mode: standalone)').matches || !!navigator.standalone;
+}
+
+function instalacionPospuestaVigente() {
+  const estado = _onbLeerJSON('soberana_onb_instalacion');
+  if (!estado || estado.estado !== 'pospuesta') return false;
+  return (Date.now() - new Date(estado.desde).getTime()) < ONBOARDING_COOLDOWN_MS;
+}
+
+function posponerInstalacion() {
+  localStorage.setItem('soberana_onb_instalacion', JSON.stringify({ estado: 'pospuesta', desde: new Date().toISOString() }));
+}
+
+function puedeOfrecerInstalacion() {
+  if (estaInstalada()) return false; // appinstalled/standalone real manda — nunca se vuelve a ofrecer
+  if (instalacionPospuestaVigente()) return false;
+  return true;
+}
+
+function pushSoportado() {
+  return ('Notification' in window) && ('PushManager' in window);
+}
+
+function pushPospuestoVigente() {
+  const estado = _onbLeerJSON('soberana_onb_push');
+  if (!estado || estado.estado !== 'pospuesto') return false;
+  return (Date.now() - new Date(estado.desde).getTime()) < ONBOARDING_COOLDOWN_MS;
+}
+
+function posponerPush() {
+  localStorage.setItem('soberana_onb_push', JSON.stringify({ estado: 'pospuesto', desde: new Date().toISOString() }));
+}
+
+// granted/denied SIEMPRE se leen en vivo de Notification.permission, nunca
+// de un flag propio — un "denied" del navegador es terminal (ver auditoría:
+// requestPermission() ya no vuelve a mostrar diálogo alguno tras un
+// rechazo real), así que jamás se vuelve a ofrecer en ese caso. Solo
+// "default" (nunca decidido) es una oportunidad real.
+function puedeOfrecerPush() {
+  if (!pushSoportado()) return false;
+  if (Notification.permission !== 'default') return false;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS && !estaInstalada()) return false; // Push no es una oportunidad real ahí todavía, no es "pospuesta"
+  if (pushPospuestoVigente()) return false;
+  return true;
+}
+
+// Puerta 5, Estación 8 (decisión cerrada 2026-09-17): soberana_install_shown
+// y soberana_notif_asked son booleanos puros, SIN fecha — no hay forma de
+// saber si el popup viejo se vio hace un día o hace dos meses. Convertirlos
+// en "pospuesta desde hoy" fabricaría una fecha ficticia (y escondería la
+// oportunidad 7 días a quien quizás ya está lista hace tiempo); fabricar en
+// cambio una fecha ya vencida sería igual de inventado, solo que calibrado
+// al revés. Ninguna de las dos es honesta con datos que no tenemos.
+//
+// Decisión: NO migrar. Los flags viejos permanecen en el dispositivo como
+// dato histórico (nunca se borran), pero dejan de gobernar cualquier
+// comportamiento nuevo — el orquestador nunca los lee. Quien ya vio el
+// popup viejo queda simplemente sin historial para el sistema nuevo, y
+// las reglas normales (sesión mínima, estaInstalada(), cooldown desde la
+// primera vez que SÍ pospone bajo este sistema) se aplican igual que a
+// cualquier otra persona.
+
+function evaluarOportunidadOnboarding() {
+  const sesion = contarSesionWorkbook();
+  if (sesion < SESION_MINIMA_PARA_ONBOARDING) return;
+
+  if (puedeOfrecerInstalacion()) {
+    showInstallPopup();
+    return;
+  }
+  if (puedeOfrecerPush()) {
+    maybeShowNotifModal();
+  }
+}
+
+// ═══════════════════════════════════════════
 // INSTALL PWA
 // ═══════════════════════════════════════════
 let deferredPrompt = null;
 
+// Puerta 5, Estación 8 (diseño cerrado 2026-09-16, ajustado 2026-09-17):
+// ya NO marca ningún flag al ABRIRSE — abrir el popup no es una decisión
+// suya, es solo una oferta. El ÚNICO estado que este popup escribe es
+// "pospuesta" (posponerInstalacion(), vía "Ahora no" o vía un rechazo real
+// del prompt nativo en installApp()) — nunca "instalada". Esa señal es
+// exclusiva de appinstalled/estaInstalada() en una carga posterior.
+//
+// Ajuste 2026-09-17: se retiró el checkbox "Ya la instalé ✓" que existía
+// en las rutas manuales (iOS / Android sin deferredPrompt). No existe
+// ninguna forma de verificar esa afirmación, y aunque ya no escribía un
+// flag permanente falso, seguía siendo conceptualmente incorrecto ofrecer
+// un botón que declara un hecho que no podemos comprobar. Ahora esas
+// rutas son honestas: instrucciones + "Ahora no" (mismo cooldown de 7 días
+// que cualquier otro rechazo) — nunca una confirmación fabricada.
 function showInstallPopup() {
-  localStorage.setItem('soberana_install_shown', 'true');
-  // Bloquear cierre tocando fuera
   document.getElementById('modal-overlay').setAttribute('data-locked', 'true');
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isAndroid = /android/i.test(navigator.userAgent);
 
+  let titulo = 'Instala tu Workbook';
+  let parrafo = 'Para una mejor experiencia, instala el workbook en tu pantalla de inicio. Accede más rápido y sin necesitar internet.';
   let actionHtml = '';
+
   if (deferredPrompt) {
-    // Chrome Android — instalación automática disponible
+    // Chrome Android — instalación automática disponible, con señal real (appinstalled)
     actionHtml = `
-      <button onclick="installApp();closeInstallPopup()"
-        style="width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:20px">
+      <button onclick="installApp()"
+        style="width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:12px">
         Instalar ahora
       </button>`;
   } else if (isIOS) {
+    titulo = 'Cómo instalar Código Soberana';
+    parrafo = 'Sigue estos pasos para añadir tu espacio a la pantalla de inicio.';
     actionHtml = `
-      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:20px;font-size:14px;color:var(--text-mid);line-height:2">
+      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px;font-size:14px;color:var(--text-mid);line-height:2">
         <div>1. Toca el botón compartir <strong>(□↑)</strong> abajo</div>
         <div>2. Selecciona <strong>Añadir a pantalla de inicio</strong></div>
         <div>3. Toca <strong>Añadir</strong></div>
       </div>`;
   } else {
+    titulo = 'Cómo instalar Código Soberana';
+    parrafo = 'Sigue estos pasos para añadir tu espacio a la pantalla de inicio.';
     actionHtml = `
-      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:20px;font-size:14px;color:var(--text-mid);line-height:2">
+      <div style="text-align:left;background:rgba(139,26,47,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px;font-size:14px;color:var(--text-mid);line-height:2">
         <div>1. Toca los 3 puntos <strong>(⋮)</strong> arriba a la derecha</div>
         <div>2. Toca <strong>Instalar aplicación</strong></div>
         <div>3. Confirma tocando <strong>Instalar</strong></div>
@@ -14269,20 +14412,21 @@ function showInstallPopup() {
   const html = `
     <div style="text-align:center;padding:8px 0 4px">
       <div style="font-size:48px;margin-bottom:12px">📱</div>
-      <div class="modal-title" style="margin-bottom:12px">Instala tu Workbook</div>
-      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:20px">
-        Para una mejor experiencia, instala el workbook en tu pantalla de inicio.
-        Accede más rápido y sin necesitar internet.
-      </p>
+      <div class="modal-title" style="margin-bottom:12px">${titulo}</div>
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:20px">${parrafo}</p>
       ${actionHtml}
-      <label style="display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-size:14px;color:var(--text-mid)">
-        <input type="checkbox" id="install-done-check" onchange="if(this.checked)closeInstallPopup()"
-          style="width:18px;height:18px;accent-color:var(--burgundy);cursor:pointer">
-        Ya la instalé ✓
-      </label>
+      <button onclick="posponerInstalacionDesdePopup()"
+        style="width:100%;background:transparent;border:none;color:var(--text-muted);font-family:'Jost',sans-serif;font-size:13px;cursor:pointer;padding:8px">
+        Ahora no
+      </button>
     </div>
   `;
   showModal(html);
+}
+
+function posponerInstalacionDesdePopup() {
+  posponerInstalacion();
+  closeInstallPopup();
 }
 
 function closeInstallPopup() {
@@ -14344,12 +14488,21 @@ async function installApp() {
   if (!deferredPrompt) { showInstallInstructions(); return; }
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
+  // El popup, si estaba abierto, se cierra siempre aquí — el navegador ya
+  // mostró su propio diálogo nativo y ella ya decidió, sin importar cuál
+  // haya sido el resultado.
+  if (document.getElementById('modal-overlay').classList.contains('open')) closeInstallPopup();
   if (outcome === 'accepted') {
     showToast('✅ App instalada correctamente');
     deferredPrompt = null;
     const float = document.getElementById('install-float');
     if (float) float.classList.remove('visible');
     renderInstallSection();
+  } else {
+    // Rechazó el diálogo nativo — decisión real de "ahora no", no un
+    // fallo. Misma cortesía que el botón explícito: se pospone, no se
+    // vuelve a interrumpir hasta el próximo cooldown.
+    posponerInstalacion();
   }
 }
 

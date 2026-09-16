@@ -1,116 +1,146 @@
-// api/_lib/push-fcm.js — Puerta 5, Estación 9A (transporte Push).
+// api/_lib/push-fcm.js — Puerta 5, Estación 9A (transporte Push)
 //
-// Único lugar de invisible-a-soberana que inicializa Firebase Admin para
-// ENVIAR Push. Deliberadamente separado de todo lo demás que ya toca
-// Firebase en este repo:
-//   - El SDK cliente (compat, cargado en /workbook) usa la config PÚBLICA
-//     del proyecto, nunca credenciales de servicio.
-//   - functions/index.js (Firebase Cloud Functions, proyecto aparte) tiene
-//     su propia inicialización automática (ADC del runtime de Functions).
-// Este módulo es exclusivamente el puente Orbit->FCM vía Vercel — nunca se
-// reutiliza para nada del sistema legado de functions/.
+// Corrección 2026-09-16: reescrito para reutilizar la convención YA
+// EXISTENTE de este repo (FIREBASE_SERVICE_ACCOUNT + googleapis GoogleAuth
+// + REST — la misma que ya usan whatsapp.js, _lib/orbit-domain.js y
+// _lib/firestore-rest.js), en vez de firebase-admin + una credencial nueva.
+// firebase-admin sigue existiendo solo en functions/ (Firebase Cloud
+// Functions, despliegue aparte con su propia inicialización ADC).
 //
-// Requiere credenciales de servicio (nunca las públicas del SDK cliente),
-// leídas de FIREBASE_SERVICE_ACCOUNT_JSON (el JSON completo de la service
-// account, como string, variable de Vercel — la MISMA cuenta de servicio
-// que ya usan functions/ y los scripts locales de prueba, serviceAccountKey.json,
-// nunca una credencial nueva). Sin esa variable, credencialesConfiguradas()
-// es false y nunca se intenta inicializar ni llamar a nada.
+// Firestore (leer/borrar dispositivos_push/{correo}/tokens/*): reutiliza
+// getToken()/fsDelete() de firestore-rest.js tal cual — el listado de una
+// subcolección completa no existía ahí (nadie lo necesitaba hasta ahora),
+// así que se agrega aquí con el mismo estilo fetch+Authorization.
 //
-// Puerta 5, Estación 9A (diseño cerrado 2026-09-17): la relación
-// Persona->dispositivos vive en dispositivos_push/{correoNormalizado}/tokens/{token}
-// — NUNCA en tokens/{email} (colección legada, intacta, nunca leída ni
-// escrita desde aquí). El correo, nunca un persona_id de Orbit, es la
-// única identidad que cruza la frontera Orbit->Mi Espacio (mismo principio
-// que ya rige el resto de los puentes: Zoom, replay, WhatsApp).
+// FCM (enviar el Push en sí): no tenía equivalente en firestore-rest.js.
+// Usa la API HTTP v1 oficial (POST .../v1/projects/{project}/messages:send,
+// una llamada por token — v1 no tiene endpoint de multicast nativo), con
+// su propio scope OAuth (firebase.messaging, distinto de datastore) sobre
+// una instancia de GoogleAuth separada, misma cuenta de servicio.
 
-let appInicializada = false;
+import { getToken as getFirestoreToken, fsDelete } from './firestore-rest.js';
+
+const PROJECT = 'soberana-app';
+const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+const FCM_SEND_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`;
+const FCM_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
+
+let cachedFcmAuth = null;
 
 function credencialesConfiguradas() {
-  return Boolean(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  return Boolean(process.env.FIREBASE_SERVICE_ACCOUNT);
 }
 
-function obtenerAdmin() {
-  // eslint-disable-next-line global-require
-  const admin = require('firebase-admin');
-  if (!appInicializada && !admin.apps.length) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+async function getFcmToken() {
+  if (!cachedFcmAuth) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const { google } = await import('googleapis');
+    cachedFcmAuth = new google.auth.GoogleAuth({
+      credentials: serviceAccount,
+      scopes: [FCM_SCOPE]
+    });
   }
-  appInicializada = true;
-  return admin;
+  return cachedFcmAuth.getAccessToken();
 }
 
-const CODIGOS_TOKEN_INVALIDO = [
-  'messaging/registration-token-not-registered',
-  'messaging/invalid-registration-token',
-  'messaging/invalid-argument',
-];
+// Lista dispositivos_push/{correo}/tokens/* — Firestore REST devuelve
+// {documents:[{name:'.../tokens/<id>', fields:{...}}]} para un GET de
+// colección (sin docId final). No existía en firestore-rest.js (solo tiene
+// fsGet de un documento puntual); mismo estilo que el resto de ese archivo.
+async function listarDispositivos(correo) {
+  const token = await getFirestoreToken();
+  const res = await fetch(`${FIRESTORE_BASE}/dispositivos_push/${encodeURIComponent(correo)}/tokens`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  if (!Array.isArray(data.documents)) return [];
+  return data.documents.map((doc) => ({ id: doc.name.split('/').pop() }));
+}
+
+// Códigos de error de FCM HTTP v1 (distintos de los de firebase-admin:
+// v1 no usa strings tipo 'messaging/registration-token-not-registered',
+// sino error.details[].errorCode con @type FcmError).
+const CODIGOS_TOKEN_INVALIDO = ['UNREGISTERED', 'INVALID_ARGUMENT'];
+
+function extraerErrorCode(cuerpoError) {
+  const detalles = (cuerpoError && cuerpoError.details) || [];
+  const detalleFcm = detalles.find((d) => typeof d['@type'] === 'string' && d['@type'].includes('FcmError'));
+  return detalleFcm ? detalleFcm.errorCode : null;
+}
+
+async function enviarUnPush(tokenAcceso, fcmToken, data) {
+  const res = await fetch(FCM_SEND_URL, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tokenAcceso}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: {
+        token: fcmToken,
+        data,
+        android: { priority: 'high' },
+        webpush: { headers: { Urgency: 'high' } }
+      }
+    })
+  });
+  if (res.ok) return { success: true };
+  const cuerpo = await res.json().catch(() => null);
+  return { success: false, errorCode: extraerErrorCode(cuerpo && cuerpo.error) };
+}
 
 /**
- * Envía un Push a TODOS los dispositivos registrados de un correo. Nunca
- * lanza — degrada a {ok:false, motivo}. Limpia únicamente los tokens
- * inválidos de dispositivos_push/{correo}/tokens — jamás toca tokens/{email}.
- * @param {{correo: string, titulo: string, cuerpo: string, url?: string, tag?: string, tipo?: string}} datos
+ * Envía un Push a todos los dispositivos registrados de un correo (data-only,
+ * mismo criterio que el sistema legado). Nunca lanza — degrada a
+ * {ok:false, motivo}. Limpia únicamente tokens inválidos de
+ * dispositivos_push/{correo}/tokens — jamás toca tokens/{email} (legado).
  */
 async function enviarPushACorreo({ correo, titulo, cuerpo, url, tag, tipo }) {
   if (!credencialesConfiguradas()) {
     return { ok: false, motivo: 'firebase_no_configurado' };
   }
 
-  let admin;
+  let dispositivos;
   try {
-    admin = obtenerAdmin();
+    dispositivos = await listarDispositivos(correo);
+  } catch (e) {
+    return { ok: false, motivo: 'firestore_no_disponible' };
+  }
+  if (dispositivos.length === 0) {
+    return { ok: true, enviadas: 0 };
+  }
+
+  let tokenAcceso;
+  try {
+    tokenAcceso = await getFcmToken();
   } catch (e) {
     return { ok: false, motivo: 'firebase_credenciales_invalidas' };
   }
 
-  const db = admin.firestore();
-  const messaging = admin.messaging();
-
-  const snap = await db.collection('dispositivos_push').doc(correo).collection('tokens').get();
-  if (snap.empty) {
-    return { ok: true, enviadas: 0 };
-  }
-
-  const dispositivos = snap.docs.map((d) => ({ id: d.id, token: (d.data() && d.data().token) || d.id }));
-
-  const mensaje = {
-    data: {
-      tipo: tipo || 'orbit',
-      title: titulo,
-      body: cuerpo,
-      tag: tag || tipo || 'orbit',
-      url: url || '/workbook/',
-      icon: '/workbook/icon-192.png',
-      badge: '/workbook/icon-192.png',
-    },
-    android: { priority: 'high' },
-    webpush: { headers: { Urgency: 'high' } },
+  const data = {
+    tipo: tipo || 'orbit',
+    title: titulo,
+    body: cuerpo,
+    tag: tag || tipo || 'orbit',
+    url: url || '/workbook/',
+    icon: '/workbook/icon-192.png',
+    badge: '/workbook/icon-192.png'
   };
 
-  const respuesta = await messaging.sendEachForMulticast({ tokens: dispositivos.map((d) => d.token), ...mensaje });
+  const resultados = await Promise.all(
+    dispositivos.map((d) => enviarUnPush(tokenAcceso, d.id, data))
+  );
 
   const invalidos = [];
   let enviadas = 0;
-  respuesta.responses.forEach((r, i) => {
-    if (r.success) {
-      enviadas++;
-      return;
-    }
-    const codigo = r.error && r.error.code;
-    if (CODIGOS_TOKEN_INVALIDO.includes(codigo)) {
-      invalidos.push(dispositivos[i].id);
-    }
+  resultados.forEach((r, i) => {
+    if (r.success) { enviadas++; return; }
+    if (CODIGOS_TOKEN_INVALIDO.includes(r.errorCode)) invalidos.push(dispositivos[i].id);
   });
 
   if (invalidos.length > 0) {
-    await Promise.all(
-      invalidos.map((id) => db.collection('dispositivos_push').doc(correo).collection('tokens').doc(id).delete())
-    );
+    await Promise.all(invalidos.map((id) => fsDelete(`dispositivos_push/${correo}/tokens`, id)));
   }
 
   return { ok: true, enviadas };
 }
 
-module.exports = { enviarPushACorreo, credencialesConfiguradas };
+export { enviarPushACorreo, credencialesConfiguradas };

@@ -5440,6 +5440,28 @@ function _getMessaging() {
   return _messaging;
 }
 
+// Puerta 5, Estación 9A (transporte Push, diseño cerrado 2026-09-17): sin
+// esto, un Push que llega mientras ella tiene el Workbook abierto y
+// enfocado no mostraba nada (onMessage() nunca se registraba — hallazgo de
+// la auditoría técnica). Se registra UNA sola vez (guard), muestra un
+// toast in-app en vez de competir con una notificación nativa del sistema
+// — mismo criterio que showCommunityToast(), nunca un segundo canal visual.
+let _foregroundPushListo = false;
+function iniciarForegroundPush() {
+  if (_foregroundPushListo) return;
+  const messaging = _getMessaging();
+  if (!messaging) return;
+  try {
+    messaging.onMessage((payload) => {
+      const data = payload && payload.data ? payload.data : {};
+      if (data.title) showToast(data.title);
+    });
+    _foregroundPushListo = true;
+  } catch (e) {
+    console.warn('[FCM] onMessage no disponible:', e.message);
+  }
+}
+
 // Ir directo al app (sin pantalla intermedia de notificaciones)
 function maybeShowNotifScreen() {
   const alreadyAsked = localStorage.getItem('soberana_notif_asked');
@@ -5562,13 +5584,30 @@ async function saveFcmToken() {
     console.log('[FCM] Token:', token);
 
     if (token && state.user) {
+      // Legado — INTACTO, se sigue escribiendo exactamente igual (Estación
+      // 9A no lo toca ni lo migra, ver diseño cerrado).
       await db.collection('tokens').doc(state.user.email).set({
         token,
         email: state.user.email,
         fecha: new Date().toISOString()
       });
-      console.log('[FCM] Token guardado en Firestore');
+      console.log('[FCM] Token guardado en Firestore (legado)');
+
+      // Puerta 5, Estación 9A (diseño cerrado 2026-09-17): estructura NUEVA,
+      // aditiva — multi-dispositivo real. Doc ID = el propio token, para
+      // que re-registrar el MISMO dispositivo actualice en vez de duplicar.
+      // Clave externa = correo (nunca persona_id de Orbit — esa frontera no
+      // se cruza, ver api/_lib/push-fcm.js).
+      await db.collection('dispositivos_push').doc(state.user.email)
+        .collection('tokens').doc(token).set({
+          token,
+          plataforma: navigator.platform || null,
+          actualizadoEn: new Date().toISOString()
+        });
+      console.log('[FCM] Dispositivo registrado en dispositivos_push');
     }
+
+    iniciarForegroundPush();
   } catch(e) {
     console.error('[FCM] Error:', e);
   }

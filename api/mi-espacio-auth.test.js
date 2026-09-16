@@ -24,6 +24,7 @@ import assert from 'node:assert/strict';
 process.env.MI_ESPACIO_SESSION_SECRET = process.env.MI_ESPACIO_SESSION_SECRET || 'shh-test-session-secret';
 process.env.CLASE_GRATUITA_SESSION_SECRET = process.env.CLASE_GRATUITA_SESSION_SECRET || 'shh-test-clase-gratuita-secret';
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-test-orbit-secret';
+process.env.ORBIT_SHARED_SECRET = process.env.ORBIT_SHARED_SECRET || 'shh-test-orbit-shared-secret';
 const { default: handler } = await import('./mi-espacio-auth.js');
 const { crearToken: crearTokenClaseGratuitaTest } = await import('./_lib/auth-clase-gratuita.js');
 const { crearToken: crearTokenSesionTest } = await import('./_lib/auth-session.js');
@@ -425,6 +426,59 @@ test('masterclass-zoom-join: reenvia los headers QA al llamar a Orbit, tal como 
   const [, opciones] = fetchMock.mock.calls[0].arguments;
   assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa');
   assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-27T00:30:00-05:00');
+});
+
+// ── enviar-push (Puerta 5, Estación 9A, diseño cerrado 2026-09-17) ──
+// Única acción de este archivo en la dirección Orbit->Mi Espacio. Prueba
+// exhaustivamente la frontera de autenticación/validación (todo lo que
+// ocurre ANTES de llamar a enviarPushACorreo) — el camino feliz de
+// enviarPushACorreo (Firebase Admin real) ya está cubierto a fondo en
+// api/_lib/push-fcm.test.js (6 pruebas, con firebase-admin stubbeado vía
+// require.cache). Mockear aquí ADEMÁS el resultado de enviarPushACorreo
+// tendría el mismo límite ya documentado en este archivo para las demás
+// acciones que dependen de imports estáticos (orbit-perfil-acceso.js) —
+// no se fabrica esa cobertura, se señala el límite real.
+
+test('enviar-push: 405 si el método no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'enviar-push' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('enviar-push: 401 sin el header x-orbit-secret', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: {}, body: { correo: 'alumna@correo.com', titulo: 'x', cuerpo: 'y' } }, res);
+  assert.equal(res.statusCode, 401);
+});
+
+test('enviar-push: 401 con x-orbit-secret incorrecto', async () => {
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'enviar-push' },
+    headers: { 'x-orbit-secret': 'secreto-equivocado' },
+    body: { correo: 'alumna@correo.com', titulo: 'x', cuerpo: 'y' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+});
+
+test('enviar-push: 400 sin correo válido, con el secreto correcto', async () => {
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'enviar-push' },
+    headers: { 'x-orbit-secret': 'shh-test-orbit-shared-secret' },
+    body: { correo: 'no-es-un-correo', titulo: 'x', cuerpo: 'y' },
+  }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('enviar-push: 400 sin titulo/cuerpo, con correo y secreto correctos', async () => {
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'enviar-push' },
+    headers: { 'x-orbit-secret': 'shh-test-orbit-shared-secret' },
+    body: { correo: 'alumna@correo.com' },
+  }, res);
+  assert.equal(res.statusCode, 400);
 });
 
 // ── bootcamp-zoom-join (Puerta 5, Estación 7, diseño cerrado 2026-09-15) ──

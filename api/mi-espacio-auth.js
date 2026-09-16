@@ -21,6 +21,7 @@ import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
 import { puedenIntentarTodas, puedeIntentar, registrarIntento, registrarExito } from './_lib/rate-limit.js';
 import { ipDelRequest } from './_lib/request-ip.js';
+import { enviarPushACorreo } from './_lib/push-fcm.js';
 
 const BASE_URL = process.env.MI_ESPACIO_BASE_URL || 'https://invisible-a-soberana.vercel.app';
 const ERROR_GENERICO_LOGIN = 'Correo o contraseña incorrectos.';
@@ -779,7 +780,38 @@ async function workbookAccesoAccion(req, res) {
   }
 }
 
+// Puerta 5, Estación 9A (transporte Push, diseño cerrado 2026-09-17):
+// única acción de este archivo en la dirección Orbit->Mi Espacio (todas
+// las demás son Mi Espacio->Orbit) — mismo x-orbit-secret/ORBIT_SHARED_SECRET
+// que ya usa 'orbit-enviar-meta' en api/whatsapp.js para el puente de
+// Meta, sin secreto nuevo. `correo` es la ÚNICA identidad que recibe —
+// nunca un persona_id de Orbit (esa frontera no se cruza, ver
+// api/_lib/push-fcm.js). Orbit decide título/cuerpo/url/tipo; este
+// endpoint solo los entrega vía FCM, nunca decide nada de negocio.
+async function enviarPushAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  const secreto = (req.headers && req.headers['x-orbit-secret']) || '';
+  if (!process.env.ORBIT_SHARED_SECRET || secreto !== process.env.ORBIT_SHARED_SECRET) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+
+  const correo = normalizarCorreo(req.body?.correo);
+  const { titulo, cuerpo, url, tag, tipo } = req.body || {};
+  if (!correo || !correo.includes('@')) return res.status(400).json({ error: 'correo es requerido y debe ser un email válido' });
+  if (!titulo || !cuerpo) return res.status(400).json({ error: 'titulo y cuerpo son requeridos' });
+
+  try {
+    const resultado = await enviarPushACorreo({ correo, titulo, cuerpo, url, tag, tipo });
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/enviar-push error:', err.message);
+    return res.status(500).json({ error: 'Error interno' });
+  }
+}
+
 const ACCIONES = {
+  'enviar-push': enviarPushAccion,
   'cuenta-crear': crearCuentaAccion,
   'cuenta-solicitar': solicitarCuentaAccion,
   'registro-gratuito': registroGratuitoAccion,

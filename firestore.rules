@@ -19,6 +19,10 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /dispositivos_push/{email}/tokens/{token} {
+      allow read, write: if true;
+    }
+
     match /eventos/{email}/secciones/{seccionId} {
       allow read, write: if true;
     }

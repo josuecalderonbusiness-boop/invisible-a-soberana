@@ -88,13 +88,19 @@ a { color: inherit; }
     <button type="button" class="ms-invite-btn" id="bc-btn-reintentar">COMPROBAR MI ACCESO</button>
   </div>
 
-  <!-- Estado "bienvenida": activo:true -- destino unico, /workbook (la unica
-       casa real, DR-007) -- nunca /mi-espacio directamente. -->
+  <!-- Estado "bienvenida": activo:true -- Onboarding de instalación (diseño
+       cerrado 2026-09-16): el primer paso ya NO es entrar directo a
+       /workbook (la unica casa real, DR-007) -- es instalar la PWA, porque
+       ahi vivira todo su recorrido. /instalar/ sigue siendo quien decide
+       que hacer despues (abrir /workbook tras instalar, o continuar sin
+       instalar si el dispositivo/navegador no lo permite) -- esta pagina
+       nunca bloquea el acceso, solo ofrece el siguiente paso. -->
   <div class="bc-card" id="bc-bienvenida" style="display:none">
     <h1>¡Bienvenida a Código Soberana!</h1>
     <p>Tu compra fue confirmada.</p>
     <p>Tu espacio ya está listo.</p>
-    <a class="ms-invite-btn" href="/workbook">ENTRAR A CÓDIGO SOBERANA</a>
+    <p>Instala Código Soberana en tu celular. Este será el lugar desde donde vivirás tu recorrido, entrarás a tus estaciones y accederás a tus clases.</p>
+    <a class="ms-invite-btn" href="/instalar/">INSTALAR CÓDIGO SOBERANA</a>
   </div>
 </div>
 

@@ -17,6 +17,7 @@ import { hashPassword, verifyPassword } from './_lib/auth-password.js';
 import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
+import { construirCookieSiCorresponde as construirCookieContinuidadBootcamp, verificarToken as verificarTokenContinuidadBootcamp, leerCookie as leerCookieContinuidadBootcamp } from './_lib/auth-continuidad-bootcamp.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
 import { puedenIntentarTodas, puedeIntentar, registrarIntento, registrarExito } from './_lib/rate-limit.js';
@@ -465,7 +466,7 @@ async function sesionAccion(req, res) {
 
   const token = leerCookie(req);
   const datos = verificarToken(token);
-  if (!datos) return res.status(200).json({ autenticado: false });
+  if (!datos) return resolverContinuidadBootcampPuertaB(req, res);
 
   try {
     const cuenta = await obtenerCuenta(datos.correo);
@@ -498,6 +499,52 @@ async function sesionAccion(req, res) {
     }
   } catch (err) {
     console.error('mi-espacio-auth/sesion error:', err.message);
+    return res.status(200).json({ autenticado: false });
+  }
+}
+
+// Puerta 5 (onboarding de instalación, diseño cerrado 2026-09-16):
+// continuidad de Puerta B — sin cookie de Cuenta (mi_espacio_sesion), se
+// intenta la cookie corta de bootcamp_continuidad ANTES de rendirse a
+// `autenticado:false`. Esta cookie NUNCA transporta `activo` ni ningún
+// derecho — solo el correo. Aquí se vuelve a preguntar a Orbit en vivo,
+// exactamente la misma verificación que /api/workbook-acceso
+// (resolverAccesoBootcamp), nunca se confía en lo que diga la cookie.
+// Sin rate-limit propio: esta ruta se dispara automáticamente al abrir
+// /workbook, no es un intento manual de adivinar un correo — el rate-limit
+// de workbookAccesoAccion sigue protegiendo esa otra ruta.
+//
+// Respuesta deliberadamente más angosta que la de Puerta A: `compras`,
+// `proximaConvocatoriaDisponible`, `experienciaGratuitaActiva`,
+// `tieneRegistroHistorico`, `oportunidadBootcampActiva` y `emailVerified`
+// son conceptos exclusivos de Cuenta (Mi Espacio) — una compradora directa
+// de Hotmart nunca tuvo ni tiene una Cuenta, así que nunca se fabrican
+// aquí. Mismos campos exactos que ya devuelve workbookAccesoAccion hoy.
+async function resolverContinuidadBootcampPuertaB(req, res) {
+  const tokenContinuidad = leerCookieContinuidadBootcamp(req);
+  const datosContinuidad = verificarTokenContinuidadBootcamp(tokenContinuidad);
+  if (!datosContinuidad) return res.status(200).json({ autenticado: false });
+
+  try {
+    const { activo, bootcampHitos, replayCompradoActivo } = await resolverAccesoBootcamp(datosContinuidad.correo);
+    if (!activo) return res.status(200).json({ autenticado: false });
+
+    return res.status(200).json({
+      autenticado: true,
+      puerta: 'B',
+      correo: datosContinuidad.correo,
+      bootcampHitos,
+      replayCompradoActivo,
+      compras: null,
+      proximaConvocatoriaDisponible: null,
+      experienciaGratuitaActiva: null,
+      tieneRegistroHistorico: false,
+      oportunidadBootcampActiva: null,
+      recorridoHabilitado: bootcampHitos !== null,
+      emailVerified: null,
+    });
+  } catch (err) {
+    console.error('mi-espacio-auth/sesion (continuidad Puerta B): Orbit no respondió:', err.message);
     return res.status(200).json({ autenticado: false });
   }
 }
@@ -730,6 +777,33 @@ async function reenviarConfirmacionAccion(req, res) {
 // funcionando exactamente igual — estos campos son puramente aditivos.
 const PROGRAMA_CODIGO_SOBERANA = 'codigo-soberana';
 
+// Puerta 5, Corte 5 + onboarding de instalación (2026-09-16): núcleo real de
+// "¿esta compradora tiene acceso vigente al Bootcamp, y qué extras
+// aditivos le corresponden?" — extraído para que workbookAccesoAccion (con
+// rate-limit, la ruta que sí recibe un correo escrito por la usuaria) y la
+// continuidad de Puerta B en sesionAccion (sin rate-limit, la ruta
+// automática al abrir /workbook con la cookie de continuidad) llamen
+// exactamente la misma verificación contra Orbit — nunca dos lógicas de
+// negocio que puedan divergir. Un fallo al resolver bootcampHitos/
+// replayCompradoActivo nunca niega el acceso ya confirmado (`activo`) —
+// esos campos simplemente quedan null.
+async function resolverAccesoBootcamp(correo) {
+  const activo = await tieneDerechoVigenteA(correo, PROGRAMA_CODIGO_SOBERANA);
+  if (!activo) return { activo: false, bootcampHitos: null, replayCompradoActivo: null };
+
+  let bootcampHitos = null;
+  let replayCompradoActivo = null;
+  try {
+    [bootcampHitos, replayCompradoActivo] = await Promise.all([
+      obtenerBootcampHitos(correo),
+      obtenerReplayCompradoActivo(correo),
+    ]);
+  } catch (err) {
+    console.error('mi-espacio-auth/resolverAccesoBootcamp: derechos adicionales no resueltos (acceso ya confirmado, no bloquea):', err.message);
+  }
+  return { activo: true, bootcampHitos, replayCompradoActivo };
+}
+
 async function workbookAccesoAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -747,7 +821,7 @@ async function workbookAccesoAccion(req, res) {
   }
 
   try {
-    const activo = await tieneDerechoVigenteA(correo, PROGRAMA_CODIGO_SOBERANA);
+    const { activo, bootcampHitos, replayCompradoActivo } = await resolverAccesoBootcamp(correo);
     if (!activo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
@@ -757,21 +831,15 @@ async function workbookAccesoAccion(req, res) {
     await registrarExito('ip', ip);
     await registrarExito('correo', correo);
 
-    // Aditivo (Corte 5): mismas funciones de Orbit que ya usa sesionAccion
-    // — nunca una segunda decision de negocio. Un fallo aqui no debe negar
-    // el acceso ya confirmado arriba (activo:true es la garantia real);
-    // simplemente esos campos quedan null, igual que ya hace sesionAccion
-    // cuando Orbit no responde a tiempo.
-    let bootcampHitos = null;
-    let replayCompradoActivo = null;
-    try {
-      [bootcampHitos, replayCompradoActivo] = await Promise.all([
-        obtenerBootcampHitos(correo),
-        obtenerReplayCompradoActivo(correo),
-      ]);
-    } catch (err) {
-      console.error('mi-espacio-auth/workbook-acceso: derechos adicionales no resueltos (acceso ya confirmado, no bloquea):', err.message);
-    }
+    // Puerta 5 (onboarding de instalación, diseño cerrado 2026-09-16):
+    // continuidad de identidad de Puerta B entre /bienvenida-bootcamp y
+    // /workbook — NUNCA transporta `activo` ni ningún derecho, solo el
+    // correo, para que /workbook pueda repetir esta MISMA verificación en
+    // vivo sin pedírselo de nuevo. Un fallo aquí (SECRET no configurada)
+    // nunca niega el acceso ya confirmado arriba — mismo criterio que
+    // bootcampHitos/replayCompradoActivo.
+    const continuidad = construirCookieContinuidadBootcamp(correo);
+    if (continuidad) res.setHeader('Set-Cookie', continuidad.cookie);
 
     return res.status(200).json({ activo: true, bootcampHitos, replayCompradoActivo });
   } catch (err) {

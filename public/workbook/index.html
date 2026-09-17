@@ -15288,8 +15288,13 @@ async function resolverSesionYArrancar() {
   // Orbit, nunca recalculado aqui.
   state.recorridoHabilitado = !!data.recorridoHabilitado;
   // Puerta 5, Corte 7: marca de dónde vino esta sesión — la Revelación
-  // (más abajo) solo se evalúa para 'puerta-a'.
-  state._origenSesion = 'puerta-a';
+  // (más abajo) solo se evalúa para 'puerta-a'. Onboarding de instalación
+  // (2026-09-16): esta misma función ahora también resuelve la continuidad
+  // automática de Puerta B (cookie bootcamp_continuidad, sin formulario) —
+  // sigue siendo Puerta B en esencia, así que se marca igual que ya lo hace
+  // doLogin() (línea ~7285), nunca 'puerta-a', para que La Revelación y
+  // cualquier otra lógica exclusiva de Mi Espacio sigan sin aplicarle.
+  state._origenSesion = data.puerta === 'B' ? 'puerta-b' : 'puerta-a';
 
   // Progreso: se mezcla igual que siempre (Firestore + lo que ya hubiera en
   // localStorage), nunca se pierde por el cambio de gate de identidad.

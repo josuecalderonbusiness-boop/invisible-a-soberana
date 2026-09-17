@@ -25,9 +25,11 @@ process.env.MI_ESPACIO_SESSION_SECRET = process.env.MI_ESPACIO_SESSION_SECRET ||
 process.env.CLASE_GRATUITA_SESSION_SECRET = process.env.CLASE_GRATUITA_SESSION_SECRET || 'shh-test-clase-gratuita-secret';
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-test-orbit-secret';
 process.env.ORBIT_SHARED_SECRET = process.env.ORBIT_SHARED_SECRET || 'shh-test-orbit-shared-secret';
+process.env.BOOTCAMP_CONTINUIDAD_SECRET = process.env.BOOTCAMP_CONTINUIDAD_SECRET || 'shh-test-bootcamp-continuidad-secret';
 const { default: handler } = await import('./mi-espacio-auth.js');
 const { crearToken: crearTokenClaseGratuitaTest } = await import('./_lib/auth-clase-gratuita.js');
 const { crearToken: crearTokenSesionTest } = await import('./_lib/auth-session.js');
+const { crearToken: crearTokenContinuidadTest } = await import('./_lib/auth-continuidad-bootcamp.js');
 
 function mockRes() {
   const res = { statusCode: null, body: null, headers: {} };
@@ -574,6 +576,55 @@ test('sesion: mi_espacio_sesion se sigue leyendo igual aunque clase_gratuita_ses
   const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
   const res = mockRes();
   await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `clase_gratuita_sesion=${token}; mi_espacio_sesion=token-invalido-de-cuenta` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+// ── Puerta 5 (onboarding de instalación, 2026-09-16): continuidad de
+// Puerta B (bootcamp_continuidad) — fallback de sesionAccion cuando NO hay
+// mi_espacio_sesion. El camino que sí llega a preguntarle a Orbit
+// (resolverAccesoBootcamp -> tieneDerechoVigenteA) tiene el mismo gap ya
+// documentado arriba (sin mock.module estable) — aquí solo se prueba la
+// frontera que nunca toca Orbit: sin cookie, cookie inválida/expirada, o de
+// otro tipo, nunca llega a llamar a Orbit. ──
+
+test('sesion: sin mi_espacio_sesion NI bootcamp_continuidad -> autenticado false, nunca toca Orbit', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: {} }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('sesion: bootcamp_continuidad con firma manipulada -> autenticado false, nunca toca Orbit', async () => {
+  const token = crearTokenContinuidadTest('compradora@correo.com');
+  const [payload] = token.split('.');
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `bootcamp_continuidad=${payload}.firma-falsa` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('sesion: bootcamp_continuidad expirada -> autenticado false, cae al comportamiento honesto (nunca "case vencido = case valido")', async () => {
+  const payload = Buffer.from(JSON.stringify({ correo: 'compradora@correo.com', tipo: 'bootcamp_continuidad', exp: Math.floor(Date.now() / 1000) - 10 })).toString('base64url');
+  const crypto = await import('node:crypto');
+  const firma = crypto.createHmac('sha256', process.env.BOOTCAMP_CONTINUIDAD_SECRET).update(payload).digest('base64url');
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `bootcamp_continuidad=${payload}.${firma}` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('sesion: bootcamp_continuidad, sola (sin mi_espacio_sesion), no autentica como Mi Espacio completo -- nunca se confunde con clase_gratuita_sesion tampoco', async () => {
+  const tokenClaseGratuita = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const res = mockRes();
+  // bootcamp_continuidad ausente a proposito -- solo clase_gratuita_sesion viaja,
+  // que sesionAccion nunca debe leer (tiene su propio verificador/cookie).
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: `clase_gratuita_sesion=${tokenClaseGratuita}` } }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('mi_espacio_sesion (Puerta A) sigue teniendo prioridad -- si su cookie es invalida, cae a bootcamp_continuidad, nunca al reves (mi_espacio_sesion valida nunca se ignora)', async () => {
+  // mi_espacio_sesion invalida (sin Cuenta real detras) -> cae al fallback de
+  // Puerta B -- si esa cookie tampoco es valida, el resultado sigue siendo
+  // autenticado:false, nunca un error ni una mezcla de las dos.
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: { cookie: 'mi_espacio_sesion=token-invalido-de-cuenta' } }, res);
   assert.deepEqual(res.body, { autenticado: false });
 });
 

@@ -407,7 +407,27 @@
         <span id="btn-text">Instalar ahora</span>
       </button>
 
+      <!-- Onboarding de instalación (diseño cerrado 2026-09-16): tras
+           instalar con éxito, o si esta página ya se abre desde la app
+           instalada (standalone), llevar directo a /workbook -- nunca
+           dejarla buscando el ícono manualmente. -->
+      <a class="btn-install" id="btn-abrir" href="/workbook" style="display:none; text-decoration:none;">
+        <svg viewBox="0 0 24 24">
+          <path d="M5 12h14"/>
+          <path d="M13 5l7 7-7 7"/>
+        </svg>
+        <span>Abrir Código Soberana</span>
+      </a>
+
       <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
+
+      <!-- Fallback obligatorio (diseño cerrado 2026-09-16): instalar es el
+           paso del onboarding, pero NUNCA un bloqueo técnico -- Android sin
+           prompt, iOS, navegador in-app y cancelación siempre dejan un
+           camino claro hacia /workbook, visible en todo momento salvo
+           cuando ya se muestra "Abrir Código Soberana" (ese botón ya
+           cumple la misma función con más énfasis). -->
+      <a href="/workbook" id="continuar-sin-instalar" style="display:block; margin-top:10px; font-size:12.5px; color:rgba(249,244,236,0.4); text-decoration:underline; text-align:center;">Continuar sin instalar →</a>
 
       <!-- Paso 2: Notificaciones -->
       <div id="notif-step" style="display:block;margin-top:20px;padding-top:20px;border-top:1px solid rgba(212,175,106,0.12);">
@@ -428,8 +448,7 @@
 
   <!-- FOOTER -->
   <p class="footer-note">
-    Código Soberana · Josué Calderón<br>
-    Una vez instalada, regístrate desde la app
+    Código Soberana · Josué Calderón
   </p>
 
 </div>
@@ -467,9 +486,14 @@
   });
 
   window.addEventListener('appinstalled', () => {
-    showToast('Instalación completa — ábrela desde tu pantalla de inicio');
+    showToast('Instalación completa 💛');
     document.getElementById('btn-install').style.display = 'none';
-    document.getElementById('install-hint').textContent = 'Ya puedes cerrar esta página';
+    document.getElementById('install-hint').style.display = 'none';
+    // Onboarding de instalación (2026-09-16): ya no la dejamos "cerrar esta
+    // página y buscar el ícono" -- continúa directo hacia /workbook.
+    document.getElementById('btn-abrir').style.display = 'flex';
+    document.getElementById('continuar-sin-instalar').style.display = 'none';
+    document.getElementById('install-title').textContent = 'Instalación completa';
     // Mostrar paso de notificaciones
     document.getElementById('notif-step').style.display = 'block';
   });
@@ -504,20 +528,28 @@
   function setupUI() {
     const title        = document.getElementById('install-title');
     const btn          = document.getElementById('btn-install');
+    const btnAbrir     = document.getElementById('btn-abrir');
     const hint         = document.getElementById('install-hint');
     const inappWarning = document.getElementById('inapp-warning');
     const iosSteps     = document.getElementById('ios-steps');
     const androidSteps = document.getElementById('android-steps');
+    const continuarSinInstalar = document.getElementById('continuar-sin-instalar');
 
     // Resetear estado por si setupUI se llama dos veces
     [inappWarning, iosSteps, androidSteps].forEach(el => el.style.display = 'none');
     btn.style.display  = 'flex';
+    btnAbrir.style.display = 'none';
     hint.style.display = 'block';
+    continuarSinInstalar.style.display = 'block';
 
     if (isStandalone) {
+      // Onboarding de instalación (2026-09-16): ya está instalada -- nunca
+      // una invitación absurda a instalar de nuevo, continúa directo.
       btn.style.display = 'none';
+      hint.style.display = 'none';
+      continuarSinInstalar.style.display = 'none';
+      btnAbrir.style.display = 'flex';
       title.textContent = 'Ya está instalada';
-      hint.textContent  = 'Cierra esta página y úsala desde tu pantalla de inicio';
       return;
     }
     if (isInApp) {

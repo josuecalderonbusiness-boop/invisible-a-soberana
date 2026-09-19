@@ -729,3 +729,177 @@ test('convocatoria-reservar: 401 con una cookie de sesion invalida/corrupta, sin
   }, res);
   assert.equal(res.statusCode, 401);
 });
+
+// ── Gate de Puerta B para el Bootcamp (2026-09-19): recorridoHabilitado lo
+// decide Orbit (por producto de origen) y viaja tal cual por la continuidad;
+// y las dos acciones de completitud/entrada aceptan la cookie de continuidad
+// (Puerta B) ademas de la Cuenta (Puerta A). Orbit se simula con
+// global.fetch — sin Firestore: la rama de continuidad no lo usa. ──
+
+const PERFIL_BASE = { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], replayCompradoActivo: null };
+const HITOS_BOOTCAMP = { cohorteId: 'c1', hitos: [{ hito: 1, disponible: false, completado: false }], bootcampCompletado: false };
+const HITOS_VACIOS = { cohorteId: null, hitos: null, bootcampCompletado: false };
+
+function cabecerasContinuidad(correo) {
+  return { cookie: `bootcamp_continuidad=${crearTokenContinuidadTest(correo)}` };
+}
+
+function fetchOrbit(t, respuestas) {
+  // respuestas: { 'perfil-acceso': body, 'bootcamp-replay-visto': {status, body}, ... } por accion o 'perfil'
+  return t.mock.method(global, 'fetch', async (url) => {
+    const u = String(url);
+    const clave = u.includes('accion=') ? u.split('accion=')[1] : 'perfil';
+    const r = respuestas[clave];
+    if (!r) throw new Error(`fetch inesperado a ${u}`);
+    const status = r.status || 200;
+    return { ok: status < 400, status, json: async () => r.body };
+  });
+}
+
+test('sesion (continuidad Puerta B), origen Bootcamp sin completar: recorridoHabilitado FALSE aunque bootcampHitos venga lleno', async (t) => {
+  fetchOrbit(t, { perfil: { body: { ...PERFIL_BASE, bootcampHitos: HITOS_BOOTCAMP, recorridoHabilitado: false } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('compradora@correo.com') }, res);
+  assert.equal(res.body.autenticado, true);
+  assert.equal(res.body.puerta, 'B');
+  assert.equal(res.body.recorridoHabilitado, false);
+  assert.deepEqual(res.body.bootcampHitos, HITOS_BOOTCAMP);
+});
+
+test('sesion (continuidad Puerta B), venta directa: recorridoHabilitado TRUE tal como lo decide Orbit (sin Hitos)', async (t) => {
+  fetchOrbit(t, { perfil: { body: { ...PERFIL_BASE, bootcampHitos: HITOS_VACIOS, recorridoHabilitado: true } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('directa@correo.com') }, res);
+  assert.equal(res.body.recorridoHabilitado, true);
+});
+
+test('sesion (continuidad Puerta B), Bootcamp ya completado: recorridoHabilitado TRUE tal como lo decide Orbit', async (t) => {
+  fetchOrbit(t, { perfil: { body: { ...PERFIL_BASE, bootcampHitos: { cohorteId: 'c1', hitos: [], bootcampCompletado: true }, recorridoHabilitado: true } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('compradora@correo.com') }, res);
+  assert.equal(res.body.recorridoHabilitado, true);
+});
+
+test('sesion (continuidad Puerta B): Orbit no manda recorridoHabilitado -> false (fail-closed), nunca derivado de bootcampHitos', async (t) => {
+  fetchOrbit(t, { perfil: { body: { ...PERFIL_BASE, bootcampHitos: HITOS_BOOTCAMP } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('compradora@correo.com') }, res);
+  assert.equal(res.body.recorridoHabilitado, false);
+});
+
+test('sesion (continuidad Puerta B): sin derecho vigente a codigo-soberana -> autenticado false', async (t) => {
+  fetchOrbit(t, { perfil: { body: { programas: [{ programaId: 'mas-se-aleja', derecho: 'vigente' }], recorridoHabilitado: true } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('otra@correo.com') }, res);
+  assert.deepEqual(res.body, { autenticado: false });
+});
+
+test('sesion (continuidad Puerta B): una sola consulta a Orbit', async (t) => {
+  const f = fetchOrbit(t, { perfil: { body: { ...PERFIL_BASE, bootcampHitos: HITOS_BOOTCAMP, recorridoHabilitado: false } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesion' }, headers: cabecerasContinuidad('compradora@correo.com') }, res);
+  assert.equal(f.mock.calls.length, 1);
+});
+
+// ── bootcamp-replay-visto con continuidad ──
+
+test('bootcamp-replay-visto: sin ninguna cookie -> 401 y NUNCA llama a Orbit', async (t) => {
+  const f = fetchOrbit(t, {});
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: {}, body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(f.mock.calls.length, 0);
+});
+
+test('bootcamp-replay-visto: cookie de continuidad con firma manipulada -> 401, NUNCA llama a Orbit', async (t) => {
+  const f = fetchOrbit(t, {});
+  const [payload] = crearTokenContinuidadTest('compradora@correo.com').split('.');
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: { cookie: `bootcamp_continuidad=${payload}.firma-falsa` }, body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(f.mock.calls.length, 0);
+});
+
+test('bootcamp-replay-visto: cookie de continuidad EXPIRADA -> 401, NUNCA llama a Orbit', async (t) => {
+  const f = fetchOrbit(t, {});
+  const payload = Buffer.from(JSON.stringify({ correo: 'compradora@correo.com', tipo: 'bootcamp_continuidad', exp: Math.floor(Date.now() / 1000) - 10 })).toString('base64url');
+  const crypto = await import('node:crypto');
+  const firma = crypto.createHmac('sha256', process.env.BOOTCAMP_CONTINUIDAD_SECRET).update(payload).digest('base64url');
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: { cookie: `bootcamp_continuidad=${payload}.${firma}` }, body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(f.mock.calls.length, 0);
+});
+
+test('bootcamp-replay-visto: clase_gratuita_sesion NO se confunde con la de continuidad -> 401', async (t) => {
+  const f = fetchOrbit(t, {});
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(f.mock.calls.length, 0);
+});
+
+test('bootcamp-replay-visto: cookie de continuidad valida -> llama a Orbit con el correo de la COOKIE (nunca el del body) y devuelve su respuesta', async (t) => {
+  const f = fetchOrbit(t, { 'bootcamp-replay-visto': { body: { ok: true } } });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: cabecerasContinuidad('compradora@correo.com'), body: { hito: 2, correo: 'hostil@correo.com' } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { ok: true });
+  assert.equal(f.mock.calls.length, 1);
+  assert.deepEqual(JSON.parse(f.mock.calls[0].arguments[1].body), { correo: 'compradora@correo.com', hito: 2 });
+});
+
+test('bootcamp-replay-visto: mi_espacio_sesion INVALIDA + continuidad valida -> se usa la continuidad (mismo fallback que sesion)', async (t) => {
+  const f = fetchOrbit(t, { 'bootcamp-replay-visto': { body: { ok: true } } });
+  const res = mockRes();
+  const cookie = `mi_espacio_sesion=token-invalido; bootcamp_continuidad=${crearTokenContinuidadTest('compradora@correo.com')}`;
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: { cookie }, body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.equal(f.mock.calls.length, 1);
+});
+
+test('bootcamp-replay-visto: Orbit responde 409 hito_no_disponible (guardian de calendario) -> 409, sin escritura', async (t) => {
+  fetchOrbit(t, { 'bootcamp-replay-visto': { status: 409, body: { error: 'hito_no_disponible' } } });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: cabecerasContinuidad('compradora@correo.com'), body: { hito: 1 } }, res);
+  assert.equal(res.statusCode, 409);
+  assert.deepEqual(res.body, { error: 'hito_no_disponible' });
+});
+
+test('bootcamp-replay-visto: hito invalido -> 400 (con sesion valida), sin llamar a Orbit', async (t) => {
+  const f = fetchOrbit(t, {});
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'bootcamp-replay-visto' }, headers: cabecerasContinuidad('compradora@correo.com'), body: { hito: 7 } }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(f.mock.calls.length, 0);
+});
+
+// ── bootcamp-zoom-join con continuidad ──
+
+test('bootcamp-zoom-join: sin sesion -> 200 {ok:false, motivo:sin_sesion} y NUNCA llama a Orbit (contrato que dispara la revalidacion del cliente)', async (t) => {
+  const f = fetchOrbit(t, {});
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '1' }, headers: {} }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
+  assert.equal(f.mock.calls.length, 0);
+});
+
+test('bootcamp-zoom-join: cookie de continuidad valida -> llama a Orbit con el correo de la cookie', async (t) => {
+  const f = fetchOrbit(t, { 'bootcamp-zoom-registrar': { body: { ok: false, motivo: 'zoom_no_configurado', enlaceGenerico: null } } });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '2' }, headers: cabecerasContinuidad('compradora@correo.com') }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { ok: false, motivo: 'zoom_no_configurado', enlaceGenerico: null });
+  assert.deepEqual(JSON.parse(f.mock.calls[0].arguments[1].body), { correo: 'compradora@correo.com', hito: 2 });
+});
+
+test('bootcamp-zoom-join: continuidad manipulada -> {ok:false, sin_sesion}, NUNCA llama a Orbit', async (t) => {
+  const f = fetchOrbit(t, {});
+  const [payload] = crearTokenContinuidadTest('compradora@correo.com').split('.');
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'bootcamp-zoom-join', hito: '1' }, headers: { cookie: `bootcamp_continuidad=${payload}.firma-falsa` } }, res);
+  assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
+  assert.equal(f.mock.calls.length, 0);
+});

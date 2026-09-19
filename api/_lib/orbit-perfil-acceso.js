@@ -194,6 +194,31 @@ async function obtenerRecorridoHabilitado(correo) {
   return !!perfil.recorridoHabilitado;
 }
 
+// Puerta B (/api/workbook-acceso y continuidad de bootcamp_continuidad): todo
+// lo que /workbook necesita saber de esta compradora, en UNA sola consulta a
+// Orbit — Derecho vigente a `programaId`, memoria de los Hitos, Replay $5 y
+// EL gate del recorrido. `recorridoHabilitado` lo decide Orbit
+// (recorridoCodigoSoberanaHabilitado: por el producto de origen del acceso,
+// nunca por la puerta de entrada) — aqui solo se representa, jamas se
+// reconstruye a partir de bootcampHitos, producto o sesion. Si Orbit no manda
+// el campo, es false (fail-closed): nunca se fabrica un "si" en el gate mas
+// sensible del contrato. Una sola consulta => o llega todo o falla todo, sin
+// estados a medias (un fallo parcial dejaria sin recorrido a una compradora
+// de venta directa).
+async function obtenerAccesoBootcamp(correo, programaId) {
+  const perfil = await consultarPerfilAcceso(correo);
+  const activo = (perfil.programas || []).some((p) => p.programaId === programaId && p.derecho === 'vigente');
+  if (!activo) {
+    return { activo: false, bootcampHitos: null, replayCompradoActivo: null, recorridoHabilitado: false };
+  }
+  return {
+    activo: true,
+    bootcampHitos: perfil.bootcampHitos || null,
+    replayCompradoActivo: perfil.replayCompradoActivo || null,
+    recorridoHabilitado: perfil.recorridoHabilitado === true,
+  };
+}
+
 // Puerta 5, Corte 2 — unica evidencia de completitud implementada en este
 // corte: Bunny 'ended' en el replay. Frontera de identidad, no negociable
 // (mismo criterio ya congelado para crearRegistroAutenticado): el correo
@@ -503,6 +528,7 @@ export {
   obtenerReplayCompradoActivo,
   obtenerBootcampHitos,
   obtenerRecorridoHabilitado,
+  obtenerAccesoBootcamp,
   confirmarBootcampHitoVisto,
   obtenerMasterclassZoomJoin,
   obtenerBootcampZoomJoin,

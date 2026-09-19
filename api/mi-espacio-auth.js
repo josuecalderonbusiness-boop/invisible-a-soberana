@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { construirCookieSiCorresponde as construirCookieContinuidadBootcamp, verificarToken as verificarTokenContinuidadBootcamp, leerCookie as leerCookieContinuidadBootcamp } from './_lib/auth-continuidad-bootcamp.js';
@@ -526,7 +526,7 @@ async function resolverContinuidadBootcampPuertaB(req, res) {
   if (!datosContinuidad) return res.status(200).json({ autenticado: false });
 
   try {
-    const { activo, bootcampHitos, replayCompradoActivo } = await resolverAccesoBootcamp(datosContinuidad.correo);
+    const { activo, bootcampHitos, replayCompradoActivo, recorridoHabilitado } = await resolverAccesoBootcamp(datosContinuidad.correo);
     if (!activo) return res.status(200).json({ autenticado: false });
 
     return res.status(200).json({
@@ -540,7 +540,9 @@ async function resolverContinuidadBootcampPuertaB(req, res) {
       experienciaGratuitaActiva: null,
       tieneRegistroHistorico: false,
       oportunidadBootcampActiva: null,
-      recorridoHabilitado: bootcampHitos !== null,
+      // EL gate real de S0-S9, decidido por Orbit segun el producto de origen
+      // del acceso — nunca derivado aqui de bootcampHitos, producto o puerta.
+      recorridoHabilitado,
       emailVerified: null,
     });
   } catch (err) {
@@ -660,6 +662,38 @@ async function convocatoriaReservarAccion(req, res) {
   }
 }
 
+// Identidad de las acciones de completitud/entrada del Bootcamp (2026-09-19,
+// gate de Puerta B): el correo SIEMPRE sale de una cookie verificada del lado
+// servidor, nunca del body. Dos fuentes, en este orden, exactamente el mismo
+// patron de fallback que sesionAccion:
+//   1. mi_espacio_sesion (Puerta A, Cuenta): valida contra la Cuenta viva
+//      (estado + sessionVersion). Si esta cookie es valida pero la Cuenta ya no
+//      lo es, NO se cae a la segunda — sesion invalida, sin mezclar.
+//   2. bootcamp_continuidad (Puerta B, cookie corta de 20 min): sin Cuenta, solo
+//      el correo — quien la use vuelve a preguntarle a Orbit, que verifica
+//      acceso vigente, Cohorte y calendario en cada llamada.
+// Sin ninguna valida -> null (el llamador decide 401 / sin_sesion). Esta
+// cookie de continuidad nunca otorga un derecho: solo identifica.
+//
+// Dos pasos, para conservar el orden original de las acciones (firma de la
+// cookie -> validacion del hito -> consulta a la Cuenta -> Orbit): la lectura
+// de la cookie es sincrona y barata; solo la Puerta A necesita ir a la Cuenta.
+function leerSesionBootcamp(req) {
+  const datosCuenta = verificarToken(leerCookie(req));
+  if (datosCuenta) return { puerta: 'A', datosCuenta };
+  const continuidad = verificarTokenContinuidadBootcamp(leerCookieContinuidadBootcamp(req));
+  if (continuidad) return { puerta: 'B', correo: continuidad.correo };
+  return null;
+}
+
+async function correoVigenteDeSesionBootcamp(sesion) {
+  if (sesion.puerta === 'B') return sesion.correo;
+  const { datosCuenta } = sesion;
+  const cuenta = await obtenerCuenta(datosCuenta.correo);
+  const vigente = cuenta && cuenta.estado === 'activa' && (cuenta.sessionVersion || 0) === datosCuenta.sessionVersion;
+  return vigente ? datosCuenta.correo : null;
+}
+
 // Puerta 5, Corte 2 (cerrado 2026-09-12): unica evidencia de completitud
 // implementada en este corte — el frontend, al recibir el evento 'ended'
 // del embed de Bunny Stream en el replay de un Hito, llama aqui UNA vez
@@ -674,19 +708,17 @@ async function convocatoriaReservarAccion(req, res) {
 async function bootcampReplayVistoAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const sesion = leerSesionBootcamp(req);
+  if (!sesion) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
 
   const hito = Number(req.body && req.body.hito);
   if (![1, 2, 3].includes(hito)) return res.status(400).json({ error: 'hito debe ser 1, 2 o 3' });
 
   try {
-    const cuenta = await obtenerCuenta(datos.correo);
-    const vigente = cuenta && cuenta.estado === 'activa' && (cuenta.sessionVersion || 0) === datos.sessionVersion;
-    if (!vigente) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+    const correo = await correoVigenteDeSesionBootcamp(sesion);
+    if (!correo) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
 
-    const resultado = await confirmarBootcampHitoVisto(datos.correo, hito);
+    const resultado = await confirmarBootcampHitoVisto(correo, hito);
     return res.status(200).json(resultado);
   } catch (err) {
     if (err.motivo === 'hito_no_disponible' || err.motivo === 'cohorte_no_resuelta' || err.motivo === 'sin_acceso_vigente') {
@@ -707,19 +739,17 @@ async function bootcampReplayVistoAccion(req, res) {
 async function bootcampZoomJoinAccion(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
+  const sesion = leerSesionBootcamp(req);
+  if (!sesion) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
 
   const hito = Number(req.query?.hito);
   if (![1, 2, 3].includes(hito)) return res.status(400).json({ error: 'hito debe ser 1, 2 o 3' });
 
   try {
-    const cuenta = await obtenerCuenta(datos.correo);
-    const vigente = cuenta && cuenta.estado === 'activa' && (cuenta.sessionVersion || 0) === datos.sessionVersion;
-    if (!vigente) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
+    const correo = await correoVigenteDeSesionBootcamp(sesion);
+    if (!correo) return res.status(200).json({ ok: false, motivo: 'sin_sesion' });
 
-    const resultado = await obtenerBootcampZoomJoin(datos.correo, hito);
+    const resultado = await obtenerBootcampZoomJoin(correo, hito);
     return res.status(200).json(resultado || { ok: false, motivo: 'sin_respuesta' });
   } catch (err) {
     console.error('mi-espacio-auth/bootcamp-zoom-join: Orbit no respondió:', err.message);
@@ -784,24 +814,16 @@ const PROGRAMA_CODIGO_SOBERANA = 'codigo-soberana';
 // continuidad de Puerta B en sesionAccion (sin rate-limit, la ruta
 // automática al abrir /workbook con la cookie de continuidad) llamen
 // exactamente la misma verificación contra Orbit — nunca dos lógicas de
-// negocio que puedan divergir. Un fallo al resolver bootcampHitos/
-// replayCompradoActivo nunca niega el acceso ya confirmado (`activo`) —
-// esos campos simplemente quedan null.
+// negocio que puedan divergir.
+//
+// Gate del recorrido (2026-09-19, diseño aprobado): una SOLA consulta a Orbit
+// (obtenerAccesoBootcamp) trae derecho, Hitos, Replay $5 y `recorridoHabilitado`
+// — este ultimo lo decide Orbit por el producto de origen del acceso (venta
+// directa 7369041: true de inmediato; Bootcamp 8499175: solo tras completar las
+// 3 Estaciones). Esta capa solo lo transporta. Una sola consulta => o llega
+// todo o falla todo (503), nunca un estado a medias.
 async function resolverAccesoBootcamp(correo) {
-  const activo = await tieneDerechoVigenteA(correo, PROGRAMA_CODIGO_SOBERANA);
-  if (!activo) return { activo: false, bootcampHitos: null, replayCompradoActivo: null };
-
-  let bootcampHitos = null;
-  let replayCompradoActivo = null;
-  try {
-    [bootcampHitos, replayCompradoActivo] = await Promise.all([
-      obtenerBootcampHitos(correo),
-      obtenerReplayCompradoActivo(correo),
-    ]);
-  } catch (err) {
-    console.error('mi-espacio-auth/resolverAccesoBootcamp: derechos adicionales no resueltos (acceso ya confirmado, no bloquea):', err.message);
-  }
-  return { activo: true, bootcampHitos, replayCompradoActivo };
+  return obtenerAccesoBootcamp(correo, PROGRAMA_CODIGO_SOBERANA);
 }
 
 async function workbookAccesoAccion(req, res) {
@@ -821,7 +843,7 @@ async function workbookAccesoAccion(req, res) {
   }
 
   try {
-    const { activo, bootcampHitos, replayCompradoActivo } = await resolverAccesoBootcamp(correo);
+    const { activo, bootcampHitos, replayCompradoActivo, recorridoHabilitado } = await resolverAccesoBootcamp(correo);
     if (!activo) {
       await registrarIntento('ip', ip);
       await registrarIntento('correo', correo);
@@ -841,7 +863,7 @@ async function workbookAccesoAccion(req, res) {
     const continuidad = construirCookieContinuidadBootcamp(correo);
     if (continuidad) res.setHeader('Set-Cookie', continuidad.cookie);
 
-    return res.status(200).json({ activo: true, bootcampHitos, replayCompradoActivo });
+    return res.status(200).json({ activo: true, bootcampHitos, replayCompradoActivo, recorridoHabilitado });
   } catch (err) {
     console.error('mi-espacio-auth/workbook-acceso: Orbit no respondió:', err.message);
     return res.status(503).json({ error: 'no_disponible' });

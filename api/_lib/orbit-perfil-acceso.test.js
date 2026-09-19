@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -479,4 +479,58 @@ test('relayBotonVerMiClaseAOrbit: timeout -> {ok:false, motivo:"timeout"}, NUNCA
   });
   const resultado = await relayBotonVerMiClaseAOrbit({ wamid: 'w1', telefono: '573001112222' });
   assert.deepEqual(resultado, { ok: false, motivo: 'timeout' });
+});
+
+// ── obtenerAccesoBootcamp (gate de Puerta B, 2026-09-19) — UNA sola consulta a
+// Orbit trae derecho + Hitos + Replay $5 + recorridoHabilitado. El gate lo
+// decide Orbit (por producto de origen); esta capa solo lo representa: nunca
+// lo reconstruye desde bootcampHitos ni desde ningun otro campo. ──
+
+const HITOS_EJEMPLO = { cohorteId: 'c1', hitos: [{ hito: 1, disponible: false, completado: false }], bootcampCompletado: false };
+
+test('obtenerAccesoBootcamp: sin derecho a codigo-soberana -> todo null/false, recorridoHabilitado false aunque Orbit diga true (nunca sin acceso)', async (t) => {
+  mockFetchOnce(t, { programas: [{ programaId: 'mas-se-aleja', derecho: 'vigente' }], bootcampHitos: HITOS_EJEMPLO, recorridoHabilitado: true });
+  assert.deepEqual(await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana'), { activo: false, bootcampHitos: null, replayCompradoActivo: null, recorridoHabilitado: false });
+});
+
+test('obtenerAccesoBootcamp: acceso REVOCADO -> no activo, recorridoHabilitado false', async (t) => {
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'revocado' }], bootcampHitos: HITOS_EJEMPLO, recorridoHabilitado: true });
+  const r = await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana');
+  assert.equal(r.activo, false);
+  assert.equal(r.recorridoHabilitado, false);
+});
+
+test('obtenerAccesoBootcamp: origen Bootcamp, Orbit dice recorridoHabilitado:false -> activo pero SIN recorrido (aunque bootcampHitos venga lleno)', async (t) => {
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: HITOS_EJEMPLO, replayCompradoActivo: null, recorridoHabilitado: false });
+  assert.deepEqual(await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana'), { activo: true, bootcampHitos: HITOS_EJEMPLO, replayCompradoActivo: null, recorridoHabilitado: false });
+});
+
+test('obtenerAccesoBootcamp: venta directa, Orbit dice recorridoHabilitado:true (sin Hitos) -> recorrido abierto, tal cual lo decidio Orbit', async (t) => {
+  const sinHitos = { cohorteId: null, hitos: null, bootcampCompletado: false };
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: sinHitos, recorridoHabilitado: true });
+  assert.deepEqual(await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana'), { activo: true, bootcampHitos: sinHitos, replayCompradoActivo: null, recorridoHabilitado: true });
+});
+
+test('obtenerAccesoBootcamp: Bootcamp completado, Orbit dice recorridoHabilitado:true -> recorrido abierto', async (t) => {
+  const completo = { cohorteId: 'c1', hitos: [], bootcampCompletado: true };
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: completo, recorridoHabilitado: true });
+  assert.equal((await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana')).recorridoHabilitado, true);
+});
+
+test('obtenerAccesoBootcamp: fail-closed — si Orbit NO manda recorridoHabilitado (o manda algo que no es true), es false; nunca se deriva de bootcampHitos', async (t) => {
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: HITOS_EJEMPLO });
+  assert.equal((await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana')).recorridoHabilitado, false);
+  mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: HITOS_EJEMPLO, recorridoHabilitado: 'true' });
+  assert.equal((await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana')).recorridoHabilitado, false);
+});
+
+test('obtenerAccesoBootcamp: hace EXACTAMENTE una consulta a Orbit (o llega todo o falla todo, sin estados a medias)', async (t) => {
+  const fetchMock = mockFetchOnce(t, { programas: [{ programaId: 'codigo-soberana', derecho: 'vigente' }], bootcampHitos: HITOS_EJEMPLO, recorridoHabilitado: false });
+  await obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana');
+  assert.equal(fetchMock.mock.calls.length, 1);
+});
+
+test('obtenerAccesoBootcamp: si Orbit falla, se propaga el error (workbook-acceso responde 503, nunca un "activo" a medias)', async (t) => {
+  mockFetchOnce(t, {}, false);
+  await assert.rejects(() => obtenerAccesoBootcamp('alumna@correo.com', 'codigo-soberana'), /Orbit respondió 500/);
 });

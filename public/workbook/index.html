@@ -6804,7 +6804,7 @@ function mapaClosePopup() {
     const sw = document.getElementById('mapa-start-wrap');
     if (sw) {
       sw.style.display = 'block';
-      sw.innerHTML = '<button style="width:100%;padding:0.8rem;background:linear-gradient(135deg,#0F6E56,#1D9E75,#5DCAA5);color:#fff;border:none;border-radius:9px;font-family:Inter,sans-serif;font-size:14px;font-weight:500;cursor:pointer;letter-spacing:0.04em;" onclick="slideNext()">Conocer Soberana 7D →</button>';
+      sw.innerHTML = '<button style="width:100%;padding:0.8rem;background:linear-gradient(135deg,#0F6E56,#1D9E75,#5DCAA5);color:#fff;border:none;border-radius:9px;font-family:Inter,sans-serif;font-size:14px;font-weight:500;cursor:pointer;letter-spacing:0.04em;" onclick="slideNext()">' + (oferta7dVisible() ? 'Conocer Soberana 7D →' : 'Continuar →') + '</button>';
     }
   }
 }
@@ -7484,6 +7484,23 @@ function apply7dAccess() {
   // Nothing to toggle here
 }
 
+// ── Oferta 7D — visibilidad temporal (2026-09-19) ───────────────────────────
+// Soberana 7D todavía NO se ofrece a las compradoras del Bootcamp. La oferta
+// (tarjetas, candados, CTA, la última estación "¿Qué sigue ahora?", etc.) solo
+// se muestra si:
+//   - la persona ya tiene acceso legítimo a 7D (tiene7d: viene de la verificación
+//     de acceso en Sheets o de progreso 7D ya guardado) — jamás se le oculta lo
+//     que compró; o
+//   - es la cuenta de prueba jessicatovarmoda@gmail.com (para poder inspeccionarlo).
+// Ocultar no es eliminar: el código y el contenido del 7D siguen aquí. Para
+// lanzarlo, se retira esta excepción y se decide a quién se le ofrece.
+function oferta7dVisible() {
+  const u = state && state.user;
+  if (!u) return false;
+  if (u.tiene7d === true) return true;
+  return String(u.email || '').trim().toLowerCase() === 'jessicatovarmoda@gmail.com';
+}
+
 // ── Streak logic ─────────────────────────────────────────────────
 async function updateStreak() {
   const today = new Date().toDateString();
@@ -7663,11 +7680,12 @@ function updateGemCounter() {
     }
   }
   const total = workshopGems + weekGems;
+  const _maxGemas = oferta7dVisible() ? 7 : 3; // sin la oferta 7D solo cuentan los protocolos del Workshop
   const label = document.getElementById('gem-counter-label');
   const counter = document.getElementById('gem-counter');
-  if (label) label.textContent = `${total}/7`;
+  if (label) label.textContent = `${total}/${_maxGemas}`;
   if (counter) {
-    counter.classList.toggle('complete', total === 7);
+    counter.classList.toggle('complete', total === _maxGemas);
   }
 }
 
@@ -7845,7 +7863,7 @@ function openProtocolDetail(key) {
 
   const gemState = earned ? 'done' : 'locked';
   const lockedLabel = p.locked7d && !tiene7d ? 'Disponible en Soberana 7D' : 'Completa la sección en el Workshop';
-  const ctaBtn = (p.locked7d && !tiene7d && !earned)
+  const ctaBtn = (p.locked7d && !tiene7d && !earned && oferta7dVisible())
     ? `<button onclick="window.open('https://soberana7d.josuecalderon.lat','_blank')" style="margin-top:16px;background:transparent;border:1px solid rgba(184,137,42,0.5);border-radius:40px;padding:11px 28px;font-family:'Jost',sans-serif;font-size:11px;font-weight:500;color:#B8892A;cursor:pointer">Ver Soberana 7D →</button>`
     : '';
 
@@ -7877,11 +7895,13 @@ function showProtocolsDrawer() {
   const existing = document.getElementById('protocols-drawer-overlay');
   if (existing) existing.remove();
 
-  const earned = PROTOCOLS_DEF.filter(p => _isProtocolEarned(p.key)).length;
+  // Oferta 7D: sin acceso a la oferta solo se listan los protocolos del Workshop
+  const _protocolosVisibles = PROTOCOLS_DEF.filter(p => !p.locked7d || oferta7dVisible());
+  const earned = _protocolosVisibles.filter(p => _isProtocolEarned(p.key)).length;
 
   // Construir celdas del grid
   let cells = '';
-  PROTOCOLS_DEF.forEach((p, i) => {
+  _protocolosVisibles.forEach((p, i) => {
     const done = _isProtocolEarned(p.key);
     const gemState = done ? 'done' : 'locked';
     const nameColor = done ? '#EDE3CE' : 'rgba(237,227,206,0.3)';
@@ -7907,7 +7927,7 @@ function showProtocolsDrawer() {
       <div style="width:40px;height:4px;background:rgba(184,137,42,0.2);border-radius:2px;margin:0 auto 20px"></div>
       <button onclick="document.getElementById('protocols-drawer-overlay').remove()" style="position:absolute;top:18px;right:18px;background:none;border:none;font-size:22px;color:rgba(237,227,206,0.3);cursor:pointer;line-height:1">×</button>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#EDE3CE;margin-bottom:4px">Mis Protocolos</div>
-      <div style="font-family:'Jost',sans-serif;font-size:11px;color:#B8892A;letter-spacing:.08em;margin-bottom:14px">${earned} de 7 ganados</div>
+      <div style="font-family:'Jost',sans-serif;font-size:11px;color:#B8892A;letter-spacing:.08em;margin-bottom:14px">${earned} de ${_protocolosVisibles.length} ganados</div>
       <div style="height:0.5px;background:rgba(184,137,42,0.18);margin-bottom:24px"></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px 8px;justify-items:center">
         ${cells}
@@ -7939,6 +7959,11 @@ function showEntrenaTost() {
 function renderEntrenamientoTab() {
   const tiene7d = state.user && state.user.tiene7d;
   const cards = ['entrena-c3','entrena-c4','entrena-c5'];
+  // Oferta 7D: sin ella se oculta la sección completa (encabezado, tarjetas y CTA)
+  const ofertaVisible = oferta7dVisible();
+  const _tit7d = document.getElementById('entrena-7d-title');
+  if (_tit7d && _tit7d.parentElement) _tit7d.parentElement.style.display = ofertaVisible ? '' : 'none';
+  cards.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = ofertaVisible ? '' : 'none'; });
   cards.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -7952,7 +7977,7 @@ function renderEntrenamientoTab() {
   const sub7d = document.getElementById('entrena-7d-sub');
   if (sub7d) sub7d.style.display = tiene7d ? 'none' : '';
   const cta = document.getElementById('entrena-cta-7d');
-  if (cta) cta.style.display = tiene7d ? 'none' : 'block';
+  if (cta) cta.style.display = (tiene7d || !ofertaVisible) ? 'none' : 'block';
 }
 
 let _fwBinaryInterval = null;
@@ -8819,7 +8844,7 @@ function renderSectionsList() {
   });
 
   const s9Done = state.completedSections.includes('s9');
-  if (s9Done) {
+  if (s9Done && oferta7dVisible()) {
     nodes.push({
       sec: { id:'s10', label:'¿Qué sigue ahora?', title:'¿Qué sigue ahora?' },
       idx: nodes.length,
@@ -9027,6 +9052,8 @@ function renderSectionsList() {
 
   list.appendChild(workshopMap);
 
+  // ── Oferta 7D (2026-09-19): solo se muestra a quien puede verla ──
+  if (oferta7dVisible()) {
   // ── PARTE 2: Degradé + Caja transición Soberana 7D ──────────
   const abyssWrap = document.createElement('div');
   abyssWrap.id = 'journey-7d-start';
@@ -9039,6 +9066,7 @@ function renderSectionsList() {
 
   // ── PARTE 3: Dashboard 7D ─────────────────────────────────────
   render7dJourney(list);
+  }
   setupSemanaObservers(); // scroll-based pill updates
 }
 
@@ -10489,7 +10517,9 @@ function renderProtocolos() {
 
   let html = `<div class="protocolos-group-label">Workshop</div>`;
 
+  const _verOferta7d = oferta7dVisible();
   PROTOCOLOS_DATA.forEach((p, i) => {
+    if (!_verOferta7d && p.tipo !== 'workshop') return; // 7D no se ofrece
     if (i === 3) html += `<div class="protocolos-group-label" style="margin-top:24px">Soberana 7D</div>`;
     const estado = _protocoloEstado(p);
     const isUnlocked = estado === 'unlocked';
@@ -12728,7 +12758,7 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   var fbText = document.getElementById('dr-fb-text-'+exId+'-'+idx);
   if(fbText) fbText.innerHTML = esCarencia
     ? '<strong style="color:#D4A843;display:block;margin-bottom:8px">Eso se trabaja en el siguiente nivel:</strong>' + d.ganas
-    : '<span style="color:rgba(240,230,234,0.6)">Bien. En Soberana 7D lo profundizamos para que se sostenga bajo presion real.</span>';
+    : '<span style="color:rgba(240,230,234,0.6)">Bien.' + (oferta7dVisible() ? ' En Soberana 7D lo profundizamos para que se sostenga bajo presion real.' : '') + '</span>';
   var fb = document.getElementById('dr-fb-'+exId+'-'+idx);
   if(fb) fb.style.display='block';
   var dimDiv = document.getElementById('dr-dim-'+exId+'-'+idx);
@@ -12743,7 +12773,7 @@ function dimRevAnswer(exId, idx, opIdx, btn) {
   var isLastLocal = idx >= totalDimsLocal-1;
   overlay.innerHTML = '<div style="background:#1a0a0f;border:1px solid rgba(212,168,67,0.4);border-radius:16px;padding:20px;width:100%;max-width:340px;text-align:center">'
     +'<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#D4A843;margin-bottom:10px">'+(esCarenciaLocal?'Eso se trabaja en el siguiente nivel':'Ya lo tienes')+'</div>'
-    +'<div style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:16px">'+(esCarenciaLocal?ex.dimensiones[idx].ganas:'En Soberana 7D lo profundizamos para que se sostenga bajo presion real.')+'</div>'
+    +'<div style="font-size:13px;color:#F0E6EA;line-height:1.7;margin-bottom:16px">'+(esCarenciaLocal?ex.dimensiones[idx].ganas:(oferta7dVisible()?'En Soberana 7D lo profundizamos para que se sostenga bajo presion real.':''))+'</div>'
     +(isLastLocal
       ? '<button onclick="document.getElementById(\''+overlayId+'\').remove();dimRevFinish(\''+exId+'\')" style="width:100%;padding:12px;background:linear-gradient(135deg,#B8892A,#D4A843);border:none;border-radius:10px;font-size:13px;font-weight:600;color:#0F0A0B;cursor:pointer;font-family:\'Jost\',sans-serif">Ver el siguiente nivel →</button>'
       : '<button onclick="document.getElementById(\''+overlayId+'\').remove();dimRevNext(\''+exId+'\','+(idx+1)+')" style="width:100%;padding:12px;background:#8B1A2F;border:none;border-radius:10px;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:\'Jost\',sans-serif">Siguiente →</button>')
@@ -13859,7 +13889,7 @@ function _renderLogrosBlock(tiene7d, fsLogros) {
       unlocked: !!tiene7dFinal,
     },
   ];
-  document.getElementById('nov-achievements').innerHTML = achievements.map(a => `
+  document.getElementById('nov-achievements').innerHTML = achievements.filter(a => a.name !== 'Soberana 7D' || oferta7dVisible()).map(a => `
     <div class="nov-achievement-card ${a.unlocked ? 'unlocked' : 'locked'}">
       <div class="nov-achievement-icon">${a.icon}</div>
       <div class="nov-achievement-body">
@@ -13942,6 +13972,7 @@ function renderEnergiaSection() {
 
     container.innerHTML = workshopBlock + separador + bloque7d;
   } else {
+    if (!oferta7dVisible()) { container.innerHTML = workshopBlock; return; } // 7D no se ofrece
     let circlesHtml = '';
     for (let d = 1; d <= 30; d++) {
       circlesHtml += `<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)"></div>`;
@@ -14870,10 +14901,10 @@ function showCelebrationModal() {
         style="width:100%;padding:14px;background:#2D5A3D;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">
         Ver mi resumen final
       </button>
-      <a href="https://soberana7d.josuecalderon.lat" target="_blank"
+      ${oferta7dVisible() ? `<a href="https://soberana7d.josuecalderon.lat" target="_blank"
         style="display:block;width:100%;padding:14px;background:var(--burgundy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">
         Conocer Soberana 7D
-      </a>
+      </a>` : ''}
     </div>
   `);
 }
@@ -14961,7 +14992,7 @@ function runExport() {
   <div style="max-width:680px;margin:0 auto;padding:32px 20px 20px">
     ${sectionsHtml}
     ${perfilHtml}
-    <div style="background:#1a3d28;border-radius:16px;padding:28px;margin-bottom:20px;text-align:center">
+    ${oferta7dVisible() ? `<div style="background:#1a3d28;border-radius:16px;padding:28px;margin-bottom:20px;text-align:center">
       <p style="color:#a8e6bc;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px">El siguiente nivel</p>
       <h3 style="font-family:Georgia,serif;color:#fff;margin:0 0 12px;font-size:20px">Soberana 7D</h3>
       <p style="font-size:14px;color:rgba(255,255,255,.8);line-height:1.8;margin:0 0 18px">
@@ -14971,7 +15002,7 @@ function runExport() {
       <a href="https://soberana7d.josuecalderon.lat" style="display:inline-block;padding:14px 28px;background:#D4AF6A;color:#1a0a0f;border-radius:12px;font-weight:700;text-decoration:none;font-size:15px">
         Quiero el programa completo →
       </a>
-    </div>
+    </div>` : ''}
     <div style="text-align:center;padding:20px 24px 0">
       <p style="font-style:italic;font-size:15px;color:#8B1A2F;line-height:1.8;margin:0">
         "La mujer más poderosa no es la que aguanta más.<br>

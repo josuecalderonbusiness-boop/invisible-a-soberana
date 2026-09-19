@@ -6602,16 +6602,17 @@ function irASeccion(sectionId, temaNum) {
 // REVELACIÓN AL COMPLETAR EL BOOTCAMP
 // Puerta 5, Corte 7 — diseño y copy V1 aprobados 2026-09-12.
 //
-// Exclusiva de Puerta A: exige bootcampCompletado (no solo
-// recorridoHabilitado) para no mostrarla a quien compró acceso directo a
-// Código Soberana (producto 7369041) y nunca hizo Bootcamp. Se persiste
+// Por CUALQUIER puerta (2026-09-19): la condicion es recorridoHabilitado
+// (decidido por Orbit) + bootcampCompletado — no importa si la mujer llego
+// por Puerta A o B. bootcampCompletado (no solo recorridoHabilitado) evita
+// mostrarla a quien compró acceso directo a Código Soberana (producto
+// 7369041) y nunca hizo Bootcamp. Se persiste
 // en progreso/{email} (Firestore) — hecho de EXPERIENCIA, no de derecho;
 // si esa escritura falla, jamás bloquea la entrada al recorrido, que
 // sigue dependiendo solo de recorridoHabilitado (Orbit).
 // ═══════════════════════════════════════════
 function revelacionCodigoSoberanaCorresponde() {
   return (
-    state._origenSesion === 'puerta-a' &&
     state.recorridoHabilitado === true &&
     !!(state.bootcampHitos && state.bootcampHitos.bootcampCompletado === true) &&
     state.revelacionCodigoSoberanaVista !== true
@@ -7122,13 +7123,13 @@ let state = {
   //
   // recorridoHabilitado (Corte 6) es EL gate real de S0-S9 — corrige el
   // bug real encontrado en el Corte 6: "bootcampHitos !== null" solo
-  // exigia acceso vigente, nunca haber completado el Bootcamp. Para la
-  // Puerta A (resolverSesionYArrancar, mas abajo) viene directo de Orbit
-  // (recorridoCodigoSoberanaHabilitado — acceso vigente AND, si el origen
-  // fue el Bootcamp, bootcamp_recorrido_habilitado). Para la Puerta B
-  // (doLogin, login tradicional -> /api/workbook-acceso, NO tocado en
-  // este corte) se preserva el criterio anterior (bootcampHitos !== null)
-  // como fallback explicito — ver diseño Corte 6, limite reconocido.
+  // exigia acceso vigente, nunca haber completado el Bootcamp. Viene SIEMPRE
+  // directo de Orbit (recorridoCodigoSoberanaHabilitado — acceso vigente AND,
+  // si el origen fue el Bootcamp, bootcamp_recorrido_habilitado), por
+  // cualquier puerta: Puerta A (resolverSesionYArrancar), continuidad de
+  // Puerta B (misma funcion) y login de Puerta B (doLogin ->
+  // /api/workbook-acceso, desde 2026-09-19). Nunca se deriva aqui de
+  // bootcampHitos, producto o puerta.
   compras: [],
   proximaConvocatoriaDisponible: null,
   experienciaGratuitaActiva: null,
@@ -7148,9 +7149,9 @@ let state = {
   // recorrido; eso lo sigue decidiendo solo recorridoHabilitado.
   revelacionCodigoSoberanaVista: false,
   // 'puerta-a' | 'puerta-b' | null — de dónde vino esta sesión. La
-  // Revelación es exclusiva de Puerta A (ver revelacionCorresponde): Puerta
-  // B no tiene un recorridoHabilitado real (Corte 6, límite reconocido),
-  // así que nunca podríamos confiar en "bootcampCompletado" desde ahí.
+  // Revelación ya no depende de la puerta (ver revelacionCodigoSoberanaCorresponde):
+  // Puerta B recibe el recorridoHabilitado real de Orbit; la Revelación depende
+  // de recorridoHabilitado + bootcampCompletado.
   _origenSesion: null
 };
 
@@ -7219,6 +7220,11 @@ async function doLogin() {
     // de negocio. null si Orbit no los resolvio — nunca se fabrica.
     let bootcampHitosAcceso = null;
     let replayCompradoAcceso = null;
+    // Gate del recorrido (2026-09-19): lo decide Orbit por el producto de
+    // origen del acceso — aqui solo se representa, jamas se reconstruye desde
+    // bootcampHitos, producto o puerta. Sin el campo (o distinto de true) es
+    // false: nunca se abre S0-S9 por defecto.
+    let recorridoHabilitadoAcceso = false;
     try {
       const resAcceso = await fetch('/api/workbook-acceso', {
         method: 'POST',
@@ -7232,6 +7238,7 @@ async function doLogin() {
         accesoActivo = dataAcceso.activo === true;
         bootcampHitosAcceso = dataAcceso.bootcampHitos || null;
         replayCompradoAcceso = dataAcceso.replayCompradoActivo || null;
+        recorridoHabilitadoAcceso = dataAcceso.recorridoHabilitado === true;
       }
     } catch (e) {
       verificacionFallo = true;
@@ -7272,16 +7279,15 @@ async function doLogin() {
     // cual puerta llego la identidad.
     state.bootcampHitos = bootcampHitosAcceso;
     state.replayCompradoActivo = replayCompradoAcceso;
-    // Puerta 5, Corte 6: /api/workbook-acceso (Puerta B) NO se tocó en
-    // este corte — sigue sin exponer recorridoHabilitado real. Se
-    // preserva aqui el criterio anterior (acceso vigente ya implica
-    // recorrido, sin Hitos de por medio para esta puerta) como fallback
-    // explicito, documentado como limite reconocido del diseño del Corte 6.
-    state.recorridoHabilitado = bootcampHitosAcceso !== null;
-    // Puerta 5, Corte 7: la Revelación jamás se evalúa para esta puerta
-    // (ver revelacionCodigoSoberanaCorresponde) — bootcampCompletado no es
-    // confiable aquí de la misma forma que en Puerta A (Corte 6, límite
-    // reconocido).
+    // Gate del recorrido (2026-09-19): /api/workbook-acceso ahora trae el
+    // recorridoHabilitado real de Orbit (venta directa: true de inmediato;
+    // Bootcamp: solo tras completar las 3 Estaciones) — igual que la
+    // Puerta A. Reemplaza el criterio "bootcampHitos !== null" que abria
+    // S0-S9 a toda compradora del Bootcamp desde el minuto cero.
+    state.recorridoHabilitado = recorridoHabilitadoAcceso;
+    // La Revelación aplica por cualquier puerta (ver
+    // revelacionCodigoSoberanaCorresponde); _origenSesion solo indica por donde
+    // entro esta sesion (p. ej. para revalidar la cookie de continuidad).
     state._origenSesion = 'puerta-b';
 
     // PASO 3 — Verificar acceso 7D (silencioso, no bloquea el login)
@@ -8581,7 +8587,17 @@ function renderBootcampHitosBlock() {
       btnEl.disabled = true;
       window.abrirZoomEmbebido({
         obtenerJoinInfo: function () {
-          return fetch('/api/mi-espacio-auth?accion=bootcamp-zoom-join&hito=' + hito, { credentials: 'include' }).then(function (r) { return r.json(); });
+          const pedir = function () {
+            return fetch('/api/mi-espacio-auth?accion=bootcamp-zoom-join&hito=' + hito, { credentials: 'include' }).then(function (r) { return r.json(); });
+          };
+          return pedir().then(function (info) {
+            // Puerta B con la cookie de continuidad vencida: revalidar y
+            // reintentar UNA vez (ver wbReverificarPuertaB).
+            if (info && info.ok === false && info.motivo === 'sin_sesion') {
+              return wbReverificarPuertaB().then(function (ok) { return ok ? pedir() : info; });
+            }
+            return info;
+          });
         },
         contenedorId: contenedor.id,
         enlaceGenericoRespaldo: enlaceGenerico,
@@ -8640,27 +8656,32 @@ async function wbConfirmarHitoVisto(hito) {
 
   _wbHitosConfirmando.add(hito);
   try {
-    const res = await fetch('/api/mi-espacio-bootcamp-replay-visto', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ hito: hito }),
-    });
+    const pedir = function () {
+      return fetch('/api/mi-espacio-bootcamp-replay-visto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ hito: hito }),
+      });
+    };
+    let res = await pedir();
+    // Puerta B: la cookie de continuidad dura 20 min y un replay puede
+    // terminar despues. 401 -> revalidar el acceso por correo (la misma
+    // verificacion del login, emite una cookie fresca) y reintentar UNA sola
+    // vez. Puerta A o revalidacion fallida: no se reintenta.
+    if (res.status === 401 && await wbReverificarPuertaB()) res = await pedir();
     // Orbit decidio que no corresponde (409 hito_no_disponible/cohorte_no_resuelta,
     // 401 sesion invalida, etc.) — nunca se fuerza nada localmente.
     if (!res.ok) return;
 
-    if (state._origenSesion === 'puerta-a') {
-      // Puerta A: hay cookie de Mi Espacio — se vuelve a preguntar a Orbit
-      // el estado fresco (bootcampHitos/recorridoHabilitado). Nunca se
-      // fabrica aqui si este Replay resulto ser el 3er Hito.
-      await wbRefrescarSesionTrasHito();
-    } else {
-      // Puerta B: sin cookie que reconsultar (workbookAccesoAccion no fue
-      // tocado en el Corte 6, sigue sin exponer recorridoHabilitado real)
-      // — actualizacion optimista solo de la tarjeta visible, igual que
-      // hacia el codigo viejo de /mi-espacio. Nunca toca recorridoHabilitado
-      // ni puede disparar la Revelacion (exclusiva de Puerta A).
+    // Por cualquier puerta hay una cookie valida (Cuenta o continuidad): se
+    // vuelve a preguntar a Orbit el estado fresco (bootcampHitos +
+    // recorridoHabilitado). Nunca se fabrica aqui si este Replay resulto ser
+    // el 3er Hito — lo decide Orbit y esta funcion solo lo representa.
+    const refrescada = await wbRefrescarSesionTrasHito();
+    if (!refrescada && state._origenSesion !== 'puerta-a') {
+      // Respaldo (Puerta B sin poder reconsultar): actualizacion optimista
+      // SOLO de la tarjeta visible. Nunca toca recorridoHabilitado.
       if (filaLocal) filaLocal.completado = true;
       renderBootcampHitosBlock();
     }
@@ -8671,6 +8692,8 @@ async function wbConfirmarHitoVisto(hito) {
   }
 }
 
+// Devuelve true si Orbit respondio con una sesion vigente y el estado quedo
+// refrescado; false si no se pudo (sesion perdida, sin red).
 async function wbRefrescarSesionTrasHito() {
   let data;
   try {
@@ -8678,15 +8701,43 @@ async function wbRefrescarSesionTrasHito() {
     data = await res.json();
   } catch (e) {
     console.warn('No se pudo refrescar la sesión tras confirmar el Hito:', e.message);
-    return;
+    return false;
   }
-  if (!data.autenticado) return; // sesion perdida entretanto — no se fuerza nada
+  if (!data.autenticado) return false; // sesion perdida entretanto — no se fuerza nada
   state.bootcampHitos = data.bootcampHitos || null;
   state.recorridoHabilitado = !!data.recorridoHabilitado;
   saveState();
   renderBootcampHitosBlock();
   renderSectionsList();
   mostrarRevelacionCodigoSoberanaSiCorresponde();
+  return true;
+}
+
+// Puerta B (sin Cuenta): la unica identidad server-side es la cookie corta
+// bootcamp_continuidad (20 min). Cuando expira, la accion de Estacion (replay
+// visto / Zoom) responde 401 / sin_sesion. Esta funcion repite la MISMA
+// verificacion del login (/api/workbook-acceso, con el correo con el que ya
+// entro esta sesion), que vuelve a emitir la cookie — nunca crea una
+// identidad nueva ni alarga la cookie. De un solo vuelo (varias llamadas
+// simultaneas comparten la misma verificacion) y solo para Puerta B con un
+// correo conocido. Devuelve true si el acceso sigue activo.
+let _wbReverificando = null;
+function wbReverificarPuertaB() {
+  if (state._origenSesion !== 'puerta-b') return Promise.resolve(false);
+  const correo = state.user && state.user.email;
+  if (!correo) return Promise.resolve(false);
+  if (_wbReverificando) return _wbReverificando;
+  _wbReverificando = fetch('/api/workbook-acceso', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ correo: correo }),
+  })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { return !!(d && d.activo === true); })
+    .catch(function () { return false; })
+    .then(function (ok) { _wbReverificando = null; return ok; });
+  return _wbReverificando;
 }
 
 // Puerta 5, Corte 5 (diseño cerrado 2026-09-12): "Mis experiencias" dentro
@@ -8770,7 +8821,15 @@ function renderSectionsList() {
   const list = document.getElementById('sections-list');
   const tieneAccesoRecorrido = state.recorridoHabilitado === true;
   if (!tieneAccesoRecorrido) {
-    list.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:\'Jost\',sans-serif;color:rgba(249,244,236,.6);font-size:13.5px;line-height:1.7">🔒 Tu recorrido Código Soberana se activa aquí en cuanto tengas acceso al Bootcamp.</div>';
+    // Con acceso al Bootcamp (bootcampHitos != null) lo que falta es el
+    // umbral de las 3 Estaciones, no el acceso — el texto lo dice asi.
+    let textoBloqueo = '🔒 Tu recorrido Código Soberana se activa aquí en cuanto tengas acceso al Bootcamp.';
+    if (state.bootcampHitos) {
+      const hs = Array.isArray(state.bootcampHitos.hitos) ? state.bootcampHitos.hitos : null;
+      textoBloqueo = '🔒 Tu recorrido Código Soberana se abre cuando completes tus 3 Estaciones.' +
+        (hs ? ' Llevas ' + hs.filter(function (h) { return h.completado; }).length + ' de 3.' : '');
+    }
+    list.innerHTML = '<div style="padding:40px 24px;text-align:center;font-family:\'Jost\',sans-serif;color:rgba(249,244,236,.6);font-size:13.5px;line-height:1.7">' + textoBloqueo + '</div>';
     list.style.height = '';
     return;
   }
@@ -15313,13 +15372,13 @@ async function resolverSesionYArrancar() {
   // Puerta 5, Corte 6: EL gate real de S0-S9 (Puerta A) — ya resuelto por
   // Orbit, nunca recalculado aqui.
   state.recorridoHabilitado = !!data.recorridoHabilitado;
-  // Puerta 5, Corte 7: marca de dónde vino esta sesión — la Revelación
-  // (más abajo) solo se evalúa para 'puerta-a'. Onboarding de instalación
-  // (2026-09-16): esta misma función ahora también resuelve la continuidad
+  // Marca de dónde vino esta sesión (ya no decide la Revelación ni el gate:
+  // eso lo hace recorridoHabilitado, de Orbit). Onboarding de instalación
+  // (2026-09-16): esta misma función también resuelve la continuidad
   // automática de Puerta B (cookie bootcamp_continuidad, sin formulario) —
-  // sigue siendo Puerta B en esencia, así que se marca igual que ya lo hace
-  // doLogin() (línea ~7285), nunca 'puerta-a', para que La Revelación y
-  // cualquier otra lógica exclusiva de Mi Espacio sigan sin aplicarle.
+  // sigue siendo Puerta B en esencia, así que se marca igual que doLogin(),
+  // nunca 'puerta-a'; sirve p. ej. para saber si toca revalidar la cookie
+  // de continuidad (wbReverificarPuertaB).
   state._origenSesion = data.puerta === 'B' ? 'puerta-b' : 'puerta-a';
 
   // Progreso: se mezcla igual que siempre (Firestore + lo que ya hubiera en

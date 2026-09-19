@@ -67,6 +67,7 @@ a { color: inherit; }
   <div class="bc-card bc-correo-form" id="bc-pedir-correo" style="display:none">
     <h1>¡Bienvenida a Código Soberana!</h1>
     <p>Tu compra fue confirmada. Escribe el correo con el que compraste para preparar tu espacio.</p>
+    <p>Usa el correo con el que compraste, aunque sea distinto al que usaste para registrarte en la clase gratuita.</p>
     <form id="bc-form-correo">
       <input type="email" id="bc-input-correo" placeholder="Correo electrónico" autocomplete="email" required>
       <button type="submit" class="ms-invite-btn" id="bc-btn-confirmar">Confirmar mi acceso</button>
@@ -85,7 +86,9 @@ a { color: inherit; }
   <div class="bc-card" id="bc-confirmando" style="display:none">
     <h1>Estamos preparando tu espacio</h1>
     <p>Tu compra ya fue recibida. Estamos terminando de preparar tu acceso.</p>
+    <p>Si compraste con un correo distinto al que usaste para registrarte en la clase gratuita, comprueba con el correo de tu compra.</p>
     <button type="button" class="ms-invite-btn" id="bc-btn-reintentar">COMPROBAR MI ACCESO</button>
+    <button type="button" class="bc-btn-secundario" id="bc-btn-otro-correo">Usar otro correo</button>
   </div>
 
   <!-- Estado "bienvenida": activo:true -- Onboarding de instalación (diseño
@@ -199,9 +202,26 @@ function bcInitBotonReintentar() {
   });
 }
 
+// "Usar otro correo": desde "Estamos preparando tu espacio" no habia forma de
+// cambiar el correo — quien compro con uno distinto al de su registro a la
+// clase gratuita se quedaba comprobando el equivocado. Solo vuelve al
+// formulario; no llama a ningun endpoint (el limite de intentos sigue siendo
+// el de /api/workbook-acceso, ver bcInit).
+function bcInitBotonOtroCorreo() {
+  const boton = document.getElementById('bc-btn-otro-correo');
+  boton.addEventListener('click', () => {
+    const input = document.getElementById('bc-input-correo');
+    input.value = '';
+    bcCorreoActual = null;
+    bcMostrar('bc-pedir-correo');
+    input.focus();
+  });
+}
+
 async function bcInit() {
   bcInitFormularioCorreo();
   bcInitBotonReintentar();
+  bcInitBotonOtroCorreo();
 
   const emailUrl = bcLeerEmailDeUrl();
   if (emailUrl) {

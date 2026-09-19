@@ -4621,7 +4621,7 @@
 
       <div class="login-card" id="splash-login-card">
         <label class="login-label">Tu acceso personal</label>
-        <p class="login-hint">Ingresa tu nombre y correo para guardar tu progreso y respuestas de forma permanente.</p>
+        <p class="login-hint">Ingresa tu nombre y correo para guardar tu progreso y respuestas de forma permanente. Usa el correo con el que compraste Código Soberana.</p>
         <input type="text" class="inp" id="inp-name" placeholder="Tu nombre" autocomplete="given-name">
         <input type="email" class="inp" id="inp-email" placeholder="tu@correo.com" autocomplete="email">
         <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
@@ -7331,13 +7331,8 @@ function showAccesoDenegado(email) {
         El correo <strong>${email}</strong> no tiene acceso al Workbook Código Soberana.
       </p>
       <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">
-        Si ya compraste el workshop, escríbenos por WhatsApp con tu correo y te activamos el acceso.
+        Prueba con el correo que usaste al pagar (el que aparece en tu recibo de Hotmart).
       </p>
-      <a href="https://wa.me/573XXXXXXXXX?text=Hola,%20quiero%20activar%20mi%20acceso%20al%20Workbook.%20Mi%20correo%20es:%20${encodeURIComponent(email)}" 
-         target="_blank"
-         style="display:block;background:var(--burgundy);color:white;text-decoration:none;padding:14px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:10px">
-        Activar mi acceso por WhatsApp
-      </a>
       <button onclick="document.getElementById('modal-overlay').classList.remove('open')" 
         style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
         Intentar con otro correo

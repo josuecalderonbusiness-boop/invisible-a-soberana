@@ -2,59 +2,128 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /rachas/{email} {
-      allow read, write: if true;
+    // ───────────── Contenido público, solo lectura de un documento ─────────────
+    match /masterclasses/{semanaId} {
+      allow get: if true;
+      allow list, write: if false;
+    }
+    match /config/{docId} {
+      allow get: if true;
+      allow list, write: if false;
+    }
+    // Sin ningún uso en código ni datos (0 documentos).
+    match /cohortes/{cohorteId} {
+      allow read, write: if false;
     }
 
+    // ───────────── Feed de comunidad ─────────────
+    // El cliente solo produce posts automáticos y corazones. Todo lo demás
+    // (panel administrativo futuro, Cloud Functions) escribe con Admin SDK,
+    // que no pasa por estas reglas.
     match /comunidad/{docId} {
       allow read: if true;
-      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+      allow create: if docId.matches('[A-Za-z0-9]{20}') && postValido(request.resource.data);
+      allow update: if soloCorazon();
+      allow delete: if false;
     }
 
-    match /logros/{email} {
-      allow read, write: if true;
+    function postValido(d) {
+      return d.keys().hasOnly(['name', 'initial', 'event', 'hearts', 'timestamp', 'tipo'])
+          && d.keys().hasAll(['name', 'initial', 'event', 'hearts', 'timestamp', 'tipo'])
+          && d.name is string && d.name.size() >= 1 && d.name.size() <= 100
+          && d.initial is string && d.initial.size() >= 1 && d.initial.size() <= 4
+          && d.event is string && d.event.size() >= 1 && d.event.size() <= 300
+          && d.hearts is int && d.hearts == 0
+          && d.timestamp == request.time
+          && d.tipo == 'automatico';
     }
 
-    match /tokens/{email} {
-      allow read, write: if true;
+    function soloCorazon() {
+      let nuevo = request.resource.data;
+      let antes = resource.data.get('hearts', 0);
+      return nuevo.diff(resource.data).affectedKeys().hasOnly(['hearts'])
+          && nuevo.hearts is int && nuevo.hearts >= 0
+          && (nuevo.hearts == antes + 1 || nuevo.hearts == antes - 1);
+    }
+
+    // ───────────── Solo escritura desde el cliente (nunca lee) ─────────────
+    match /tokens/{email} {                       // legado (Push antiguo)
+      allow read: if false;
+      allow create, update: if tokenLegadoValido(email, request.resource.data);
+      allow delete: if false;
+    }
+    function tokenLegadoValido(email, d) {
+      return d.keys().hasOnly(['token', 'email', 'fecha'])
+          && d.keys().hasAll(['token', 'email', 'fecha'])
+          && d.token is string && d.token.size() > 0 && d.token.size() <= 512
+          && d.email == email
+          && d.fecha is string && d.fecha.size() <= 40;
     }
 
     match /dispositivos_push/{email}/tokens/{token} {
-      allow read, write: if true;
+      allow read: if false;
+      allow create, update: if dispositivoValido(token, request.resource.data);
+      allow delete: if false;
     }
-
-    match /eventos/{email}/secciones/{seccionId} {
-      allow read, write: if true;
-    }
-
-    match /notif_log/{email} {
-      allow read, write: if true;
-    }
-
-    match /progreso/{email} {
-      allow read, write: if true;
-      match /{subcollection}/{docId} {
-        allow read, write: if true;
-      }
+    function dispositivoValido(token, d) {
+      return d.keys().hasOnly(['token', 'plataforma', 'actualizadoEn'])
+          && d.keys().hasAll(['token', 'plataforma', 'actualizadoEn'])
+          && d.token == token && token.size() <= 512
+          && (d.plataforma == null || (d.plataforma is string && d.plataforma.size() <= 100))
+          && d.actualizadoEn is string && d.actualizadoEn.size() <= 40;
     }
 
     match /notif_masterclass/{email} {
-      allow read, write: if true;
+      allow read: if false;
+      allow create, update: if notifMasterclassValida(email, request.resource.data);
+      allow delete: if false;
+    }
+    function notifMasterclassValida(email, d) {
+      return d.keys().hasOnly(['semana', 'email', 'solicitadoEn'])
+          && d.keys().hasAll(['semana', 'email', 'solicitadoEn'])
+          && d.semana is int && d.semana >= 1 && d.semana <= 52
+          && d.email == email
+          && d.solicitadoEn == request.time;
     }
 
-    match /masterclasses/{semanaId} {
-      allow read: if true;
-      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    match /eventos/{email}/secciones/{seccionId} {
+      allow read: if false;
+      allow create, update: if seccionValida(email, seccionId, request.resource.data);
+      allow delete: if false;
+    }
+    function seccionValida(email, id, d) {
+      return d.keys().hasOnly(['seccion', 'nombre', 'email', 'timestamp', 'notifEnviada'])
+          && d.keys().hasAll(['seccion', 'nombre', 'email', 'timestamp', 'notifEnviada'])
+          && d.seccion == id && d.email == email
+          && d.nombre is string && d.nombre.size() <= 100
+          && d.timestamp == request.time
+          && d.notifEnviada == false;
     }
 
-    match /cohortes/{cohorteId} {
-      allow read: if true;
-      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    // ───────────── Por correo: el cliente lee/escribe SU documento (deuda de identidad) ─────────────
+    // Solo cambia lo demostrado: ya no se puede LISTAR la colección (enumera correos).
+    match /rachas/{email} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if true;
+      allow delete: if false;
     }
-
-    match /config/{docId} {
-      allow read: if true;
-      allow write: if request.resource.data.adminKey == "Sob3rana@Admin2026";
+    match /logros/{email} {                       // el cliente solo lee; nadie lo escribe
+      allow get: if true;
+      allow list: if false;
+      allow write: if false;
+    }
+    match /progreso/{email} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if true;
+      allow delete: if false;
+      match /{subcollection}/{docId} {            // p. ej. masterclassRespuestas: get/list dentro del correo
+        allow read, write: if true;
+      }
+    }
+    match /notif_log/{email} {                    // solo Cloud Functions (Admin SDK)
+      allow read, write: if false;
     }
   }
 }

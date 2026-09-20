@@ -7238,6 +7238,7 @@ async function doLogin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo: email })
       });
+      wbRegistrarHoraServidor(resAcceso);
       if (resAcceso.status === 503) {
         verificacionFallo = true;
       } else {
@@ -8543,11 +8544,101 @@ function _formatFechaHitoWB(fechaISO) {
     return p.weekday + ' ' + p.day + ' de ' + p.month + ' · ' + h12 + ':' + p.minute + ' ' + (h24 >= 12 ? 'p. m.' : 'a. m.') + ' (hora de Colombia)';
   } catch (e) { return ''; }
 }
+// ═══════════════════════════════════════════
+// LA TARJETA DE CADA ESTACIÓN SE ABRE SOLA A LA HORA (UX 2026-09-20, aprobado)
+// ═══════════════════════════════════════════
+// Orbit ya manda fecha + enlaces de las 3 Estaciones desde que ella entra, y
+// "disponible" es solo ahora >= fecha (lib/bootcampHitos.js). Por eso la tarjeta
+// se abre sola a esa hora SIN preguntarle nada al servidor:
+//   · UN setTimeout único hacia la próxima Estación que aún no abre. Sin
+//     polling, sin cron, sin infraestructura nueva.
+//   · Se vuelve a evaluar (sin red) cuando ella vuelve a la app:
+//     visibilitychange, pageshow y focus. Cubre el teléfono dormido y el Push
+//     tocado con la app ya abierta (el service worker solo enfoca la ventana).
+//   · La hora se corrige con la cabecera Date del servidor en las respuestas que
+//     ya se hacen: un reloj mal puesto no abre la tarjeta antes ni después.
+// Esto es solo REPRESENTACIÓN. La decisión de entrar sigue siendo de Orbit:
+// bootcamp-zoom-join responde 409 hito_no_disponible si aún no es la hora, y en
+// ese caso NO se abre ningún enlace (ver onFallback en renderBootcampHitosBlock).
+let _wbOffsetServidorMs = 0;      // hora del servidor menos hora del dispositivo
+let _wbTimerHitos = null;         // el único temporizador pendiente
+let _wbFirmaHitosPintada = null;  // qué se pintó la última vez (para no volver a pintar en vano)
+let _wbHitosObjetoPintado = null; // referencia al dato del servidor que se pintó
+let _wbNegadaPorServidor = {};    // hito -> true: Orbit dijo "aún no"; vale hasta el próximo dato del servidor
+
+function wbRegistrarHoraServidor(res) {
+  try {
+    const cab = res && res.headers && res.headers.get && res.headers.get('Date');
+    const t = cab ? Date.parse(cab) : NaN;
+    if (isFinite(t)) _wbOffsetServidorMs = t - Date.now();
+  } catch (e) { /* sin cabecera: se usa el reloj del dispositivo */ }
+}
+function wbAhoraMs() { return Date.now() + _wbOffsetServidorMs; }
+
+// true si Orbit ya dijo que está disponible, o si (según la hora corregida) ya llegó su fecha.
+function wbHitoDisponible(h) {
+  if (h.disponible === true) return true;
+  if (_wbNegadaPorServidor[h.hito]) return false;
+  const t = Date.parse(h.fecha);
+  return isFinite(t) && wbAhoraMs() >= t;
+}
+
+function wbFirmaHitos(hitos) {
+  return hitos.map(function (h) {
+    return h.hito + ':' + (wbHitoDisponible(h) ? 1 : 0) + ':' + (h.completado ? 1 : 0) + ':' + (h.enlaceEnVivo || '') + ':' + (h.enlaceReplay || '');
+  }).join('|');
+}
+
+// Programa UN solo temporizador hacia el próximo instante en que una Estación pasa a disponible.
+function wbProgramarTransicionHitos() {
+  if (_wbTimerHitos) { clearTimeout(_wbTimerHitos); _wbTimerHitos = null; }
+  const hitos = state.bootcampHitos && state.bootcampHitos.hitos;
+  if (!Array.isArray(hitos)) return;
+  const ahora = wbAhoraMs();
+  let proximo = Infinity;
+  hitos.forEach(function (h) {
+    if (wbHitoDisponible(h)) return;
+    const t = Date.parse(h.fecha);
+    if (isFinite(t) && t > ahora && t < proximo) proximo = t;
+  });
+  if (proximo === Infinity) return;                 // nada por abrir: sin temporizador
+  const espera = Math.max(proximo - ahora + 300, 250); // 300 ms de margen: que Date.now() ya supere la fecha
+  if (espera > 2147483647) return;                  // tope de setTimeout (~24 días); los eventos de retorno cubren el resto
+  _wbTimerHitos = setTimeout(function () { _wbTimerHitos = null; wbRevaluarHitos(); }, espera);
+}
+
+// Vuelve a pintar SOLO si algo cambió, y NUNCA mientras haya un Zoom embebido activo
+// (o conectándose): volver a pintar reconstruye las tarjetas y cerraría su sesión.
+function wbRevaluarHitos() {
+  const wrap = document.getElementById('bootcamp-hitos-block');
+  const hitos = state.bootcampHitos && state.bootcampHitos.hitos;
+  if (!wrap || !Array.isArray(hitos)) return;
+  if (wrap.querySelector('[data-zoom-embed-activo]') || wrap.querySelector('[data-wb-vivo-btn][disabled]')) return;
+  if (wbFirmaHitos(hitos) !== _wbFirmaHitosPintada) renderBootcampHitosBlock();
+  else wbProgramarTransicionHitos();
+}
+
+(function wbActivarRevaluacionHitos() {
+  if (window.__wbRevaluacionHitosActiva) return;
+  window.__wbRevaluacionHitosActiva = true;
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') wbRevaluarHitos();
+  });
+  window.addEventListener('pageshow', function () { wbRevaluarHitos(); });
+  window.addEventListener('focus', function () { wbRevaluarHitos(); });
+})();
+
 function renderBootcampHitosBlock() {
   const wrap = document.getElementById('bootcamp-hitos-block');
   if (!wrap) return;
   const hitos = state.bootcampHitos && state.bootcampHitos.hitos;
-  if (!Array.isArray(hitos)) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  if (!Array.isArray(hitos)) {
+    wrap.style.display = 'none'; wrap.innerHTML = '';
+    if (_wbTimerHitos) { clearTimeout(_wbTimerHitos); _wbTimerHitos = null; }
+    return;
+  }
+  // Un dato NUEVO del servidor reemplaza cualquier "aún no" previo de Orbit.
+  if (state.bootcampHitos !== _wbHitosObjetoPintado) { _wbHitosObjetoPintado = state.bootcampHitos; _wbNegadaPorServidor = {}; }
 
   const cardBase = 'border:1.5px solid rgba(184,137,42,.35);border-radius:16px;padding:18px 20px;margin-bottom:12px;background:linear-gradient(165deg,rgba(184,137,42,.08),transparent 65%);background-color:rgba(43,28,36,.4);';
   const eyebrow = 'font-family:\'Jost\',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold-primary);margin-bottom:8px;';
@@ -8572,7 +8663,7 @@ function renderBootcampHitosBlock() {
       if (h.completado) {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">✓ Completado</div></div>';
       }
-      if (!h.disponible) {
+      if (!wbHitoDisponible(h)) {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
       }
       // Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado
@@ -8612,7 +8703,15 @@ function renderBootcampHitosBlock() {
       window.abrirZoomEmbebido({
         obtenerJoinInfo: function () {
           const pedir = function () {
-            return fetch('/api/mi-espacio-auth?accion=bootcamp-zoom-join&hito=' + hito, { credentials: 'include' }).then(function (r) { return r.json(); });
+            return fetch('/api/mi-espacio-auth?accion=bootcamp-zoom-join&hito=' + hito, { credentials: 'include' }).then(function (r) {
+              wbRegistrarHoraServidor(r);
+              return r.json().then(function (j) {
+                // Orbit decide: 409 hito_no_disponible = todavía no es la hora. Se normaliza a un
+                // motivo explícito para que NUNCA caiga al enlace genérico (ver onFallback).
+                if (r.status === 409 && j && j.error === 'hito_no_disponible') return { ok: false, motivo: 'hito_no_disponible', enlaceGenerico: null };
+                return j;
+              });
+            });
           };
           return pedir().then(function (info) {
             // Puerta B con la cookie de continuidad vencida: revalidar y
@@ -8633,6 +8732,17 @@ function renderBootcampHitosBlock() {
         onFallback: function (motivo, enlace) {
           btnEl.textContent = textoOriginal;
           btnEl.disabled = false;
+          if (motivo === 'hito_no_disponible') {
+            // Orbit decide, no el reloj del teléfono: todavía no es la hora. NO se abre ningún
+            // enlace (ni el genérico). La tarjeta vuelve a "Próximamente" y se pide al
+            // servidor el dato y la hora frescos.
+            const fila = ((state.bootcampHitos && state.bootcampHitos.hitos) || []).find(function (x) { return x.hito === hito; });
+            _wbNegadaPorServidor[hito] = true;
+            showToast('Todavía no es la hora. Empieza el ' + (fila ? _formatFechaHitoWB(fila.fecha) : 'día de tu Estación') + '.');
+            renderBootcampHitosBlock();
+            wbRefrescarSesionTrasHito();
+            return;
+          }
           window.open(enlace || enlaceGenerico, '_blank', 'noopener');
         },
       });
@@ -8649,6 +8759,10 @@ function renderBootcampHitosBlock() {
       window.vincularReplayBunny(iframe, function () { wbConfirmarHitoVisto(Number(iframe.dataset.hito)); });
     });
   }
+
+  // Qué se pintó y cuándo abre la próxima Estación (un solo temporizador).
+  _wbFirmaHitosPintada = wbFirmaHitos(hitos);
+  wbProgramarTransicionHitos();
 }
 
 // Puerta 5, Corte 8 (pendiente cerrado, diseño aprobado 2026-09-12):
@@ -8726,6 +8840,7 @@ async function wbRefrescarSesionTrasHito() {
   let data;
   try {
     const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+    wbRegistrarHoraServidor(res);
     data = await res.json();
   } catch (e) {
     console.warn('No se pudo refrescar la sesión tras confirmar el Hito:', e.message);
@@ -8761,7 +8876,7 @@ function wbReverificarPuertaB() {
     credentials: 'include',
     body: JSON.stringify({ correo: correo }),
   })
-    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (r) { wbRegistrarHoraServidor(r); return r.ok ? r.json() : null; })
     .then(function (d) { return !!(d && d.activo === true); })
     .catch(function () { return false; })
     .then(function (ok) { _wbReverificando = null; return ok; });
@@ -15362,6 +15477,7 @@ async function resolverSesionYArrancar() {
   let data;
   try {
     const res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+    wbRegistrarHoraServidor(res);
     data = await res.json();
   } catch (e) {
     // Sin conexion: NUNCA se decide identidad ni derechos desde

@@ -8521,9 +8521,26 @@ function computeSemanaActiva() {
 // y Replay se muestran juntos cuando ambos enlaces existen, nunca por
 // horario. Oculto por completo si state.bootcampHitos es null.
 const HITO_NOMBRES_WB = { 1: 'Estación 1 — Llegar', 2: 'Estación 2 — Volver', 3: 'Estación 3 — Sostenerte' };
+// UX 2026-09-20 (aprobado): UNA referencia para decir cuándo es una clase, siempre
+// en HORA DE COLOMBIA — nunca la del dispositivo (un teléfono mal configurado, un
+// VPN o un viaje no deben hacer que alguien pierda una clase):
+//   miércoles 7 de octubre · 7:00 p. m. (hora de Colombia)
+// Mismo formato exacto que lib/fecha_clase.js en Orbit (correo, Push, WhatsApp). La
+// fecha sale siempre de la fecha real de la cohorte (h.fecha), nunca escrita a mano.
+// Solo el día y el mes vienen de Intl; la hora de 12 h y a. m./p. m. se construyen
+// aquí para que el resultado no dependa de la versión de ICU del navegador.
 function _formatFechaHitoWB(fechaISO) {
   try {
-    return new Date(fechaISO).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+    // new Date(null) es 1970: un dato ausente nunca se convierte en una hora inventada.
+    if (fechaISO === null || fechaISO === undefined || fechaISO === '') return '';
+    const d = new Date(fechaISO);
+    if (isNaN(d.getTime())) return '';
+    const p = {};
+    new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(d).forEach(function (x) { if (x.type !== 'literal') p[x.type] = x.value; });
+    const h24 = Number(p.hour) % 24;
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    return p.weekday + ' ' + p.day + ' de ' + p.month + ' · ' + h12 + ':' + p.minute + ' ' + (h24 >= 12 ? 'p. m.' : 'a. m.') + ' (hora de Colombia)';
   } catch (e) { return ''; }
 }
 function renderBootcampHitosBlock() {

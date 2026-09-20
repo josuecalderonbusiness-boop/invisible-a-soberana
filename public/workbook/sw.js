@@ -60,10 +60,11 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // â”€â”€ Cache (PWA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const CACHE_NAME = 'soberana-v366';
+const CACHE_NAME = 'soberana-v367';
 const urlsToCache = [
   '/workbook/',
   '/workbook/index.html',
+  '/mi-espacio/html-seguro.js',
   '/workbook/manifest.json',
   '/workbook/icon-192.png',
   '/workbook/icon-512.png',

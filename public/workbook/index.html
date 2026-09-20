@@ -5266,6 +5266,7 @@
      2026-09-19): vínculo con el reproductor de Bunny vía Player.js —
      componente UNICO compartido con /mi-espacio, ver
      public/mi-espacio/bunny-replay.js. -->
+<script src="/mi-espacio/html-seguro.js"></script>
 <script src="/mi-espacio/bunny-replay.js"></script>
 
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
@@ -9251,6 +9252,7 @@ function _formatFechaSabado(fechaISO) {
 }
 
 function _googleCalendarLink(sesion, semNum) {
+  const zoomSeguro = htmlSeguro.urlSegura(sesion.zoom_link);
   const start = new Date(sesion.fecha_iso);
   const end   = new Date(start.getTime() + 90 * 60000);
   const fmt   = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
@@ -9258,8 +9260,8 @@ function _googleCalendarLink(sesion, semNum) {
     action: 'TEMPLATE',
     text:   `Sesión en Vivo · Soberana 7D Semana ${semNum}`,
     dates:  `${fmt(start)}/${fmt(end)}`,
-    details: sesion.zoom_link ? `Entrar: ${sesion.zoom_link}` : '',
-    location: sesion.zoom_link || ''
+    details: zoomSeguro ? `Entrar: ${zoomSeguro}` : '',
+    location: zoomSeguro
   });
   return `https://calendar.google.com/calendar/render?${p.toString()}`;
 }
@@ -9307,6 +9309,10 @@ function renderSabadoEstado(estado) {
 
   const { sesion, semNum, nodeKey, semana, isDone } = _sabadoCurrentData;
   const LIBRARY = '636956';
+  // Datos de Firestore: solo https:// para enlaces, solo [A-Za-z0-9_-] para el id de Bunny.
+  const zoomHref  = htmlSeguro.urlSegura(sesion && sesion.zoom_link);
+  const grabHref  = htmlSeguro.urlSegura(sesion && sesion.grabacion_url);
+  const bunnyId   = htmlSeguro.idSeguro(sesion && sesion.grabacion_bunny_id);
 
   const userEmail = (state && state.user && state.user.email) ? state.user.email : '';
   const isDebug   = userEmail.includes('josuecalderon') ||
@@ -9337,7 +9343,7 @@ function renderSabadoEstado(estado) {
       <div class="modal-date">${_formatFechaSabado(sesion.fecha_iso)}</div>
       <div class="countdown-wrap" id="sabado-countdown-wrap"></div>
       <div class="modal-divider"></div>
-      <p class="modal-desc">"${sesion.descripcion || 'Análisis de casos reales. El espejo soberano en tiempo real.'}"</p>
+      <p class="modal-desc">"${htmlSeguro.escapeHtml(sesion.descripcion || 'Análisis de casos reales. El espejo soberano en tiempo real.')}"</p>
       <div class="modal-info">
         <div class="info-row"><span style="width:20px;text-align:center">📅</span>${_formatFechaSabado(sesion.fecha_iso)}</div>
         <div class="info-row"><span style="width:20px;text-align:center">⏱</span>90 minutos aproximadamente</div>
@@ -9358,8 +9364,8 @@ function renderSabadoEstado(estado) {
       <div class="countdown-wrap" id="sabado-countdown-wrap"></div>
       <div class="modal-divider"></div>
       <p class="modal-desc">"La sala estará abierta desde 5 minutos antes. Ten el workbook de esta semana a la mano."</p>
-      ${sesion.zoom_link ? `
-        <a href="${sesion.zoom_link}" target="_blank" rel="noopener" class="btn-primary"
+      ${zoomHref ? `
+        <a href="${htmlSeguro.escapeHtml(zoomHref)}" target="_blank" rel="noopener" class="btn-primary"
           onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
           ▶ Unirme a la sesión en vivo
         </a>
@@ -9381,15 +9387,15 @@ function renderSabadoEstado(estado) {
       <div class="modal-date">Inició · ${_formatFechaSabado(sesion.fecha_iso).split('·')[1].trim()} · ${minPasados} min transcurridos</div>
       <div class="modal-divider"></div>
       <p class="modal-desc">"${minPasados >= 90 ? 'Josué está en la recta final. Únete y participa.' : 'Únete cuando puedas — la dinámica sigue activa durante toda la sesión.'}"</p>
-      ${sesion.zoom_link ? `
-        <a href="${sesion.zoom_link}" target="_blank" rel="noopener" class="btn-primary live-btn"
+      ${zoomHref ? `
+        <a href="${htmlSeguro.escapeHtml(zoomHref)}" target="_blank" rel="noopener" class="btn-primary live-btn"
           onclick="if(navigator.vibrate)navigator.vibrate(10); _marcarSabadoVisitado('${nodeKey}',${semNum})">
           🔴 Entrar a la sesión ahora
         </a>
         <p class="modal-note">Si llegas tarde, la dinámica sigue activa. Entra y participa.</p>` : ''}`;
 
   } else { // ended
-    const tieneGrabacion = sesion.grabacion_url || sesion.grabacion_bunny_id;
+    const tieneGrabacion = grabHref || bunnyId;
     badge = `<span class="modal-badge badge-ended">✓ Sesión completada</span>`;
     bodyHTML = `
       ${isDone ? `<div class="completion-chip">✓ Semana ${semNum} · Sábado completado</div>` : ''}
@@ -9400,10 +9406,10 @@ function renderSabadoEstado(estado) {
       ${!tieneGrabacion ? `
         <p class="modal-desc">La grabación estará disponible pronto.</p>
         <div class="btn-disabled">⏳ Grabación en proceso...</div>
-      ` : sesion.grabacion_bunny_id ? `
+      ` : bunnyId ? `
         <div class="recording-player">
           <iframe
-            src="https://iframe.mediadelivery.net/embed/${LIBRARY}/${sesion.grabacion_bunny_id}?autoplay=false&responsive=true"
+            src="https://iframe.mediadelivery.net/embed/${LIBRARY}/${bunnyId}?autoplay=false&responsive=true"
             allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture"
             allowfullscreen></iframe>
         </div>
@@ -9417,7 +9423,7 @@ function renderSabadoEstado(estado) {
             ▶ Ver grabación completa
           </button>`}
       ` : `
-        <a href="${sesion.grabacion_url}" target="_blank" rel="noopener" class="btn-primary"
+        <a href="${htmlSeguro.escapeHtml(grabHref)}" target="_blank" rel="noopener" class="btn-primary"
           onclick="if(navigator.vibrate)navigator.vibrate(10); ${!isDone ? `mark7dDone('${nodeKey}')` : ''}">
           ▶ Ver grabación completa
         </a>
@@ -13674,7 +13680,6 @@ async function publishComunidadPost(authorName, event, tipo) {
       event:     event,
       hearts:    0,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      adminKey:  'Sob3rana@Admin2026',
       tipo:      tipo || 'automatico'
     });
   } catch(e) { console.warn('[Firestore] publishComunidadPost:', e); }
@@ -13822,23 +13827,23 @@ function _buildFeedCard(f) {
   const liked    = _getLikedPosts();
   const userKey  = _likeKey() + '_' + (f.id || '');
   const isLiked  = f.id ? !!liked[userKey] : false;
-  const initial  = f.initial || (f.name ? f.name[0].toUpperCase() : '?');
-  const hearts   = typeof f.hearts === 'number' ? f.hearts : 0;
+  const initial  = htmlSeguro.escapeHtml(f.initial || (f.name ? String(f.name)[0].toUpperCase() : '?'));
+  const hearts   = (typeof f.hearts === 'number' && isFinite(f.hearts)) ? f.hearts : 0;
   const time     = f.time || (f.timestamp ? _timeAgo(f.timestamp.toDate ? f.timestamp.toDate() : new Date(f.timestamp)) : '');
   const likedCls = isLiked ? ' liked' : '';
   const fillVal  = isLiked ? 'currentColor' : 'none';
   const heartColor = isLiked ? 'color:var(--gold)' : '';
-  const docId    = f.id || '';
+  const docId    = htmlSeguro.idSeguro(f.id);
   return `
   <div class="nov-feed-card${likedCls}">
     <div class="nov-feed-top">
       <div class="nov-feed-avatar">${initial}</div>
       <div class="nov-feed-meta">
-        <div class="nov-feed-name">${f.name || 'Soberana'}</div>
-        <div class="nov-feed-time">${time}</div>
+        <div class="nov-feed-name">${htmlSeguro.escapeHtml(f.name || 'Soberana')}</div>
+        <div class="nov-feed-time">${htmlSeguro.escapeHtml(time)}</div>
       </div>
     </div>
-    <div class="nov-feed-event">${f.event || ''}</div>
+    <div class="nov-feed-event">${htmlSeguro.escapeHtml(f.event || '')}</div>
     <div class="nov-feed-actions">
       <button class="nov-feed-btn nov-feed-heart" style="${heartColor}" onclick="novToggleHeart(this,'${docId}',${hearts})">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="${fillVal}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -15487,10 +15492,10 @@ resolverSesionYArrancar();
       eyebrow.textContent  = 'Ahora · Sesión en Vivo';
       title.textContent    = '🔴 Estamos en vivo ahora mismo';
       body.textContent     = 'La sesión del sábado acaba de comenzar. Tu lugar te está esperando.';
-      cta.textContent = sesion && sesion.zoom_link ? 'Entrar a la sesión →' : 'Ver la sesión en vivo →';
+      cta.textContent = htmlSeguro.urlSegura(sesion && sesion.zoom_link) ? 'Entrar a la sesión →' : 'Ver la sesión en vivo →';
     }
 
-    _liveZoomLink = sesion && sesion.zoom_link ? sesion.zoom_link : null;
+    _liveZoomLink = htmlSeguro.urlSegura(sesion && sesion.zoom_link) || null;
 
     popup.classList.add('active');
     if (window.navigator.vibrate) window.navigator.vibrate([40, 30, 80]);

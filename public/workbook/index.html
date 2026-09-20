@@ -8769,8 +8769,12 @@ function renderBootcampHitosBlock() {
   // recuadro del aviso "1 hora antes" (ver wbPintarAvisoPush).
   const proximoAviso = (hitos.find(function (x) { return !x.completado && !wbHitoDisponible(x); }) || {}).hito;
 
+  // Qué es una Estación (UX 2026-09-20): una sola línea, mientras falte alguna por completar.
+  const explicacionEstacion = hitos.every(function (x) { return x.completado; }) ? '' :
+    '<p id="wb-que-es-estacion" style="' + sub + 'margin-bottom:14px;line-height:1.55;">Una Estación es una clase en vivo por Zoom. Son tres, y cada una se abre aquí a su hora.</p>';
+
   wrap.style.display = 'block';
-  wrap.innerHTML = '<div style="' + eyebrow + '">Tu Bootcamp — Código Soberana</div>' +
+  wrap.innerHTML = '<div style="' + eyebrow + '">Tu Bootcamp — Código Soberana</div>' + explicacionEstacion +
     hitos.map(function (h) {
       const nombre = HITO_NOMBRES_WB[h.hito] || ('Hito ' + h.hito);
       if (h.completado) {

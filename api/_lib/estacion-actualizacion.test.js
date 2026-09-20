@@ -397,3 +397,39 @@ test('pintar de nuevo por OTRA razón (p. ej. completar un replay) sigue cerrand
   e.api.render(); // llamada directa (comportamiento previo, diseñado en la Estación 7)
   assert.equal(e.spies.cerrarZoom, 1);
 });
+
+// ═════════════════════════════════════════════════════════════════════════
+// Punto 7 (aprobado): una línea breve que explica qué es una Estación.
+test('explica qué es una Estación, en una línea, y sin escribir ninguna fecha ni hora en el texto', () => {
+  const e = crearEntorno({ ahora: F1 - 60_000 });
+  e.api.render();
+  const m = e.html().match(/<p id="wb-que-es-estacion"[^>]*>([^<]*)<\/p>/);
+  assert.ok(m, 'aparece la explicación');
+  assert.equal(m[1], 'Una Estación es una clase en vivo por Zoom. Son tres, y cada una se abre aquí a su hora.');
+  assert.ok(m[1].length < 100, 'breve: una línea, no un párrafo');
+  assert.doesNotMatch(m[1], /\d/, 'ni fechas ni horas quemadas: eso sale de la fecha real de cada tarjeta');
+  assert.ok(e.html().indexOf('wb-que-es-estacion') < e.html().indexOf('Próximamente'), 'va antes de las tarjetas');
+});
+
+test('la explicación desaparece cuando ya completó las tres Estaciones', () => {
+  const e = crearEntorno({
+    ahora: F3 + 3_600_000,
+    hitos: hitosBase({ 1: { completado: true, disponible: true }, 2: { completado: true, disponible: true }, 3: { completado: true, disponible: true } }),
+  });
+  e.api.render();
+  assert.doesNotMatch(e.html(), /wb-que-es-estacion/);
+});
+
+test('la explicación sigue mientras falte alguna, aunque las anteriores ya estén completas', () => {
+  const e = crearEntorno({ ahora: F2 + 3_600_000, hitos: hitosBase({ 1: { completado: true, disponible: true }, 2: { disponible: true } }) });
+  e.api.render();
+  assert.match(e.html(), /wb-que-es-estacion/);
+});
+
+test('la explicación no altera la firma de las tarjetas: repintar por otra causa no re-renderiza sin motivo', () => {
+  const e = crearEntorno({ ahora: F1 - 60_000 });
+  e.api.render();
+  const escrituras = e.spies.escrituras;
+  e.winListeners.focus && e.winListeners.focus();
+  assert.equal(e.spies.escrituras, escrituras, 'sin cambio de estado no se vuelve a pintar');
+});

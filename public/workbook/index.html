@@ -5231,8 +5231,8 @@
 <div id="notif-modal-overlay">
   <div class="notif-modal">
     <div class="notif-modal-icon">🔔</div>
-    <div class="notif-modal-title">No te pierdas nada</div>
-    <p class="notif-modal-body">Recibe mensajes de Josué y celebraciones de la comunidad directamente en tu celular</p>
+    <div class="notif-modal-title" id="notif-modal-title">No te pierdas nada</div>
+    <p class="notif-modal-body" id="notif-modal-body">Recibe mensajes de Josué y celebraciones de la comunidad directamente en tu celular</p>
     <div class="notif-ios-hint" id="notif-ios-hint">
       📲 Para recibir notificaciones, primero instala la app:<br>
       1. Toca el ícono de compartir <strong>⎙</strong> en Safari<br>
@@ -5516,6 +5516,14 @@ function maybeShowNotifModal() {
     document.getElementById('notif-btn').style.display = 'none';
   }
 
+  // UX 2026-09-20: con Estaciones, el permiso explica para qué sirve (avisar cada Estación).
+  const textosModal = wbTextosModalPush();
+  document.getElementById('notif-modal-title').textContent = textosModal.titulo;
+  document.getElementById('notif-modal-body').textContent = textosModal.cuerpo;
+  const botonModal = document.getElementById('notif-btn');
+  botonModal.textContent = textosModal.boton;
+  botonModal.disabled = false;
+
   document.getElementById('notif-modal-overlay').classList.add('open');
 }
 
@@ -5572,14 +5580,21 @@ function activarNotificaciones() {
   }
 }
 
+// UX 2026-09-20 (aprobado): además de guardar el token, esta función devuelve true/false y
+// recuerda EN ESTE DISPOSITIVO que ya quedó registrado (soberana_fcm_registrado). Así la tarjeta
+// de la Estación sabe si ofrecer "🔔 Avisarme 1 hora antes" o si el aviso ya está activo. Los dos
+// guardados en Firestore siguen siendo exactamente los mismos.
+let _wbFcmRegistroEnCurso = false;
 async function saveFcmToken() {
+  let ok = false;
+  _wbFcmRegistroEnCurso = true;
   try {
     const registration = await navigator.serviceWorker.getRegistration('/workbook/');
     console.log('[FCM] Registration obtenida:', registration);
 
     if (!registration) {
       console.error('[FCM] No hay SW registrado en /workbook/');
-      return;
+      return false;
     }
 
     const messaging = firebase.messaging();
@@ -5612,12 +5627,106 @@ async function saveFcmToken() {
           actualizadoEn: new Date().toISOString()
         });
       console.log('[FCM] Dispositivo registrado en dispositivos_push');
+      ok = true;
+      try {
+        localStorage.setItem('soberana_fcm_registrado', JSON.stringify({ email: state.user.email, en: new Date().toISOString() }));
+      } catch (e) { /* sin almacenamiento: el registro en Firestore ya está hecho */ }
     }
 
     iniciarForegroundPush();
   } catch(e) {
     console.error('[FCM] Error:', e);
+  } finally {
+    _wbFcmRegistroEnCurso = false;
+    if (typeof wbPintarAvisoPush === 'function') wbPintarAvisoPush();
   }
+  return ok;
+}
+
+// ═══════════════════════════════════════════
+// AVISO "1 HORA ANTES" DENTRO DE LA TARJETA DE LA ESTACIÓN (UX 2026-09-20, aprobado)
+// ═══════════════════════════════════════════
+// Aparece en la tarjeta de la PRÓXIMA Estación, en contexto, sin depender de que ella haya
+// aceptado un modal antes. Nunca ofrece activar algo que ya está activo:
+//   no_aplica       → sin datos del Bootcamp, sin soporte de Push, iPhone sin instalar, o
+//                     registrando ahora mismo: no se muestra nada.
+//   activo          → permiso concedido Y dispositivo registrado: solo un texto de confirmación.
+//   sin_dispositivo → permiso concedido pero este dispositivo NO quedó registrado: el botón
+//                     reintenta el registro (no vuelve a pedir permiso).
+//   permitir        → nunca decidió: el botón pide el permiso y registra el dispositivo.
+//   bloqueado       → el navegador lo bloqueó (terminal): solo un texto con la salida.
+function wbPushRegistradoEnEsteDispositivo() {
+  try {
+    const r = JSON.parse(localStorage.getItem('soberana_fcm_registrado'));
+    return !!(r && state.user && r.email === state.user.email);
+  } catch (e) { return false; }
+}
+
+function wbEstadoAvisoPush() {
+  if (!(state.bootcampHitos && Array.isArray(state.bootcampHitos.hitos))) return 'no_aplica';
+  if (!state.user || !state.user.email) return 'no_aplica';
+  if (!pushSoportado()) return 'no_aplica';
+  const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (esIOS && !estaInstalada()) return 'no_aplica'; // Safari no deja pedir permiso sin la app instalada
+  const permiso = Notification.permission;
+  if (permiso === 'denied') return 'bloqueado';
+  if (permiso === 'default') return 'permitir';
+  if (permiso === 'granted') {
+    if (wbPushRegistradoEnEsteDispositivo()) return 'activo';
+    if (_wbFcmRegistroEnCurso) return 'no_aplica';
+    return 'sin_dispositivo';
+  }
+  return 'no_aplica';
+}
+
+function wbHtmlAvisoPush(estado) {
+  const texto = 'font-family:\'Jost\',sans-serif;font-size:12.5px;color:rgba(249,244,236,.6);margin:0;';
+  if (estado === 'activo') return '<p style="' + texto + '">🔔 Te avisaremos 1 hora antes.</p>';
+  if (estado === 'bloqueado') return '<p style="' + texto + '">🔔 Las notificaciones están bloqueadas. Actívalas en los ajustes de tu navegador para recibir el aviso de cada Estación.</p>';
+  if (estado === 'permitir' || estado === 'sin_dispositivo') {
+    return '<button type="button" id="wb-aviso-push-btn" onclick="wbActivarAvisoEstacion(this)" style="padding:10px 16px;border-radius:10px;border:1px solid rgba(184,137,42,.5);background:transparent;color:var(--gold-primary);font-family:\'Jost\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🔔 Avisarme 1 hora antes</button>';
+  }
+  return '';
+}
+
+// Solo repinta ESTE recuadro (no las tarjetas): así nunca puede cerrar un Zoom embebido activo.
+function wbPintarAvisoPush() {
+  const cont = document.getElementById('wb-aviso-push');
+  if (!cont) return;
+  cont.innerHTML = wbHtmlAvisoPush(wbEstadoAvisoPush());
+}
+
+async function wbActivarAvisoEstacion(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Activando…'; }
+  let ok = false;
+  try {
+    // requestPermission() se invoca directamente desde el clic (iOS lo exige).
+    if (Notification.permission === 'default') {
+      const permiso = await Notification.requestPermission();
+      if (permiso !== 'granted') { wbPintarAvisoPush(); return; }
+    }
+    if (Notification.permission === 'granted') ok = await saveFcmToken();
+  } catch (e) {
+    console.warn('[FCM] aviso de la Estación:', e && e.message);
+  }
+  wbPintarAvisoPush();
+  if (!ok && Notification.permission === 'granted') showToast('No pudimos activar el aviso. Inténtalo de nuevo.');
+}
+
+// Texto del permiso Push: el nuevo, solo cuando hay Estaciones; si no (venta directa), el de siempre.
+function wbTextosModalPush() {
+  if (state.bootcampHitos && Array.isArray(state.bootcampHitos.hitos)) {
+    return {
+      titulo: 'Que no se te pase ninguna Estación',
+      cuerpo: 'Te avisaremos un día antes y una hora antes de cada Estación, para que no tengas que estar pendiente del reloj.',
+      boton: 'Activar avisos',
+    };
+  }
+  return {
+    titulo: 'No te pierdas nada',
+    cuerpo: 'Recibe mensajes de Josué y celebraciones de la comunidad directamente en tu celular',
+    boton: 'Activar notificaciones',
+  };
 }
 
 // ═══════════════════════════════════════════
@@ -8656,6 +8765,10 @@ function renderBootcampHitosBlock() {
     window.cerrarZoomEmbebidoActivo();
   }
 
+  // La tarjeta de la PRÓXIMA Estación (la primera que ni está completada ni abierta) lleva el
+  // recuadro del aviso "1 hora antes" (ver wbPintarAvisoPush).
+  const proximoAviso = (hitos.find(function (x) { return !x.completado && !wbHitoDisponible(x); }) || {}).hito;
+
   wrap.style.display = 'block';
   wrap.innerHTML = '<div style="' + eyebrow + '">Tu Bootcamp — Código Soberana</div>' +
     hitos.map(function (h) {
@@ -8664,7 +8777,7 @@ function renderBootcampHitosBlock() {
         return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">✓ Completado</div></div>';
       }
       if (!wbHitoDisponible(h)) {
-        return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p></div>';
+        return '<div style="' + cardBase + '"><div style="' + eyebrow + '">' + nombre + '</div><div style="' + title + '">🔒 Próximamente</div><p style="' + sub + '">Disponible el ' + _formatFechaHitoWB(h.fecha) + '</p>' + (h.hito === proximoAviso ? '<div id="wb-aviso-push" style="margin-top:10px"></div>' : '') + '</div>';
       }
       // Puerta 5, Estación 7 (Zoom embebido completo, diseño cerrado
       // 2026-09-15): el boton ya no navega directo — dispara
@@ -8759,6 +8872,8 @@ function renderBootcampHitosBlock() {
       window.vincularReplayBunny(iframe, function () { wbConfirmarHitoVisto(Number(iframe.dataset.hito)); });
     });
   }
+
+  wbPintarAvisoPush();
 
   // Qué se pintó y cuándo abre la próxima Estación (un solo temporizador).
   _wbFirmaHitosPintada = wbFirmaHitos(hitos);

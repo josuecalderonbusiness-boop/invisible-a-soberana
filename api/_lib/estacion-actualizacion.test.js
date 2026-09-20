@@ -93,6 +93,7 @@ function crearEntorno({ ahora, hitos = hitosBase(), respuestasFetch = [] }) {
     showToast(m) { spies.toasts.push(m); },
     wbRefrescarSesionTrasHito() { spies.refrescos++; return Promise.resolve(true); },
     wbConfirmarHitoVisto() {},
+    wbPintarAvisoPush() {}, // el recuadro del aviso Push tiene su propio archivo de pruebas
     wbReverificarPuertaB() { return Promise.resolve(false); },
     fetch(url) {
       spies.fetchs.push(String(url));

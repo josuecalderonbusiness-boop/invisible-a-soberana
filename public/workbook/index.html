@@ -1468,6 +1468,10 @@
     position: absolute; inset: 0;
     background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(212,175,106,.02) 41px);
   }
+  /* Mientras el recorrido está bloqueado (Bootcamp sin 3 Estaciones) no hay progreso que mostrar: un 0% no dice nada. */
+  .hero-banner.sin-progreso .progress-bar-container,
+  .hero-banner.sin-progreso .progress-label { display: none; }
+  .hero-banner.sin-progreso .hero-name { margin-bottom: 4px; }
   .hero-greeting {
     font-size: 12px; letter-spacing: 0.2em; color: var(--gold);
     text-transform: uppercase; margin-bottom: 6px; font-weight: 500;
@@ -4613,7 +4617,7 @@
         <line x1="6" y1="52" x2="58" y2="52" stroke="#D4AF6A" stroke-width="1.5" opacity=".5"/>
       </svg>
 
-      <div class="brand-title">Workshop Interactivo</div>
+      <div class="brand-title">TU ESPACIO</div>
       <div class="brand-main">Código</div>
       <div class="brand-main" style="color:var(--gold)">Soberana</div>
       <div class="brand-sub">por Josué Calderón</div>
@@ -4624,9 +4628,8 @@
         <p class="login-hint">Ingresa tu nombre y correo para guardar tu progreso y respuestas de forma permanente. Usa el correo con el que compraste Código Soberana.</p>
         <input type="text" class="inp" id="inp-name" placeholder="Tu nombre" autocomplete="given-name">
         <input type="email" class="inp" id="inp-email" placeholder="tu@correo.com" autocomplete="email">
-        <button class="btn-primary" onclick="doLogin()">Comenzar mi Workbook →</button>
+        <button class="btn-primary" onclick="doLogin()">ENTRAR A MI ESPACIO →</button>
       </div>
-      <p class="login-footer" id="splash-login-footer">Tu información se guarda solo en este dispositivo.<br>Nadie más tiene acceso a tus respuestas.</p>
     </div>
   </div>
 
@@ -7362,14 +7365,14 @@ async function doLogin() {
     }
 
     if (verificacionFallo) {
-      btn.textContent = 'Comenzar mi Workbook →';
+      btn.textContent = 'ENTRAR A MI ESPACIO →';
       btn.disabled = false;
       showVerificacionFallida(email);
       return;
     }
 
     if (!accesoActivo) {
-      btn.textContent = 'Comenzar mi Workbook →';
+      btn.textContent = 'ENTRAR A MI ESPACIO →';
       btn.disabled = false;
       showAccesoDenegado(email);
       return;
@@ -7428,7 +7431,7 @@ async function doLogin() {
       state.completedSections = calcularSeccionesCompletadas(state.answers);
       maybeShowNotifScreen();
     } else {
-      btn.textContent = 'Comenzar mi Workbook →';
+      btn.textContent = 'ENTRAR A MI ESPACIO →';
       btn.disabled = false;
       showToast('Sin conexión. Intenta en un momento.');
     }
@@ -7448,13 +7451,10 @@ function showAccesoDenegado(email) {
   const modal = document.getElementById('modal-content');
   modal.innerHTML = `
     <div style="text-align:center;padding:10px 0 20px">
-      <div style="font-size:48px;margin-bottom:16px">🔒</div>
-      <div class="modal-title" style="text-align:center">Acceso no autorizado</div>
-      <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:20px">
-        El correo <strong>${email}</strong> no tiene acceso al Workbook Código Soberana.
-      </p>
+      <div style="font-size:48px;margin-bottom:16px">✉️</div>
+      <div class="modal-title" style="text-align:center">Revisemos tu correo</div>
       <p style="font-size:14px;color:var(--text-mid);line-height:1.7;margin-bottom:24px">
-        Prueba con el correo que usaste al pagar (el que aparece en tu recibo de Hotmart).
+        No encontramos tu compra con <strong>${htmlSeguro.escapeHtml(email)}</strong>. Puede tardar unos minutos después de pagar. Revisa que sea el correo del recibo e inténtalo de nuevo.
       </p>
       <button onclick="document.getElementById('modal-overlay').classList.remove('open')" 
         style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
@@ -7476,7 +7476,7 @@ function showVerificacionFallida(email) {
       <div style="font-size:48px;margin-bottom:16px">⏳</div>
       <div class="modal-title" style="text-align:center">No pudimos verificar tu acceso</div>
       <p style="font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:24px">
-        Hubo un problema al confirmar tu acceso en este momento. Intenta nuevamente en unos minutos — tu correo <strong>${email}</strong> no fue rechazado, solo no pudimos comprobarlo todavía.
+        Hubo un problema al confirmar tu acceso en este momento. Intenta nuevamente en unos minutos — tu correo <strong>${htmlSeguro.escapeHtml(email)}</strong> no fue rechazado, solo no pudimos comprobarlo todavía.
       </p>
       <button onclick="document.getElementById('modal-overlay').classList.remove('open')"
         style="width:100%;background:var(--surface-2);border:none;border-radius:12px;padding:14px;color:var(--text-dark);font-family:'Jost',sans-serif;font-size:14px;cursor:pointer">
@@ -9075,7 +9075,36 @@ function renderMisExperiencias() {
 // solo exigia acceso vigente, nunca haber completado el Bootcamp (una
 // compradora podia ver S0-S9 desde el instante de la compra). Alcance del
 // recorrido: TODO S0-S9, sin subdivision (decision cerrada del Corte 6).
+// Saludo y progreso de la portada (UX 2026-09-20, aprobado):
+//  · Recorrido bloqueado (Bootcamp sin sus 3 Estaciones): saludo "Bienvenida" y sin barra de progreso.
+//  · El nombre solo se muestra si es real. Si el sistema lo dedujo del correo (p. ej. "Maria.gomez83")
+//    NO se inventa un nombre: se deja solo el saludo.
+function wbNombreRealParaSaludo() {
+  const u = state.user;
+  if (!u || !u.name || !u.email) return '';
+  if (u.name === _nombreDesdeCorreo(u.email)) return '';
+  return String(u.name).trim().split(/\s+/)[0] || '';
+}
+
+function wbAplicarEstadoHero() {
+  const banner = document.querySelector('.hero-banner');
+  if (!banner) return;
+  const bloqueado = !!(state.bootcampHitos && state.recorridoHabilitado !== true);
+  banner.classList.toggle('sin-progreso', bloqueado);
+  const nombre = wbNombreRealParaSaludo();
+  const nombreEl = document.getElementById('hero-name');
+  if (nombreEl) {
+    nombreEl.textContent = nombre;
+    nombreEl.style.display = nombre ? '' : 'none';
+  }
+  const saludo = banner.querySelector('.hero-greeting');
+  if (saludo && !banner.classList.contains('completed')) {
+    saludo.textContent = bloqueado ? 'Bienvenida' : 'Bienvenida de vuelta';
+  }
+}
+
 function renderSectionsList() {
+  wbAplicarEstadoHero();
   const list = document.getElementById('sections-list');
   const tieneAccesoRecorrido = state.recorridoHabilitado === true;
   if (!tieneAccesoRecorrido) {

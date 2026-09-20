@@ -229,7 +229,7 @@ test('html-seguro.js se carga antes de bunny-replay.js y antes de cualquier uso'
   assert.ok(uso > i, 'el primer uso va después de la carga');
 });
 
-test('service worker: caché v367 y el módulo va en la precarga', () => {
-  assert.ok(SW.includes("const CACHE_NAME = 'soberana-v367';"));
+test('service worker: caché v368 y el módulo va en la precarga', () => {
+  assert.ok(SW.includes("const CACHE_NAME = 'soberana-v368';"));
   assert.ok(SW.includes("'/mi-espacio/html-seguro.js'"));
 });

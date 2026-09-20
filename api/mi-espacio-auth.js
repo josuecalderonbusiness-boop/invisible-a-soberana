@@ -886,13 +886,18 @@ async function enviarPushAccion(req, res) {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
-  const correo = normalizarCorreo(req.body?.correo);
+  // `correo` (uno solo, contrato original) y/o `correos[]` (todos los correos
+  // de la Persona, ya resueltos por Orbit — diagnóstico de Push 2026-09-19).
+  // Se aceptan ambos; enviarPushACorreo normaliza, deduplica correos y tokens
+  // y aplica el tope. Este endpoint nunca decide quién es la Persona.
+  const candidatos = [req.body?.correo, ...(Array.isArray(req.body?.correos) ? req.body.correos : [])];
+  const correos = [...new Set(candidatos.map(normalizarCorreo).filter((c) => c && c.includes('@')))];
   const { titulo, cuerpo, url, tag, tipo } = req.body || {};
-  if (!correo || !correo.includes('@')) return res.status(400).json({ error: 'correo es requerido y debe ser un email válido' });
+  if (correos.length === 0) return res.status(400).json({ error: 'correo (o correos) es requerido y debe ser un email válido' });
   if (!titulo || !cuerpo) return res.status(400).json({ error: 'titulo y cuerpo son requeridos' });
 
   try {
-    const resultado = await enviarPushACorreo({ correo, titulo, cuerpo, url, tag, tipo });
+    const resultado = await enviarPushACorreo({ correos, titulo, cuerpo, url, tag, tipo });
     return res.status(200).json(resultado);
   } catch (err) {
     console.error('mi-espacio-auth/enviar-push error:', err.message);

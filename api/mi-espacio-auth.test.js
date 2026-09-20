@@ -903,3 +903,59 @@ test('bootcamp-zoom-join: continuidad manipulada -> {ok:false, sin_sesion}, NUNC
   assert.deepEqual(res.body, { ok: false, motivo: 'sin_sesion' });
   assert.equal(f.mock.calls.length, 0);
 });
+
+// ── enviar-push con correos[] (diagnóstico de Push, 2026-09-19) ──
+// El contrato acepta `correo` (original) y/o `correos[]`. Estas pruebas cubren
+// la validación (todo lo que ocurre antes de tocar Firestore/FCM); el envío en
+// sí, la deduplicación de tokens y los errores de Firestore se prueban en
+// api/_lib/push-fcm.test.js con dependencias inyectadas. En este entorno de
+// pruebas no hay FIREBASE_SERVICE_ACCOUNT, así que un envío válido termina en
+// {ok:false, motivo:'firebase_no_configurado'} sin tocar la red.
+
+const CABECERAS_PUSH = { 'x-orbit-secret': 'shh-test-orbit-shared-secret' };
+
+test('enviar-push: correos[] con al menos un correo válido pasa la validación (llega al puente, sin red)', async () => {
+  const original = process.env.FIREBASE_SERVICE_ACCOUNT;
+  delete process.env.FIREBASE_SERVICE_ACCOUNT;
+  try {
+    const res = mockRes();
+    await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: CABECERAS_PUSH, body: { correos: ['a@correo.com', 'b@correo.com'], titulo: 'x', cuerpo: 'y' } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.body, { ok: false, motivo: 'firebase_no_configurado' });
+  } finally {
+    if (original !== undefined) process.env.FIREBASE_SERVICE_ACCOUNT = original;
+  }
+});
+
+test('enviar-push: compatibilidad — solo `correo` (contrato original) sigue funcionando', async () => {
+  const original = process.env.FIREBASE_SERVICE_ACCOUNT;
+  delete process.env.FIREBASE_SERVICE_ACCOUNT;
+  try {
+    const res = mockRes();
+    await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: CABECERAS_PUSH, body: { correo: 'alumna@correo.com', titulo: 'x', cuerpo: 'y' } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.body, { ok: false, motivo: 'firebase_no_configurado' });
+  } finally {
+    if (original !== undefined) process.env.FIREBASE_SERVICE_ACCOUNT = original;
+  }
+});
+
+test('enviar-push: correos[] vacío o solo con valores inválidos -> 400 (nunca amplía destinatarios)', async () => {
+  for (const body of [{ correos: [] }, { correos: ['no-es-correo', '', null] }, { correos: 'no-es-arreglo' }, {}]) {
+    const res = mockRes();
+    await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: CABECERAS_PUSH, body: { ...body, titulo: 'x', cuerpo: 'y' } }, res);
+    assert.equal(res.statusCode, 400, JSON.stringify(body));
+  }
+});
+
+test('enviar-push: correos[] con titulo/cuerpo ausentes -> 400', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: CABECERAS_PUSH, body: { correos: ['a@correo.com'] } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('enviar-push: correos[] sin el secreto -> 401 (la lista no abre el endpoint)', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'enviar-push' }, headers: {}, body: { correos: ['a@correo.com'], titulo: 'x', cuerpo: 'y' } }, res);
+  assert.equal(res.statusCode, 401);
+});

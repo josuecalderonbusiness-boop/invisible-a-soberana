@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#8B1A2F">
 <link rel="manifest" href="/workbook/manifest.json">
-<title>Instala tu Herramienta — Código Soberana</title>
+<title>Instala Código Soberana</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
@@ -68,7 +68,7 @@
   .header {
     width: 100%;
     display: flex; flex-direction: column; align-items: center;
-    padding: 52px 24px 28px;
+    padding: 36px 24px 20px;
     text-align: center;
     animation: fade-down 0.7s ease both;
   }
@@ -82,7 +82,7 @@
     background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
     border: 1.5px solid rgba(212,175,106,0.3);
     display: flex; align-items: center; justify-content: center;
-    margin-bottom: 22px;
+    margin-bottom: 16px;
     box-shadow: 0 8px 32px rgba(139,26,47,0.5), 0 0 40px rgba(212,175,106,0.07);
   }
   .logo-s span {
@@ -100,7 +100,7 @@
   .header-title {
     font-family: 'Playfair Display', serif;
     font-size: 34px; font-weight: 400; line-height: 1.2;
-    color: var(--cream); margin-bottom: 14px;
+    color: var(--cream); margin-bottom: 10px;
   }
   .header-title .word-soberana {
     font-style: italic;
@@ -109,16 +109,16 @@
 
   .header-sub {
     font-size: 14px; font-weight: 300;
-    color: rgba(249,244,236,0.55); line-height: 1.75;
-    max-width: 272px;
+    color: rgba(249,244,236,0.7); line-height: 1.6;
+    max-width: 292px;
   }
 
   /* BENEFICIOS */
   .benefits {
     width: 100%; max-width: 360px; padding: 0 24px;
     display: flex; flex-direction: column; gap: 11px;
-    margin-bottom: 28px;
-    animation: fade-up 0.7s 0.15s ease both;
+    margin-top: 28px;
+    animation: fade-up 0.7s 0.3s ease both;
   }
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(20px); }
@@ -288,53 +288,9 @@
   <!-- HEADER -->
   <div class="header">
     <div class="logo-s"><span>S</span></div>
-    <p class="header-eyebrow">Tu herramienta personal</p>
+    <p class="header-eyebrow">Tu espacio</p>
     <h1 class="header-title">Código&nbsp;<span class="word-soberana">Soberana</span></h1>
-    <p class="header-sub">Tu espacio privado para trabajar el proceso. Instálalo en tu celular y tenlo siempre a mano.</p>
-  </div>
-
-  <!-- BENEFICIOS -->
-  <div class="benefits">
-
-    <div class="benefit-item">
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24">
-          <rect x="5" y="2" width="14" height="20" rx="3"/>
-          <circle cx="12" cy="18.5" r="0.8" fill="var(--gold-light)" stroke="none"/>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <strong>En tu pantalla de inicio</strong>
-        <span>Accede como una app, sin buscar links</span>
-      </div>
-    </div>
-
-    <div class="benefit-item">
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24">
-          <rect x="5" y="11" width="14" height="10" rx="2"/>
-          <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-          <circle cx="12" cy="16" r="1.1" fill="var(--gold-light)" stroke="none"/>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <strong>Tu proceso es tuyo</strong>
-        <span>Tus respuestas se guardan de forma segura</span>
-      </div>
-    </div>
-
-    <div class="benefit-item">
-      <div class="benefit-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M13 2L4.5 13.5H12L11 22L19.5 10.5H12L13 2Z"/>
-        </svg>
-      </div>
-      <div class="benefit-text">
-        <strong>Rápida y sin interrupciones</strong>
-        <span>Funciona incluso con conexión lenta</span>
-      </div>
-    </div>
-
+    <p class="header-sub">Instálala en tu pantalla de inicio: ahí la abres con un toque y ahí te llegan los avisos.</p>
   </div>
 
   <!-- INSTALL CARD -->
@@ -373,7 +329,7 @@
         </div>
         <div class="step-row">
           <div class="step-num">4</div>
-          <div class="step-text">Abre la app desde tu pantalla de inicio y regístrate ahí</div>
+          <div class="step-text">Abre <strong>Código Soberana</strong> desde tu pantalla de inicio.</div>
         </div>
       </div>
 
@@ -393,7 +349,7 @@
         </div>
         <div class="step-row">
           <div class="step-num">4</div>
-          <div class="step-text">Abre la app desde tu pantalla de inicio y regístrate ahí</div>
+          <div class="step-text">Abre <strong>Código Soberana</strong> desde tu pantalla de inicio.</div>
         </div>
       </div>
 
@@ -419,7 +375,6 @@
         <span>Abrir Código Soberana</span>
       </a>
 
-      <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
 
       <!-- Fallback obligatorio (diseño cerrado 2026-09-16): instalar es el
            paso del onboarding, pero NUNCA un bloqueo técnico -- Android sin
@@ -427,23 +382,55 @@
            camino claro hacia /workbook, visible en todo momento salvo
            cuando ya se muestra "Abrir Código Soberana" (ese botón ya
            cumple la misma función con más énfasis). -->
-      <a href="/workbook" id="continuar-sin-instalar" style="display:block; margin-top:10px; font-size:12.5px; color:rgba(249,244,236,0.4); text-decoration:underline; text-align:center;">Continuar sin instalar →</a>
+      <a href="/workbook" id="continuar-sin-instalar" style="display:block; padding:12px 8px; font-size:14px; color:rgba(249,244,236,0.78); text-decoration:underline; text-align:center;">Ahora no, continuar →</a>
 
-      <!-- Paso 2: Notificaciones -->
-      <div id="notif-step" style="display:block;margin-top:20px;padding-top:20px;border-top:1px solid rgba(212,175,106,0.12);">
-        <p class="install-title" style="margin-bottom:14px;">Activa las notificaciones</p>
-        <p style="font-size:13px;color:rgba(249,244,236,0.6);font-weight:300;line-height:1.65;margin-bottom:18px;text-align:left;">Para avisarte cuando hay contenido nuevo, sesiones en vivo y tu progreso semanal.</p>
-        <button class="btn-install" id="btn-notif" onclick="requestNotifPermission()" style="margin-bottom:8px;">
-          <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--gold-light);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(212,175,106,0.65));flex-shrink:0;">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          <span>Activar notificaciones</span>
-        </button>
-        <p id="notif-hint" style="font-size:11.5px;color:rgba(249,244,236,0.28);text-align:center;font-weight:300;">Puedes cambiarlo después desde la app</p>
-      </div>
+      <p class="install-hint" id="install-hint">Solo tarda unos segundos</p>
 
     </div>
+  </div>
+
+  <!-- BENEFICIOS -->
+  <div class="benefits">
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="5" y="2" width="14" height="20" rx="3"/>
+          <circle cx="12" cy="18.5" r="0.8" fill="var(--gold-light)" stroke="none"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>En tu pantalla de inicio</strong>
+        <span>Ábrela con un toque, sin buscar enlaces</span>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="10" rx="2"/>
+          <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          <circle cx="12" cy="16" r="1.1" fill="var(--gold-light)" stroke="none"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>Tu espacio es tuyo</strong>
+        <span>Solo tú entras, con el correo de tu compra</span>
+      </div>
+    </div>
+
+    <div class="benefit-item">
+      <div class="benefit-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M13 2L4.5 13.5H12L11 22L19.5 10.5H12L13 2Z"/>
+        </svg>
+      </div>
+      <div class="benefit-text">
+        <strong>El aviso de cada Estación</strong>
+        <span>Actívalo dentro de la app con un toque</span>
+      </div>
+    </div>
+
   </div>
 
   <!-- FOOTER -->
@@ -494,8 +481,6 @@
     document.getElementById('btn-abrir').style.display = 'flex';
     document.getElementById('continuar-sin-instalar').style.display = 'none';
     document.getElementById('install-title').textContent = 'Instalación completa';
-    // Mostrar paso de notificaciones
-    document.getElementById('notif-step').style.display = 'block';
   });
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -517,10 +502,7 @@
     setTimeout(() => {
       if (!deferredPrompt) {
         // No hubo prompt — mostrar pasos manuales
-        document.getElementById('btn-install').style.display  = 'none';
-        document.getElementById('install-hint').style.display = 'none';
-        document.getElementById('android-steps').style.display = 'flex';
-        document.getElementById('install-title').textContent   = 'Cómo instalarla en Android';
+        mostrarPasosAndroid();
       }
     }, 3000);
   });
@@ -589,44 +571,25 @@
     title.textContent  = 'Cómo instalarla en Android';
   }
 
+  // Pasos manuales de Android: se usan si Chrome no ofrece el aviso nativo o si ya se descartó.
+  function mostrarPasosAndroid() {
+    document.getElementById('btn-install').style.display   = 'none';
+    document.getElementById('install-hint').style.display  = 'none';
+    document.getElementById('android-steps').style.display = 'flex';
+    document.getElementById('install-title').textContent   = 'Cómo instalarla en Android';
+  }
+
   async function handleInstall() {
-    if (!deferredPrompt) return;
+    // Sin aviso nativo disponible (nunca llegó, o ya se descartó): nunca un botón inerte.
+    if (!deferredPrompt) { mostrarPasosAndroid(); return; }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
-    showToast(outcome === 'accepted' ? 'Instalando...' : 'Puedes instalarla cuando quieras');
-  }
-
-  async function requestNotifPermission() {
-    if (!('Notification' in window)) {
-      showToast('Tu navegador no soporta notificaciones');
-      return;
-    }
-    // Si ya están concedidas, confirmarlo
-    if (Notification.permission === 'granted') {
-      document.getElementById('notif-hint').textContent = '✓ Notificaciones ya activadas';
-      document.getElementById('notif-hint').style.color = 'rgba(212,175,106,0.7)';
-      showToast('Las notificaciones ya están activadas');
-      return;
-    }
-    const permission = await Notification.requestPermission();
-    const btn  = document.getElementById('btn-notif');
-    const hint = document.getElementById('notif-hint');
-    if (permission === 'granted') {
-      btn.innerHTML = `
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--gold-light);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(212,175,106,0.65));flex-shrink:0;">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        <span>Notificaciones activadas</span>`;
-      btn.style.opacity = '0.6';
-      btn.style.cursor  = 'default';
-      btn.onclick = null;
-      hint.textContent = 'Todo listo — abre la app desde tu pantalla de inicio';
-      hint.style.color = 'rgba(212,175,106,0.6)';
-      showToast('Notificaciones activadas');
+    if (outcome === 'accepted') {
+      showToast('Instalando...');
     } else {
-      hint.textContent = 'Sin notificaciones — puedes activarlas después en ajustes';
-      showToast('Puedes activarlas después si cambias de opinión');
+      showToast('Sin problema. Aquí tienes cómo hacerlo a mano.');
+      mostrarPasosAndroid();
     }
   }
 

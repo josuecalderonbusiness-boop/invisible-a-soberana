@@ -526,6 +526,9 @@ button { font: inherit; }
 </footer>
 
 <script src="/mi-espacio/experiencia-gratuita.js"></script>
+<!-- Replay de las Estaciones: vínculo con el reproductor de Bunny vía Player.js
+     (componente único compartido con /workbook). -->
+<script src="/mi-espacio/bunny-replay.js"></script>
 <script>
 // El acceso a Firestore vive detrás de api/mi-espacio-login.js y api/mi-espacio-apuntes.js — el
 // cliente nunca habla directo con Firestore (las reglas de seguridad no cubren estas colecciones
@@ -1093,26 +1096,45 @@ function msRenderBootcampHitos() {
       botonLive + bloqueReplay + sinEnlaces +
     '</div>';
   }).join('');
+
+  // Replay: cada iframe (ms-hito-iframe-N) se vincula al reproductor de Bunny
+  // (Player.js, ver bunny-replay.js). Las tarjetas se reconstruyen en cada
+  // render, asi que se vincula de nuevo cada vez (idempotente por elemento).
+  // Sin el componente cargado, el video se reproduce igual, sin confirmacion.
+  if (typeof window.vincularReplayBunny === 'function') {
+    lista.querySelectorAll('[id^="ms-hito-iframe-"]').forEach(function (iframe) {
+      window.vincularReplayBunny(iframe, function () { msConfirmarHitoVisto(Number(iframe.dataset.hito)); });
+    });
+  }
 }
 
-// Bunny Stream emite sus eventos de reproduccion (play/timeupdate/ended)
-// por window.postMessage de forma nativa en su embed oficial — sin
-// necesidad de ningun SDK adicional. Se filtra por la forma exacta del
-// mensaje (Bunny no documenta un "origin" fijo utilizable aqui) y se
-// dispara la confirmacion UNA sola vez por Hito — el backend ya es
-// idempotente de todas formas (ON CONFLICT DO NOTHING), este flag local
-// solo evita trafico de red innecesario si el evento llega repetido.
-window.addEventListener('message', function (event) {
-  const data = event.data;
-  if (!data || typeof data !== 'object' || data.event !== 'ended') return;
-  const iframes = document.querySelectorAll('[id^="ms-hito-iframe-"]');
-  for (const iframe of iframes) {
-    if (iframe.contentWindow === event.source) {
-      msConfirmarHitoVisto(Number(iframe.dataset.hito));
-      break;
-    }
+// El evento 'ended' del embed de Bunny llega vía Player.js (suscripcion
+// explicita, ver bunny-replay.js) — el listener anterior esperaba un
+// mensaje-objeto "nativo" que Bunny nunca envia (2026-09-19). Se confirma
+// UNA sola vez por Hito en curso — el backend ya es idempotente de todas
+// formas (ON CONFLICT DO NOTHING), el Set local solo evita trafico de red
+// innecesario si el evento llega repetido.
+
+// Aviso cuando el avance no quedo guardado: mi-espacio no tiene toast, asi
+// que se muestra un parrafo de estado sobre la lista de Hitos por unos segundos.
+const MS_AVISO_AVANCE_NO_GUARDADO = 'No pudimos guardar tu avance. Revisa tu conexión e inténtalo de nuevo.';
+let msAvisoAvanceTimer = null;
+function msAvisarAvanceNoGuardado() {
+  const lista = document.getElementById('ms-bootcamp-hitos-lista');
+  if (!lista || !lista.parentNode) return;
+  let aviso = document.getElementById('ms-aviso-avance');
+  if (!aviso) {
+    aviso = document.createElement('p');
+    aviso.id = 'ms-aviso-avance';
+    aviso.className = 'ms-invite-sub';
+    aviso.setAttribute('role', 'status');
+    lista.parentNode.insertBefore(aviso, lista);
   }
-});
+  aviso.textContent = MS_AVISO_AVANCE_NO_GUARDADO;
+  aviso.style.display = 'block';
+  clearTimeout(msAvisoAvanceTimer);
+  msAvisoAvanceTimer = setTimeout(function () { aviso.style.display = 'none'; }, 6000);
+}
 
 async function msConfirmarHitoVisto(hito) {
   if (msHitosConfirmando.has(hito)) return;
@@ -1132,9 +1154,12 @@ async function msConfirmarHitoVisto(hito) {
       if (fila) fila.completado = true;
       if (dbBootcampHitos) dbBootcampHitos.bootcampCompletado = dbBootcampHitos.hitos.every(function (h) { return h.completado; });
       msRenderBootcampHitos();
+    } else {
+      msAvisarAvanceNoGuardado();
     }
   } catch (e) {
     console.warn('No se pudo confirmar el Hito', hito, e.message);
+    msAvisarAvanceNoGuardado();
   } finally {
     msHitosConfirmando.delete(hito);
   }

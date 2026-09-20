@@ -5262,6 +5262,12 @@
      public/mi-espacio/zoom-embed.js. -->
 <script src="/mi-espacio/zoom-embed.js"></script>
 
+<!-- Replay de las Estaciones (corrección del listener, diseño cerrado
+     2026-09-19): vínculo con el reproductor de Bunny vía Player.js —
+     componente UNICO compartido con /mi-espacio, ver
+     public/mi-espacio/bunny-replay.js. -->
+<script src="/mi-espacio/bunny-replay.js"></script>
+
 <!-- ══ FIREBASE CDN (compat v9) ══ -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -8614,29 +8620,31 @@ function renderBootcampHitosBlock() {
       });
     });
   });
+
+  // Replay: cada iframe (wb-hito-iframe-N) se vincula al reproductor de
+  // Bunny (Player.js, ver public/mi-espacio/bunny-replay.js). Las tarjetas se
+  // reconstruyen en cada render, asi que se vincula de nuevo cada vez — el
+  // componente es idempotente por elemento. Sin el componente cargado, el
+  // video se reproduce igual, sin confirmacion automatica.
+  if (typeof window.vincularReplayBunny === 'function') {
+    wrap.querySelectorAll('[id^="wb-hito-iframe-"]').forEach(function (iframe) {
+      window.vincularReplayBunny(iframe, function () { wbConfirmarHitoVisto(Number(iframe.dataset.hito)); });
+    });
+  }
 }
 
 // Puerta 5, Corte 8 (pendiente cerrado, diseño aprobado 2026-09-12):
 // confirmación de Hito por Replay visto — existía en el /mi-espacio viejo
 // (msConfirmarHitoVisto) pero nunca se portó a /workbook cuando este pasó
 // a ser la casa única (Corte 5); desde entonces solo Zoom en vivo podía
-// confirmar un Hito. Bunny Stream emite sus eventos de reproducción
-// (play/timeupdate/ended) por window.postMessage de forma nativa en su
-// embed oficial. Se filtra por la forma exacta del mensaje (Bunny no
-// documenta un "origin" fijo utilizable aqui).
+// confirmar un Hito. El evento 'ended' del embed de Bunny llega vía Player.js
+// (suscripcion explicita, ver bunny-replay.js) — el listener anterior que
+// esperaba un mensaje-objeto "nativo" nunca recibia nada (2026-09-19).
 const _wbHitosConfirmando = new Set();
 
-window.addEventListener('message', function (event) {
-  const data = event.data;
-  if (!data || typeof data !== 'object' || data.event !== 'ended') return;
-  const iframes = document.querySelectorAll('[id^="wb-hito-iframe-"]');
-  for (const iframe of iframes) {
-    if (iframe.contentWindow === event.source) {
-      wbConfirmarHitoVisto(Number(iframe.dataset.hito));
-      break;
-    }
-  }
-});
+// Aviso unico cuando no se pudo guardar el avance (con el gate del recorrido,
+// una mujer que vio la clase y no recibe credito debe enterarse).
+const WB_AVISO_AVANCE_NO_GUARDADO = 'No pudimos guardar tu avance. Revisa tu conexión e inténtalo de nuevo.';
 
 // El navegador solo PROPONE el hecho ("vi terminar el replay de este
 // Hito"); Orbit es quien decide si corresponde confirmarlo (Cohorte
@@ -8671,8 +8679,9 @@ async function wbConfirmarHitoVisto(hito) {
     // vez. Puerta A o revalidacion fallida: no se reintenta.
     if (res.status === 401 && await wbReverificarPuertaB()) res = await pedir();
     // Orbit decidio que no corresponde (409 hito_no_disponible/cohorte_no_resuelta,
-    // 401 sesion invalida, etc.) — nunca se fuerza nada localmente.
-    if (!res.ok) return;
+    // 401 sesion invalida, etc.) — nunca se fuerza nada localmente, y se le
+    // avisa a la mujer que su avance no quedo guardado.
+    if (!res.ok) { showToast(WB_AVISO_AVANCE_NO_GUARDADO); return; }
 
     // Por cualquier puerta hay una cookie valida (Cuenta o continuidad): se
     // vuelve a preguntar a Orbit el estado fresco (bootcampHitos +
@@ -8687,6 +8696,7 @@ async function wbConfirmarHitoVisto(hito) {
     }
   } catch (e) {
     console.warn('No se pudo confirmar el Hito', hito, e.message);
+    showToast(WB_AVISO_AVANCE_NO_GUARDADO);
   } finally {
     _wbHitosConfirmando.delete(hito);
   }

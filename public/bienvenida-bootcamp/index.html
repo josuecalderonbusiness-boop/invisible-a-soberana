@@ -67,7 +67,6 @@ a { color: inherit; }
   <div class="bc-card bc-correo-form" id="bc-pedir-correo" style="display:none">
     <h1>¡Bienvenida a Código Soberana!</h1>
     <p>Tu compra fue confirmada. Escribe el correo con el que compraste para preparar tu espacio.</p>
-    <p>Usa el correo con el que compraste, aunque sea distinto al que usaste para registrarte en la clase gratuita.</p>
     <form id="bc-form-correo">
       <input type="email" id="bc-input-correo" placeholder="Correo electrónico" autocomplete="email" required>
       <button type="submit" class="ms-invite-btn" id="bc-btn-confirmar">Confirmar mi acceso</button>
@@ -86,7 +85,8 @@ a { color: inherit; }
   <div class="bc-card" id="bc-confirmando" style="display:none">
     <h1>Estamos preparando tu espacio</h1>
     <p>Tu compra ya fue recibida. Estamos terminando de preparar tu acceso.</p>
-    <p>Si compraste con un correo distinto al que usaste para registrarte en la clase gratuita, comprueba con el correo de tu compra.</p>
+    <p>Estamos comprobando la compra con <strong id="bc-correo-comprobado"></strong>.</p>
+    <p>Si compraste con otro correo, toca «Usar otro correo» y escribe el de tu recibo.</p>
     <button type="button" class="ms-invite-btn" id="bc-btn-reintentar">COMPROBAR MI ACCESO</button>
     <button type="button" class="bc-btn-secundario" id="bc-btn-otro-correo">Usar otro correo</button>
   </div>
@@ -102,6 +102,7 @@ a { color: inherit; }
     <h1>¡Bienvenida a Código Soberana!</h1>
     <p>Tu compra fue confirmada.</p>
     <p>Tu espacio ya está listo.</p>
+    <p>Correo de tu compra: <strong id="bc-correo-bienvenida"></strong></p>
     <p>Instala Código Soberana en tu celular. Este será el lugar desde donde vivirás tu recorrido, entrarás a tus estaciones y accederás a tus clases.</p>
     <a class="ms-invite-btn" href="/instalar/">INSTALAR CÓDIGO SOBERANA</a>
   </div>
@@ -136,6 +137,10 @@ function bcMostrar(idVisible) {
   ['bc-pedir-correo', 'bc-confirmando', 'bc-bienvenida'].forEach((id) => {
     document.getElementById(id).style.display = id === idVisible ? 'block' : 'none';
   });
+  // Muestra el correo que se está comprobando (o ya comprobado). textContent: nunca HTML.
+  const correo = bcCorreoActual || '';
+  document.getElementById('bc-correo-comprobado').textContent = correo;
+  document.getElementById('bc-correo-bienvenida').textContent = correo;
 }
 
 // Resultado: 'activo' | 'pendiente' | 'error'. Un 503/fallo de red NUNCA se

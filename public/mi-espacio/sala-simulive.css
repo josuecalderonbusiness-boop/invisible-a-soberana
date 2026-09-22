@@ -43,6 +43,13 @@
   background: #000;
 }
 
+.sala-video-tapa {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+}
+
 .sala-lobby-msg {
   color: var(--sala-texto-claro);
   font-family: 'Playfair Display', Georgia, serif;
@@ -158,6 +165,15 @@
   100% { transform: translateY(-160px); opacity: 0; }
 }
 
+/* Mientras hay una pregunta o el CTA en pantalla, el chat/input/reacciones
+   se ocultan — comparten la misma franja inferior y se ven montados uno
+   sobre otro si quedan visibles a la vez. */
+.sala-simulive--overlay-activo .sala-chat,
+.sala-simulive--overlay-activo .sala-chat-form,
+.sala-simulive--overlay-activo .sala-reacciones-botones {
+  display: none;
+}
+
 .sala-overlay {
   position: absolute;
   inset: 0;
@@ -171,10 +187,12 @@
   pointer-events: auto;
   background: var(--sala-superficie);
   color: var(--sala-texto);
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
   padding: 20px;
+  margin: 0 12px 20px;
   width: 100%;
   max-width: 480px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.35);
 }
 .sala-poll-texto { font-weight: 600; margin-bottom: 12px; }
 .sala-poll-opciones { display: flex; flex-direction: column; gap: 8px; }

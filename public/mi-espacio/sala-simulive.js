@@ -194,8 +194,12 @@
           responder(evt.id, btn.dataset.opcion, $overlay.querySelector('[data-sala-poll-feedback]'));
         });
       });
+      contenedor.classList.add('sala-simulive--overlay-activo');
       const duracionVisible = (p.duracion_visible_segundos || 15) * 1000;
-      setTimeout(function () { $overlay.style.display = 'none'; }, duracionVisible + 6000); // margen para ver el feedback tras responder
+      setTimeout(function () {
+        $overlay.style.display = 'none';
+        contenedor.classList.remove('sala-simulive--overlay-activo');
+      }, duracionVisible + 6000); // margen para ver el feedback tras responder
     }
 
     function mostrarCTA(payload) {
@@ -207,6 +211,7 @@
         '</div>';
       $overlay.style.display = 'flex';
       $overlay.classList.add('sala-overlay--cta');
+      contenedor.classList.add('sala-simulive--overlay-activo');
     }
 
     // ── acciones: optimistas, nunca bloquean la UI esperando red ──
@@ -350,14 +355,25 @@
 
   async function montarVideo($contenedor, videoUrl, estado) {
     const iframe = document.createElement('iframe');
-    iframe.src = videoUrl;
+    iframe.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'chromecast=false&disableAirPlay=true&showSpeed=false&showHeatmap=false&playsinline=true';
     iframe.setAttribute('allow', 'accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture');
-    iframe.setAttribute('allowfullscreen', '');
     iframe.style.border = 'none';
     iframe.style.width = '100%';
     iframe.style.height = '100%';
     $contenedor.innerHTML = '';
     $contenedor.appendChild(iframe);
+
+    // Sin controles de reproducción (SIMULIVE.md §A): esta capa transparente
+    // se pone encima del iframe y absorbe todo toque/clic — nunca llega a los
+    // controles nativos de Bunny, así que nunca se puede pausar ni buscar. Un
+    // toque sí reintenta player.play() (nunca pause), por si el autoplay con
+    // sonido necesitó un gesto real del usuario para desbloquearse.
+    const tapa = document.createElement('div');
+    tapa.className = 'sala-video-tapa';
+    tapa.addEventListener('click', function () {
+      if (estado.player) { try { estado.player.play(); } catch (e) {} }
+    });
+    $contenedor.appendChild(tapa);
 
     try {
       await cargarPlayerJs();

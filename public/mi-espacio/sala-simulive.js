@@ -359,7 +359,13 @@
     iframe.setAttribute('allow', 'accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture');
     iframe.style.border = 'none';
     iframe.style.width = '100%';
-    iframe.style.height = '100%';
+    // La barra de controles de Bunny vive pegada a su borde inferior y no
+    // tiene parámetro para ocultarla del todo (confirmado contra su
+    // documentación). Se estira el iframe más allá del contenedor y se fija
+    // arriba (alignSelf) para que solo la franja de abajo —donde vive esa
+    // barra— quede recortada por el overflow:hidden del contenedor.
+    iframe.style.height = '112%';
+    iframe.style.alignSelf = 'flex-start';
     $contenedor.innerHTML = '';
     $contenedor.appendChild(iframe);
 

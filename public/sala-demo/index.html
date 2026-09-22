@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>DEMO — Sala SIMULIVE</title>
+<link rel="stylesheet" href="/mi-espacio/sala-simulive.css" />
+<style>
+  body { margin: 0; background: #150D11; font-family: 'Inter', sans-serif; }
+  #sala-demo-qa {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: #000; color: #E8C870; font-size: 0.72rem;
+    padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+  #sala-demo-qa b { color: #fff; margin-right: 4px; }
+  #sala-demo-qa button {
+    background: #2A1C21; color: #E8C870; border: 1px solid #6B1A2A;
+    border-radius: 6px; padding: 4px 8px; font-size: 0.72rem;
+  }
+  #sala-demo-qa button[data-activo="1"] { background: #6B1A2A; color: #fff; }
+  #sala-demo-contenedor { padding-top: 34px; height: 100vh; box-sizing: border-box; }
+  #sala-demo-cargando { color: #fff; text-align: center; padding: 40px 20px; }
+</style>
+</head>
+<body>
+  <div id="sala-demo-qa">
+    <b>DEMO — no usar en producción real</b>
+    <button data-escenario="antes">Antes de empezar</button>
+    <button data-escenario="inicio">Al inicio</button>
+    <button data-escenario="mas-5min">+5 min</button>
+    <button data-escenario="mas-17min">+17 min</button>
+    <button data-escenario="mas-42min">+42 min</button>
+    <button data-escenario="cerca-cta">Cerca del CTA</button>
+  </div>
+  <div id="sala-demo-contenedor">
+    <p id="sala-demo-cargando">Verificando sesión…</p>
+  </div>
+
+  <script src="/mi-espacio/html-seguro.js"></script>
+  <script src="/mi-espacio/sala-simulive.js"></script>
+  <script>
+    var CONVOCATORIA_DEMO_ID = '00000000-0000-4000-a000-000000000002';
+    var escenarioActual = 'inicio';
+
+    function marcarBotonActivo() {
+      document.querySelectorAll('#sala-demo-qa button').forEach(function (b) {
+        b.dataset.activo = (b.dataset.escenario === escenarioActual) ? '1' : '0';
+      });
+    }
+
+    function montarSala() {
+      document.getElementById('sala-demo-contenedor').innerHTML = '<div id="sala-demo-raiz"></div>';
+      window.iniciarSalaSimulive({
+        contenedorId: 'sala-demo-raiz',
+        convocatoriaId: CONVOCATORIA_DEMO_ID,
+        escenarioQA: escenarioActual,
+      });
+    }
+
+    document.querySelectorAll('#sala-demo-qa button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        escenarioActual = btn.dataset.escenario;
+        marcarBotonActivo();
+        montarSala();
+      });
+    });
+
+    (async function iniciar() {
+      try {
+        var res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
+        var datos = await res.json();
+        if (!datos.autenticado) {
+          document.getElementById('sala-demo-cargando').textContent =
+            'Necesitas iniciar sesión en Mi Espacio primero.';
+          setTimeout(function () { window.location.href = '/mi-espacio'; }, 1800);
+          return;
+        }
+        marcarBotonActivo();
+        montarSala();
+      } catch (e) {
+        document.getElementById('sala-demo-cargando').textContent = 'No se pudo verificar la sesión.';
+      }
+    })();
+  </script>
+</body>
+</html>

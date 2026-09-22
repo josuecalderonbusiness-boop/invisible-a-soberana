@@ -15,6 +15,7 @@
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
 import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { salaAbrir, salaEstado, salaResponder, salaChatEnviar, salaReaccionar } from './_lib/orbit-sala-simulive.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { construirCookieSiCorresponde as construirCookieContinuidadBootcamp, verificarToken as verificarTokenContinuidadBootcamp, leerCookie as leerCookieContinuidadBootcamp } from './_lib/auth-continuidad-bootcamp.js';
@@ -905,6 +906,125 @@ async function enviarPushAccion(req, res) {
   }
 }
 
+// ============================================================
+// SIMULIVE — demo (docs/v2/SIMULIVE.md). 5 acciones consolidadas aquí, sin
+// archivo nuevo. Identidad SIEMPRE de la cookie de sesión de Mi Espacio ya
+// verificada (Puerta A, mismo patrón que sesionAccion) — nunca de un correo
+// que el cliente proponga. `convocatoriaId` por defecto es la demo; se
+// acepta uno explícito para cuando exista una convocatoria real futura, sin
+// reconstruir nada de este archivo.
+//
+// El secreto QA nunca llega al navegador: el cliente solo manda una
+// etiqueta de escenario sin secreto (`escenarioQA`); este servidor la
+// traduce a los headers reales hacia Orbit usando su propia copia del
+// secreto, configurada SOLO en su entorno Preview (nunca en Production —
+// sin la env var, resolverQaRelojDemo() siempre devuelve undefined y Orbit
+// usa su reloj real, fail-closed igual que del lado de Orbit).
+const QA_RELOJ_SECRET_DEMO = process.env.QA_RELOJ_SECRET_DEMO;
+const DEMO_CONVOCATORIA_ID = '00000000-0000-4000-a000-000000000002';
+const DEMO_CONVOCATORIA_FECHA_HORA = '2026-01-01T19:00:00.000Z'; // ancla fija, ver migración 025
+const DEMO_ESCENARIOS_OFFSET_MS = {
+  antes: -20 * 60 * 1000,
+  inicio: 0,
+  'mas-5min': 5 * 60 * 1000,
+  'mas-17min': 17 * 60 * 1000,
+  'mas-42min': 42 * 60 * 1000,
+  'cerca-cta': 57 * 60 * 1000,
+};
+
+function resolverQaRelojDemo(escenario) {
+  if (!QA_RELOJ_SECRET_DEMO) return undefined;
+  const offsetMs = DEMO_ESCENARIOS_OFFSET_MS[escenario];
+  if (offsetMs === undefined) return undefined;
+  const simulado = new Date(new Date(DEMO_CONVOCATORIA_FECHA_HORA).getTime() + offsetMs).toISOString();
+  return { secreto: QA_RELOJ_SECRET_DEMO, simulado };
+}
+
+async function salaAbrirAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  const convocatoriaId = (req.body && req.body.convocatoriaId) || DEMO_CONVOCATORIA_ID;
+  const escenarioQA = req.body && req.body.escenarioQA;
+  try {
+    const resultado = await salaAbrir(datos.correo, convocatoriaId, resolverQaRelojDemo(escenarioQA));
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-abrir error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaEstadoAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  const convocatoriaId = req.query?.convocatoriaId || DEMO_CONVOCATORIA_ID;
+  const desde = req.query?.desde;
+  try {
+    const resultado = await salaEstado(datos.correo, convocatoriaId, desde);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-estado error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaResponderAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  const { convocatoriaId, eventoId, opcionId } = req.body || {};
+  if (!eventoId || !opcionId) return res.status(400).json({ error: 'eventoId y opcionId son requeridos' });
+  try {
+    const resultado = await salaResponder(datos.correo, convocatoriaId || DEMO_CONVOCATORIA_ID, eventoId, opcionId);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-responder error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaChatEnviarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  const { convocatoriaId, texto } = req.body || {};
+  if (typeof texto !== 'string' || !texto.trim()) return res.status(400).json({ error: 'texto es requerido' });
+  try {
+    const resultado = await salaChatEnviar(datos.correo, convocatoriaId || DEMO_CONVOCATORIA_ID, texto.trim());
+    return res.status(200).json(resultado);
+  } catch (err) {
+    if (err.motivo === 'mensaje_muy_seguido') return res.status(409).json({ error: err.motivo });
+    console.error('mi-espacio-auth/sala-chat-enviar error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaReaccionarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const token = leerCookie(req);
+  const datos = verificarToken(token);
+  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  const { convocatoriaId, tipo } = req.body || {};
+  try {
+    const resultado = await salaReaccionar(datos.correo, convocatoriaId || DEMO_CONVOCATORIA_ID, tipo);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-reaccionar error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
 const ACCIONES = {
   'enviar-push': enviarPushAccion,
   'cuenta-crear': crearCuentaAccion,
@@ -925,6 +1045,11 @@ const ACCIONES = {
   'workbook-acceso': workbookAccesoAccion,
   'convocatoria-reservar': convocatoriaReservarAccion,
   'bootcamp-replay-visto': bootcampReplayVistoAccion,
+  'sala-abrir': salaAbrirAccion,
+  'sala-estado': salaEstadoAccion,
+  'sala-responder': salaResponderAccion,
+  'sala-chat-enviar': salaChatEnviarAccion,
+  'sala-reaccionar': salaReaccionarAccion,
 };
 
 export default async function handler(req, res) {

@@ -187,19 +187,26 @@
         '<p class="sala-poll-feedback" data-sala-poll-feedback style="display:none"></p>' +
         '</div>';
       $overlay.style.display = 'flex';
+      contenedor.classList.add('sala-simulive--overlay-activo');
+
+      function ocultar() {
+        $overlay.style.display = 'none';
+        contenedor.classList.remove('sala-simulive--overlay-activo');
+      }
+      // Si nadie responde, se oculta sola pasado el tiempo de la pregunta.
+      // Si responde, se reemplaza por un cierre corto (abajo) para que no
+      // se quede montada ahí una vez ya contestó.
+      let temporizadorOcultar = setTimeout(ocultar, (p.duracion_visible_segundos || 15) * 1000 + 6000);
+
       $overlay.querySelectorAll('.sala-opcion').forEach(function (btn) {
         btn.addEventListener('click', function () {
           $overlay.querySelectorAll('.sala-opcion').forEach(function (b) { b.disabled = true; });
           btn.classList.add('sala-opcion--elegida');
           responder(evt.id, btn.dataset.opcion, $overlay.querySelector('[data-sala-poll-feedback]'));
+          clearTimeout(temporizadorOcultar);
+          temporizadorOcultar = setTimeout(ocultar, 3500);
         });
       });
-      contenedor.classList.add('sala-simulive--overlay-activo');
-      const duracionVisible = (p.duracion_visible_segundos || 15) * 1000;
-      setTimeout(function () {
-        $overlay.style.display = 'none';
-        contenedor.classList.remove('sala-simulive--overlay-activo');
-      }, duracionVisible + 6000); // margen para ver el feedback tras responder
     }
 
     function mostrarCTA(payload) {
@@ -355,7 +362,7 @@
 
   async function montarVideo($contenedor, videoUrl, estado) {
     const iframe = document.createElement('iframe');
-    iframe.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'chromecast=false&disableAirPlay=true&showSpeed=false&showHeatmap=false&playsinline=true';
+    iframe.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'autoplay=true&chromecast=false&disableAirPlay=true&showSpeed=false&showHeatmap=false&playsinline=true';
     iframe.setAttribute('allow', 'accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture');
     iframe.style.border = 'none';
     iframe.style.width = '100%';

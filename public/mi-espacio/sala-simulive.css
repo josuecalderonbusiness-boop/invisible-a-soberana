@@ -210,7 +210,7 @@
 
 .sala-overlay--cta {
   align-items: center;
-  background: linear-gradient(180deg, rgba(43,28,36,0) 0%, var(--sala-acento, #8B1A2F) 70%);
+  background: linear-gradient(180deg, rgba(43,28,36,0) 0%, var(--sala-acento, #8B1A2F) 18%);
   pointer-events: auto;
 }
 .sala-cta-capa { text-align: center; padding: 0 24px; }

@@ -108,6 +108,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      if (res.status === 401) {
+        if (typeof opciones.onNecesitaIdentidad === 'function') { opciones.onNecesitaIdentidad(); return; }
+        throw new Error('sala-abrir respondió 401');
+      }
       if (!res.ok) throw new Error('sala-abrir respondió ' + res.status);
       apertura = await res.json();
     } catch (e) {

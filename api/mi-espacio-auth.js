@@ -17,7 +17,7 @@ import { hashPassword, verifyPassword } from './_lib/auth-password.js';
 import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { salaAbrir, salaEstado, salaResponder, salaChatEnviar, salaReaccionar } from './_lib/orbit-sala-simulive.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
-import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
+import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde, crearToken as crearTokenClaseGratuita, cookieDeClaseGratuita, calcularExpiracion as calcularExpiracionClaseGratuita } from './_lib/auth-clase-gratuita.js';
 import { construirCookieSiCorresponde as construirCookieContinuidadBootcamp, verificarToken as verificarTokenContinuidadBootcamp, leerCookie as leerCookieContinuidadBootcamp } from './_lib/auth-continuidad-bootcamp.js';
 import { crearToken as crearTokenVerificacion, consumirToken } from './_lib/auth-token.js';
 import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo.js';
@@ -907,12 +907,24 @@ async function enviarPushAccion(req, res) {
 }
 
 // ============================================================
-// SIMULIVE — demo (docs/v2/SIMULIVE.md). 5 acciones consolidadas aquí, sin
-// archivo nuevo. Identidad SIEMPRE de la cookie de sesión de Mi Espacio ya
-// verificada (Puerta A, mismo patrón que sesionAccion) — nunca de un correo
-// que el cliente proponga. `convocatoriaId` por defecto es la demo; se
-// acepta uno explícito para cuando exista una convocatoria real futura, sin
-// reconstruir nada de este archivo.
+// SIMULIVE — demo (docs/v2/SIMULIVE.md). 6 acciones consolidadas aquí, sin
+// archivo nuevo.
+//
+// Identidad: Puerta B (auth-clase-gratuita.js), la misma que usa la
+// Masterclass gratuita real — NUNCA Puerta A (Mi Espacio con contraseña).
+// Corrección 2026-09-22: la primera versión de este archivo usaba Puerta A
+// por error, sin revisar primero cómo entra hoy alguien a la clase gratuita
+// real (solo correo, nunca contraseña) — quedó documentado como hallazgo,
+// no se repite el error.
+//
+// `salaDemoEntrarAccion` es el equivalente de demo a "registrarse a la
+// Masterclass": solo pide correo, emite la misma cookie firmada
+// (clase_gratuita_sesion) que ya usa la clase gratuita real, apuntando a la
+// convocatoria demo directamente — NUNCA pasa por registroAccion/Hotmart
+// (esa convocatoria es estado='cerrada' a propósito, invisible para el
+// registro real; ver aislamiento en docs/v2/migraciones/025). El resto de
+// las acciones leen esa misma cookie, igual que sesionClaseGratuitaAccion
+// ya hace para la clase gratuita real.
 //
 // El secreto QA nunca llega al navegador: el cliente solo manda una
 // etiqueta de escenario sin secreto (`escenarioQA`); este servidor la
@@ -923,6 +935,7 @@ async function enviarPushAccion(req, res) {
 const QA_RELOJ_SECRET_DEMO = process.env.QA_RELOJ_SECRET_DEMO;
 const DEMO_CONVOCATORIA_ID = '00000000-0000-4000-a000-000000000002';
 const DEMO_CONVOCATORIA_FECHA_HORA = '2026-01-01T19:00:00.000Z'; // ancla fija, ver migración 025
+const DEMO_VENTANA_REPLAY_HORAS = 24 * 365; // amplio a propósito: cookie de demo no debe expirar en medio de una prueba
 const DEMO_ESCENARIOS_OFFSET_MS = {
   antes: -20 * 60 * 1000,
   inicio: 0,
@@ -940,11 +953,26 @@ function resolverQaRelojDemo(escenario) {
   return { secreto: QA_RELOJ_SECRET_DEMO, simulado };
 }
 
+function identidadDemo(req) {
+  const token = leerCookieClaseGratuita(req);
+  return verificarTokenClaseGratuita(token);
+}
+
+async function salaDemoEntrarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const correo = normalizarCorreo(req.body?.correo);
+  if (!correo || !correo.includes('@')) return res.status(400).json({ error: 'Correo inválido.' });
+
+  const token = crearTokenClaseGratuita(correo, DEMO_CONVOCATORIA_ID, DEMO_CONVOCATORIA_FECHA_HORA, DEMO_VENTANA_REPLAY_HORAS);
+  const exp = calcularExpiracionClaseGratuita(DEMO_CONVOCATORIA_FECHA_HORA, DEMO_VENTANA_REPLAY_HORAS);
+  res.setHeader('Set-Cookie', cookieDeClaseGratuita(token, exp));
+  return res.status(200).json({ ok: true, correo });
+}
+
 async function salaAbrirAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const datos = identidadDemo(req);
+  if (!datos) return res.status(401).json({ error: 'Necesitas entrar con tu correo primero.' });
 
   const convocatoriaId = (req.body && req.body.convocatoriaId) || DEMO_CONVOCATORIA_ID;
   const escenarioQA = req.body && req.body.escenarioQA;
@@ -959,9 +987,8 @@ async function salaAbrirAccion(req, res) {
 
 async function salaEstadoAccion(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const datos = identidadDemo(req);
+  if (!datos) return res.status(401).json({ error: 'Necesitas entrar con tu correo primero.' });
 
   const convocatoriaId = req.query?.convocatoriaId || DEMO_CONVOCATORIA_ID;
   const desde = req.query?.desde;
@@ -976,9 +1003,8 @@ async function salaEstadoAccion(req, res) {
 
 async function salaResponderAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const datos = identidadDemo(req);
+  if (!datos) return res.status(401).json({ error: 'Necesitas entrar con tu correo primero.' });
 
   const { convocatoriaId, eventoId, opcionId } = req.body || {};
   if (!eventoId || !opcionId) return res.status(400).json({ error: 'eventoId y opcionId son requeridos' });
@@ -993,9 +1019,8 @@ async function salaResponderAccion(req, res) {
 
 async function salaChatEnviarAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const datos = identidadDemo(req);
+  if (!datos) return res.status(401).json({ error: 'Necesitas entrar con tu correo primero.' });
 
   const { convocatoriaId, texto } = req.body || {};
   if (typeof texto !== 'string' || !texto.trim()) return res.status(400).json({ error: 'texto es requerido' });
@@ -1011,9 +1036,8 @@ async function salaChatEnviarAccion(req, res) {
 
 async function salaReaccionarAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
-  const token = leerCookie(req);
-  const datos = verificarToken(token);
-  if (!datos) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  const datos = identidadDemo(req);
+  if (!datos) return res.status(401).json({ error: 'Necesitas entrar con tu correo primero.' });
 
   const { convocatoriaId, tipo } = req.body || {};
   try {
@@ -1045,6 +1069,7 @@ const ACCIONES = {
   'workbook-acceso': workbookAccesoAccion,
   'convocatoria-reservar': convocatoriaReservarAccion,
   'bootcamp-replay-visto': bootcampReplayVistoAccion,
+  'sala-demo-entrar': salaDemoEntrarAccion,
   'sala-abrir': salaAbrirAccion,
   'sala-estado': salaEstadoAccion,
   'sala-responder': salaResponderAccion,

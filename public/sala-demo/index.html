@@ -20,6 +20,21 @@
   #sala-demo-qa button[data-activo="1"] { background: #6B1A2A; color: #fff; }
   #sala-demo-contenedor { padding-top: 34px; height: 100vh; box-sizing: border-box; }
   #sala-demo-cargando { color: #fff; text-align: center; padding: 40px 20px; }
+  #sala-demo-entrada {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; padding: 0 24px; text-align: center; color: #fff;
+  }
+  #sala-demo-entrada h1 { font-family: 'Playfair Display', Georgia, serif; color: #D4AF6A; font-size: 1.4rem; margin-bottom: 6px; }
+  #sala-demo-entrada p { color: #C4A8B0; font-size: 0.85rem; margin-bottom: 20px; max-width: 320px; }
+  #sala-demo-entrada input {
+    width: 100%; max-width: 320px; border-radius: 10px; border: 1px solid #6B1A2A;
+    background: #1E1218; color: #fff; padding: 12px 14px; margin-bottom: 12px; font-size: 1rem;
+  }
+  #sala-demo-entrada button {
+    width: 100%; max-width: 320px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #D4AF6A, #B8892A); color: #1E1218;
+    padding: 12px; font-weight: 700; font-size: 1rem;
+  }
 </style>
 </head>
 <body>
@@ -33,7 +48,7 @@
     <button data-escenario="cerca-cta">Cerca del CTA</button>
   </div>
   <div id="sala-demo-contenedor">
-    <p id="sala-demo-cargando">Verificando sesión…</p>
+    <p id="sala-demo-cargando">Cargando…</p>
   </div>
 
   <script src="/mi-espacio/html-seguro.js"></script>
@@ -54,6 +69,36 @@
         contenedorId: 'sala-demo-raiz',
         convocatoriaId: CONVOCATORIA_DEMO_ID,
         escenarioQA: escenarioActual,
+        onNecesitaIdentidad: mostrarEntrada,
+      });
+    }
+
+    function mostrarEntrada() {
+      document.getElementById('sala-demo-contenedor').innerHTML =
+        '<div id="sala-demo-entrada">' +
+        '<h1>Tu sesión</h1>' +
+        '<p>Igual que en la Masterclass real: solo tu correo, sin contraseña.</p>' +
+        '<form id="sala-demo-form-entrada">' +
+        '<input type="email" id="sala-demo-correo" placeholder="tu@correo.com" required autocomplete="email" />' +
+        '<button type="submit">Entrar a la sesión →</button>' +
+        '</form>' +
+        '</div>';
+      document.getElementById('sala-demo-form-entrada').addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        var correo = document.getElementById('sala-demo-correo').value.trim();
+        if (!correo) return;
+        try {
+          var res = await fetch('/api/sala-demo-entrar', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ correo: correo }),
+          });
+          if (!res.ok) throw new Error('sala-demo-entrar respondió ' + res.status);
+          montarSala();
+        } catch (e) {
+          document.getElementById('sala-demo-contenedor').innerHTML =
+            '<p id="sala-demo-cargando">No pudimos registrar tu entrada. Intenta de nuevo.</p>';
+        }
       });
     }
 
@@ -65,22 +110,8 @@
       });
     });
 
-    (async function iniciar() {
-      try {
-        var res = await fetch('/api/mi-espacio-sesion', { credentials: 'include' });
-        var datos = await res.json();
-        if (!datos.autenticado) {
-          document.getElementById('sala-demo-cargando').textContent =
-            'Necesitas iniciar sesión en Mi Espacio primero.';
-          setTimeout(function () { window.location.href = '/mi-espacio'; }, 1800);
-          return;
-        }
-        marcarBotonActivo();
-        montarSala();
-      } catch (e) {
-        document.getElementById('sala-demo-cargando').textContent = 'No se pudo verificar la sesión.';
-      }
-    })();
+    marcarBotonActivo();
+    montarSala();
   </script>
 </body>
 </html>

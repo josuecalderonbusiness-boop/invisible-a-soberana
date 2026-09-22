@@ -10,14 +10,27 @@
 // a Orbit), configurado en su propio entorno Preview — el navegador nunca
 // lo ve, ni en la URL ni en ningún otro lugar visible desde el cliente (ver
 // resolverHeadersQaEscenario en mi-espacio-auth.js).
+//
+// ORBIT_PROTECTION_BYPASS_SECRET (solo mientras ORBIT_BASE_URL apunte a una
+// Preview protegida por Vercel Authentication SSO, docs/v2/SIMULIVE.md):
+// mecanismo OFICIAL de Vercel, header x-vercel-protection-bypass — nunca
+// llega al navegador, es exclusivamente servidor-a-servidor. Sin esta
+// variable, simplemente no se manda el header (comportamiento normal contra
+// Production, que no tiene esta protección).
 
 const ORBIT_BASE_URL = process.env.ORBIT_BASE_URL || 'https://orbit-mc-six.vercel.app';
 const MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET;
+const ORBIT_PROTECTION_BYPASS_SECRET = process.env.ORBIT_PROTECTION_BYPASS_SECRET;
 const TIMEOUT_MS = 4000;
 
 function headersQaReloj(qaReloj) {
   if (!qaReloj || !qaReloj.secreto || !qaReloj.simulado) return {};
   return { 'x-qa-reloj-secret': qaReloj.secreto, 'x-qa-reloj-simulado': qaReloj.simulado };
+}
+
+function headersProteccionPreview() {
+  if (!ORBIT_PROTECTION_BYPASS_SECRET) return {};
+  return { 'x-vercel-protection-bypass': ORBIT_PROTECTION_BYPASS_SECRET };
 }
 
 async function llamarOrbitSala(accion, { method, correo, params, body, qaReloj }) {
@@ -28,7 +41,7 @@ async function llamarOrbitSala(accion, { method, correo, params, body, qaReloj }
     let url = `${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=${accion}`;
     const opciones = {
       method,
-      headers: { 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
+      headers: { 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj), ...headersProteccionPreview() },
       signal: controller.signal,
     };
     if (method === 'GET') {

@@ -38,6 +38,17 @@ function headersQaReloj(qaReloj) {
   return { 'x-qa-reloj-secret': qaReloj.secreto, 'x-qa-reloj-simulado': qaReloj.simulado };
 }
 
+// SIMULIVE (demo, docs/v2/SIMULIVE.md): mecanismo OFICIAL de Vercel
+// (Protection Bypass for Automation) para cuando ORBIT_BASE_URL apunta a una
+// Preview protegida por Vercel Authentication SSO — sin esta variable, no se
+// manda el header, comportamiento idéntico a como era antes (Production no
+// tiene esta protección). Nunca llega al navegador.
+const ORBIT_PROTECTION_BYPASS_SECRET = process.env.ORBIT_PROTECTION_BYPASS_SECRET;
+function headersProteccionPreview() {
+  if (!ORBIT_PROTECTION_BYPASS_SECRET) return {};
+  return { 'x-vercel-protection-bypass': ORBIT_PROTECTION_BYPASS_SECRET };
+}
+
 async function consultarPerfilAcceso(correo, qaReloj) {
   if (!MI_ESPACIO_ORBIT_SECRET) {
     throw new Error('MI_ESPACIO_ORBIT_SECRET no configurada');
@@ -47,7 +58,7 @@ async function consultarPerfilAcceso(correo, qaReloj) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj), ...headersProteccionPreview() },
       body: JSON.stringify({ correo }),
       signal: controller.signal
     });
@@ -236,7 +247,7 @@ async function confirmarBootcampHitoVisto(correo, hito) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=bootcamp-replay-visto`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersProteccionPreview() },
       body: JSON.stringify({ correo, hito }),
       signal: controller.signal,
     });
@@ -275,7 +286,7 @@ async function obtenerBootcampZoomJoin(correo, hito) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=bootcamp-zoom-registrar`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersProteccionPreview() },
       body: JSON.stringify({ correo, hito }),
       signal: controller.signal,
     });
@@ -314,7 +325,7 @@ async function obtenerMasterclassZoomJoin(correo, qaReloj) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=masterclass-zoom-join`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj), ...headersProteccionPreview() },
       body: JSON.stringify({ correo }),
       signal: controller.signal,
     });
@@ -382,7 +393,7 @@ async function crearRegistroAutenticado(correo) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/registro-autenticado`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersProteccionPreview() },
       body: JSON.stringify({ correo }),
       signal: controller.signal
     });
@@ -420,7 +431,7 @@ async function registrarClaseGratuita({ email, telefono, nombre, origen }) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/registro`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headersProteccionPreview() },
       body: JSON.stringify({ email, telefono, nombre, origen }),
       signal: controller.signal
     });
@@ -495,7 +506,7 @@ async function relayBotonVerMiClaseAOrbit({ wamid, telefono, payload, texto, tim
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso?accion=whatsapp-relay-ver-mi-clase`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersProteccionPreview() },
       body: JSON.stringify({ wamid, telefono, payload, texto, timestampMeta }),
       signal: controller.signal,
     });

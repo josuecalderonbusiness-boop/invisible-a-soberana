@@ -503,6 +503,41 @@ test('sala-abrir: Orbit no responde -> 503, nunca lanza', async (t) => {
   assert.equal(res.statusCode, 503);
 });
 
+// ── sala-abrir + reloj QA (diseño 2026-09-23): puente de un solo uso para
+// la prueba humana en Preview -- /sala guarda qaReloj/qaAhora como cookies
+// (nunca sala-simulive.js, componente reutilizable sin tocar), sala-abrir
+// las traduce a los mismos headers que ya usa Orbit. Sin las cookies,
+// comportamiento identico al de siempre (undefined, mismo que hoy). ──
+
+test('sala-abrir: con cookies de reloj QA -> las reenvia a Orbit como x-qa-reloj-secret/x-qa-reloj-simulado', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ fase: 'en_vivo' }) }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}; qa_reloj_secreto=shh-qa-test; qa_reloj_simulado=${encodeURIComponent('2026-09-23T15:20:00.000Z')}` },
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId },
+  }, res);
+  assert.equal(res.statusCode, 200);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa-test');
+  assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-23T15:20:00.000Z');
+});
+
+test('sala-abrir: sin cookies de reloj QA -> no manda esos headers (comportamiento normal, sin cambios)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ fase: 'espera' }) }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId },
+  }, res);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal('x-qa-reloj-secret' in opciones.headers, false);
+  assert.equal('x-qa-reloj-simulado' in opciones.headers, false);
+});
+
 test('sala-estado: 405 si el metodo no es GET', async () => {
   const res = mockRes();
   await handler({ method: 'POST', query: { accion: 'sala-estado' }, headers: {} }, res);

@@ -937,6 +937,32 @@ function convocatoriaCoincideConSesion(datos, convocatoriaId) {
   return !!datos && !!convocatoriaId && datos.convocatoriaId === convocatoriaId;
 }
 
+// Reloj QA (diseño 2026-09-23) — puente de UN SOLO USO para la prueba
+// humana en Preview: /sala/index.html guarda qaReloj/qaAhora como cookies
+// de corta duración (nunca en sessionStorage/localStorage del lado del
+// componente reutilizable, ver ese archivo), este lector las traduce a los
+// mismos 2 headers que ya usa Orbit (resolverAhoraQA, fail-closed — sin
+// QA_RELOJ_SECRET configurado en el entorno, Orbit ignora esto por
+// completo). Nunca llega al navegador como header, solo como cookie que el
+// propio navegador ya envía.
+function leerCookieCruda(req, nombre) {
+  const raw = req.headers && req.headers.cookie;
+  if (!raw) return null;
+  for (const parte of raw.split(';').map((p) => p.trim())) {
+    const idx = parte.indexOf('=');
+    if (idx === -1) continue;
+    if (parte.slice(0, idx) === nombre) return decodeURIComponent(parte.slice(idx + 1));
+  }
+  return null;
+}
+
+function qaRelojDeCookie(req) {
+  const secreto = leerCookieCruda(req, 'qa_reloj_secreto');
+  const simulado = leerCookieCruda(req, 'qa_reloj_simulado');
+  if (!secreto || !simulado) return undefined;
+  return { secreto, simulado };
+}
+
 async function salaAbrirAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
   const datos = identidadSalaSimulive(req);
@@ -944,7 +970,7 @@ async function salaAbrirAccion(req, res) {
   if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
 
   try {
-    const resultado = await salaAbrir(datos.correo, convocatoriaId);
+    const resultado = await salaAbrir(datos.correo, convocatoriaId, qaRelojDeCookie(req));
     return res.status(200).json(resultado);
   } catch (err) {
     console.error('mi-espacio-auth/sala-abrir error:', err.message);

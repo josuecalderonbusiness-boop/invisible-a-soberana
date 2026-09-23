@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tu sesión — Código Soberana</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/mi-espacio/sala-simulive.css" />
+<style>
+  body { margin: 0; background: #150D11; font-family: 'Inter', sans-serif; }
+  #sala-real-contenedor { height: 100vh; box-sizing: border-box; }
+  #sala-real-cargando, #sala-real-error {
+    color: #fff; text-align: center; padding: 40px 24px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
+  }
+  #sala-real-error p { color: #C4A8B0; font-size: 0.9rem; max-width: 320px; margin: 0 0 18px; }
+  #sala-real-error a {
+    display: inline-block; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #D4AF6A, #B8892A); color: #1E1218;
+    padding: 12px 22px; font-weight: 700; font-size: 0.95rem; text-decoration: none;
+  }
+</style>
+</head>
+<body>
+  <div id="sala-real-contenedor">
+    <p id="sala-real-cargando">Cargando tu sesión…</p>
+  </div>
+
+  <script src="/mi-espacio/html-seguro.js"></script>
+  <script src="/mi-espacio/sala-simulive.js"></script>
+  <script>
+    // SIMULIVE — sala real (diseño cerrado 2026-09-23): el convocatoriaId
+    // SIEMPRE viene de la URL, nunca inventado aquí — lo pone el enlace que
+    // arma experiencia-gratuita.js a partir de exp.convocatoriaId (la misma
+    // Convocatoria que ya resolvió Mi Espacio/clase-gratuita). Sin ese
+    // parámetro, estado honesto: nunca se intenta adivinar una sesión.
+    var params = new URLSearchParams(window.location.search);
+    var convocatoriaId = params.get('convocatoriaId');
+
+    // Reloj QA (diseño 2026-09-23) — SOLO mientras Preview tenga QA_RELOJ_SECRET
+    // configurado (nunca existe en Production, resolverAhoraQA es fail-closed).
+    // Mismo mecanismo de un solo uso que ya existe en /clase-gratuita
+    // (?qaReloj=&qaAhora=, leído una vez y limpiado de la URL) — pero aquí
+    // nunca pasa por sala-simulive.js (componente reutilizable, sin cambios):
+    // se guarda como cookie de corta duración, que el navegador ya envía
+    // solo por credentials:'include' — salaAbrirAccion (servidor) la lee y
+    // arma los headers reales hacia Orbit. El secreto nunca queda en
+    // sessionStorage/localStorage ni se reenvía desde JS del cliente.
+    (function prepararRelojQaSiViene() {
+      var secreto = params.get('qaReloj');
+      var simulado = params.get('qaAhora');
+      if (!secreto || !simulado) return;
+      var maxAgeSeg = 15 * 60;
+      // path=/ (no /sala): estas cookies las tiene que recibir /api/sala-abrir,
+      // no la pagina /sala misma.
+      document.cookie = 'qa_reloj_secreto=' + encodeURIComponent(secreto) + '; path=/; max-age=' + maxAgeSeg + '; SameSite=Lax';
+      document.cookie = 'qa_reloj_simulado=' + encodeURIComponent(simulado) + '; path=/; max-age=' + maxAgeSeg + '; SameSite=Lax';
+      params.delete('qaReloj');
+      params.delete('qaAhora');
+      var limpia = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+      window.history.replaceState(null, '', limpia);
+    })();
+
+    function mostrarError(mensaje) {
+      document.getElementById('sala-real-contenedor').innerHTML =
+        '<div id="sala-real-error">' +
+        '<p>' + mensaje + '</p>' +
+        '<a href="/clase-gratuita">Volver a tu espacio →</a>' +
+        '</div>';
+    }
+
+    if (!convocatoriaId) {
+      mostrarError('No encontramos tu sesión. Vuelve a tu espacio para entrar desde ahí.');
+    } else {
+      document.getElementById('sala-real-contenedor').innerHTML = '<div id="sala-real-raiz"></div>';
+      // Sin escenarioQA: la sala real siempre usa la hora real del
+      // servidor — el reloj simulado es exclusivo de /sala-demo (QA).
+      window.iniciarSalaSimulive({
+        contenedorId: 'sala-real-raiz',
+        convocatoriaId: convocatoriaId,
+        onNecesitaIdentidad: function () {
+          // Misma cookie que ya deberías tener desde tu registro — si no es
+          // válida o expiró, /clase-gratuita ya sabe recuperarla solo con tu
+          // correo (mismo mecanismo que usa hoy, no se reinventa aquí).
+          window.location.href = '/clase-gratuita';
+        },
+      });
+    }
+  </script>
+</body>
+</html>

@@ -24,6 +24,19 @@ const ORBIT_BASE_URL = process.env.ORBIT_BASE_URL || 'https://orbit-mc-six.verce
 const MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET;
 const TIMEOUT_MS = 4000; // Conversación interactiva (contrato cerrado 2026-08-02) — la alumna espera en pantalla.
 
+// Bypass de Vercel Deployment Protection (solo mientras ORBIT_BASE_URL
+// apunte a una Preview protegida de Orbit) -- mecanismo OFICIAL de Vercel,
+// header x-vercel-protection-bypass, nunca llega al navegador. Sin esta
+// variable, no se manda el header (comportamiento identico a como era
+// antes; Production no tiene esta protección). Necesario para la prueba
+// humana en Preview de este corte (SIMULIVE, sala real) -- sesionClaseGratuitaAccion
+// depende de consultarPerfilAcceso para experienciaGratuitaActiva.
+const ORBIT_PROTECTION_BYPASS_SECRET = process.env.ORBIT_PROTECTION_BYPASS_SECRET;
+function headersProteccionPreview() {
+  if (!ORBIT_PROTECTION_BYPASS_SECRET) return {};
+  return { 'x-vercel-protection-bypass': ORBIT_PROTECTION_BYPASS_SECRET };
+}
+
 // Puerta 5 — Ensayo General, Estación 4 (puente QA temporal, 2026-09-13):
 // `qaReloj` es opcional y TODO-O-NADA — solo se agregan los 2 headers si
 // ambos campos vienen presentes ({ secreto, simulado }), nunca uno solo y
@@ -47,7 +60,7 @@ async function consultarPerfilAcceso(correo, qaReloj) {
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj) },
+      headers: { 'Content-Type': 'application/json', 'x-mi-espacio-secret': MI_ESPACIO_ORBIT_SECRET, ...headersQaReloj(qaReloj), ...headersProteccionPreview() },
       body: JSON.stringify({ correo }),
       signal: controller.signal
     });

@@ -203,6 +203,16 @@ function cgCapturarQaRelojDeUrl() {
   if (secreto && simulado) {
     sessionStorage.setItem('qaRelojSecreto', secreto);
     sessionStorage.setItem('qaRelojSimulado', simulado);
+    // SIMULIVE — puente sala real (2026-09-23): ademas del sessionStorage de
+    // siempre (para las llamadas de ESTA pagina), se deja la MISMA pareja
+    // como cookie corta (15 min) -- es lo que lee /sala si la mujer entra
+    // ahi despues de tocar "Entrar a tu sesión →". Sin esto, /sala usaria
+    // la hora real del servidor aunque esta pagina ya este usando el reloj
+    // simulado, y el ensayo se rompe justo al cruzar de pagina. Mismo
+    // todo-o-nada, misma autoridad exclusiva de Orbit.
+    const maxAgeSeg = 15 * 60;
+    document.cookie = 'qa_reloj_secreto=' + encodeURIComponent(secreto) + '; path=/; max-age=' + maxAgeSeg + '; SameSite=Lax';
+    document.cookie = 'qa_reloj_simulado=' + encodeURIComponent(simulado) + '; path=/; max-age=' + maxAgeSeg + '; SameSite=Lax';
     params.delete('qaReloj');
     params.delete('qaAhora');
     const nuevaQuery = params.toString();

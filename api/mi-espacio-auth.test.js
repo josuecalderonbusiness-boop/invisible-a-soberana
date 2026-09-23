@@ -430,6 +430,228 @@ test('masterclass-zoom-join: reenvia los headers QA al llamar a Orbit, tal como 
   assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-27T00:30:00-05:00');
 });
 
+// ── SIMULIVE — Sala real (diseño cerrado 2026-09-23): mismas 5 acciones que
+// ya existían para la demo (feat/simulive-demo-sala, nunca mergeada), aquí
+// reescritas para producción — identidad SIEMPRE de clase_gratuita_sesion
+// (nunca un correo del cliente), y a diferencia de la demo, el
+// convocatoriaId SÍ viene del cliente, así que DEBE coincidir con el de la
+// cookie ya verificada (mismo criterio exacto que masterclass-zoom-join:
+// "una cookie válida de otra Convocatoria nunca autoriza contenido de
+// esta"). ──
+
+test('sala-abrir: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-abrir' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sala-abrir: sin cookie -> 401, nunca llama a Orbit', async (t) => {
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-abrir' }, headers: {}, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-abrir: cookie valida pero convocatoriaId del body es OTRO -> 401, nunca llama a Orbit (frontera de identidad)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: 'convocatoria-ajena' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0, 'jamas debe llamar a Orbit con un convocatoriaId que no coincide con la cookie');
+});
+
+test('sala-abrir: sin convocatoriaId en el body -> 401, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-abrir' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: {} }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-abrir: cookie valida + convocatoriaId coincide -> llama a Orbit con el correo de la COOKIE (nunca uno del body), devuelve su respuesta', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    ok: true, status: 200,
+    json: async () => ({ fase: 'en_vivo', posicionInicialSegundos: 120, videoUrl: 'https://iframe.mediadelivery.net/embed/749915/x', duracionSegundos: 3600, eventoSesion: [] }),
+  }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    // correo hostil en el body: debe ser ignorado por completo
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, correo: 'atacante@ejemplo.com' },
+  }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { fase: 'en_vivo', posicionInicialSegundos: 120, videoUrl: 'https://iframe.mediadelivery.net/embed/749915/x', duracionSegundos: 3600, eventoSesion: [] });
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  const bodyEnviado = JSON.parse(opciones.body);
+  assert.equal(bodyEnviado.correo, 'alumna@correo.com', 'el correo SIEMPRE debe venir de la cookie verificada, nunca del body');
+});
+
+test('sala-abrir: Orbit no responde -> 503, nunca lanza', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => { throw new Error('ECONNREFUSED'); });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-abrir' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId } }, res);
+  assert.equal(res.statusCode, 503);
+});
+
+// ── sala-abrir + reloj QA (diseño 2026-09-23): puente de un solo uso para
+// la prueba humana en Preview -- /sala guarda qaReloj/qaAhora como cookies
+// (nunca sala-simulive.js, componente reutilizable sin tocar), sala-abrir
+// las traduce a los mismos headers que ya usa Orbit. Sin las cookies,
+// comportamiento identico al de siempre (undefined, mismo que hoy). ──
+
+test('sala-abrir: con cookies de reloj QA -> las reenvia a Orbit como x-qa-reloj-secret/x-qa-reloj-simulado', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ fase: 'en_vivo' }) }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}; qa_reloj_secreto=shh-qa-test; qa_reloj_simulado=${encodeURIComponent('2026-09-23T15:20:00.000Z')}` },
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId },
+  }, res);
+  assert.equal(res.statusCode, 200);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa-test');
+  assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-23T15:20:00.000Z');
+});
+
+test('sala-abrir: sin cookies de reloj QA -> no manda esos headers (comportamiento normal, sin cambios)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ fase: 'espera' }) }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-abrir' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId },
+  }, res);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal('x-qa-reloj-secret' in opciones.headers, false);
+  assert.equal('x-qa-reloj-simulado' in opciones.headers, false);
+});
+
+test('sala-estado: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-estado' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sala-estado: convocatoriaId del query no coincide con la cookie -> 401, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-estado', convocatoriaId: 'convocatoria-ajena' }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-estado: cookie valida + convocatoriaId coincide -> pass-through de la respuesta de Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ presencia: { conectadas: 3 }, chatNuevo: [], cursor: 'abc' }) }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-estado', convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId }, headers: { cookie: `clase_gratuita_sesion=${token}` } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { presencia: { conectadas: 3 }, chatNuevo: [], cursor: 'abc' });
+});
+
+test('sala-responder: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-responder' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sala-responder: convocatoriaId no coincide con la cookie -> 401, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-responder' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: 'convocatoria-ajena', eventoId: 'evt-1', opcionId: 'a' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-responder: falta eventoId u opcionId -> 400', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId } }, res);
+  assert.equal(res.statusCode, 400);
+});
+
+test('sala-chat-enviar: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-chat-enviar' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sala-chat-enviar: convocatoriaId no coincide con la cookie -> 401, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-chat-enviar' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: 'convocatoria-ajena', texto: 'hola' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-chat-enviar: texto vacio -> 400, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-chat-enviar' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, texto: '   ' } }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-chat-enviar: mensaje muy seguido -> 409, tal como reporta Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: 'mensaje_muy_seguido' }) }));
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-chat-enviar' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, texto: 'hola' } }, res);
+  assert.equal(res.statusCode, 409);
+});
+
+test('sala-reaccionar: 405 si el metodo no es POST', async () => {
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sala-reaccionar' }, headers: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sala-reaccionar: convocatoriaId no coincide con la cookie -> 401, nunca llama a Orbit', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-reaccionar' },
+    headers: { cookie: `clase_gratuita_sesion=${token}` },
+    body: { convocatoriaId: 'convocatoria-ajena', tipo: 'corazon' },
+  }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-reaccionar: cookie valida + convocatoriaId coincide -> pass-through', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-reaccionar' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, tipo: 'corazon' } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { ok: true });
+});
+
 // ── enviar-push (Puerta 5, Estación 9A, diseño cerrado 2026-09-17) ──
 // Única acción de este archivo en la dirección Orbit->Mi Espacio. Prueba
 // exhaustivamente la frontera de autenticación/validación (todo lo que

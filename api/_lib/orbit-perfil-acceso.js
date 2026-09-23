@@ -57,7 +57,7 @@ async function consultarPerfilAcceso(correo, qaReloj) {
   }
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  console.error('DEBUG_TEMPORAL consultarPerfilAcceso: base=' + ORBIT_BASE_URL + ' secretLen=' + MI_ESPACIO_ORBIT_SECRET.length + ' bypassPresente=' + !!ORBIT_PROTECTION_BYPASS_SECRET + ' bypassLen=' + (ORBIT_PROTECTION_BYPASS_SECRET ? ORBIT_PROTECTION_BYPASS_SECRET.length : 0));
+  console.error('DEBUG_TEMPORAL consultarPerfilAcceso: base=' + ORBIT_BASE_URL + ' secretLen=' + MI_ESPACIO_ORBIT_SECRET.length + ' bypassPresente=' + !!ORBIT_PROTECTION_BYPASS_SECRET + ' bypassLen=' + (ORBIT_PROTECTION_BYPASS_SECRET ? ORBIT_PROTECTION_BYPASS_SECRET.length : 0) + ' VERCEL_GIT_COMMIT_REF=' + process.env.VERCEL_GIT_COMMIT_REF + ' VERCEL_ENV=' + process.env.VERCEL_ENV);
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/perfil-acceso`, {
       method: 'POST',

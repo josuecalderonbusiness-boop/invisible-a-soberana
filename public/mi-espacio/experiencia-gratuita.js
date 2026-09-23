@@ -158,6 +158,22 @@ function msTickClaseGratuita() {
     btn.style.display = 'none';
     cal.style.display = 'inline-block';
     cal.href = msLinkCalendario(exp);
+  } else if (exp.fase === 'en_vivo' && exp.modalidad === 'simulive') {
+    // SIMULIVE — puente sala real (diseño cerrado 2026-09-23): nunca Zoom,
+    // nunca el mensaje "el enlace llega en un momento" (ese es exclusivo de
+    // LIVE, para cuando el link de Zoom todavía no se generó — SIMULIVE no
+    // tiene ese problema, la sala siempre está lista). Nomenclatura
+    // congelada: nunca presentar el contenido pregrabado como si fuera un
+    // LIVE real.
+    eyebrow.textContent = 'Sesión programada';
+    title.textContent = 'Tu sesión ya está disponible';
+    sub.textContent = 'Entra cuando quieras dentro de esta hora.';
+    countdown.style.display = 'none';
+    cal.style.display = 'none';
+    video.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.href = '/sala?convocatoriaId=' + encodeURIComponent(exp.convocatoriaId);
+    btn.textContent = 'Entrar a tu sesión →';
   } else if (exp.fase === 'en_vivo') {
     eyebrow.textContent = '🔴 En vivo ahora';
     title.textContent = 'Tu clase está en curso';

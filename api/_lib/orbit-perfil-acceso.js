@@ -498,6 +498,7 @@ async function obtenerProximaConvocatoriaPublica() {
 async function obtenerSesionesDisponibles() {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  console.error('DEBUG_TEMPORAL sesiones-disponibles: base=' + ORBIT_BASE_URL + ' bypassPresente=' + !!ORBIT_PROTECTION_BYPASS_SECRET);
   try {
     const res = await fetch(`${ORBIT_BASE_URL}/api/sesiones-disponibles`, {
       headers: headersProteccionPreview(),

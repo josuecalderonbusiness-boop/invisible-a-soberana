@@ -286,7 +286,7 @@
     function agregarMensaje(msg) {
       estado.mensajes.push(msg);
       if (!$chat) return;
-      const etiqueta = msg.tipo === 'equipo' ? '<span class="sala-chat-etiqueta">' + (msg.programado ? 'Preguntas frecuentes' : 'Equipo') + '</span>' : '';
+      const etiqueta = msg.tipo === 'equipo' ? '<span class="sala-chat-etiqueta">' + (msg.programado ? 'Preguntas frecuentes' : 'Equipo') + '</span> ' : '';
       const div = document.createElement('div');
       div.className = 'sala-chat-msg sala-chat-msg--' + msg.tipo;
       div.innerHTML = '<strong>' + esc(msg.autorNombre) + '</strong> ' + etiqueta + '<span>' + esc(msg.texto) + '</span>';

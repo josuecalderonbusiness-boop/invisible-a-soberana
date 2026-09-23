@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 // var despues de un `import` estatico llega tarde. Se fija primero y se
 // carga el modulo con `import()` dinamico (mismo resultado, orden correcto).
 process.env.MI_ESPACIO_ORBIT_SECRET = process.env.MI_ESPACIO_ORBIT_SECRET || 'shh-mi-espacio';
-const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
+const { tieneDerechoVigente, tieneDerechoVigenteA, obtenerComprasVigentes, tieneRegistroActivo, obtenerRegistrosActivos, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, registrarClaseGratuita, obtenerProximaConvocatoriaPublica, obtenerSesionesDisponibles, relayBotonVerMiClaseAOrbit } = await import('./orbit-perfil-acceso.js');
 
 function mockFetchOnce(t, body, ok = true) {
   return t.mock.method(global, 'fetch', async () => ({
@@ -373,6 +373,30 @@ test('registrarClaseGratuita: pass-through exacto de un error de Orbit (sin conv
   assert.deepEqual(resultado, { status: 409, cuerpo: cuerpoOrbit });
 });
 
+// ── SIMULIVE — selector de sesión (diseño cerrado 2026-09-22):
+// fechaHoraElegida es opcional — sin ella, byte a byte el mismo body de
+// siempre (ya probado arriba); con ella, se reenvía tal cual, sin
+// reformatear ni validar aquí (Orbit es quien la revalida). ──
+
+test('registrarClaseGratuita: con fechaHoraElegida, la reenvia tal cual en el body (SIMULIVE)', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({
+    status: 200,
+    json: async () => ({ ok: true, mensaje: 'Tu registro fue recibido correctamente.', convocatoria: {} }),
+  }));
+  await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test', fechaHoraElegida: '2026-09-22T19:00:00.000Z' });
+
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.deepEqual(JSON.parse(opciones.body), { email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test', fechaHoraElegida: '2026-09-22T19:00:00.000Z' });
+});
+
+test('registrarClaseGratuita: sin fechaHoraElegida, el body no incluye la clave (LIVE, sin cambio de comportamiento)', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ status: 200, json: async () => ({ ok: true }) }));
+  await registrarClaseGratuita({ email: 'alumna@correo.com', telefono: '3001234567', nombre: 'Alumna', origen: 'landing-test' });
+
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal('fechaHoraElegida' in JSON.parse(opciones.body), false);
+});
+
 // ── obtenerExperienciaGratuitaActivaConReintento — hallazgo real 2026-09-09:
 // la lectura de experienciaGratuitaActiva justo después de un registro puede
 // llegar antes de que Orbit refleje internamente ese registro. Reintento
@@ -433,6 +457,32 @@ test('obtenerProximaConvocatoriaPublica: pass-through exacto de la respuesta de 
 test('obtenerProximaConvocatoriaPublica: lanza con motivo si Orbit responde error', async (t) => {
   t.mock.method(global, 'fetch', async () => ({ ok: false, status: 503, json: async () => ({}) }));
   await assert.rejects(() => obtenerProximaConvocatoriaPublica(), (err) => err.motivo === 'orbit_respondio_503');
+});
+
+// ── obtenerSesionesDisponibles (SIMULIVE, selector de sesión) — mismo
+// patron exacto que obtenerProximaConvocatoriaPublica arriba: publica, sin
+// secreto, GET, pass-through. ──
+
+test('obtenerSesionesDisponibles: llama a GET /api/sesiones-disponibles sin secreto ni body', async (t) => {
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ sesiones: [] }) }));
+  await obtenerSesionesDisponibles();
+
+  assert.equal(fetchMock.mock.calls.length, 1);
+  const [url, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(url, 'https://orbit-mc-six.vercel.app/api/sesiones-disponibles');
+  assert.equal(opciones?.method, undefined); // GET por defecto, sin body
+  assert.equal('x-mi-espacio-secret' in (opciones?.headers || {}), false);
+});
+
+test('obtenerSesionesDisponibles: pass-through exacto de la respuesta de Orbit', async (t) => {
+  const cuerpo = { sesiones: [{ fechaHora: '2026-09-22T19:00:00.000Z', dia: 'hoy' }, { fechaHora: '2026-09-23T15:00:00.000Z', dia: 'mañana' }] };
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => cuerpo }));
+  assert.deepEqual(await obtenerSesionesDisponibles(), cuerpo);
+});
+
+test('obtenerSesionesDisponibles: lanza con motivo si Orbit responde error', async (t) => {
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 500, json: async () => ({}) }));
+  await assert.rejects(() => obtenerSesionesDisponibles(), (err) => err.motivo === 'orbit_respondio_500');
 });
 
 // ── relayBotonVerMiClaseAOrbit (Puerta 2, Slice 7e) — a diferencia de TODO

@@ -110,6 +110,41 @@ test('proxima-convocatoria: 405 si el metodo no es GET', async () => {
   assert.equal(res.statusCode, 405);
 });
 
+// ── SIMULIVE — selector de sesión (diseño cerrado 2026-09-22):
+// sesiones-disponibles, mismo patron que proxima-convocatoria arriba
+// (publica, sin secreto). El pass-through de Orbit ya esta cubierto en
+// orbit-perfil-acceso.test.js (obtenerSesionesDisponibles). ──
+
+test('sesiones-disponibles: 405 si el metodo no es GET', async () => {
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sesiones-disponibles' }, body: {} }, res);
+  assert.equal(res.statusCode, 405);
+});
+
+test('sesiones-disponibles: pass-through de la respuesta de Orbit', async (t) => {
+  const cuerpo = { sesiones: [{ fechaHora: '2026-09-22T19:00:00.000Z', dia: 'hoy' }] };
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => cuerpo }));
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesiones-disponibles' } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, cuerpo);
+});
+
+test('sesiones-disponibles: Orbit no responde -> 503, nunca lanza', async (t) => {
+  t.mock.method(global, 'fetch', async () => { throw new Error('red caida'); });
+  const res = mockRes();
+  await handler({ method: 'GET', query: { accion: 'sesiones-disponibles' } }, res);
+  assert.equal(res.statusCode, 503);
+});
+
+// registro-gratuito: el pass-through de fechaHoraElegida (SIMULIVE) hacia
+// Orbit no se prueba en este archivo — registroGratuitoAccion llama primero
+// a puedeIntentar() (Firestore real vía fetch), que usa el mismo global.fetch
+// que este archivo no puede mockear de forma separada del de Orbit (mismo
+// gap ya documentado en el encabezado). Cubierto correctamente en
+// orbit-perfil-acceso.test.js (registrarClaseGratuita), que llama a la
+// función sin pasar por el guard de rate-limit.
+
 // ── Puerta 2 — Slice 3: sesión temporal de clase gratuita.
 //
 // registro-gratuito llama a puedeIntentar() (rate-limit sobre Firestore)

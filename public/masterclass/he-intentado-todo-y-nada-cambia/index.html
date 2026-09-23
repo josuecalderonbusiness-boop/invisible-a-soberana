@@ -165,6 +165,72 @@ form#regForm { display: flex; flex-direction: column; gap: 12px; }
 .btn-registro:disabled { opacity: .6; cursor: default; }
 .registro-nota { font-size: 12.5px; color: var(--text-muted); text-align: center; margin-top: 12px; }
 
+/* ── Selector de sesión — Puerta 2, SIMULIVE (diseño cerrado 2026-09-22):
+   reemplaza la fecha fija por hoy/mañana × 3 horarios. Reutiliza los mismos
+   tokens de color/tipografía ya definidos en :root arriba, nunca una paleta
+   nueva. ── */
+.selector-titulo {
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(19px, 5vw, 22px);
+  color: var(--text-light); margin: 4px 0 4px;
+}
+.selector-sub { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); margin: 0 0 4px; }
+.selector-huso { font-family: var(--font-body); font-size: 12px; color: var(--text-muted); margin: 0 0 18px; }
+
+.selector-grupo { margin-bottom: 18px; }
+.selector-grupo-label {
+  font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--gold-primary); text-transform: uppercase; margin-bottom: 8px;
+}
+.selector-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.selector-vacio {
+  background: var(--charcoal-deep); border: 1px solid rgba(184,137,42,.15); border-radius: 10px;
+  padding: 14px; font-family: var(--font-body); font-size: 13px; color: var(--text-muted);
+}
+
+.pill-horario {
+  display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 10px;
+  background: var(--charcoal-deep); border: 1px solid rgba(184,137,42,.28); color: var(--text-light);
+  font-family: var(--font-body); font-size: 13.5px; font-weight: 500; cursor: pointer; padding: 0 4px;
+  transition: transform .12s ease, border-color .15s ease;
+}
+.pill-horario:active { transform: scale(.96); }
+.pill-horario.seleccionado {
+  background: linear-gradient(135deg, var(--gold-medium), var(--gold-primary)); border-color: transparent;
+  color: var(--charcoal-deep); font-weight: 700;
+}
+.pill-horario.vencido {
+  background: var(--charcoal-deep); border: 1px dashed rgba(232,132,138,.55); color: var(--text-muted);
+  text-decoration: line-through; cursor: default;
+}
+
+.selector-skel {
+  height: 48px; border-radius: 10px;
+  background: linear-gradient(90deg, rgba(184,137,42,.10), rgba(184,137,42,.22), rgba(184,137,42,.10));
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
+@keyframes skelPulse { 0%, 100% { opacity: .4; } 50% { opacity: .8; } }
+
+.selector-error {
+  background: rgba(232,132,138,.1); border: 1px solid rgba(232,132,138,.3); border-radius: 10px;
+  padding: 14px; margin-bottom: 16px;
+}
+.selector-error p { font-family: var(--font-body); font-size: 13.5px; color: var(--error); margin: 0 0 10px; }
+.selector-error-nota { font-size: 12.5px !important; color: var(--text-muted) !important; margin: 10px 0 0 !important; }
+
+.btn-secundario {
+  font-family: var(--font-label); font-weight: 700; font-size: 12px; color: var(--gold-light);
+  background: transparent; border: 1px solid rgba(184,137,42,.4); border-radius: 8px; padding: 10px 16px;
+  cursor: pointer;
+}
+
+.selector-confirmacion { font-family: var(--font-label); font-size: 13px; font-weight: 600; color: var(--gold-light); margin: 0 0 18px; }
+
+.selector-placeholder-form {
+  font-family: var(--font-body); font-size: 13px; color: var(--text-muted); text-align: center;
+  border-top: 1px solid rgba(184,137,42,.15); padding-top: 18px; margin: 0;
+}
+#regForm { border-top: 1px solid rgba(184,137,42,.15); padding-top: 18px; }
+
 .form-msg {
   display: none; margin-top: 14px; padding: 12px 14px; border-radius: 8px; font-size: 14px;
 }
@@ -250,12 +316,41 @@ footer a { color: var(--text-muted); text-decoration: none; margin: 0 8px; }
 <section class="registro" id="registro">
   <div class="wrap">
     <div class="registro-card">
-      <span class="registro-live"><span class="registro-live-dot"></span>En vivo · <span id="registroLiveDia">próximo sábado</span></span>
-      <p class="registro-fecha" id="registroFecha">Cargando la fecha de la próxima clase…</p>
-      <p class="registro-hora">🕖 7:00 p.m. Colombia</p>
-      <p class="registro-gratis">Clase gratuita · Replay disponible 72 horas</p>
+      <span class="registro-live"><span class="registro-live-dot"></span>Elige tu sesión</span>
+      <h2 class="selector-titulo">¿Cuándo quieres vivir la Masterclass?</h2>
+      <p class="selector-sub">Clase gratuita · Replay disponible 72 horas</p>
+      <p class="selector-huso" id="selHuso" style="display:none"></p>
 
-      <form id="regForm" novalidate>
+      <!-- Selector de sesión — Puerta 2, SIMULIVE. Tres estados posibles: cargando, error, listo. -->
+      <div id="selCargando" class="selector-cargando">
+        <div class="selector-grupo">
+          <div class="selector-grupo-label">Hoy</div>
+          <div class="selector-grid"><div class="selector-skel"></div><div class="selector-skel"></div><div class="selector-skel"></div></div>
+        </div>
+        <div class="selector-grupo">
+          <div class="selector-grupo-label">Mañana</div>
+          <div class="selector-grid"><div class="selector-skel"></div><div class="selector-skel"></div><div class="selector-skel"></div></div>
+        </div>
+      </div>
+
+      <div id="selError" class="selector-error" style="display:none">
+        <p>No pudimos cargar los horarios disponibles.</p>
+        <button type="button" class="btn-secundario" id="selReintentar">Reintentar</button>
+        <p class="selector-error-nota">¿Sigue sin cargar? Escríbenos por WhatsApp.</p>
+      </div>
+
+      <div id="selListo" style="display:none">
+        <div id="selGrupos"></div>
+        <div id="selVencido" class="selector-error" style="display:none">
+          <p id="selVencidoMsg">Ese horario ya no está disponible.</p>
+          <button type="button" class="btn-secundario" id="selVerActualizados">Ver horarios actualizados</button>
+        </div>
+        <p id="selConfirmacion" class="selector-confirmacion" style="display:none"></p>
+      </div>
+
+      <p id="selPlaceholderForm" class="selector-placeholder-form">Primero elige un horario para continuar ↑</p>
+
+      <form id="regForm" novalidate style="display:none">
         <div class="campo">
           <label for="campoNombre">Tu nombre</label>
           <input type="text" id="campoNombre" name="nombre" autocomplete="name">
@@ -438,30 +533,178 @@ document.getElementById('unmuteBtn').addEventListener('click', function () {
   if (vslPlayer) { vslPlayer.unmute(); setTimeout(function () { if (vslPlayer) vslPlayer.unmute(); }, 400); }
 });
 
-// ── Fecha dinámica — Puerta 2, Slice 6: la clase gratuita ocurre todos los
-// sábados 7pm Bogotá, indefinidamente (Ads permanentes, nunca se pausan) —
-// ya no hay una sola fecha fija que hardcodear aquí. Se pregunta a Orbit
-// (vía el proxy same-origin) cuál es la próxima convocatoria real en cada
-// carga de página. Si la consulta falla, la tarjeta se queda con el texto
-// neutral de "Cargando…" en vez de mostrar una fecha inventada o vencida —
-// el formulario de abajo sigue funcionando igual (Orbit decide la
-// convocatoria real al momento del registro, no depende de esto).
-(function cargarProximaConvocatoria() {
-  fetch('/api/mi-espacio-proxima-convocatoria')
+// ── Selector de sesión — Puerta 2, SIMULIVE (diseño cerrado 2026-09-22):
+// reemplaza a cargarProximaConvocatoria (retirada) — la Masterclass ya no es
+// "el próximo sábado fijo", es "hoy o mañana, en uno de 3 horarios". Se
+// consulta a Orbit (vía el proxy same-origin) la lista real de sesiones en
+// cada carga de página; nunca se calcula localmente. Orbit sigue siendo la
+// única fuente de verdad: `sesElegida` guarda siempre el string ISO exacto
+// que Orbit devolvió, nunca un valor reconstruido a partir de la hora local
+// que se le muestra a la visitante.
+var SESIONES_URL = '/api/mi-espacio-sesiones-disponibles';
+var sesElegida = null; // string ISO exacto de Orbit, o null
+
+var selCargando = document.getElementById('selCargando');
+var selError = document.getElementById('selError');
+var selListo = document.getElementById('selListo');
+var selGrupos = document.getElementById('selGrupos');
+var selVencido = document.getElementById('selVencido');
+var selVencidoMsg = document.getElementById('selVencidoMsg');
+var selConfirmacion = document.getElementById('selConfirmacion');
+var selPlaceholderForm = document.getElementById('selPlaceholderForm');
+var selHuso = document.getElementById('selHuso');
+var regFormEl = document.getElementById('regForm');
+
+// Mismo mecanismo que public/masterclass/mas-se-aleja/index.html
+// (mcLocalEventInfo): Intl.DateTimeFormat().resolvedOptions().timeZone es una
+// API del navegador, sin geolocalización ni servicio externo — y los getters
+// de Date (getHours/getMinutes/...) siempre devuelven la hora LOCAL del
+// dispositivo, aunque el Date se haya construido desde un ISO en UTC. Así se
+// "traduce" sola a México, USA, España, etc., sin matemática de offsets a
+// mano. Mismo diccionario de país por zona, copiado tal cual (sin
+// compartir código entre landings, mismo criterio ya usado en ese archivo).
+function selResolverLugar() {
+  var PAISES_POR_ZONA = {
+    'America/Bogota': 'Colombia', 'America/Mexico_City': 'México',
+    'America/Argentina/Buenos_Aires': 'Argentina', 'America/Santiago': 'Chile',
+    'America/Lima': 'Perú', 'America/Guayaquil': 'Ecuador', 'America/Caracas': 'Venezuela',
+    'America/La_Paz': 'Bolivia', 'America/Asuncion': 'Paraguay', 'America/Montevideo': 'Uruguay',
+    'America/Panama': 'Panamá', 'America/Costa_Rica': 'Costa Rica', 'America/Guatemala': 'Guatemala',
+    'America/Tegucigalpa': 'Honduras', 'America/Managua': 'Nicaragua', 'America/El_Salvador': 'El Salvador',
+    'America/Santo_Domingo': 'República Dominicana', 'America/Puerto_Rico': 'Puerto Rico',
+    'Europe/Madrid': 'España', 'America/New_York': 'Estados Unidos', 'America/Chicago': 'Estados Unidos',
+    'America/Denver': 'Estados Unidos', 'America/Los_Angeles': 'Estados Unidos'
+  };
+  try {
+    var zona = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    return PAISES_POR_ZONA[zona] || zona.split('/').pop().replace(/_/g, ' ');
+  } catch (e) {
+    return ''; // nunca se inventa un país — sin él, simplemente no se muestra la línea
+  }
+}
+
+// Hora local en formato "10:00 a. m." — misma matemática 12h que mcLocalEventInfo.
+function selFormatearHora(fechaHoraIso) {
+  var d = new Date(fechaHoraIso);
+  var horas = d.getHours();
+  var ampm = horas >= 12 ? 'p. m.' : 'a. m.';
+  var horas12 = horas % 12; if (horas12 === 0) horas12 = 12;
+  var min = d.getMinutes();
+  var minStr = min < 10 ? '0' + min : '' + min;
+  return horas12 + ':' + minStr + ' ' + ampm;
+}
+
+function selMostrarPlaceholderForm() {
+  regFormEl.style.display = 'none';
+  selPlaceholderForm.style.display = 'block';
+}
+
+function selRevelarForm() {
+  selPlaceholderForm.style.display = 'none';
+  regFormEl.style.display = 'flex';
+}
+
+// El día (HOY/MAÑANA) que agrupa cada pastilla viene de Orbit tal cual
+// (`sesion.dia`) — nunca se recalcula aquí a partir del calendario local de
+// la visitante. Solo la hora dentro de cada pastilla se traduce a su huso;
+// el bucket al que pertenece cada sesión lo sigue decidiendo Orbit.
+function selRenderGrupos(sesiones) {
+  var hoy = sesiones.filter(function (s) { return s.dia === 'hoy'; });
+  var manana = sesiones.filter(function (s) { return s.dia === 'mañana'; });
+
+  function pintarGrupo(titulo, lista) {
+    var grupo = document.createElement('div');
+    grupo.className = 'selector-grupo';
+    var label = document.createElement('div');
+    label.className = 'selector-grupo-label';
+    label.textContent = titulo;
+    grupo.appendChild(label);
+
+    if (lista.length === 0) {
+      var vacio = document.createElement('div');
+      vacio.className = 'selector-vacio';
+      vacio.textContent = 'Ya no quedan horarios disponibles hoy. Elige mañana.';
+      grupo.appendChild(vacio);
+      return grupo;
+    }
+
+    var grid = document.createElement('div');
+    grid.className = 'selector-grid';
+    lista.forEach(function (s) {
+      var pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'pill-horario';
+      pill.textContent = selFormatearHora(s.fechaHora);
+      pill.addEventListener('click', function () { selElegirSesion(s, pill); });
+      grid.appendChild(pill);
+    });
+    grupo.appendChild(grid);
+    return grupo;
+  }
+
+  selGrupos.innerHTML = '';
+  selGrupos.appendChild(pintarGrupo('Hoy', hoy));
+  selGrupos.appendChild(pintarGrupo('Mañana', manana));
+}
+
+function selElegirSesion(sesion, pillEl) {
+  sesElegida = sesion.fechaHora; // string ISO exacto de Orbit — nunca reconstruido
+  selVencido.style.display = 'none';
+
+  var pills = selGrupos.querySelectorAll('.pill-horario');
+  for (var i = 0; i < pills.length; i++) pills[i].classList.remove('seleccionado');
+  pillEl.classList.add('seleccionado');
+
+  var diaLabel = sesion.dia === 'hoy' ? 'Hoy' : 'Mañana';
+  selConfirmacion.textContent = diaLabel + ' · ' + selFormatearHora(sesion.fechaHora) + ' ✓';
+  selConfirmacion.style.display = 'block';
+  selRevelarForm();
+}
+
+// Se dispara cuando Orbit rechaza el registro con motivo:'horario_no_valido'
+// (la sesión elegida dejó de existir mientras la visitante llenaba el
+// formulario) — nunca se intenta "arreglar" la sesión en el navegador, se
+// vuelve a preguntar a Orbit cuáles horarios siguen siendo reales.
+function selHorarioVencido() {
+  sesElegida = null;
+  selConfirmacion.style.display = 'none';
+  selMostrarPlaceholderForm();
+  selVencidoMsg.textContent = 'Ese horario ya no está disponible.';
+  selVencido.style.display = 'block';
+  selCargarSesiones();
+}
+
+function selCargarSesiones() {
+  selCargando.style.display = 'block';
+  selError.style.display = 'none';
+  selListo.style.display = 'none';
+
+  fetch(SESIONES_URL)
     .then(function (res) { if (!res.ok) throw new Error('respuesta no ok'); return res.json(); })
     .then(function (data) {
-      if (!data || !data.fechaHora) return;
-      var d = new Date(data.fechaHora);
-      var opts = { timeZone: 'America/Bogota' };
-      var diaCorto = d.toLocaleString('es-CO', Object.assign({ weekday: 'long', day: 'numeric' }, opts));
-      var fechaCompleta = d.toLocaleString('es-CO', Object.assign({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, opts));
-      document.getElementById('registroLiveDia').textContent = diaCorto.charAt(0).toUpperCase() + diaCorto.slice(1);
-      document.getElementById('registroFecha').textContent = fechaCompleta.charAt(0).toUpperCase() + fechaCompleta.slice(1);
+      if (!data || !Array.isArray(data.sesiones)) throw new Error('respuesta sin sesiones');
+      selCargando.style.display = 'none';
+      selListo.style.display = 'block';
+      selRenderGrupos(data.sesiones);
+
+      var lugar = selResolverLugar();
+      if (lugar) {
+        selHuso.textContent = 'Horarios en hora de ' + lugar;
+        selHuso.style.display = 'block';
+      }
     })
     .catch(function () {
-      document.getElementById('registroFecha').textContent = 'Escríbenos por WhatsApp para confirmar la fecha de la próxima clase.';
+      selCargando.style.display = 'none';
+      selError.style.display = 'block';
     });
-})();
+}
+
+document.getElementById('selReintentar').addEventListener('click', selCargarSesiones);
+document.getElementById('selVerActualizados').addEventListener('click', function () {
+  selVencido.style.display = 'none';
+});
+
+selCargarSesiones();
 
 // ── Registro — Puerta 2, Slice 2: same-origin, vía invisible-a-soberana
 // (/api/mi-espacio-registro-gratuito), que reenvía server-to-server al
@@ -550,7 +793,7 @@ document.getElementById('regForm').addEventListener('submit', async function (ev
     var res = await fetch(ORBIT_REGISTRO_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email || undefined, telefono: telefono || undefined, nombre: nombre || undefined, origen: origen })
+      body: JSON.stringify({ email: email || undefined, telefono: telefono || undefined, nombre: nombre || undefined, origen: origen, fechaHoraElegida: sesElegida || undefined })
     });
     var data = await res.json().catch(function () { return {}; });
 
@@ -570,7 +813,14 @@ document.getElementById('regForm').addEventListener('submit', async function (ev
       return;
     }
 
-    if (res.status === 400) {
+    // SIMULIVE — diseño cerrado 2026-09-22: horario_no_valido es un 400
+    // distinto de cualquier otro — la sesión elegida dejó de ser real
+    // mientras llenaba el formulario. Nunca se trata como un error de
+    // formulario genérico: se vuelve a preguntar a Orbit (selHorarioVencido),
+    // nunca se reintenta con el mismo valor.
+    if (res.status === 400 && data.motivo === 'horario_no_valido') {
+      selHorarioVencido();
+    } else if (res.status === 400) {
       msg.className = 'form-msg err show';
       msg.textContent = data.error || 'Revisa los datos del formulario e inténtalo de nuevo.';
     } else {

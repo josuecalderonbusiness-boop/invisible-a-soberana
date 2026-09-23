@@ -1,0 +1,251 @@
+/* Sala SIMULIVE — tokens día/noche consolidados de workbook/index.html
+   (día) y auth.css (noche). Un solo árbol de componentes, dos hojas de
+   valores — nunca dos implementaciones (docs/v2/SIMULIVE.md §I). */
+
+.sala-simulive[data-tema="dia"] {
+  --sala-fondo: #2B1C24;
+  --sala-superficie: #FDF8F2;
+  --sala-acento: #8B1A2F;
+  --sala-acento-claro: #D4AF6A;
+  --sala-texto: #1a0a0f;
+  --sala-texto-claro: #F9F4EC;
+  --sala-burbuja: rgba(249, 244, 236, 0.92);
+}
+
+.sala-simulive[data-tema="noche"] {
+  --sala-fondo: #150D11;
+  --sala-superficie: #1E1218;
+  --sala-acento: #6B1A2A;
+  --sala-acento-claro: #D4A843;
+  --sala-texto: #F0E6EA;
+  --sala-texto-claro: #F0E6EA;
+  --sala-burbuja: rgba(30, 18, 24, 0.85);
+}
+
+.sala-simulive {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--sala-fondo, #150D11);
+  color: var(--sala-texto-claro, #F0E6EA);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.sala-video-box,
+.sala-espera {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+
+.sala-video-tapa {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+}
+
+.sala-lobby-msg {
+  color: var(--sala-texto-claro);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.sala-error { color: #E8C870; text-align: center; padding: 0 24px; }
+
+.sala-progreso-track {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+  z-index: 5;
+}
+.sala-progreso {
+  height: 100%;
+  width: 0%;
+  background: var(--sala-acento-claro, #D4AF6A);
+  transition: width 1s linear;
+}
+
+.sala-presencia {
+  position: absolute;
+  top: 14px; left: 14px;
+  background: var(--sala-burbuja);
+  color: var(--sala-acento, #8B1A2F);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 5;
+}
+
+.sala-chat {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: 76px;
+  max-height: 34vh;
+  overflow-y: auto;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sala-chat-msg {
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  max-width: 88%;
+}
+.sala-chat-msg--equipo { background: rgba(139, 26, 47, 0.65); }
+.sala-chat-etiqueta {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sala-chat-form {
+  position: absolute;
+  left: 12px; right: 12px; bottom: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 6;
+}
+.sala-chat-input {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 10px 14px;
+  background: var(--sala-burbuja);
+  color: var(--sala-texto);
+}
+.sala-chat-form button {
+  border-radius: 999px;
+  border: none;
+  padding: 10px 16px;
+  background: var(--sala-acento, #8B1A2F);
+  color: #fff;
+  font-weight: 600;
+}
+
+.sala-reacciones-botones {
+  position: absolute;
+  right: 12px; bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 6;
+}
+.sala-reacciones-botones button {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--sala-burbuja);
+  font-size: 1.2rem;
+}
+.sala-reacciones-flotantes { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.sala-reaccion-flotante {
+  position: absolute;
+  bottom: 90px;
+  font-size: 1.6rem;
+  animation: sala-flotar 2.2s ease-out forwards;
+}
+@keyframes sala-flotar {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-160px); opacity: 0; }
+}
+
+/* Mientras hay una pregunta o el CTA en pantalla, el chat/input/reacciones
+   se ocultan — comparten la misma franja inferior y se ven montados uno
+   sobre otro si quedan visibles a la vez. */
+.sala-simulive--overlay-activo .sala-chat,
+.sala-simulive--overlay-activo .sala-chat-form,
+.sala-simulive--overlay-activo .sala-reacciones-botones {
+  display: none;
+}
+
+.sala-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.sala-poll {
+  pointer-events: auto;
+  background: var(--sala-superficie);
+  color: var(--sala-texto);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 0 12px 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.35);
+}
+.sala-poll-texto { font-weight: 600; margin-bottom: 12px; }
+.sala-poll-opciones { display: flex; flex-direction: column; gap: 8px; }
+.sala-opcion {
+  border: 1px solid var(--sala-acento, #8B1A2F);
+  background: transparent;
+  color: var(--sala-texto);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: left;
+}
+.sala-opcion--elegida { background: var(--sala-acento, #8B1A2F); color: #fff; }
+.sala-poll-feedback { margin-top: 10px; font-size: 0.85rem; font-style: italic; }
+
+.sala-overlay--cta {
+  align-items: center;
+  background: linear-gradient(180deg, rgba(43,28,36,0) 0%, var(--sala-acento, #8B1A2F) 18%);
+  pointer-events: auto;
+}
+.sala-cta-capa { text-align: center; padding: 0 24px; }
+.sala-cta-titular {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--sala-acento-claro, #D4AF6A);
+  margin-bottom: 8px;
+}
+.sala-cta-subtitular { color: #fff; margin-bottom: 20px; }
+.sala-cta-boton {
+  display: inline-block;
+  background: var(--sala-acento-claro, #D4AF6A);
+  color: #2B1C24;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+/* Desktop: video + panel lateral, mismos componentes reordenados */
+@media (min-width: 980px) {
+  .sala-simulive { display: grid; grid-template-columns: 1fr 340px; }
+  .sala-video-box, .sala-espera, .sala-progreso-track { grid-column: 1; }
+  .sala-presencia { left: auto; right: 356px; }
+  .sala-chat {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    max-height: none;
+    height: calc(100vh - 70px);
+    padding: 16px;
+    background: var(--sala-superficie);
+  }
+  .sala-chat-msg { color: var(--sala-texto); background: rgba(0,0,0,0.06); }
+  .sala-chat-form { left: auto; right: 16px; width: 308px; bottom: 16px; }
+  .sala-reacciones-botones { right: 356px; }
+}

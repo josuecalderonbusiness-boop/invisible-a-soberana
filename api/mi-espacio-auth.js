@@ -23,6 +23,7 @@ import { enviarConfirmacionCorreo, enviarRecuperacion } from './_lib/email-brevo
 import { puedenIntentarTodas, puedeIntentar, registrarIntento, registrarExito } from './_lib/rate-limit.js';
 import { ipDelRequest } from './_lib/request-ip.js';
 import { enviarPushACorreo } from './_lib/push-fcm.js';
+import { salaAbrir, salaEstado, salaResponder, salaChatEnviar, salaReaccionar } from './_lib/orbit-sala-simulive.js';
 
 const BASE_URL = process.env.MI_ESPACIO_BASE_URL || 'https://invisible-a-soberana.vercel.app';
 const ERROR_GENERICO_LOGIN = 'Correo o contraseña incorrectos.';
@@ -905,6 +906,115 @@ async function enviarPushAccion(req, res) {
   }
 }
 
+// ============================================================
+// SIMULIVE — Sala real (diseño cerrado 2026-09-23, puente producción):
+// mismas 5 acciones que ya existían para la demo (feat/simulive-demo-sala),
+// reescritas aquí sin nada específico de esa demo — nunca un correo del
+// cliente, nunca un convocatoriaId sin verificar contra la sesión.
+//
+// Identidad: la MISMA cookie clase_gratuita_sesion (Puerta B) que ya usa
+// /clase-gratuita y Mi Espacio para experienciaGratuitaActiva — una
+// Convocatoria SIMULIVE real ya la emite en el registro
+// (registroGratuitoAccion -> construirCookieSiCorresponde), así que quien
+// ve la tarjeta "en vivo" ya la tiene. Nunca un formulario de correo nuevo
+// (eso era exclusivo de sala-demo-entrar, que NO se trae a producción).
+//
+// Frontera de identidad — a diferencia de la demo (que ignoraba el
+// convocatoriaId del cliente y siempre forzaba el de la demo): aquí el
+// convocatoriaId SÍ viene del cliente, así que se exige que coincida con
+// el de la cookie ya verificada — mismo criterio exacto que
+// masterclassZoomJoinAccion ("una cookie válida de otra Convocatoria
+// nunca autoriza contenido de esta"). Nunca se confía en un
+// convocatoriaId ajeno solo porque la cookie sea válida.
+// ============================================================
+
+function identidadSalaSimulive(req) {
+  const token = leerCookieClaseGratuita(req);
+  return verificarTokenClaseGratuita(token);
+}
+
+function convocatoriaCoincideConSesion(datos, convocatoriaId) {
+  return !!datos && !!convocatoriaId && datos.convocatoriaId === convocatoriaId;
+}
+
+async function salaAbrirAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const datos = identidadSalaSimulive(req);
+  const convocatoriaId = req.body && req.body.convocatoriaId;
+  if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  try {
+    const resultado = await salaAbrir(datos.correo, convocatoriaId);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-abrir error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaEstadoAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+  const datos = identidadSalaSimulive(req);
+  const convocatoriaId = req.query && req.query.convocatoriaId;
+  if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  try {
+    const resultado = await salaEstado(datos.correo, convocatoriaId, req.query && req.query.desde);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-estado error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaResponderAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const datos = identidadSalaSimulive(req);
+  const { convocatoriaId, eventoId, opcionId } = req.body || {};
+  if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  if (!eventoId || !opcionId) return res.status(400).json({ error: 'eventoId y opcionId son requeridos' });
+
+  try {
+    const resultado = await salaResponder(datos.correo, convocatoriaId, eventoId, opcionId);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-responder error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaChatEnviarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const datos = identidadSalaSimulive(req);
+  const { convocatoriaId, texto } = req.body || {};
+  if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  if (typeof texto !== 'string' || !texto.trim()) return res.status(400).json({ error: 'texto es requerido' });
+
+  try {
+    const resultado = await salaChatEnviar(datos.correo, convocatoriaId, texto.trim());
+    return res.status(200).json(resultado);
+  } catch (err) {
+    if (err.motivo === 'mensaje_muy_seguido') return res.status(409).json({ error: err.motivo });
+    console.error('mi-espacio-auth/sala-chat-enviar error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
+async function salaReaccionarAccion(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  const datos = identidadSalaSimulive(req);
+  const { convocatoriaId, tipo } = req.body || {};
+  if (!convocatoriaCoincideConSesion(datos, convocatoriaId)) return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+
+  try {
+    const resultado = await salaReaccionar(datos.correo, convocatoriaId, tipo);
+    return res.status(200).json(resultado);
+  } catch (err) {
+    console.error('mi-espacio-auth/sala-reaccionar error:', err.message);
+    return res.status(503).json({ error: 'no_disponible' });
+  }
+}
+
 const ACCIONES = {
   'enviar-push': enviarPushAccion,
   'cuenta-crear': crearCuentaAccion,
@@ -913,6 +1023,11 @@ const ACCIONES = {
   'sesion-clase-gratuita': sesionClaseGratuitaAccion,
   'masterclass-zoom-join': masterclassZoomJoinAccion,
   'bootcamp-zoom-join': bootcampZoomJoinAccion,
+  'sala-abrir': salaAbrirAccion,
+  'sala-estado': salaEstadoAccion,
+  'sala-responder': salaResponderAccion,
+  'sala-chat-enviar': salaChatEnviarAccion,
+  'sala-reaccionar': salaReaccionarAccion,
   'reclamar-sesion-clase-gratuita': reclamarSesionClaseGratuitaAccion,
   'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
   login: loginAccion,

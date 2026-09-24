@@ -77,6 +77,7 @@
     contenedor.innerHTML = renderShell();
     const $video = contenedor.querySelector('[data-sala-video]');
     const $espera = contenedor.querySelector('[data-sala-espera]');
+    const $avisoReplay = contenedor.querySelector('[data-sala-replay-aviso]');
     const $chat = contenedor.querySelector('[data-sala-chat-lista]');
     const $presencia = contenedor.querySelector('[data-sala-presencia]');
     const $reacciones = contenedor.querySelector('[data-sala-reacciones]');
@@ -84,8 +85,9 @@
     const $progreso = contenedor.querySelector('[data-sala-progreso]');
     const $chatForm = contenedor.querySelector('[data-sala-chat-form]');
     const $chatInput = contenedor.querySelector('[data-sala-chat-input]');
+    const $botonesReaccion = contenedor.querySelectorAll('[data-sala-reaccion]');
 
-    contenedor.querySelectorAll('[data-sala-reaccion]').forEach(function (btn) {
+    $botonesReaccion.forEach(function (btn) {
       btn.addEventListener('click', function () { reaccionar(btn.dataset.salaReaccion); });
     });
     if ($chatForm) {
@@ -127,16 +129,72 @@
     estado.eventoSesion = apertura.eventoSesion || [];
     contenedor.dataset.tema = apertura.temaVisual || 'dia';
 
+    // ── salida en_vivo -> replay (diseño cerrado 2026-09-24) ──────────
+    // Fuente de verdad: fechaHora + duracionSegundos (lo mismo que ya usa
+    // calcularFaseSimulive en Orbit) — nunca el 'ended' del reproductor.
+    // Un solo setTimeout hacia el instante exacto (mismo patrón que la
+    // transición del countdown en experiencia-gratuita.js), con
+    // visibilitychange/pageshow/focus como red de respaldo y 'ended' como
+    // señal secundaria — todos llaman a la MISMA función idempotente.
+    let salaSesionCerrada = false;
+    let timerCierreSesion = null;
+    let finSesionMs = null;
+
+    function aplicarUiReplay() {
+      if ($avisoReplay) $avisoReplay.style.display = 'block';
+      // Deja de contar/mostrarse como "en vivo" — el numero ya no refleja
+      // nada real una vez terminada la sesion.
+      if ($presencia) $presencia.style.display = 'none';
+      // Chat a solo lectura: los mensajes ya recibidos se quedan visibles,
+      // simplemente no se puede seguir escribiendo.
+      if ($chatInput) { $chatInput.disabled = true; $chatInput.placeholder = 'El chat ya cerró'; }
+      if ($chatForm) $chatForm.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+      // Reacciones nuevas dejan de tener sentido.
+      $botonesReaccion.forEach(function (btn) { btn.disabled = true; });
+      // La CTA (si ya apareció via el guion) permanece exactamente igual
+      // — mostrarCTA() nunca la oculta, nada que hacer aquí.
+      // El video NO se corta — sigue reproduciendose/termina solo.
+    }
+
+    function pasarAReplay() {
+      if (salaSesionCerrada) return; // guard idempotente
+      salaSesionCerrada = true;
+      estado.fase = 'replay';
+      if (timerCierreSesion) { clearTimeout(timerCierreSesion); timerCierreSesion = null; }
+      aplicarUiReplay();
+    }
+
+    function programarCierreSesion(fechaHoraISO) {
+      if (!fechaHoraISO) return; // Orbit viejo sin el campo -- sin transicion, mismo riesgo de siempre
+      finSesionMs = new Date(fechaHoraISO).getTime() + estado.duracionSegundos * 1000;
+      const demora = Math.max(finSesionMs - Date.now() + 300, 250);
+      if (demora > 2147483647) return; // tope de setTimeout (~24 dias); las señales de respaldo cubren el resto
+      timerCierreSesion = setTimeout(pasarAReplay, demora);
+    }
+
+    function revaluarSiYaTermino() {
+      if (salaSesionCerrada || finSesionMs === null) return;
+      if (Date.now() >= finSesionMs) pasarAReplay();
+    }
+
     if (estado.fase === 'espera' || estado.fase === 'lobby') {
       $video.style.display = 'none';
       $espera.style.display = 'block';
       $espera.innerHTML = estado.fase === 'lobby'
         ? '<p class="sala-lobby-msg">Tu sesión está a punto de comenzar. Puedes quedarte aquí.</p>'
         : '<p class="sala-lobby-msg">Sesión programada. Vuelve un poco antes de la hora.</p>';
-    } else if (apertura.videoUrl) {
+    } else if (estado.fase === 'replay') {
+      // Representación propia desde el primer render — nunca la misma
+      // pantalla que en_vivo (hallazgo de la auditoría 2026-09-24).
+      $espera.style.display = 'none';
+      if (apertura.videoUrl) { $video.style.display = 'block'; montarVideo($video, apertura.videoUrl, estado); }
+      aplicarUiReplay();
+    } else if (apertura.videoUrl) { // en_vivo
       $espera.style.display = 'none';
       $video.style.display = 'block';
       montarVideo($video, apertura.videoUrl, estado);
+      estado.onFinDeSesion = pasarAReplay; // 'ended' del reproductor -> señal secundaria, ver montarVideo
+      programarCierreSesion(apertura.fechaHora);
     }
 
     function posicionActual() {
@@ -333,8 +391,10 @@
 
     document.addEventListener('visibilitychange', function () {
       estado.pollActivo = document.visibilityState === 'visible';
-      if (estado.pollActivo) pollSala();
+      if (estado.pollActivo) { pollSala(); revaluarSiYaTermino(); }
     });
+    window.addEventListener('pageshow', revaluarSiYaTermino);
+    window.addEventListener('focus', revaluarSiYaTermino);
   }
 
   function renderShell() {
@@ -342,6 +402,7 @@
       '<div class="sala-simulive">' +
       '<div class="sala-video-box" data-sala-video style="display:none"></div>' +
       '<div class="sala-espera" data-sala-espera></div>' +
+      '<p class="sala-replay-aviso" data-sala-replay-aviso style="display:none">Esta sesión ya terminó — esto es el replay.</p>' +
       '<div class="sala-progreso-track"><div class="sala-progreso" data-sala-progreso></div></div>' +
       '<div class="sala-presencia" data-sala-presencia>👥 —</div>' +
       '<div class="sala-chat" data-sala-chat-lista></div>' +
@@ -402,6 +463,13 @@
       const posicionAlListo = estado.posicionAlAbrir + (Date.now() - estado.relojLocalAlAbrirMs) / 1000;
       player.setCurrentTime(Math.max(0, posicionAlListo));
       player.play();
+    });
+    // Señal secundaria de cierre (diseño 2026-09-24): nunca la autoridad
+    // -- fechaHora+duracionSegundos ya decide el fin por su cuenta, esto
+    // solo cubre el caso de que Bunny termine unos segundos antes/después
+    // de esa marca. onFinDeSesion es idempotente (ver iniciarSalaSimulive).
+    player.on('ended', function () {
+      if (typeof estado.onFinDeSesion === 'function') estado.onFinDeSesion();
     });
   }
 

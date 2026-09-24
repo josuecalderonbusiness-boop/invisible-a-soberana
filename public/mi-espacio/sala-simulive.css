@@ -87,6 +87,22 @@
   z-index: 5;
 }
 
+/* Salida en_vivo -> replay (diseño 2026-09-24): discreto, nunca un
+   corte brusco del video -- misma familia visual que sala-presencia,
+   pero sin llamar tanto la atención (la sesión sigue reproduciéndose). */
+.sala-replay-aviso {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: var(--sala-burbuja);
+  color: var(--sala-texto-claro);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  z-index: 5;
+  max-width: 60%;
+  text-align: right;
+}
+
 .sala-chat {
   position: absolute;
   left: 12px; right: 12px;

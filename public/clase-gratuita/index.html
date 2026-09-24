@@ -231,6 +231,7 @@ function cgHeadersQaReloj() {
 async function cgInit() {
   try {
     const res = await fetch('/api/mi-espacio-sesion-clase-gratuita', { credentials: 'include', headers: cgHeadersQaReloj() });
+    msRegistrarHoraServidor(res);
     const data = await res.json();
     document.getElementById('cg-cargando').style.display = 'none';
 
@@ -359,6 +360,13 @@ function cgInitFormularioCorreo() {
     }
   });
 }
+
+// Transición automática espera → en_vivo (SIMULIVE, diseño cerrado
+// 2026-09-24): experiencia-gratuita.js reconsulta este mismo cgInit()
+// cuando el reloj programado (o una señal de respaldo) indica que la
+// sesión ya debería haber empezado — reutiliza toda la lógica existente
+// (autorización, Código Soberana, Replay comprado, etc.) sin duplicarla.
+window.msRecargarExperienciaGratuita = cgInit;
 
 document.addEventListener('DOMContentLoaded', () => {
   cgCapturarQaRelojDeUrl();

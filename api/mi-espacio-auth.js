@@ -14,7 +14,7 @@
 
 import { obtenerCuenta, crearCuenta, actualizarPassword, marcarCorreoVerificado, normalizarCorreo } from './_lib/cuenta.js';
 import { hashPassword, verifyPassword } from './_lib/auth-password.js';
-import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
+import { obtenerComprasVigentes, tieneDerechoVigente, tieneDerechoVigenteA, tieneRegistroActivo, obtenerProximaConvocatoriaDisponible, obtenerProximaConvocatoriaPublica, obtenerSesionesDisponibles, obtenerExperienciaGratuitaActiva, obtenerExperienciaGratuitaActivaConReintento, obtenerTieneRegistroHistorico, obtenerOportunidadBootcampActiva, obtenerReplayCompradoActivo, obtenerBootcampHitos, obtenerRecorridoHabilitado, obtenerAccesoBootcamp, confirmarBootcampHitoVisto, obtenerMasterclassZoomJoin, obtenerBootcampZoomJoin, crearRegistroAutenticado, registrarClaseGratuita } from './_lib/orbit-perfil-acceso.js';
 import { crearToken as crearTokenSesion, cookieDeSesion, cookieDeLogout, leerCookie, verificarToken } from './_lib/auth-session.js';
 import { verificarToken as verificarTokenClaseGratuita, leerCookie as leerCookieClaseGratuita, construirCookieSiCorresponde } from './_lib/auth-clase-gratuita.js';
 import { construirCookieSiCorresponde as construirCookieContinuidadBootcamp, verificarToken as verificarTokenContinuidadBootcamp, leerCookie as leerCookieContinuidadBootcamp } from './_lib/auth-continuidad-bootcamp.js';
@@ -165,6 +165,18 @@ function normalizarTelefonoRegistro(v) {
   return (digitos.length >= 10 && digitos.length <= 15) ? digitos : null;
 }
 
+// SIMULIVE — diseño cerrado 2026-09-22: `fechaHoraElegida` es la única pieza
+// nueva de este payload — un string ISO reenviado TAL CUAL como llegó del
+// cliente, que a su vez lo recibió tal cual de sesiones-disponibles. Nunca se
+// reparsea/reformatea aquí (Orbit es la única autoridad que revalida si sigue
+// siendo un horario real, registroAccion en api/v1/perfil-acceso.js). Un valor
+// ausente o mal formado simplemente no es "una fecha ISO válida" para Orbit,
+// que la rechaza con motivo:'horario_no_valido' — no hace falta duplicar esa
+// validación aquí.
+function normalizarFechaHoraElegida(v) {
+  return typeof v === 'string' && v.trim() ? v.trim() : undefined;
+}
+
 async function registroGratuitoAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -172,6 +184,7 @@ async function registroGratuitoAccion(req, res) {
   const telefono = normalizarTelefonoRegistro(req.body?.telefono);
   const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
   const origen = typeof req.body?.origen === 'string' ? req.body.origen.trim() : '';
+  const fechaHoraElegida = normalizarFechaHoraElegida(req.body?.fechaHoraElegida);
 
   if (!email || !telefono) {
     return res.status(400).json({ error: 'Necesitamos tu WhatsApp y tu correo para reservarte el lugar.' });
@@ -183,7 +196,7 @@ async function registroGratuitoAccion(req, res) {
   }
 
   try {
-    const { status, cuerpo } = await registrarClaseGratuita({ email, telefono, nombre, origen });
+    const { status, cuerpo } = await registrarClaseGratuita({ email, telefono, nombre, origen, fechaHoraElegida });
     if (status === 200 && cuerpo && cuerpo.ok) {
       await registrarExito('ip-registro-gratuito', ip);
       // Puerta 2 — Slice 3: la cookie SOLO se intenta emitir después de que
@@ -231,6 +244,22 @@ async function proximaConvocatoriaPublicaAccion(req, res) {
   } catch (err) {
     console.error('mi-espacio-auth/proxima-convocatoria error:', err.message);
     return res.status(503).json({ error: 'No pudimos cargar la fecha de la clase. Intenta de nuevo en un momento.' });
+  }
+}
+
+// SIMULIVE — selector de sesión (diseño cerrado 2026-09-22): proxy same-origin
+// del endpoint PUBLICO de Orbit /api/sesiones-disponibles — mismo criterio
+// exacto que proximaConvocatoriaPublicaAccion arriba (lectura pura, sin
+// sesión, sin secreto, sin rate limiting propio, tráfico anónimo de landing).
+async function sesionesDisponiblesAccion(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+
+  try {
+    const sesionesDisponibles = await obtenerSesionesDisponibles();
+    return res.status(200).json(sesionesDisponibles);
+  } catch (err) {
+    console.error('mi-espacio-auth/sesiones-disponibles error:', err.message);
+    return res.status(503).json({ error: 'No pudimos cargar los horarios disponibles. Intenta de nuevo en un momento.' });
   }
 }
 
@@ -1056,6 +1085,7 @@ const ACCIONES = {
   'sala-reaccionar': salaReaccionarAccion,
   'reclamar-sesion-clase-gratuita': reclamarSesionClaseGratuitaAccion,
   'proxima-convocatoria': proximaConvocatoriaPublicaAccion,
+  'sesiones-disponibles': sesionesDisponiblesAccion,
   login: loginAccion,
   logout: logoutAccion,
   sesion: sesionAccion,

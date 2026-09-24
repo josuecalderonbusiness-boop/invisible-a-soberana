@@ -28,9 +28,11 @@ const TIMEOUT_MS = 4000; // Conversación interactiva (contrato cerrado 2026-08-
 // apunte a una Preview protegida de Orbit) -- mecanismo OFICIAL de Vercel,
 // header x-vercel-protection-bypass, nunca llega al navegador. Sin esta
 // variable, no se manda el header (comportamiento identico a como era
-// antes; Production no tiene esta protección). Necesario para la prueba
-// humana en Preview de este corte (SIMULIVE, sala real) -- sesionClaseGratuitaAccion
-// depende de consultarPerfilAcceso para experienciaGratuitaActiva.
+// antes; Production no tiene esta protección). Mecanismo ya probado en
+// feat/simulive-demo-sala, portado tal cual; usado tanto por el selector
+// de sesión (SIMULIVE, diseño 2026-09-22) como por la sala real
+// (SIMULIVE, diseño 2026-09-23) -- sesionClaseGratuitaAccion depende de
+// consultarPerfilAcceso para experienciaGratuitaActiva.
 const ORBIT_PROTECTION_BYPASS_SECRET = process.env.ORBIT_PROTECTION_BYPASS_SECRET;
 function headersProteccionPreview() {
   if (!ORBIT_PROTECTION_BYPASS_SECRET) return {};
@@ -427,14 +429,22 @@ async function crearRegistroAutenticado(correo) {
 // Slice 3 podra emitir la cookie temporal en la misma respuesta. No se
 // reescribe el contrato de Orbit — mismo body, mismo shape de respuesta,
 // pass-through de status.
-async function registrarClaseGratuita({ email, telefono, nombre, origen }) {
+// SIMULIVE — diseño cerrado 2026-09-22: `fechaHoraElegida` es OPCIONAL — sin
+// ella, esta función manda exactamente el mismo body que siempre (LIVE, sin
+// cambio de comportamiento). Cuando viene, se reenvía tal cual la recibió
+// (el string ISO que Orbit ya devolvió en sesiones-disponibles) — nunca se
+// reconstruye ni reformatea aquí; Orbit vuelve a validarla server-side de
+// todas formas (registroAccion, api/v1/perfil-acceso.js).
+async function registrarClaseGratuita({ email, telefono, nombre, origen, fechaHoraElegida }) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
+    const body = { email, telefono, nombre, origen };
+    if (fechaHoraElegida !== undefined) body.fechaHoraElegida = fechaHoraElegida;
     const res = await fetch(`${ORBIT_BASE_URL}/api/registro`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, telefono, nombre, origen }),
+      headers: { 'Content-Type': 'application/json', ...headersProteccionPreview() },
+      body: JSON.stringify(body),
       signal: controller.signal
     });
     const cuerpo = await res.json().catch(() => ({}));
@@ -466,6 +476,37 @@ async function obtenerProximaConvocatoriaPublica() {
     const res = await fetch(`${ORBIT_BASE_URL}/api/v1/proxima-convocatoria`, { signal: controller.signal });
     if (!res.ok) {
       const err = new Error(`Orbit respondió ${res.status} al consultar la proxima convocatoria`);
+      err.motivo = `orbit_respondio_${res.status}`;
+      throw err;
+    }
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const e = new Error('Orbit no respondió a tiempo');
+      e.motivo = 'timeout';
+      throw e;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// SIMULIVE — selector de sesión (diseño cerrado 2026-09-22): proxy same-origin
+// del endpoint PUBLICO GET /api/sesiones-disponibles — mismo patron exacto que
+// obtenerProximaConvocatoriaPublica de arriba (sin secreto, misma audiencia
+// anonima). Orbit ya calcula "hoy y mañana" en el momento, sin materializar
+// nada — esta función solo transporta { sesiones: [{fechaHora, dia}] }.
+async function obtenerSesionesDisponibles() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ORBIT_BASE_URL}/api/sesiones-disponibles`, {
+      headers: headersProteccionPreview(),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const err = new Error(`Orbit respondió ${res.status} al consultar las sesiones disponibles`);
       err.motivo = `orbit_respondio_${res.status}`;
       throw err;
     }
@@ -534,6 +575,7 @@ export {
   obtenerRegistrosActivos,
   obtenerProximaConvocatoriaDisponible,
   obtenerProximaConvocatoriaPublica,
+  obtenerSesionesDisponibles,
   obtenerExperienciaGratuitaActiva,
   obtenerExperienciaGratuitaActivaConReintento,
   obtenerTieneRegistroHistorico,

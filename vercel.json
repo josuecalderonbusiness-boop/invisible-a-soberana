@@ -6,6 +6,7 @@
     { "source": "/api/mi-espacio-registro-gratuito", "destination": "/api/mi-espacio-auth?accion=registro-gratuito" },
     { "source": "/api/mi-espacio-sesion-clase-gratuita", "destination": "/api/mi-espacio-auth?accion=sesion-clase-gratuita" },
     { "source": "/api/mi-espacio-proxima-convocatoria", "destination": "/api/mi-espacio-auth?accion=proxima-convocatoria" },
+    { "source": "/api/mi-espacio-sesiones-disponibles", "destination": "/api/mi-espacio-auth?accion=sesiones-disponibles" },
     { "source": "/api/mi-espacio-login", "destination": "/api/mi-espacio-auth?accion=login" },
     { "source": "/api/mi-espacio-logout", "destination": "/api/mi-espacio-auth?accion=logout" },
     { "source": "/api/mi-espacio-sesion", "destination": "/api/mi-espacio-auth?accion=sesion" },

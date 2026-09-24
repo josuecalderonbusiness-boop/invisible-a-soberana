@@ -141,13 +141,87 @@ function msPrepararBotonZoomEmbebido(btn, video) {
   });
 }
 
+// ── Transición automática espera → en_vivo (SIMULIVE, diseño cerrado
+// 2026-09-24) ────────────────────────────────────────────────────────
+// Mismo patrón que wbProgramarTransicionHitos/wbRevaluarHitos
+// (public/workbook/index.html): un solo setTimeout hacia el instante
+// exacto (nunca polling), corregido contra el reloj del servidor, con
+// visibilitychange/pageshow/focus como red de seguridad — nunca el
+// disparador principal. A diferencia de Workbook, aquí SÍ hace falta una
+// llamada real de red al llegar la hora: la fase la decide Orbit, no una
+// resta de fechas en el cliente.
+let _msOffsetServidorMs = 0;
+let _msTimerTransicionSimulive = null;
+let _msNavegandoASala = false;
+let _msRevaluandoExperiencia = false;
+
+// Quien cargue este script puede llamar a esto con la respuesta de
+// CUALQUIER fetch propio para corregir el reloj — opcional; sin esto se
+// usa Date.now() tal cual, igual que siempre.
+function msRegistrarHoraServidor(res) {
+  try {
+    const cab = res && res.headers && res.headers.get && res.headers.get('Date');
+    const t = cab ? Date.parse(cab) : NaN;
+    if (isFinite(t)) _msOffsetServidorMs = t - Date.now();
+  } catch (err) { /* sin cabecera: se usa el reloj del dispositivo */ }
+}
+function msAhoraMs() { return Date.now() + _msOffsetServidorMs; }
+
+function msProgramarTransicionSimulive(exp) {
+  if (_msTimerTransicionSimulive) { clearTimeout(_msTimerTransicionSimulive); _msTimerTransicionSimulive = null; }
+  if (!exp || exp.fase !== 'espera') return;
+  const instanteMs = new Date(exp.fechaHora).getTime();
+  const demora = Math.max(instanteMs - msAhoraMs() + 300, 250); // 300ms de margen: que el reloj ya haya cruzado la hora
+  if (demora > 2147483647) return; // tope de setTimeout (~24 dias); las señales de respaldo cubren el resto
+  _msTimerTransicionSimulive = setTimeout(function () {
+    _msTimerTransicionSimulive = null;
+    msRevaluarExperienciaGratuita();
+  }, demora);
+}
+
+// Disparador de respaldo (visibilitychange/pageshow/focus): solo actúa
+// si el reloj corregido ya alcanzó la hora de la sesión — mientras
+// falte, el setTimeout ya programado sigue siendo la única fuente de
+// verdad, esto no lo reemplaza ni compite con él.
+function msRevaluarSiYaEsHora() {
+  const exp = dbExperienciaGratuita;
+  if (!exp || exp.fase !== 'espera') return;
+  if (msAhoraMs() < new Date(exp.fechaHora).getTime()) return;
+  msRevaluarExperienciaGratuita();
+}
+
+// Vuelve a consultar el estado real. La página que carga este archivo
+// define `window.msRecargarExperienciaGratuita` apuntando a SU PROPIA
+// función de carga (mismo patrón todo-o-nada que
+// window.abrirZoomEmbebido/msObtenerHeadersQaReloj más abajo en este
+// archivo) — sin ese hook, esta función no hace nada.
+function msRevaluarExperienciaGratuita() {
+  if (_msRevaluandoExperiencia || _msNavegandoASala) return;
+  if (typeof window.msRecargarExperienciaGratuita !== 'function') return;
+  _msRevaluandoExperiencia = true;
+  Promise.resolve(window.msRecargarExperienciaGratuita()).finally(function () {
+    _msRevaluandoExperiencia = false;
+  });
+}
+
+(function msActivarRevaluacionExperienciaGratuita() {
+  if (window.__msRevaluacionExperienciaActiva) return;
+  window.__msRevaluacionExperienciaActiva = true;
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') msRevaluarSiYaEsHora();
+  });
+  window.addEventListener('pageshow', function () { msRevaluarSiYaEsHora(); });
+  window.addEventListener('focus', function () { msRevaluarSiYaEsHora(); });
+})();
+
 function msRenderClaseGratuita() {
   clearInterval(window._msClaseInterval);
   _msUltimoVideoReplayRenderizado = null;
   const card = document.getElementById('ms-clase-card');
-  if (!dbExperienciaGratuita) { card.style.display = 'none'; return; }
+  if (!dbExperienciaGratuita) { card.style.display = 'none'; msProgramarTransicionSimulive(null); return; }
 
   card.style.display = 'block';
+  msProgramarTransicionSimulive(dbExperienciaGratuita);
   msTickClaseGratuita();
   window._msClaseInterval = setInterval(msTickClaseGratuita, 1000);
 }
@@ -186,14 +260,25 @@ function msTickClaseGratuita() {
     // congelada: nunca presentar el contenido pregrabado como si fuera un
     // LIVE real.
     eyebrow.textContent = 'Sesión programada';
-    title.textContent = 'Tu sesión ya está disponible';
-    sub.textContent = 'Entra cuando quieras dentro de esta hora.';
+    title.textContent = 'Tu sesión está comenzando…';
+    sub.textContent = 'Te llevamos a tu sesión en un momento.';
     countdown.style.display = 'none';
     cal.style.display = 'none';
     video.style.display = 'none';
     btn.style.display = 'inline-block';
     btn.href = '/sala?convocatoriaId=' + encodeURIComponent(exp.convocatoriaId) + msSufijoQaRelojSala();
     btn.textContent = 'Entrar a tu sesión →';
+    // Autoingreso (diseño 2026-09-24): nunca esperar un clic — el botón
+    // sigue visible como respaldo manual, pero se navega sola a los
+    // 1200ms usando btn.href (la MISMA url ya asignada arriba, nunca
+    // reconstruida). _msNavegandoASala es el guard idempotente: sin él,
+    // cada tick del countdown (cada 1s) o cada visibilitychange/pageshow/
+    // focus que llegue mientras la página todavía no terminó de
+    // descargarse volvería a programar otra navegación.
+    if (!_msNavegandoASala) {
+      _msNavegandoASala = true;
+      setTimeout(function () { window.location.href = btn.href; }, 1200);
+    }
   } else if (exp.fase === 'en_vivo') {
     eyebrow.textContent = '🔴 En vivo ahora';
     title.textContent = 'Tu clase está en curso';

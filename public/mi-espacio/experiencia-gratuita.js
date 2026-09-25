@@ -296,7 +296,28 @@ function msTickClaseGratuita() {
       btn.removeAttribute('href');
       btn.textContent = 'El enlace llega en un momento';
     }
-  } else { // 'replay'
+  } else if (exp.fase === 'replay' && exp.modalidad === 'simulive') {
+    // SIMULIVE — puerta de replay (diseño cerrado 2026-09-25, hallazgo real
+    // en teléfono real): a diferencia de LIVE, SIMULIVE nunca llena
+    // enlaceReplay — su replay vive enteramente en /sala (mismo motor que
+    // ya sirve en_vivo, ver sala-simulive.js), nunca en un video aparte.
+    // Sin esta rama, caía en el `else` de abajo (pensado solo para LIVE) y
+    // mostraba "video pendiente" sin ningún botón — ninguna mujer podía
+    // volver a su replay desde /clase-gratuita (el único destino que
+    // reciben los correos/WhatsApp de recordatorio). Sin autoingreso, a
+    // diferencia de en_vivo+simulive: puede volver días después (vigenteHasta
+    // sigue gobernando la ventana), primero decide si quiere verlo.
+    eyebrow.textContent = 'Disponible en tu espacio';
+    title.textContent = 'Revive tu clase';
+    sub.textContent = 'Disponible por tiempo limitado.';
+    countdown.style.display = 'flex';
+    dbFmtCountdown('ms-clase-cd', new Date(exp.vigenteHasta).getTime() - Date.now());
+    cal.style.display = 'none';
+    video.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.href = '/sala?convocatoriaId=' + encodeURIComponent(exp.convocatoriaId) + msSufijoQaRelojSala();
+    btn.textContent = 'Entrar a tu replay →';
+  } else { // 'replay' (LIVE, con enlaceReplay — sin cambios)
     // Puerta 5, Estación 7 (ciclo de vida del embed, diseño cerrado
     // 2026-09-15): si el embed de Zoom llegó a estar activo (en_vivo), esta
     // es la transición en_vivo -> replay — cierra la sesión de Zoom ANTES

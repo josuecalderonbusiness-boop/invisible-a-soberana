@@ -18,7 +18,41 @@
   const PLAYERJS_SRC = 'https://assets.mediadelivery.net/playerjs/player-0.1.0.min.js';
   const POLL_INTERVALO_MS = 4000;
   const DERIVA_CORRECCION_MS = 30000;
-  const DERIVA_UMBRAL_SEGUNDOS = 3;
+
+  // Sincronización video <-> sesión (2026-09-25). UNA sola función
+  // (sincronizarVideoConSesion) es la única que toca el currentTime del video
+  // en vivo; la invocan tres momentos: la entrada, el regreso a la página y el
+  // corrector periódico de deriva. Parámetros INICIALES, medidos en un Android
+  // real (Chrome pausa el video al salir y lo reanuda solo al volver, pero en
+  // la posición vieja: el desfase crece con el tiempo fuera). Se dejan aquí,
+  // nombrados, para poder ajustarlos tras verlo en uso.
+  const SYNC_ESPERA_REGRESO_MS = 250;   // tras volver: dejar que el navegador/Bunny reanuden solos
+  const SYNC_ESPERA_PLAY_MS = 500;      // tras un play: dejar asentar el arranque antes de comparar
+  const SYNC_TOLERANCIA_SEGUNDOS = 3;   // menos que esto: alineado, no se toca (el desfase normal medido fue ~0,8 s)
+  const SYNC_AVISO_SEGUNDOS = 8;        // más que esto, al volver: aviso "Volviste a la sesión"
+  const SYNC_RESPUESTA_MAX_MS = 1500;   // techo de espera al reproductor (respondió en <100 ms en la medición)
+  const SYNC_ASENTAR_MS = 1000;         // tras un salto, no volver a leer/corregir hasta que asiente
+  const SYNC_CONTINUAR_ESPERA_MS = 1000; // tras corregir: si sigue pausado, pista para continuar
+  const AVISO_REINCORPORACION_MS = 2800;
+
+  // Decisión pura (sin DOM ni red, probada aparte): dada la posición REAL del
+  // reproductor y la de la SESIÓN, ¿hay que corregir y avisar?
+  //   origen: 'play' | 'regreso' | 'deriva'
+  //   - sin respuesta del reproductor: solo el regreso asume el peor caso
+  //     (corrige y avisa); la entrada y la deriva simplemente esperan al
+  //     siguiente ciclo, como siempre.
+  //   - diferencia < tolerancia: no se toca. >= tolerancia: se corrige.
+  //   - el aviso solo existe al VOLVER, y solo si el salto pasa de SYNC_AVISO_SEGUNDOS.
+  function decidirSincronizacion(segundosReales, esperado, origen) {
+    const sinDato = segundosReales === null || segundosReales === undefined || typeof segundosReales !== 'number' || !isFinite(segundosReales);
+    if (sinDato) {
+      if (origen !== 'regreso') return { corregir: false, aviso: false, diferencia: null };
+      return { corregir: true, aviso: true, diferencia: Infinity };
+    }
+    const diferencia = Math.abs(segundosReales - esperado);
+    const corregir = diferencia >= SYNC_TOLERANCIA_SEGUNDOS;
+    return { corregir, aviso: corregir && origen === 'regreso' && diferencia > SYNC_AVISO_SEGUNDOS, diferencia };
+  }
 
   let cargaLibPromise = null;
   function cargarPlayerJs() {
@@ -73,6 +107,11 @@
       pollActivo: true,
       pollEnCurso: false,
       derivaId: null,
+      regresoTimer: null,      // espera de SYNC_ESPERA_REGRESO_MS (deduplica visibilitychange + focus)
+      sincronizando: false,    // una sola lectura/corrección a la vez: nada se pisa
+      playTimer: null,         // debounce de los 'play' seguidos que emite Bunny
+      avisoTimer: null,
+      continuarTimer: null,
     };
 
     // Esqueleto neutro: solo el contenedor de video (nodo PERSISTENTE — el
@@ -102,10 +141,14 @@
     let $progreso = null;
     let $chatForm = null;
     let $chatInput = null;
+    let $avisoReincorporacion = null;
+    let $avisoContinuar = null;
 
     function montarShellEnVivo() {
       $sala.dataset.modo = 'en_vivo';
       $sala.insertAdjacentHTML('beforeend', renderShellEnVivo());
+      $avisoReincorporacion = contenedor.querySelector('[data-sala-reincorporacion-aviso]');
+      $avisoContinuar = contenedor.querySelector('[data-sala-continuar-aviso]');
       $chat = contenedor.querySelector('[data-sala-chat-lista]');
       $presencia = contenedor.querySelector('[data-sala-presencia]');
       $reacciones = contenedor.querySelector('[data-sala-reacciones]');
@@ -240,6 +283,10 @@
       if (estado.tickId) { clearInterval(estado.tickId); estado.tickId = null; }
       if (estado.pollId) { clearInterval(estado.pollId); estado.pollId = null; }
       if (estado.derivaId) { clearInterval(estado.derivaId); estado.derivaId = null; }
+      if (estado.regresoTimer) { clearTimeout(estado.regresoTimer); estado.regresoTimer = null; }
+      if (estado.avisoTimer) { clearTimeout(estado.avisoTimer); estado.avisoTimer = null; }
+      if (estado.continuarTimer) { clearTimeout(estado.continuarTimer); estado.continuarTimer = null; }
+      if (estado.playTimer) { clearTimeout(estado.playTimer); estado.playTimer = null; }
       estado.pollActivo = false;
     }
 
@@ -247,6 +294,7 @@
       detenerMaquinariaEnVivo();
       contenedor.querySelectorAll('[data-sala-solo-vivo]').forEach(function (n) { n.remove(); });
       $chat = $presencia = $reacciones = $overlay = $progreso = $chatForm = $chatInput = null;
+      $avisoReincorporacion = $avisoContinuar = null;
       contenedor.classList.remove('sala-simulive--overlay-activo');
       montarShellReplay();
       conectarControlReplay(); // el reproductor de en vivo ya existe y sigue vivo
@@ -462,16 +510,113 @@
       $chat.scrollTop = $chat.scrollHeight;
     }
 
-    // ── corrección de deriva del video, independiente del poll ──
-    estado.derivaId = setInterval(function () {
-      if (!estado.player || estado.fase !== 'en_vivo') return;
-      estado.player.getCurrentTime(function (segundosReales) {
-        const esperado = posicionActual();
-        if (Math.abs(segundosReales - esperado) > DERIVA_UMBRAL_SEGUNDOS) {
-          estado.player.setCurrentTime(esperado);
+    // ── sincronización video <-> sesión (2026-09-25) ────────────────────
+    // La sesión manda, el video se sincroniza con ella. Nunca se asume dónde
+    // está el video: se lee del reproductor. UNA sola función toca el
+    // currentTime, invocada desde tres momentos (así nunca hay dos
+    // mecanismos peleando por la posición):
+    //   'play'    — el video empezó/reanudó (entrada con el autoplay bloqueado,
+    //               toque tras la pista, reanudación automática): arranca desde
+    //               donde se detuvo y la sesión ya iba adelante;
+    //   'regreso' — la usuaria volvió a la página (Android pausa al salir y
+    //               reanuda solo, pero en la posición vieja); es el ÚNICO que
+    //               puede mostrar el aviso "Volviste a la sesión";
+    //   'deriva'  — el corrector periódico de siempre (cada 30 s).
+    // Sin play() automático: el navegador ya reanuda solo; si tras corregir
+    // sigue pausado, una pista discreta invita a tocar (la tapa ya reenvía ese
+    // toque a play()). Solo mientras la fase es en_vivo.
+    function mostrarAvisoReincorporacion() {
+      if (!$avisoReincorporacion) return;
+      $avisoReincorporacion.style.display = 'block';
+      if (estado.avisoTimer) clearTimeout(estado.avisoTimer);
+      estado.avisoTimer = setTimeout(function () {
+        estado.avisoTimer = null;
+        if ($avisoReincorporacion) $avisoReincorporacion.style.display = 'none';
+      }, AVISO_REINCORPORACION_MS);
+    }
+
+    function mostrarPistaContinuar() { if ($avisoContinuar) $avisoContinuar.style.display = 'block'; }
+    function ocultarPistaContinuar() { if ($avisoContinuar) $avisoContinuar.style.display = 'none'; }
+
+    // Tras corregir (o tras volver): un video en vivo pausado nunca es lo
+    // esperado. Si sigue pausado pasado un momento, pista para continuar.
+    function verificarContinuidad() {
+      if (estado.continuarTimer) clearTimeout(estado.continuarTimer);
+      estado.continuarTimer = setTimeout(function () {
+        estado.continuarTimer = null;
+        if (!estado.player || estado.fase !== 'en_vivo') return;
+        try {
+          estado.player.getPaused(function (enPausa) {
+            if (estado.fase !== 'en_vivo') return;
+            if (enPausa) mostrarPistaContinuar(); else ocultarPistaContinuar();
+          });
+        } catch (e) {}
+      }, SYNC_CONTINUAR_ESPERA_MS);
+    }
+
+    function sincronizarVideoConSesion(origen) {
+      if (!estado.player || estado.fase !== 'en_vivo' || salaSesionCerrada) return;
+      if (estado.sincronizando) return; // una a la vez: un salto en curso ya se está asentando
+      estado.sincronizando = true;
+      let resuelto = false;
+      function resolver(segundosReales) {
+        if (resuelto) return;
+        resuelto = true;
+        clearTimeout(timeoutId);
+        if (estado.fase !== 'en_vivo') { estado.sincronizando = false; return; }
+        const decision = decidirSincronizacion(segundosReales, posicionActual(), origen);
+        if (!decision.corregir) {
+          estado.sincronizando = false;
+          if (origen === 'regreso') verificarContinuidad(); // alineado, pero ¿volvió a reproducirse?
+          return;
         }
-      });
-    }, DERIVA_CORRECCION_MS);
+        try { estado.player.setCurrentTime(posicionActual()); } catch (e) {}
+        if (decision.aviso) mostrarAvisoReincorporacion();
+        if (origen === 'regreso') verificarContinuidad();
+        // El salto tarda en asentarse: hasta entonces ninguna otra lectura
+        // (ni el corrector de 30 s) vuelve a mover el video.
+        setTimeout(function () { estado.sincronizando = false; }, SYNC_ASENTAR_MS);
+      }
+      const timeoutId = setTimeout(function () { resolver(null); }, SYNC_RESPUESTA_MAX_MS);
+      try {
+        estado.player.getCurrentTime(resolver);
+      } catch (e) { resolver(null); }
+    }
+
+    // Regreso a la página: visibilitychange y focus llegan pegados — una sola
+    // sincronización, tras una breve espera (deja que el navegador reanude).
+    // Primero se comprueba si la sesión ya terminó (-> replay): nunca compite.
+    function alRegresar() {
+      revaluarSiYaTermino();
+      if (salaSesionCerrada || estado.fase !== 'en_vivo') return;
+      if (estado.regresoTimer) return;
+      estado.regresoTimer = setTimeout(function () {
+        estado.regresoTimer = null;
+        if (document.visibilityState !== 'visible') return;
+        sincronizarVideoConSesion('regreso');
+      }, SYNC_ESPERA_REGRESO_MS);
+    }
+
+    // Cada 'play' del video (la entrada con el autoplay bloqueado, la
+    // reanudación por un toque tras la pista, la reanudación automática al
+    // volver): el video arranca desde donde se detuvo, y la sesión siguió
+    // avanzando. Se sincroniza tras una breve espera. Bunny emite varios
+    // 'play' seguidos por reanudación -> un solo temporizador (debounce);
+    // y si el regreso o el corrector ya están asentando un salto, la
+    // función única simplemente no hace nada (una lectura a la vez).
+    // Alineado -> no toca nada, así que un play "normal" no cuesta un salto.
+    estado.alReproducirEnVivo = function () {
+      ocultarPistaContinuar();
+      if (estado.playTimer) return;
+      estado.playTimer = setTimeout(function () {
+        estado.playTimer = null;
+        sincronizarVideoConSesion('play');
+      }, SYNC_ESPERA_PLAY_MS);
+    };
+
+    // ── corrección de deriva del video, independiente del poll ──
+    // Mismo mecanismo (la única función de arriba), en silencio.
+    estado.derivaId = setInterval(function () { sincronizarVideoConSesion('deriva'); }, DERIVA_CORRECCION_MS);
 
     // ── poll de estado de sala: capa secundaria, pausada en pestaña oculta ──
     async function pollSala() {
@@ -502,10 +647,12 @@
     document.addEventListener('visibilitychange', function () {
       if (salaSesionCerrada) return; // en replay no hay poll que reanudar
       estado.pollActivo = document.visibilityState === 'visible';
-      if (estado.pollActivo) { pollSala(); revaluarSiYaTermino(); }
+      if (estado.pollActivo) { pollSala(); alRegresar(); }
     });
+    // pageshow NO dispara sincronización: en una medición real solo llegó al
+    // cargar, nunca al cambiar de app. Sigue comprobando si la sesión terminó.
     window.addEventListener('pageshow', revaluarSiYaTermino);
-    window.addEventListener('focus', revaluarSiYaTermino);
+    window.addEventListener('focus', alRegresar);
   }
 
   // Esqueleto común. El contenedor de video es el nodo persistente: existe
@@ -525,6 +672,8 @@
   // ocultan) — la sala en vivo y el replay son dos experiencias distintas.
   function renderShellEnVivo() {
     return (
+      '<p class="sala-reincorporacion-aviso" data-sala-reincorporacion-aviso data-sala-solo-vivo style="display:none">Volviste a la sesión 💛 · Te llevamos al punto en el que estamos.</p>' +
+      '<p class="sala-continuar-aviso" data-sala-continuar-aviso data-sala-solo-vivo style="display:none">Toca el video para continuar ▶</p>' +
       '<div class="sala-progreso-track" data-sala-solo-vivo><div class="sala-progreso" data-sala-progreso></div></div>' +
       '<div class="sala-presencia" data-sala-presencia data-sala-solo-vivo>👥 —</div>' +
       '<div class="sala-chat" data-sala-chat-lista data-sala-solo-vivo></div>' +
@@ -658,6 +807,12 @@
       player.setCurrentTime(Math.max(0, posicionAlListo));
       player.play();
     });
+    // Sincronización video <-> sesión (ver sincronizarVideoConSesion): cada
+    // 'play' avisa a la sala, que decide si es el primero (entrada) o solo
+    // oculta la pista de continuar.
+    player.on('play', function () {
+      if (typeof estado.alReproducirEnVivo === 'function') estado.alReproducirEnVivo();
+    });
     // Señal secundaria de cierre (diseño 2026-09-24): nunca la autoridad
     // -- fechaHora+duracionSegundos ya decide el fin por su cuenta, esto
     // solo cubre el caso de que Bunny termine unos segundos antes/después
@@ -668,4 +823,10 @@
   }
 
   window.iniciarSalaSimulive = iniciarSalaSimulive;
+  // Solo para la prueba automática de la decisión pura (sin DOM ni red).
+  iniciarSalaSimulive.decidirSincronizacion = decidirSincronizacion;
+  iniciarSalaSimulive.parametrosSincronizacion = {
+    SYNC_ESPERA_REGRESO_MS, SYNC_ESPERA_PLAY_MS, SYNC_TOLERANCIA_SEGUNDOS,
+    SYNC_AVISO_SEGUNDOS, SYNC_RESPUESTA_MAX_MS, SYNC_ASENTAR_MS, SYNC_CONTINUAR_ESPERA_MS,
+  };
 })();

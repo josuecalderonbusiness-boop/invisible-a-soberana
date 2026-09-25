@@ -98,18 +98,25 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--sala-burbuja);
-  color: var(--sala-texto-claro);
+  /* Con respaldo propio: sobre un fotograma claro el texto sin fondo no se lee. */
+  background: var(--sala-burbuja, rgba(30, 18, 24, 0.88));
+  color: var(--sala-texto-claro, #F0E6EA);
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: 18px;
   font-size: 0.8rem;
+  line-height: 1.3;
   text-align: center;
   z-index: 5;
-  white-space: nowrap;
+  /* Nunca más ancho que la pantalla: el texto largo baja a dos líneas en vez
+     de cortarse por ambos lados (hallazgo en un Android de 360 px). */
+  width: max-content;
+  max-width: calc(100% - 32px);
+  white-space: normal;
   pointer-events: none;
   margin: 0;
 }
-.sala-reincorporacion-aviso { top: 14px; }
+/* Debajo de la insignia de presencia (top:14px, ~30px de alto): no se encima. */
+.sala-reincorporacion-aviso { top: 54px; }
 .sala-continuar-aviso { top: 50%; margin-top: -18px; font-size: 0.9rem; font-weight: 600; }
 
 /* Replay (diseño 2026-09-25): un reproductor normal, no una sala. Video
@@ -361,7 +368,7 @@
   .sala-presencia { left: auto; right: 356px; }
   /* el video ocupa la columna 1: se centran sobre ella, no sobre todo el grid */
   .sala-reincorporacion-aviso,
-  .sala-continuar-aviso { left: calc((100% - 340px) / 2); }
+  .sala-continuar-aviso { left: calc((100% - 340px) / 2); max-width: calc(100% - 340px - 32px); }
   .sala-chat {
     position: static;
     grid-column: 2;

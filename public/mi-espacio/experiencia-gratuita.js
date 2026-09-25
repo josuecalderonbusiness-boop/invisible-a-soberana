@@ -226,6 +226,33 @@ function msRenderClaseGratuita() {
   window._msClaseInterval = setInterval(msTickClaseGratuita, 1000);
 }
 
+// Monta el replay SIMULIVE dentro de la tarjeta reutilizando la sala
+// (iniciarSalaSimulive en modo inline: solo ShellReplay, sin nada de vivo).
+// Idempotente por convocatoria: msTickClaseGratuita corre cada 1s y volver
+// a montar reiniciaría el video — se monta UNA vez. Si la sala no está
+// disponible (script sin cargar, sesión vencida, Orbit dice que ya no es
+// replay, error de red) se cae al botón "Entrar a tu replay →" hacia /sala.
+function msMontarReplaySimulive(exp, host, btn) {
+  const respaldo = function () {
+    host.style.display = 'none';
+    host.dataset.respaldo = '1';
+    btn.style.display = 'inline-block';
+  };
+  if (host.dataset.respaldo === '1') { btn.style.display = 'inline-block'; return; }
+  btn.style.display = 'none';
+  host.style.display = 'block';
+  if (host.dataset.convocatoriaMontada === exp.convocatoriaId) return;
+  host.dataset.convocatoriaMontada = exp.convocatoriaId;
+  if (typeof window.iniciarSalaSimulive !== 'function') { respaldo(); return; }
+  window.iniciarSalaSimulive({
+    contenedorId: host.id,
+    convocatoriaId: exp.convocatoriaId,
+    inline: true,
+    onNecesitaIdentidad: respaldo,
+    onNoDisponible: respaldo,
+  });
+}
+
 function msTickClaseGratuita() {
   const exp = dbExperienciaGratuita;
   if (!exp) return;
@@ -241,6 +268,13 @@ function msTickClaseGratuita() {
   const ctaComercial = document.getElementById('ms-clase-cta-comercial');
 
   const fechaTexto = new Date(exp.fechaHora).toLocaleString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+
+  // El reproductor inline de SIMULIVE solo existe en la fase replay+simulive;
+  // en cualquier otra se esconde (el montaje de abajo es de una sola vez).
+  const hostReplayInline = document.getElementById('ms-clase-replay-simulive');
+  if (hostReplayInline && !(exp.fase === 'replay' && exp.modalidad === 'simulive')) {
+    hostReplayInline.style.display = 'none';
+  }
 
   if (exp.fase === 'espera') {
     eyebrow.textContent = 'Tu próxima clase';
@@ -314,9 +348,20 @@ function msTickClaseGratuita() {
     dbFmtCountdown('ms-clase-cd', new Date(exp.vigenteHasta).getTime() - Date.now());
     cal.style.display = 'none';
     video.style.display = 'none';
-    btn.style.display = 'inline-block';
     btn.href = '/sala?convocatoriaId=' + encodeURIComponent(exp.convocatoriaId) + msSufijoQaRelojSala();
     btn.textContent = 'Entrar a tu replay →';
+    // Rediseño (2026-09-25, decisión de la usuaria tras verlo en teléfono
+    // real): "Tu replay está aquí. Dale play." — el reproductor vive
+    // DIRECTAMENTE en esta tarjeta, sin puerta intermedia. Es el MISMO
+    // reproductor/ShellReplay de /sala (sala-simulive.js), nunca una copia.
+    // El botón a /sala queda solo como respaldo si el reproductor no puede
+    // montarse, o en páginas que no declaran el contenedor (/mi-espacio).
+    const hostReplay = document.getElementById('ms-clase-replay-simulive');
+    if (hostReplay) {
+      msMontarReplaySimulive(exp, hostReplay, btn);
+    } else {
+      btn.style.display = 'inline-block';
+    }
   } else { // 'replay' (LIVE, con enlaceReplay — sin cambios)
     // Puerta 5, Estación 7 (ciclo de vida del embed, diseño cerrado
     // 2026-09-15): si el embed de Zoom llegó a estar activo (en_vivo), esta
@@ -364,7 +409,13 @@ function msTickClaseGratuita() {
   // ms-clase-card (tiene su propia tarjeta de Bootcamp separada,
   // ms-bootcamp-abierto-card en mi-espacio/index.html), asi que esto no le
   // afecta en absoluto.
-  const mostrarCtaComercial = !!exp.dentroVentanaCtaComercial &&
+  // SIMULIVE en replay (diseño cerrado 2026-09-25): esta página es solo la
+  // puerta "Entrar a tu replay →" — la única CTA comercial vive dentro del
+  // replay, debajo del reproductor (sala-simulive.js). Aquí se suprime para
+  // que la mujer no vea dos llamadas comerciales al intentar recuperar su
+  // clase. LIVE no se toca: sigue con `dentroVentanaCtaComercial` tal cual.
+  const esPuertaReplaySimulive = exp.fase === 'replay' && exp.modalidad === 'simulive';
+  const mostrarCtaComercial = !esPuertaReplaySimulive && !!exp.dentroVentanaCtaComercial &&
     !!dbOportunidadBootcamp && dbOportunidadBootcamp.abierta === true;
   if (ctaComercial) {
     ctaComercial.style.display = mostrarCtaComercial ? 'inline-block' : 'none';
@@ -388,7 +439,9 @@ function msTickClaseGratuita() {
   // (nunca se inventa uno) — `grupo` puede no existir en el DOM de paginas
   // que no incluyan este boton, por eso el guard.
   if (grupo) {
-    if (exp.fase !== 'en_vivo' && !mostrarCtaComercial && exp.enlaceGrupoWhatsapp) {
+    // La puerta de replay SIMULIVE queda con un solo botón (ver arriba): sin
+    // CTA comercial el grupo dejaría de estar suprimido, así que se excluye aquí.
+    if (exp.fase !== 'en_vivo' && !esPuertaReplaySimulive && !mostrarCtaComercial && exp.enlaceGrupoWhatsapp) {
       grupo.href = exp.enlaceGrupoWhatsapp;
       grupo.style.display = 'inline-block';
     } else {

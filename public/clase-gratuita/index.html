@@ -142,6 +142,11 @@ a { color: inherit; }
       <div class="db-cd-unit"><div class="db-cd-n" id="ms-clase-cd-s">–</div><div class="db-cd-l">Seg</div></div>
     </div>
     <div class="db-video-box" id="ms-clase-video" style="display:none"></div>
+    <!-- SIMULIVE en replay (2026-09-25): el reproductor vive aquí mismo, sin
+         puerta intermedia. Es el mismo ShellReplay de /sala (sala-simulive.js,
+         modo inline) — este contenedor solo le da un lugar. /mi-espacio no lo
+         declara y conserva el botón a /sala. -->
+    <div id="ms-clase-replay-simulive" style="display:none"></div>
     <a class="ms-invite-btn" id="ms-clase-btn" href="#" target="_blank" style="display:none">→</a>
     <!-- Puerta 5 — Ensayo General, Estación 3 (PRIORIDAD MAXIMA, decision de
          negocio cerrada 2026-09-14): CTA comercial hacia Código Soberana.
@@ -166,6 +171,9 @@ a { color: inherit; }
 window.msHabilitarZoomEmbebido = true;
 window.msObtenerHeadersQaReloj = function () { return cgHeadersQaReloj(); };
 </script>
+<link rel="stylesheet" href="/mi-espacio/sala-simulive.css" />
+<script src="/mi-espacio/html-seguro.js"></script>
+<script src="/mi-espacio/sala-simulive.js"></script>
 <script src="/mi-espacio/experiencia-gratuita.js"></script>
 <script>
 // Puerta 2, Slice 4 — la sala usa EXCLUSIVAMENTE la cookie clase_gratuita_sesion

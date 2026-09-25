@@ -124,6 +124,26 @@
 }
 .sala-replay-cta { text-align: center; }
 
+/* Inline (2026-09-25): el mismo replay montado DENTRO de otra página (la
+   tarjeta de /clase-gratuita) — sin altura de pantalla ni fondo propio, y
+   ocupando el ancho de la tarjeta. Mismo reproductor y mismo shell, solo
+   cambia el marco. Va después de las reglas de replay para ganar sobre ellas. */
+.sala-simulive[data-inline="true"],
+.sala-simulive[data-inline="true"][data-modo="replay"] {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 0;
+  margin-top: 18px;
+}
+.sala-simulive[data-inline="true"] .sala-video-box { max-width: none; }
+
 .sala-chat {
   position: absolute;
   left: 12px; right: 12px;

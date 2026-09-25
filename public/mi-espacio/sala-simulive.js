@@ -79,7 +79,16 @@
     // iframe vive aquí y nunca se mueve, porque mover un iframe en el DOM
     // lo recarga y el video volvería a 0) y el de espera/errores. Lo demás
     // se agrega según la fase: renderShellEnVivo() o renderShellReplay().
-    contenedor.innerHTML = renderEsqueleto();
+    // inline (2026-09-25): la sala se monta DENTRO de otra página (la tarjeta
+    // de /clase-gratuita) y solo para replay — sin altura de pantalla
+    // completa ni fondo propio, y sin ninguna UI de en vivo. Si Orbit dice
+    // que la fase ya no es replay, o algo falla, avisa a la página anfitriona
+    // (onNoDisponible) en vez de dibujar una sala dentro de su tarjeta.
+    const inline = opciones.inline === true;
+    function noDisponibleInline(motivo) {
+      if (typeof opciones.onNoDisponible === 'function') opciones.onNoDisponible(motivo);
+    }
+    contenedor.innerHTML = renderEsqueleto(inline);
     const $sala = contenedor.querySelector('.sala-simulive');
     const $video = contenedor.querySelector('[data-sala-video]');
     const $espera = contenedor.querySelector('[data-sala-espera]');
@@ -148,8 +157,14 @@
       if (!res.ok) throw new Error('sala-abrir respondió ' + res.status);
       apertura = await res.json();
     } catch (e) {
-      $espera.innerHTML = '<p class="sala-error">No pudimos abrir la sala. Intenta de nuevo en un momento.</p>';
       console.error('iniciarSalaSimulive: sala-abrir falló', e && e.message);
+      if (inline) { noDisponibleInline('error'); return; }
+      $espera.innerHTML = '<p class="sala-error">No pudimos abrir la sala. Intenta de nuevo en un momento.</p>';
+      return;
+    }
+
+    if (inline && (apertura.fase !== 'replay' || !apertura.videoUrl)) {
+      noDisponibleInline(apertura.fase);
       return;
     }
 
@@ -452,9 +467,9 @@
   // Esqueleto común. El contenedor de video es el nodo persistente: existe
   // igual en en_vivo y en replay, y nunca se mueve ni se reemplaza (ver
   // convertirAShellReplay).
-  function renderEsqueleto() {
+  function renderEsqueleto(inline) {
     return (
-      '<div class="sala-simulive" data-modo="carga">' +
+      '<div class="sala-simulive" data-modo="carga"' + (inline ? ' data-inline="true"' : '') + '>' +
       '<div class="sala-video-box" data-sala-video style="display:none"></div>' +
       '<div class="sala-espera" data-sala-espera></div>' +
       '</div>'

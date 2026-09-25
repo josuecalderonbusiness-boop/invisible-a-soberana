@@ -107,13 +107,25 @@
   padding: 16px;
   box-sizing: border-box;
 }
+/* Proporción del video de replay (2026-09-25): los videos reales son
+   VERTICALES (9:16), no horizontales — en una caja 16:9 se veían como una
+   franja diminuta con controles minúsculos. La caja toma todo el ancho
+   disponible pero su ALTURA nunca pasa del 75% de la pantalla (así video y
+   CTA caben sin desplazarse): el ancho se limita a alto-tope × proporción.
+   Cambiar la proporción = cambiar estos dos números. */
+.sala-simulive[data-modo="replay"] {
+  --sala-ratio-w: 9;
+  --sala-ratio-h: 16;
+}
 .sala-simulive[data-modo="replay"] .sala-video-box {
   position: relative;
   inset: auto;
   flex: none;
-  width: 100%;
-  max-width: 960px;
-  aspect-ratio: 16 / 9;
+  align-self: center;
+  width: min(100%, calc(75vh * var(--sala-ratio-w) / var(--sala-ratio-h)));
+  width: min(100%, calc(75dvh * var(--sala-ratio-w) / var(--sala-ratio-h)));
+  max-width: 420px;
+  aspect-ratio: calc(var(--sala-ratio-w) / var(--sala-ratio-h));
   border-radius: 12px;
 }
 .sala-simulive[data-modo="replay"] .sala-video-box iframe {
@@ -142,7 +154,6 @@
   padding: 0;
   margin-top: 18px;
 }
-.sala-simulive[data-inline="true"] .sala-video-box { max-width: none; }
 
 .sala-chat {
   position: absolute;

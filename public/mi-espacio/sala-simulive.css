@@ -87,6 +87,31 @@
   z-index: 5;
 }
 
+/* Sincronización video <-> sesión (2026-09-25). Avisos breves y discretos:
+   nunca bloquean el chat ni las reacciones, y ninguno capta toques
+   (pointer-events:none) para que un toque llegue a la tapa, que reenvía
+   play(). "Volviste a la sesión" solo aparece al volver tras un salto
+   grande (ver SYNC_AVISO_SEGUNDOS); "Toca para continuar" solo si tras
+   corregir el video sigue pausado. */
+.sala-reincorporacion-aviso,
+.sala-continuar-aviso {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--sala-burbuja);
+  color: var(--sala-texto-claro);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  text-align: center;
+  z-index: 5;
+  white-space: nowrap;
+  pointer-events: none;
+  margin: 0;
+}
+.sala-reincorporacion-aviso { top: 14px; }
+.sala-continuar-aviso { top: 50%; margin-top: -18px; font-size: 0.9rem; font-weight: 600; }
+
 /* Replay (diseño 2026-09-25): un reproductor normal, no una sala. Video
    16:9 con los controles de Bunny visibles y una sola CTA debajo. El
    contenedor de video es el MISMO nodo que en vivo (persistente: el iframe
@@ -334,6 +359,9 @@
   .sala-simulive { display: grid; grid-template-columns: 1fr 340px; }
   .sala-video-box, .sala-espera, .sala-progreso-track { grid-column: 1; }
   .sala-presencia { left: auto; right: 356px; }
+  /* el video ocupa la columna 1: se centran sobre ella, no sobre todo el grid */
+  .sala-reincorporacion-aviso,
+  .sala-continuar-aviso { left: calc((100% - 340px) / 2); }
   .sala-chat {
     position: static;
     grid-column: 2;

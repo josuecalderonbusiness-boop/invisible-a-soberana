@@ -364,7 +364,13 @@ function msTickClaseGratuita() {
   // ms-clase-card (tiene su propia tarjeta de Bootcamp separada,
   // ms-bootcamp-abierto-card en mi-espacio/index.html), asi que esto no le
   // afecta en absoluto.
-  const mostrarCtaComercial = !!exp.dentroVentanaCtaComercial &&
+  // SIMULIVE en replay (diseño cerrado 2026-09-25): esta página es solo la
+  // puerta "Entrar a tu replay →" — la única CTA comercial vive dentro del
+  // replay, debajo del reproductor (sala-simulive.js). Aquí se suprime para
+  // que la mujer no vea dos llamadas comerciales al intentar recuperar su
+  // clase. LIVE no se toca: sigue con `dentroVentanaCtaComercial` tal cual.
+  const esPuertaReplaySimulive = exp.fase === 'replay' && exp.modalidad === 'simulive';
+  const mostrarCtaComercial = !esPuertaReplaySimulive && !!exp.dentroVentanaCtaComercial &&
     !!dbOportunidadBootcamp && dbOportunidadBootcamp.abierta === true;
   if (ctaComercial) {
     ctaComercial.style.display = mostrarCtaComercial ? 'inline-block' : 'none';
@@ -388,7 +394,9 @@ function msTickClaseGratuita() {
   // (nunca se inventa uno) — `grupo` puede no existir en el DOM de paginas
   // que no incluyan este boton, por eso el guard.
   if (grupo) {
-    if (exp.fase !== 'en_vivo' && !mostrarCtaComercial && exp.enlaceGrupoWhatsapp) {
+    // La puerta de replay SIMULIVE queda con un solo botón (ver arriba): sin
+    // CTA comercial el grupo dejaría de estar suprimido, así que se excluye aquí.
+    if (exp.fase !== 'en_vivo' && !esPuertaReplaySimulive && !mostrarCtaComercial && exp.enlaceGrupoWhatsapp) {
       grupo.href = exp.enlaceGrupoWhatsapp;
       grupo.style.display = 'inline-block';
     } else {

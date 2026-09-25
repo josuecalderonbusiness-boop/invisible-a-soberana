@@ -136,6 +136,36 @@
 }
 .sala-replay-cta { text-align: center; }
 
+/* Play/Pausa externo (2026-09-25): fuera del iframe, grande y siempre
+   visible; la barra de Bunny queda para línea de tiempo, volumen, ajustes y
+   pantalla completa. 68px de zona táctil (mínimo cómodo en móvil). */
+.sala-replay-controles {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+}
+.sala-replay-toggle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sala-acento-claro, #D4AF6A);
+  color: #2B1C24;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, opacity 0.2s ease;
+}
+.sala-replay-toggle svg { width: 34px; height: 34px; }
+.sala-replay-toggle[data-estado="pausado"] svg { margin-left: 3px; } /* centra ópticamente el triángulo */
+.sala-replay-toggle:active { transform: scale(0.94); }
+.sala-replay-toggle:disabled { opacity: 0.45; cursor: default; }
+.sala-replay-toggle:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
 /* Inline (2026-09-25): el mismo replay montado DENTRO de otra página (la
    tarjeta de /clase-gratuita) — sin altura de pantalla ni fondo propio, y
    ocupando el ancho de la tarjeta. Mismo reproductor y mismo shell, solo

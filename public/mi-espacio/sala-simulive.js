@@ -140,6 +140,49 @@
       $sala.insertAdjacentHTML('beforeend', renderShellReplay(evt && evt.payload));
     }
 
+    // Play/Pausa EXTERNO del replay (2026-09-25): la barra de Bunny vive
+    // dentro de su iframe (no se puede rediseñar y se esconde mientras
+    // reproduce), así que el play/pausa tiene su propio botón grande, fuera
+    // del iframe y siempre visible. Habla con el MISMO reproductor por
+    // Player.js; Bunny conserva línea de tiempo, volumen, ajustes y pantalla
+    // completa. Al vivir fuera del iframe nunca interfiere con los toques
+    // dentro del video. Idempotente: se conecta una sola vez.
+    function quitarControlReplay() {
+      const c = contenedor.querySelector('[data-sala-replay-controles]');
+      if (c) c.remove();
+    }
+
+    function conectarControlReplay() {
+      const $toggle = contenedor.querySelector('[data-sala-replay-toggle]');
+      const player = estado.player;
+      if (!$toggle || $toggle.dataset.conectado === '1') return;
+      if (!player) { quitarControlReplay(); return; } // sin Player.js: quedan los controles de Bunny
+      $toggle.dataset.conectado = '1';
+      estado.controlReplayListo = true;
+
+      function pintar(reproduciendo) {
+        $toggle.dataset.estado = reproduciendo ? 'reproduciendo' : 'pausado';
+        $toggle.setAttribute('aria-label', reproduciendo ? 'Pausar' : 'Reproducir');
+        $toggle.innerHTML = reproduciendo ? ICONO_PAUSA : ICONO_PLAY;
+      }
+      player.on('play', function () { pintar(true); });
+      player.on('pause', function () { pintar(false); });
+      player.on('ended', function () { pintar(false); });
+      // Estado real al conectar: en replay directo arranca en pausa; tras
+      // la transición desde en vivo el video ya está reproduciendo.
+      player.getPaused(function (enPausa) { pintar(!enPausa); });
+
+      $toggle.addEventListener('click', function () {
+        // Se consulta el estado real en cada toque, no un valor recordado:
+        // si el usuario pausó desde la barra de Bunny, esto no se desincroniza.
+        player.getPaused(function (enPausa) {
+          if (enPausa) player.play(); else player.pause();
+        });
+      });
+      $toggle.disabled = false;
+    }
+    estado.alListoReplay = conectarControlReplay;
+
     // ── abrir sala (reloj de acceso + reloj de reproducción + guion) ──
     let apertura;
     try {
@@ -206,6 +249,7 @@
       $chat = $presencia = $reacciones = $overlay = $progreso = $chatForm = $chatInput = null;
       contenedor.classList.remove('sala-simulive--overlay-activo');
       montarShellReplay();
+      conectarControlReplay(); // el reproductor de en vivo ya existe y sigue vivo
       const iframe = $video.querySelector('iframe');
       if (iframe) ajustarIframeAReplay(iframe);
       const tapa = $video.querySelector('.sala-video-tapa');
@@ -502,15 +546,25 @@
   // reacciones, preguntas, poll ni barra de progreso por reloj de sesión.
   // Si no hay CTA configurada (o su URL no es segura), no se dibuja nada —
   // nunca se inventa un destino.
+  const ICONO_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  const ICONO_PAUSA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>';
+
   function renderShellReplay(ctaPayload) {
     const p = ctaPayload || {};
     const url = urlSegura(p.url_destino);
-    if (!url) return '';
-    return (
+    // Botón externo de play/pausa: nace deshabilitado hasta que el
+    // reproductor está listo (ver conectarControlReplay).
+    const control = (
+      '<div class="sala-replay-controles" data-sala-replay-controles>' +
+      '<button type="button" class="sala-replay-toggle" data-sala-replay-toggle data-estado="pausado" aria-label="Reproducir" disabled>' + ICONO_PLAY + '</button>' +
+      '</div>'
+    );
+    const cta = url ? (
       '<div class="sala-replay-cta" data-sala-replay-cta>' +
       '<a class="sala-cta-boton" href="' + url + '" target="_blank" rel="noopener">' + esc(p.texto_boton || 'Continuar') + '</a>' +
       '</div>'
-    );
+    ) : '';
+    return control + cta;
   }
 
   // Iframe en modo replay: altura completa (sin el recorte de la barra de
@@ -540,7 +594,32 @@
 
     // Replay: reproductor normal, sin tapa, sin recorte, sin Player.js
     // (no hay reloj de sesión que sincronizar — el reproductor manda).
-    if (esReplay) { ajustarIframeAReplay(iframe); return; }
+    if (esReplay) {
+      ajustarIframeAReplay(iframe);
+      // Solo para el botón externo de play/pausa. Si Player.js no carga o
+      // nunca da 'ready', el botón se retira y quedan los controles de
+      // Bunny — nunca un botón muerto a la vista.
+      const $sala = $contenedor.closest('.sala-simulive');
+      const quitar = function () {
+        const c = $sala && $sala.querySelector('[data-sala-replay-controles]');
+        if (c) c.remove();
+      };
+      try {
+        await cargarPlayerJs();
+      } catch (e) {
+        console.warn('montarVideo: Player.js no cargó — replay sin botón externo', e && e.message);
+        quitar();
+        return;
+      }
+      if (iframe.isConnected === false) return;
+      const playerReplay = new window.playerjs.Player(iframe);
+      estado.player = playerReplay;
+      playerReplay.on('ready', function () {
+        if (typeof estado.alListoReplay === 'function') estado.alListoReplay();
+      });
+      setTimeout(function () { if (!estado.controlReplayListo) quitar(); }, 8000);
+      return;
+    }
 
     // La barra de controles de Bunny vive pegada a su borde inferior y no
     // tiene parámetro para ocultarla del todo (confirmado contra su

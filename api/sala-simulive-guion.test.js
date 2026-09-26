@@ -26,6 +26,7 @@ const sala = contexto.window.iniciarSalaSimulive;
 const plano = (x) => JSON.parse(JSON.stringify(x === undefined ? null : x));
 const { estadoDelGuion, decidirOverlay: decidirOverlayCtx, parametrosGuion } = sala;
 const decidirOverlay = (...args) => plano(decidirOverlayCtx(...args));
+const validarGuion = (g) => plano(sala.validarGuion(g));
 
 // Guion de referencia (el mismo del diseño): mensaje de equipo en 1:00, P1 en
 // 5:00 (dura 10 s), P2 en 10:00 (dura 12 s), CTA en 55:00, sesión de 60 min.
@@ -42,9 +43,9 @@ const resumen = (pos, respondidas, guion) => {
   return { mensajes: ids(g.mensajes), pregunta: g.preguntaVigente ? g.preguntaVigente.evento.id : null, restante: g.preguntaVigente ? Math.round(g.preguntaVigente.restanteSegundos * 1000) / 1000 : null, cta: g.ctaAbierta ? g.ctaAbierta.id : null };
 };
 
-test('parametros acordados: reconocimiento 3,5 s y default de 15 s (solo respaldo: Orbit ya normaliza)', () => {
+test('parametros acordados: reconocimiento 3,5 s; NO existe ningun default de duracion', () => {
   assert.equal(parametrosGuion.RECONOCIMIENTO_MS, 3500);
-  assert.equal(parametrosGuion.DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS, 15);
+  assert.deepEqual(Object.keys(plano(parametrosGuion)), ['RECONOCIMIENTO_MS']);
 });
 
 // ── CLIENTE: los casos aprobados ───────────────────────────────────────
@@ -122,10 +123,17 @@ test('historial: los mensajes de equipo con momento <= posicion salen en orden y
 
 // ── decisiones de politica ────────────────────────────────────────────
 
-test('sin duracion configurada la pregunta dura 15 s EXACTOS (no 21: el cliente ya no suma nada)', () => {
-  const sinDuracion = { id: 'pz', offsetSegundos: 100, orden: 0, tipo: 'pregunta', payload: { texto: 'q', opciones: OPC } };
-  assert.equal(estadoDelGuion([sinDuracion], 114.999, {}).preguntaVigente.evento.id, 'pz');
-  assert.equal(estadoDelGuion([sinDuracion], 115, {}).preguntaVigente, null);
+test('sin duracion valida: la pregunta NO se ofrece (no se inventa una duracion), se reporta, y el resto del guion sigue', () => {
+  for (const payloadRoto of [{ texto: 'q', opciones: OPC }, { texto: 'q', opciones: OPC, duracion_visible_segundos: 0 }, { texto: 'q', opciones: OPC, duracion_visible_segundos: -4 }, { texto: 'q', opciones: OPC, duracion_visible_segundos: '10' }, { texto: 'q', opciones: OPC, duracion_visible_segundos: null }]) {
+    const sinDuracion = { id: 'pz', offsetSegundos: 100, orden: 0, tipo: 'pregunta', payload: payloadRoto };
+    for (const pos of [100, 105, 114.999, 115, 120, 200]) {
+      const g = estadoDelGuion([sinDuracion, FAQ, CTA], pos, {});
+      assert.equal(g.preguntaVigente, null, `pos=${pos} ${JSON.stringify(payloadRoto)}`);
+    }
+    const r = plano(estadoDelGuion([sinDuracion, FAQ], 105, {}));
+    assert.deepEqual(r.problemas, [{ codigo: 'pregunta_sin_duracion_valida', eventoIds: ['pz'] }]);
+    assert.deepEqual(r.mensajes.map((m) => m.id), ['faq'], 'el historial no se ve afectado');
+  }
 });
 
 test('la duracion configurada es la duracion REAL: 10 s -> vigente hasta 309,999; a 310 ya no', () => {
@@ -144,19 +152,41 @@ test('varias CTA: siempre la ULTIMA con momento <= posicion (40:00, 50:00, 55:00
   assert.equal(estadoDelGuion(g, 3360, {}).ctaAbierta.id, 'c55', 'a las 56:00 -> la de 55:00');
 });
 
-test('preguntas con ventanas solapadas: se muestra la mas reciente (regla determinista)', () => {
-  const a = { id: 'a', offsetSegundos: 100, orden: 0, tipo: 'pregunta', payload: { opciones: OPC, duracion_visible_segundos: 30 } };
-  const b = { id: 'b', offsetSegundos: 110, orden: 0, tipo: 'pregunta', payload: { opciones: OPC, duracion_visible_segundos: 10 } };
-  assert.equal(estadoDelGuion([a, b], 105, {}).preguntaVigente.evento.id, 'a');
-  assert.equal(estadoDelGuion([a, b], 115, {}).preguntaVigente.evento.id, 'b');
-  assert.equal(estadoDelGuion([a, b], 121, {}).preguntaVigente.evento.id, 'a', 'b ya vencio; a sigue vigente');
-  assert.equal(estadoDelGuion([a, b], 115, { b: 'x' }).preguntaVigente.evento.id, 'a', 'si b ya se respondio, cae a a');
+test('preguntas SOLAPADAS (5:00–5:15 y 5:10–5:20): NINGUNA se ofrece — no gana ninguna — y se reporta; una pregunta sana aparte sigue funcionando', () => {
+  const A = { id: 'A', offsetSegundos: 300, orden: 0, tipo: 'pregunta', payload: { texto: 'A', opciones: OPC, duracion_visible_segundos: 15 } };
+  const B = { id: 'B', offsetSegundos: 310, orden: 0, tipo: 'pregunta', payload: { texto: 'B', opciones: OPC, duracion_visible_segundos: 10 } };
+  const SANA = { id: 'SANA', offsetSegundos: 900, orden: 0, tipo: 'pregunta', payload: { texto: 'S', opciones: OPC, duracion_visible_segundos: 10 } };
+  for (const pos of [300, 305, 310, 312, 314.999, 315, 319.999]) {
+    assert.equal(estadoDelGuion([A, B, SANA], pos, {}).preguntaVigente, null, `pos=${pos}: ni A ni B`);
+  }
+  const r = plano(estadoDelGuion([A, B, SANA], 312, {}));
+  assert.deepEqual(r.problemas, [{ codigo: 'preguntas_solapadas', eventoIds: ['A', 'B'] }]);
+  assert.equal(estadoDelGuion([A, B, SANA], 905, {}).preguntaVigente.evento.id, 'SANA', 'lo sano no se ve afectado');
+  // contiguas (fin == inicio) NO se solapan: ambas se ofrecen, cada una en su ventana
+  const C1 = { ...A, id: 'C1', payload: { ...A.payload, duracion_visible_segundos: 10 } };
+  const C2 = { ...B, id: 'C2' };
+  assert.equal(estadoDelGuion([C1, C2], 309.999, {}).preguntaVigente.evento.id, 'C1');
+  assert.equal(estadoDelGuion([C1, C2], 310, {}).preguntaVigente.evento.id, 'C2');
+  assert.deepEqual(plano(estadoDelGuion([C1, C2], 305, {}).problemas), []);
+});
+
+test('validarGuion (cliente): misma tabla que Orbit — sano, sin duracion, solapadas, contiguas, contenida, mismo momento', () => {
+  const P = (id, offset, dur, orden) => ({ id, offsetSegundos: offset, orden: orden || 0, tipo: 'pregunta', payload: dur === undefined ? {} : { duracion_visible_segundos: dur } });
+  assert.deepEqual(validarGuion([P('p1', 300, 10), P('p2', 600, 12), FAQ, CTA]), { valido: true, problemas: [] });
+  assert.deepEqual(validarGuion([P('pz', 300)]).problemas, [{ codigo: 'pregunta_sin_duracion_valida', eventoIds: ['pz'] }]);
+  assert.deepEqual(validarGuion([P('A', 300, 15), P('B', 310, 10)]).problemas, [{ codigo: 'preguntas_solapadas', eventoIds: ['A', 'B'] }]);
+  assert.equal(validarGuion([P('A', 300, 10), P('B', 310, 12)]).valido, true, 'contiguas');
+  assert.equal(validarGuion([P('A', 300, 10.001), P('B', 310, 12)]).valido, false, '1 ms de cruce');
+  assert.equal(validarGuion([P('grande', 100, 60), P('chica', 120, 10)]).valido, false, 'contenida');
+  assert.equal(validarGuion([P('x', 100, 10, 0), P('y', 100, 10, 1)]).valido, false, 'mismo momento');
+  assert.deepEqual(validarGuion([P('a', 100, 30), P('b', 110, 30), P('c', 120, 30)]).problemas.map((x) => x.eventoIds), [['a', 'b'], ['a', 'c'], ['b', 'c']]);
+  assert.deepEqual(validarGuion(null), { valido: true, problemas: [] });
 });
 
 test('eventos malformados (sin momento, nulos) se ignoran sin romper el guion', () => {
   const g = [null, undefined, { id: 'x', tipo: 'pregunta' }, { id: 'y', offsetSegundos: 'no', tipo: 'pregunta' }, P1];
   assert.equal(estadoDelGuion(g, 305, {}).preguntaVigente.evento.id, 'p1');
-  assert.deepEqual(plano(estadoDelGuion(null, 305, {})), { mensajes: [], preguntaVigente: null, ctaAbierta: null });
+  assert.deepEqual(plano(estadoDelGuion(null, 305, {})), { mensajes: [], preguntaVigente: null, ctaAbierta: null, problemas: [] });
 });
 
 // ── decidirOverlay: prioridad pregunta -> CTA -> nada ─────────────────
@@ -248,6 +278,9 @@ test('reconocimiento: simulacion segundo a segundo de pregunta -> respuesta -> r
 test('guarda estructural: sin +6 s, sin localStorage/sessionStorage, sin el viejo "disparados" ni un temporizador por evento', () => {
   assert.ok(!/\+ 6000/.test(CODIGO), 'ya no se suman 6 s a la duracion de la pregunta');
   assert.ok(!/localStorage|sessionStorage/.test(CODIGO), 'el estado no se guarda en el navegador');
+  const sinComentarios = CODIGO.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+  assert.ok(!/POR_DEFECTO/.test(sinComentarios), 'sin ningun valor por defecto de duracion');
+  assert.ok(!/vigentes\[vigentes\.length - 1\]|mas reciente|más reciente/i.test(sinComentarios), 'sin regla de desempate entre preguntas solapadas');
   assert.ok(!/disparados|dispararEvento|mostrarPregunta\(|mostrarCTA\(|tickGuion/.test(CODIGO), 'ya no hay disparo de eventos');
   const ini = CODIGO.indexOf('function ocultarOverlay');
   const fin = CODIGO.indexOf('async function responder');

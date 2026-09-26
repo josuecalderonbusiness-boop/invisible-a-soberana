@@ -1022,7 +1022,7 @@ async function salaEstadoAccion(req, res) {
   }
 }
 
-const MOTIVOS_RESPUESTA_RECHAZADA = new Set(['sesion_no_en_vivo', 'pregunta_aun_no_disponible', 'pregunta_fuera_de_ventana']);
+const MOTIVOS_RESPUESTA_RECHAZADA = new Set(['sesion_no_en_vivo', 'pregunta_aun_no_disponible', 'pregunta_fuera_de_ventana', 'pregunta_invalida']);
 
 async function salaResponderAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });

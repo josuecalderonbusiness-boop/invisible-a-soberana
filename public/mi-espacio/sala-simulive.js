@@ -82,15 +82,19 @@
 
   // ── guion derivado (Bloque B, 2026-09-25) ───────────────────────────
   // Decisiones PURAS (sin DOM ni red), probadas aparte con tablas de casos.
-  // Mismo default que Orbit: solo es respaldo — Orbit ya entrega cada
-  // pregunta con duracion_visible_segundos normalizada, y la duración
-  // configurada es la duración REAL (el cliente nunca suma segundos).
-  const DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS = 15;
+  //
+  // Sin reglas implícitas (revisión 2026-09-25): el cliente NO inventa una
+  // duración cuando falta (no hay default) y NO decide cuál de dos preguntas
+  // solapadas "gana". Ambas cosas son CONFIGURACIÓN INVÁLIDA del guion: se
+  // detectan (validarGuion), se reportan, y las preguntas afectadas no se
+  // ofrecen. La duración configurada en duracion_visible_segundos es la
+  // duración REAL: el cliente nunca suma segundos.
   const RECONOCIMIENTO_MS = 3500; // cuánto se queda el "otras mujeres eligieron esto" tras responder
 
+  // Solo la configurada, y solo si es un número positivo y finito; si no, null.
   function duracionVisiblePregunta(payload) {
     const d = payload && payload.duracion_visible_segundos;
-    return (typeof d === 'number' && isFinite(d) && d > 0) ? d : DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS;
+    return (typeof d === 'number' && isFinite(d) && d > 0) ? d : null;
   }
 
   function idDeEvento(evt) {
@@ -104,18 +108,50 @@
     return new Set();
   }
 
+  // Misma regla que Orbit (lib/simulive_guion.js), aquí como defensa: Orbit ya
+  // no entrega las preguntas con problemas, pero el cliente nunca debe depender
+  // de que el servidor lo haya hecho bien. Devuelve { valido, problemas }:
+  //   pregunta_sin_duracion_valida — pregunta sin duracion_visible_segundos válido;
+  //   preguntas_solapadas          — ventanas [momento, momento+duración) que se
+  //                                  cruzan (contiguas, fin == inicio, NO se cruzan).
+  function validarGuion(guion) {
+    const problemas = [];
+    const preguntas = (Array.isArray(guion) ? guion : []).filter(function (e) {
+      return e && e.tipo === 'pregunta' && typeof e.offsetSegundos === 'number' && isFinite(e.offsetSegundos);
+    });
+    const conVentana = [];
+    preguntas.forEach(function (p) {
+      const d = duracionVisiblePregunta(p.payload);
+      if (d === null) problemas.push({ codigo: 'pregunta_sin_duracion_valida', eventoIds: [idDeEvento(p)] });
+      else conVentana.push({ id: idDeEvento(p), inicio: p.offsetSegundos, fin: p.offsetSegundos + d });
+    });
+    for (let i = 0; i < conVentana.length; i++) {
+      for (let j = i + 1; j < conVentana.length; j++) {
+        const a = conVentana[i]; const b = conVentana[j];
+        if (a.inicio < b.fin && b.inicio < a.fin) problemas.push({ codigo: 'preguntas_solapadas', eventoIds: [a.id, b.id] });
+      }
+    }
+    return { valido: problemas.length === 0, problemas: problemas };
+  }
+
   // Qué corresponde mostrar en la posición `posicionSegundos` de la sesión.
   //   mensajes        — mensajes de equipo con momento <= posición (historial), en orden.
   //   preguntaVigente — la pregunta cuya ventana [momento, momento + duración) contiene
-  //                     la posición y que NO se ha respondido; si hay varias solapadas,
-  //                     la más reciente. { evento, restanteSegundos } | null.
+  //                     la posición y que NO se ha respondido. { evento, restanteSegundos }
+  //                     | null. Las preguntas con problemas de configuración NUNCA son
+  //                     vigentes (no hay ventana, o no hay criterio para elegir entre
+  //                     solapadas): por eso, entre las que sí lo son, nunca hay dos a la vez.
   //   ctaAbierta      — la última apertura_cta con momento <= posición (estado persistente)
   //                     | null.
+  //   problemas       — los problemas de configuración detectados en el guion.
   function estadoDelGuion(guion, posicionSegundos, respondidas) {
     const lista = (Array.isArray(guion) ? guion : []).filter(function (e) {
       return e && typeof e.offsetSegundos === 'number' && isFinite(e.offsetSegundos);
     });
     const contestadas = respondidasComoSet(respondidas);
+    const problemas = validarGuion(lista).problemas;
+    const conProblema = new Set();
+    problemas.forEach(function (p) { p.eventoIds.forEach(function (id) { conProblema.add(id); }); });
     const porMomento = function (a, b) { return (a.offsetSegundos - b.offsetSegundos) || ((a.orden || 0) - (b.orden || 0)); };
 
     const mensajes = lista.filter(function (e) {
@@ -123,11 +159,12 @@
     }).sort(porMomento);
 
     const vigentes = lista.filter(function (e) {
-      return e.tipo === 'pregunta' && e.offsetSegundos <= posicionSegundos &&
+      if (e.tipo !== 'pregunta' || conProblema.has(idDeEvento(e))) return false;
+      return e.offsetSegundos <= posicionSegundos &&
         posicionSegundos < e.offsetSegundos + duracionVisiblePregunta(e.payload) &&
         !contestadas.has(idDeEvento(e));
-    }).sort(porMomento);
-    const elegida = vigentes.length > 0 ? vigentes[vigentes.length - 1] : null;
+    });
+    const elegida = vigentes.length === 1 ? vigentes[0] : null;
 
     const ctas = lista.filter(function (e) {
       return e.tipo === 'apertura_cta' && e.offsetSegundos <= posicionSegundos;
@@ -137,6 +174,7 @@
       mensajes: mensajes,
       preguntaVigente: elegida ? { evento: elegida, restanteSegundos: (elegida.offsetSegundos + duracionVisiblePregunta(elegida.payload)) - posicionSegundos } : null,
       ctaAbierta: ctas.length > 0 ? ctas[ctas.length - 1] : null,
+      problemas: problemas,
     };
   }
 
@@ -340,6 +378,14 @@
     estado.duracionSegundos = apertura.duracionSegundos || 3600;
     estado.eventoSesion = apertura.eventoSesion || [];
     estado.respondidas = respondidasComoSet(apertura.respondidas); // derivado en el servidor, no del navegador
+    // Configuracion invalida del guion (sin duracion, o preguntas solapadas): NO se
+    // arregla ni se elige una ganadora — esas preguntas no se ofrecen y el problema
+    // queda VISIBLE (consola) para que el contenido se corrija. Orbit ya las quita
+    // y las reporta en problemasGuion; aqui se valida tambien por defensa.
+    const problemasDelGuion = (Array.isArray(apertura.problemasGuion) ? apertura.problemasGuion : []).concat(validarGuion(estado.eventoSesion).problemas);
+    if (problemasDelGuion.length > 0) {
+      console.error('sala SIMULIVE: el guion tiene configuracion invalida; esas preguntas no se ofrecen', problemasDelGuion);
+    }
     contenedor.dataset.tema = apertura.temaVisual || 'dia';
 
     // ── salida en_vivo -> replay (diseño cerrado 2026-09-24) ──────────
@@ -951,7 +997,8 @@
   iniciarSalaSimulive.decidirSincronizacion = decidirSincronizacion;
   iniciarSalaSimulive.estadoDelGuion = estadoDelGuion;
   iniciarSalaSimulive.decidirOverlay = decidirOverlay;
-  iniciarSalaSimulive.parametrosGuion = { DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS, RECONOCIMIENTO_MS };
+  iniciarSalaSimulive.validarGuion = validarGuion;
+  iniciarSalaSimulive.parametrosGuion = { RECONOCIMIENTO_MS };
   iniciarSalaSimulive.parametrosSincronizacion = {
     SYNC_ESPERA_REGRESO_MS, SYNC_ESPERA_PLAY_MS, SYNC_TOLERANCIA_SEGUNDOS,
     SYNC_AVISO_SEGUNDOS, SYNC_RESPUESTA_MAX_MS, SYNC_ASENTAR_MS, SYNC_CONTINUAR_ESPERA_MS,

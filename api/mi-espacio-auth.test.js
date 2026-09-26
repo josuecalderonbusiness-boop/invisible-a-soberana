@@ -615,7 +615,7 @@ test('sala-responder: sin cookies de reloj QA -> no manda esos headers (Producti
 
 test('sala-responder: Orbit rechaza con 409 (pregunta cerrada / sesion no en vivo) -> 409 con el motivo, NO 503', async (t) => {
   const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
-  for (const motivo of ['pregunta_fuera_de_ventana', 'pregunta_aun_no_disponible', 'sesion_no_en_vivo']) {
+  for (const motivo of ['pregunta_fuera_de_ventana', 'pregunta_aun_no_disponible', 'sesion_no_en_vivo', 'pregunta_invalida']) {
     t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: motivo }) }));
     const res = mockRes();
     await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a' } }, res);

@@ -1022,6 +1022,8 @@ async function salaEstadoAccion(req, res) {
   }
 }
 
+const MOTIVOS_RESPUESTA_RECHAZADA = new Set(['sesion_no_en_vivo', 'pregunta_aun_no_disponible', 'pregunta_fuera_de_ventana', 'pregunta_invalida']);
+
 async function salaResponderAccion(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
   const datos = identidadSalaSimulive(req);
@@ -1030,9 +1032,17 @@ async function salaResponderAccion(req, res) {
   if (!eventoId || !opcionId) return res.status(400).json({ error: 'eventoId y opcionId son requeridos' });
 
   try {
-    const resultado = await salaResponder(datos.correo, convocatoriaId, eventoId, opcionId);
+    const resultado = await salaResponder(datos.correo, convocatoriaId, eventoId, opcionId, qaRelojDeCookie(req));
     return res.status(200).json(resultado);
   } catch (err) {
+    // Bloque B (2026-09-25): Orbit rechaza con 409 fuera de en_vivo o fuera de
+    // la ventana de la pregunta. Es una respuesta de NEGOCIO, no una caída:
+    // el cliente necesita distinguirla ("Esta pregunta ya cerró") de un fallo
+    // de infraestructura. Solo pasan los motivos conocidos; cualquier otro
+    // 409 se trata como antes (503, fail-closed).
+    if (err.status === 409 && MOTIVOS_RESPUESTA_RECHAZADA.has(err.motivo)) {
+      return res.status(409).json({ error: err.motivo });
+    }
     console.error('mi-espacio-auth/sala-responder error:', err.message);
     return res.status(503).json({ error: 'no_disponible' });
   }

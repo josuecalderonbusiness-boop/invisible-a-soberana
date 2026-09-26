@@ -80,8 +80,12 @@ async function salaEstado(correo, convocatoriaId, desde) {
   return llamarOrbitSala('sala-estado', { method: 'GET', correo, params: { convocatoriaId, ...(desde ? { desde } : {}) } });
 }
 
-async function salaResponder(correo, convocatoriaId, eventoId, opcionId) {
-  return llamarOrbitSala('sala-responder', { method: 'POST', correo, body: { convocatoriaId, eventoId, opcionId } });
+// Bloque B (2026-09-25): Orbit valida fase en_vivo + ventana de la pregunta con
+// SU reloj, así que el reloj de QA (solo Preview, fail-closed en Orbit) debe
+// viajar también aquí — igual que en sala-abrir — o una prueba con reloj
+// simulado vería la sesión "en_vivo" en abrir y "replay" en responder.
+async function salaResponder(correo, convocatoriaId, eventoId, opcionId, qaReloj) {
+  return llamarOrbitSala('sala-responder', { method: 'POST', correo, body: { convocatoriaId, eventoId, opcionId }, qaReloj });
 }
 
 async function salaChatEnviar(correo, convocatoriaId, texto) {

@@ -80,6 +80,83 @@
     return (window.htmlSeguro && window.htmlSeguro.urlSegura) ? window.htmlSeguro.urlSegura(s) : '';
   }
 
+  // ── guion derivado (Bloque B, 2026-09-25) ───────────────────────────
+  // Decisiones PURAS (sin DOM ni red), probadas aparte con tablas de casos.
+  // Mismo default que Orbit: solo es respaldo — Orbit ya entrega cada
+  // pregunta con duracion_visible_segundos normalizada, y la duración
+  // configurada es la duración REAL (el cliente nunca suma segundos).
+  const DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS = 15;
+  const RECONOCIMIENTO_MS = 3500; // cuánto se queda el "otras mujeres eligieron esto" tras responder
+
+  function duracionVisiblePregunta(payload) {
+    const d = payload && payload.duracion_visible_segundos;
+    return (typeof d === 'number' && isFinite(d) && d > 0) ? d : DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS;
+  }
+
+  function idDeEvento(evt) {
+    return evt.id || (evt.offsetSegundos + ':' + (evt.orden || 0));
+  }
+
+  function respondidasComoSet(respondidas) {
+    if (respondidas && typeof respondidas.has === 'function') return respondidas; // un Set (por comportamiento, no por clase)
+    if (Array.isArray(respondidas)) return new Set(respondidas);
+    if (respondidas && typeof respondidas === 'object') return new Set(Object.keys(respondidas));
+    return new Set();
+  }
+
+  // Qué corresponde mostrar en la posición `posicionSegundos` de la sesión.
+  //   mensajes        — mensajes de equipo con momento <= posición (historial), en orden.
+  //   preguntaVigente — la pregunta cuya ventana [momento, momento + duración) contiene
+  //                     la posición y que NO se ha respondido; si hay varias solapadas,
+  //                     la más reciente. { evento, restanteSegundos } | null.
+  //   ctaAbierta      — la última apertura_cta con momento <= posición (estado persistente)
+  //                     | null.
+  function estadoDelGuion(guion, posicionSegundos, respondidas) {
+    const lista = (Array.isArray(guion) ? guion : []).filter(function (e) {
+      return e && typeof e.offsetSegundos === 'number' && isFinite(e.offsetSegundos);
+    });
+    const contestadas = respondidasComoSet(respondidas);
+    const porMomento = function (a, b) { return (a.offsetSegundos - b.offsetSegundos) || ((a.orden || 0) - (b.orden || 0)); };
+
+    const mensajes = lista.filter(function (e) {
+      return e.tipo === 'mensaje_equipo' && e.offsetSegundos <= posicionSegundos;
+    }).sort(porMomento);
+
+    const vigentes = lista.filter(function (e) {
+      return e.tipo === 'pregunta' && e.offsetSegundos <= posicionSegundos &&
+        posicionSegundos < e.offsetSegundos + duracionVisiblePregunta(e.payload) &&
+        !contestadas.has(idDeEvento(e));
+    }).sort(porMomento);
+    const elegida = vigentes.length > 0 ? vigentes[vigentes.length - 1] : null;
+
+    const ctas = lista.filter(function (e) {
+      return e.tipo === 'apertura_cta' && e.offsetSegundos <= posicionSegundos;
+    }).sort(porMomento);
+
+    return {
+      mensajes: mensajes,
+      preguntaVigente: elegida ? { evento: elegida, restanteSegundos: (elegida.offsetSegundos + duracionVisiblePregunta(elegida.payload)) - posicionSegundos } : null,
+      ctaAbierta: ctas.length > 0 ? ctas[ctas.length - 1] : null,
+    };
+  }
+
+  // Qué hacer con el overlay dado lo que debería verse y lo que hay ahora.
+  //   actual: { tipo: null|'pregunta'|'cta'|'reconocimiento', id, hasta }
+  //   Prioridad: pregunta vigente -> CTA abierta -> nada. El reconocimiento
+  //   posterior a responder se RESPETA hasta `hasta` (nadie lo pisa antes);
+  //   pasado ese instante manda lo demás: la CTA reaparece sola si sigue abierta.
+  //   Devuelve { accion: 'mantener'|'ocultar'|'mostrar_pregunta'|'mostrar_cta', evento? }.
+  function decidirOverlay(guion, actual, ahoraMs) {
+    const act = actual || { tipo: null, id: null, hasta: 0 };
+    if (act.tipo === 'reconocimiento' && ahoraMs < act.hasta) return { accion: 'mantener' };
+    let deseado = null;
+    if (guion.preguntaVigente) deseado = { tipo: 'pregunta', evento: guion.preguntaVigente.evento };
+    else if (guion.ctaAbierta) deseado = { tipo: 'cta', evento: guion.ctaAbierta };
+    if (!deseado) return act.tipo === null ? { accion: 'mantener' } : { accion: 'ocultar' };
+    if (act.tipo === deseado.tipo && act.id === idDeEvento(deseado.evento)) return { accion: 'mantener' };
+    return { accion: deseado.tipo === 'pregunta' ? 'mostrar_pregunta' : 'mostrar_cta', evento: deseado.evento };
+  }
+
   /**
    * @param {Object} opciones
    * @param {string} opciones.contenedorId - id de un elemento vacío donde se monta toda la sala.
@@ -98,7 +175,10 @@
       relojLocalAlAbrirMs: 0,
       duracionSegundos: 3600,
       eventoSesion: [],
-      disparados: new Set(),
+      respondidas: new Set(),            // ids de preguntas ya respondidas (de Orbit + las de esta sesion de pagina)
+      mensajesGuionMostrados: new Set(), // solo evita duplicar filas del chat dentro de esta pagina
+      overlayActual: { tipo: null, id: null, hasta: 0 },
+      tickActivo: false,
       cursorChat: null,
       mensajes: [],
       player: null,
@@ -259,6 +339,7 @@
     estado.relojLocalAlAbrirMs = Date.now();
     estado.duracionSegundos = apertura.duracionSegundos || 3600;
     estado.eventoSesion = apertura.eventoSesion || [];
+    estado.respondidas = respondidasComoSet(apertura.respondidas); // derivado en el servidor, no del navegador
     contenedor.dataset.tema = apertura.temaVisual || 'dia';
 
     // ── salida en_vivo -> replay (diseño cerrado 2026-09-24) ──────────
@@ -280,7 +361,8 @@
     // configuración (quitar la tapa, iframe de 112% a 100%) no lo recarga;
     // moverlo en el DOM sí, y el video volvería al minuto 0.
     function detenerMaquinariaEnVivo() {
-      if (estado.tickId) { clearInterval(estado.tickId); estado.tickId = null; }
+      estado.tickActivo = false;
+      if (estado.tickId) { clearTimeout(estado.tickId); estado.tickId = null; }
       if (estado.pollId) { clearInterval(estado.pollId); estado.pollId = null; }
       if (estado.derivaId) { clearInterval(estado.derivaId); estado.derivaId = null; }
       if (estado.regresoTimer) { clearTimeout(estado.regresoTimer); estado.regresoTimer = null; }
@@ -361,71 +443,57 @@
       $progreso.style.width = pct + '%';
     }
 
-    // ── reloj de guion: tick local de 1s, nunca depende del poll ──
-    function tickGuion() {
-      actualizarProgreso();
-      if (estado.fase !== 'en_vivo') return;
-      const pos = posicionActual();
-      estado.eventoSesion.forEach(function (evt) {
-        if (estado.disparados.has(evt.id || evt.offsetSegundos + ':' + evt.orden)) return;
-        if (evt.offsetSegundos > pos) return;
-        estado.disparados.add(evt.id || evt.offsetSegundos + ':' + evt.orden);
-        dispararEvento(evt);
-      });
-    }
-    estado.tickId = setInterval(tickGuion, 1000);
-    tickGuion();
-
-    function dispararEvento(evt) {
-      if (evt.tipo === 'mensaje_equipo') {
-        agregarMensaje({ tipo: 'equipo', autorNombre: (evt.payload && evt.payload.autor) || 'Equipo', texto: (evt.payload && evt.payload.texto) || '', programado: true });
-      } else if (evt.tipo === 'pregunta') {
-        mostrarPregunta(evt);
-      } else if (evt.tipo === 'apertura_cta') {
-        mostrarCTA(evt.payload || {});
+    // ── reconciliador del guion (Bloque B, 2026-09-25) ───────────────────
+    // El guion ya no se "dispara": cada segundo de la SESIÓN se DERIVA lo que
+    // corresponde mostrar a partir de tres datos — el guion, la posición y lo
+    // que esta persona ya respondió (que Orbit entrega en sala-abrir) — y la
+    // pantalla se reconcilia con eso. Sin temporizadores por evento: nada
+    // "recuerda" que un evento ya ocurrió, así que entrar tarde, volver o
+    // recargar dan el mismo resultado sin estado propio del navegador.
+    //   - mensajes de equipo con momento <= posición: historial (se agregan
+    //     una sola vez, en orden);
+    //   - pregunta: solo mientras momento <= posición < momento + duración y
+    //     sin responder; vencida, nunca reaparece;
+    //   - CTA: estado persistente, la última con momento <= posición;
+    //   - prioridad del overlay: pregunta vigente -> CTA abierta -> nada.
+    // El ciclo se alinea a los segundos enteros de la sesión (un solo ciclo,
+    // no un temporizador por evento) para que una pregunta de 10 s dure 10 s
+    // y no 10-11 según en qué fase del reloj cayó el tick.
+    function ocultarOverlay() {
+      if ($overlay) {
+        $overlay.style.display = 'none';
+        $overlay.classList.remove('sala-overlay--cta');
+        $overlay.innerHTML = '';
       }
+      contenedor.classList.remove('sala-simulive--overlay-activo');
+      estado.overlayActual = { tipo: null, id: null, hasta: 0 };
     }
 
-    function mostrarPregunta(evt) {
+    function montarPregunta(evt) {
       if (!$overlay) return; // la sala ya pasó a replay
-      // Referencia local: $overlay pasa a null cuando la sala se convierte a
-      // replay, y los temporizadores/clics de abajo pueden llegar después.
-      const $overlay_ = $overlay;
       const p = evt.payload || {};
       const opciones = (p.opciones || []).map(function (o) {
         return '<button class="sala-opcion" data-opcion="' + esc(o.id) + '">' + esc(o.texto) + '</button>';
       }).join('');
-      $overlay_.innerHTML =
+      $overlay.innerHTML =
         '<div class="sala-poll">' +
         '<p class="sala-poll-texto">' + esc(p.texto) + '</p>' +
         '<div class="sala-poll-opciones">' + opciones + '</div>' +
         '<p class="sala-poll-feedback" data-sala-poll-feedback style="display:none"></p>' +
         '</div>';
-      $overlay_.style.display = 'flex';
+      $overlay.classList.remove('sala-overlay--cta');
+      $overlay.style.display = 'flex';
       contenedor.classList.add('sala-simulive--overlay-activo');
-
-      function ocultar() {
-        $overlay_.style.display = 'none';
-        contenedor.classList.remove('sala-simulive--overlay-activo');
-      }
-      // Si nadie responde, se oculta sola pasado el tiempo de la pregunta.
-      // Si responde, se reemplaza por un cierre corto (abajo) para que no
-      // se quede montada ahí una vez ya contestó.
-      let temporizadorOcultar = setTimeout(ocultar, (p.duracion_visible_segundos || 15) * 1000 + 6000);
-
-      $overlay_.querySelectorAll('.sala-opcion').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          $overlay_.querySelectorAll('.sala-opcion').forEach(function (b) { b.disabled = true; });
-          btn.classList.add('sala-opcion--elegida');
-          responder(evt.id, btn.dataset.opcion, $overlay_.querySelector('[data-sala-poll-feedback]'));
-          clearTimeout(temporizadorOcultar);
-          temporizadorOcultar = setTimeout(ocultar, 3500);
-        });
+      estado.overlayActual = { tipo: 'pregunta', id: idDeEvento(evt), hasta: 0 };
+      const $ov = $overlay;
+      $ov.querySelectorAll('.sala-opcion').forEach(function (btn) {
+        btn.addEventListener('click', function () { elegirOpcion(evt, btn, $ov); });
       });
     }
 
-    function mostrarCTA(payload) {
+    function montarCTA(evt) {
       if (!$overlay) return; // la sala ya pasó a replay: su CTA vive debajo del reproductor
+      const payload = evt.payload || {};
       $overlay.innerHTML =
         '<div class="sala-cta-capa">' +
         '<p class="sala-cta-titular">' + esc(payload.titular || '') + '</p>' +
@@ -435,7 +503,59 @@
       $overlay.style.display = 'flex';
       $overlay.classList.add('sala-overlay--cta');
       contenedor.classList.add('sala-simulive--overlay-activo');
+      estado.overlayActual = { tipo: 'cta', id: idDeEvento(evt), hasta: 0 };
     }
+
+    // Elegir una opción: se marca como respondida de inmediato (optimista: no
+    // reaparece) y el overlay pasa al estado 'reconocimiento', que el
+    // reconciliador RESPETA durante RECONOCIMIENTO_MS — nadie lo pisa antes de
+    // tiempo. Al terminar, el reconciliador decide: CTA abierta o nada.
+    function elegirOpcion(evt, btn, $ov) {
+      $ov.querySelectorAll('.sala-opcion').forEach(function (b) { b.disabled = true; });
+      btn.classList.add('sala-opcion--elegida');
+      estado.respondidas.add(idDeEvento(evt));
+      estado.overlayActual = { tipo: 'reconocimiento', id: idDeEvento(evt), hasta: Date.now() + RECONOCIMIENTO_MS };
+      reprogramarTick(); // el ciclo único despierta justo cuando vence el reconocimiento
+      responder(evt.id, btn.dataset.opcion, $ov.querySelector('[data-sala-poll-feedback]'));
+    }
+
+    function reconciliarGuion() {
+      actualizarProgreso();
+      if (estado.fase !== 'en_vivo' || !$overlay) return;
+      const guion = estadoDelGuion(estado.eventoSesion, posicionActual(), estado.respondidas);
+      guion.mensajes.forEach(function (evt) {
+        const id = idDeEvento(evt);
+        if (estado.mensajesGuionMostrados.has(id)) return;
+        estado.mensajesGuionMostrados.add(id);
+        agregarMensaje({ tipo: 'equipo', autorNombre: (evt.payload && evt.payload.autor) || 'Equipo', texto: (evt.payload && evt.payload.texto) || '', programado: true });
+      });
+      const decision = decidirOverlay(guion, estado.overlayActual, Date.now());
+      if (decision.accion === 'ocultar') ocultarOverlay();
+      else if (decision.accion === 'mostrar_pregunta') montarPregunta(decision.evento);
+      else if (decision.accion === 'mostrar_cta') montarCTA(decision.evento);
+    }
+
+    // El ciclo es UNO solo: despierta en el siguiente segundo entero de la
+    // sesión o, si hay un reconocimiento en pantalla, en el instante exacto en
+    // que vence (para que dure RECONOCIMIENTO_MS y no hasta 1 s más).
+    function programarTick() {
+      if (!estado.tickActivo) return;
+      const pos = posicionActual();
+      let espera = Math.max(20, (Math.floor(pos) + 1 - pos) * 1000 + 5);
+      const ov = estado.overlayActual;
+      if (ov && ov.tipo === 'reconocimiento' && ov.hasta) espera = Math.min(espera, Math.max(20, ov.hasta - Date.now() + 5));
+      estado.tickId = setTimeout(function () {
+        estado.tickId = null;
+        try { reconciliarGuion(); } finally { programarTick(); }
+      }, espera);
+    }
+    function reprogramarTick() {
+      if (estado.tickId) { clearTimeout(estado.tickId); estado.tickId = null; }
+      programarTick();
+    }
+    estado.tickActivo = true;
+    reconciliarGuion();
+    programarTick();
 
     // ── acciones: optimistas, nunca bloquean la UI esperando red ──
     async function responder(eventoId, opcionId, $feedback) {
@@ -446,15 +566,18 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ convocatoriaId: estado.convocatoriaId, eventoId, opcionId }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(function () { return {}; });
         if ($feedback) {
-          $feedback.textContent = data.conteoOpcionPropia > 1
+          if (res.status === 409) $feedback.textContent = 'Esta pregunta ya cerró.';
+          else if (!res.ok) $feedback.textContent = 'No pudimos registrar tu respuesta.';
+          else if (data.yaRespondida) $feedback.textContent = 'Ya habías respondido esta pregunta.';
+          else $feedback.textContent = data.conteoOpcionPropia > 1
             ? 'Otras mujeres que están aquí contigo también eligieron esto.'
             : 'Gracias por responder.';
         }
       } catch (e) {
         if ($feedback) $feedback.textContent = 'Tu respuesta quedó registrada localmente — reintentando…';
-        console.warn('responder: falló, se reintentará en el próximo poll', e && e.message);
+        console.warn('responder: falló', e && e.message);
       }
     }
 
@@ -589,6 +712,7 @@
     function alRegresar() {
       revaluarSiYaTermino();
       if (salaSesionCerrada || estado.fase !== 'en_vivo') return;
+      reconciliarGuion(); // el guion es derivado: al volver se recalcula ya, no se espera al siguiente tick
       if (estado.regresoTimer) return;
       estado.regresoTimer = setTimeout(function () {
         estado.regresoTimer = null;
@@ -825,6 +949,9 @@
   window.iniciarSalaSimulive = iniciarSalaSimulive;
   // Solo para la prueba automática de la decisión pura (sin DOM ni red).
   iniciarSalaSimulive.decidirSincronizacion = decidirSincronizacion;
+  iniciarSalaSimulive.estadoDelGuion = estadoDelGuion;
+  iniciarSalaSimulive.decidirOverlay = decidirOverlay;
+  iniciarSalaSimulive.parametrosGuion = { DURACION_VISIBLE_POR_DEFECTO_SEGUNDOS, RECONOCIMIENTO_MS };
   iniciarSalaSimulive.parametrosSincronizacion = {
     SYNC_ESPERA_REGRESO_MS, SYNC_ESPERA_PLAY_MS, SYNC_TOLERANCIA_SEGUNDOS,
     SYNC_AVISO_SEGUNDOS, SYNC_RESPUESTA_MAX_MS, SYNC_ASENTAR_MS, SYNC_CONTINUAR_ESPERA_MS,

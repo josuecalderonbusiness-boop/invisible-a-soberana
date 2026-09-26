@@ -573,6 +573,80 @@ test('sala-abrir: sin cookies de reloj QA -> no manda esos headers (comportamien
   assert.equal('x-qa-reloj-simulado' in opciones.headers, false);
 });
 
+// ── sala-responder (Bloque B, 2026-09-25): Orbit valida fase en_vivo + ventana
+// con SU reloj. Aqui se prueba lo que le toca a este servidor: reenviar el
+// reloj QA (igual que sala-abrir), tomar el correo SIEMPRE de la cookie, y
+// traducir los 409 de negocio (pregunta cerrada) sin confundirlos con una caida. ──
+
+test('sala-responder: sin cookie -> 401, nunca llama a Orbit', async (t) => {
+  const fetchSpy = t.mock.method(global, 'fetch', async () => { throw new Error('no debia llamar a Orbit'); });
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: {}, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a' } }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(fetchSpy.mock.calls.length, 0);
+});
+
+test('sala-responder: con cookies de reloj QA -> las reenvia a Orbit; el correo sale de la COOKIE (nunca del body)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true, yaRespondida: false, opcionId: 'a', conteoOpcionPropia: 1 }) }));
+  const res = mockRes();
+  await handler({
+    method: 'POST', query: { accion: 'sala-responder' },
+    headers: { cookie: `clase_gratuita_sesion=${token}; qa_reloj_secreto=shh-qa-test; qa_reloj_simulado=${encodeURIComponent('2026-09-23T15:05:05.000Z')}` },
+    body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a', correo: 'atacante@ejemplo.com' },
+  }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, { ok: true, yaRespondida: false, opcionId: 'a', conteoOpcionPropia: 1 });
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal(opciones.headers['x-qa-reloj-secret'], 'shh-qa-test');
+  assert.equal(opciones.headers['x-qa-reloj-simulado'], '2026-09-23T15:05:05.000Z');
+  assert.equal(JSON.parse(opciones.body).correo, 'alumna@correo.com', 'el correo SIEMPRE viene de la cookie verificada');
+});
+
+test('sala-responder: sin cookies de reloj QA -> no manda esos headers (Production real)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const fetchMock = t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a' } }, res);
+  const [, opciones] = fetchMock.mock.calls[0].arguments;
+  assert.equal('x-qa-reloj-secret' in opciones.headers, false);
+  assert.equal('x-qa-reloj-simulado' in opciones.headers, false);
+});
+
+test('sala-responder: Orbit rechaza con 409 (pregunta cerrada / sesion no en vivo) -> 409 con el motivo, NO 503', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  for (const motivo of ['pregunta_fuera_de_ventana', 'pregunta_aun_no_disponible', 'sesion_no_en_vivo']) {
+    t.mock.method(global, 'fetch', async () => ({ ok: false, status: 409, json: async () => ({ error: motivo }) }));
+    const res = mockRes();
+    await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a' } }, res);
+    assert.equal(res.statusCode, 409, motivo);
+    assert.deepEqual(res.body, { error: motivo });
+    global.fetch.mock.restore();
+  }
+});
+
+test('sala-responder: un 409 con motivo DESCONOCIDO o un 5xx de Orbit se tratan como caida (503), nunca se filtra texto ajeno', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  for (const [status, cuerpo] of [[409, { error: '<script>x</script>' }], [500, { error: 'Error interno' }], [404, { error: 'evento_no_encontrado' }]]) {
+    t.mock.method(global, 'fetch', async () => ({ ok: false, status, json: async () => cuerpo }));
+    const res = mockRes();
+    await handler({ method: 'POST', query: { accion: 'sala-responder' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId, eventoId: 'e1', opcionId: 'a' } }, res);
+    assert.equal(res.statusCode, 503, String(status));
+    assert.deepEqual(res.body, { error: 'no_disponible' });
+    global.fetch.mock.restore();
+  }
+});
+
+test('sala-abrir: pasa tal cual lo que Orbit devuelve, incluido `respondidas` (estado derivado en el servidor, nunca del navegador)', async (t) => {
+  const token = crearTokenClaseGratuitaTest('alumna@correo.com', CONVOCATORIA_MOCK.convocatoriaId, CONVOCATORIA_MOCK.fechaHora, CONVOCATORIA_MOCK.ventanaReplayHoras);
+  const cuerpo = { fase: 'en_vivo', posicionInicialSegundos: 306, eventoSesion: [], respondidas: { 'e-p1': 'c' } };
+  t.mock.method(global, 'fetch', async () => ({ ok: true, status: 200, json: async () => cuerpo }));
+  const res = mockRes();
+  await handler({ method: 'POST', query: { accion: 'sala-abrir' }, headers: { cookie: `clase_gratuita_sesion=${token}` }, body: { convocatoriaId: CONVOCATORIA_MOCK.convocatoriaId } }, res);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body.respondidas, { 'e-p1': 'c' });
+});
+
 test('sala-estado: 405 si el metodo no es GET', async () => {
   const res = mockRes();
   await handler({ method: 'POST', query: { accion: 'sala-estado' }, headers: {} }, res);
